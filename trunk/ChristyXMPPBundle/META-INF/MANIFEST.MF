@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ChristyXMPPBundle Plug-in
+Bundle-SymbolicName: ChristyXMPPBundle
+Bundle-Version: 1.0.0
+Bundle-ClassPath: bin/
+Bundle-Activator: net.sf.christy.xmpp.Activator
+Bundle-Vendor: Noah
+Import-Package: net.sf.christy.util,
+ org.osgi.framework;version="1.3.0"
+Eclipse-LazyStart: true
