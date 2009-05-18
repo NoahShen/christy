@@ -25,13 +25,13 @@ public interface C2SManager
 	 * 
 	 * @return
 	 */
-	public int getMaxClientConnections();
+	public int getMaxClientLimit();
 	
 	/**
 	 * 
-	 * @param maxClientConnections
+	 * @param maxClientLimit
 	 */
-	public void setMaxClientConnections(int maxClientConnections);
+	public void setMaxClientLimit(int maxClientLimit);
 	
 	/**
 	 * 
