@@ -104,4 +104,19 @@ public interface C2SManager
 	 * @param routerPassword
 	 */
 	public void setRouterPassword(String routerPassword);
+	
+	/**
+	 * start c2s module
+	 */
+	public void start();
+	
+	/**
+	 * stop c2s module
+	 */
+	public void stop();
+	
+	/**
+	 *  exit program
+	 */
+	public void exit();
 }
