@@ -25,9 +25,14 @@ import net.sf.christy.util.AbstractPropertied;
  */
 public class RouterManagerImpl extends AbstractPropertied implements RouterManager
 {
-	final Logger logger = LoggerFactory.getLogger(RouterManagerImpl.class);
+	private final Logger logger = LoggerFactory.getLogger(RouterManagerImpl.class);
 
 	private IoAcceptor c2sAcceptor;
+	
+	private boolean started = false;
+	
+	private int c2sPort = 5333;
+	
 	
 	@Override
 	public void addC2s(String name, String md5Password)
@@ -123,6 +128,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	@Override
 	public void start()
 	{
+		logger.info("starting...");
+		
 		c2sAcceptor = new SocketAcceptor();
 		IoAcceptorConfig config = new SocketAcceptorConfig();
 		DefaultIoFilterChainBuilder chain = config.getFilterChain();
@@ -137,9 +144,12 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			logger.debug("start failure:" + e.getMessage());
 		}
+		
+		started = true;
+		logger.info("successful start");
 	}
 
 	@Override
@@ -147,13 +157,19 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	{
 		// TODO Auto-generated method stub
 
+		started = false;
 	}
 
 	@Override
+	public boolean isStarted()
+	{
+		return started;
+	}
+	
+	@Override
 	public int getC2sPort()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return c2sPort;
 	}
 
 	@Override
@@ -164,10 +180,9 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	}
 
 	@Override
-	public void setC2sPort(int port)
+	public void setC2sPort(int c2sPort)
 	{
-		// TODO Auto-generated method stub
-		
+		this.c2sPort = c2sPort;
 	}
 
 	@Override
@@ -177,6 +192,20 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		
 	}
 
+	@Override
+	public int getS2sPort()
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setS2sPort(int port)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	
 	private class C2sHandler implements IoHandler
 	{
 
@@ -208,14 +237,13 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		public void sessionClosed(IoSession session) throws Exception
 		{
 			// TODO Auto-generated method stub
-			System.out.println("session:" + session + "sessionClosed" + "\n");
+			System.out.println("session" + session + ": sessionClosed" + "\n");
 		}
 
 		@Override
 		public void sessionCreated(IoSession session) throws Exception
 		{
-			// TODO Auto-generated method stub
-			System.out.println("session:" + session + "sessionCreated" + "\n");
+			logger.debug("session" + session + ": sessionOpened");
 		}
 
 		@Override
@@ -228,9 +256,10 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void sessionOpened(IoSession session) throws Exception
 		{
-			// TODO Auto-generated method stub
-			System.out.println("session:" + session + "sessionOpened" + "\n");
+			logger.debug("session" + session + ": sessionOpened");
 		}
 		
 	}
+
+
 }
