@@ -101,6 +101,18 @@ public interface RouterManager extends Propertied
 	 * 
 	 * @return
 	 */
+	public int getS2sPort();
+	
+	/**
+	 * 
+	 * @param c2sPort
+	 */
+	public void setS2sPort(int s2sPort);
+	
+	/**
+	 * 
+	 * @return
+	 */
 	public int getSmPort();
 	
 	/**
@@ -123,4 +135,10 @@ public interface RouterManager extends Propertied
 	 *  exit program
 	 */
 	public void exit();
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isStarted();
 }

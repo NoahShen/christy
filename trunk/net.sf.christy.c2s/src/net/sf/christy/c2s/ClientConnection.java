@@ -3,6 +3,8 @@
  */
 package net.sf.christy.c2s;
 
+import java.net.SocketAddress;
+
 import net.sf.christy.util.Propertied;
 import net.sf.christy.xmpp.XMLStanza;
 
@@ -81,11 +83,11 @@ public interface ClientConnection extends Propertied
 	public boolean isSecure();
 
 	/**
-	 * Returns the IP address string in textual presentation.
+	 * Returns the client address.
 	 *
-	 * @return  the raw IP address in a string format.
+	 * @return  the client address.
 	 */
-	public String getClientIP();
+	public SocketAddress getClientAddress();
 
 	/**
 	 * Send a stanza to client

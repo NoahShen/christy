@@ -109,4 +109,9 @@ public interface C2SManager extends Propertied
 	 *  exit program
 	 */
 	public void exit();
+	
+	/**
+	 * 
+	 */
+	public boolean isStarted();
 }
