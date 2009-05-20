@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Router Plug-in
+Bundle-SymbolicName: net.sf.christy.router
+Bundle-Version: 1.0.0
+Bundle-ClassPath: bin/,
+ lib/mina-core-1.1.7.jar,
+ lib/mina-filter-ssl-1.1.7.jar
+Bundle-Activator: net.sf.christy.router.Activator
+Bundle-Vendor: Noah
+Import-Package: net.sf.christy.util,
+ net.sf.christy.xmpp,
+ org.osgi.framework;version="1.3.0",
+ org.slf4j
+Eclipse-LazyStart: true

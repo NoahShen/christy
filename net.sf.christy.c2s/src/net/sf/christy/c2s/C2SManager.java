@@ -3,11 +3,13 @@
  */
 package net.sf.christy.c2s;
 
+import net.sf.christy.util.Propertied;
+
 /**
  * @author noah
  *
  */
-public interface C2SManager
+public interface C2SManager extends Propertied
 {
 	/**
 	 * 
@@ -22,16 +24,16 @@ public interface C2SManager
 	public void setName(String name);
 	
 	/**
-	 * 
+	 * max client connection number. 0 stands for no limit
 	 * @return
 	 */
-	public int getMaxClientLimit();
+	public int getClientLimit();
 	
 	/**
-	 * 
+	 * set max client connection number. 0 stands for no limit
 	 * @param maxClientLimit
 	 */
-	public void setMaxClientLimit(int maxClientLimit);
+	public void setClientLimit(int maxClientLimit);
 	
 	/**
 	 * 
@@ -80,18 +82,6 @@ public interface C2SManager
 	 * @param routerPort
 	 */
 	public void setRouterPort(int routerPort);
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public boolean getAllowRegistration();
-	
-	/**
-	 * 
-	 * @param allowRegistration
-	 */
-	public void setAllowRegistration(boolean allowRegistration);
 	
 	/**
 	 * 
