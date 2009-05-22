@@ -11,17 +11,6 @@ import net.sf.christy.util.Propertied;
  */
 public interface RouterManager extends Propertied
 {
-	/**
-	 * 
-	 * @return
-	 */
-	public String getName();
-	
-	/**
-	 * 
-	 * @param name
-	 */
-	public void setName(String name);
 	
 	/**
 	 * 
@@ -36,43 +25,55 @@ public interface RouterManager extends Propertied
 	public void setDomain(String domain);
 	
 	/**
-	 * add C2S module's username and md5password to router, so the c2s can connect the router
+	 * register C2S module's username and md5password to router, so the c2s can connect the router
 	 * @param name
 	 * @param md5Password
 	 */
-	public void addC2s(String name, String md5Password);
+	public void registerC2sModule(String name, String md5Password);
 	
 	/**
 	 * 
 	 * @param name
 	 */
-	public void removeC2s(String name);
+	public void unregisterC2sModule(String name);
 	
 	/**
-	 * remove Sm module's username and md5password to router, so the sm can connect the router
+	 * register Sm module's username and md5password to router, so the sm can connect the router
 	 * @param name
 	 * @param md5Password
 	 */
-	public void addSm(String name, String md5Password);
+	public void registerSmModule(String name, String md5Password);
 	
 	/**
 	 * 
 	 * @param name
 	 */
-	public void removeSm(String name);
+	public void unregisterSmModule(String name);
 
 	/**
-	 * add component such as muc module
+	 * 
+	 * @param name
+	 * @param md5Password
+	 */
+	public void registerS2sModule(String name, String md5Password);
+	
+	/**
+	 * 
+	 * @param name
+	 */
+	public void unregisterS2sModule(String name);
+	/**
+	 * register module such as muc module
 	 * @param subDomain
 	 * @param md5Password
 	 */
-	public void addModule(String subDomain, String md5Password);
+	public void registerOtherModule(String subDomain, String md5Password);
 	
 	/**
 	 * 
 	 * @param subDomain
 	 */
-	public void removeModule(String subDomain);
+	public void unregisterOtherModule(String subDomain);
 	
 	/**
 	 * obtain max c2s module number
@@ -133,6 +134,18 @@ public interface RouterManager extends Propertied
 	 * @param smPort
 	 */
 	public void setSmPort(int smPort);
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getModulePort();
+	
+	/**
+	 * 
+	 * @param modulePort
+	 */
+	public void setModulePort(int modulePort);
 	
 	/**
 	 * start c2s module
