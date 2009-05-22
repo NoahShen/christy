@@ -40,6 +40,12 @@ public interface C2sSession extends Propertied
 	
 	/**
 	 * 
+	 * @param xml
+	 */
+	public void write(String xml);
+	
+	/**
+	 * 
 	 * @return
 	 */
 	public boolean isConnected();

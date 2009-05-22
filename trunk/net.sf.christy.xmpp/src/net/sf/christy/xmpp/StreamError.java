@@ -131,7 +131,7 @@ public class StreamError implements XMLStanza
 				buf.append(appCondition.toXML());
 			}
 		}
-		buf.append(" </stream:error>");
+		buf.append("</stream:error>");
 		return buf.toString();
 	}
 	

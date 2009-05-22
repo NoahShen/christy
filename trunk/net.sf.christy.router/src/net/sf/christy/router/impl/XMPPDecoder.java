@@ -22,10 +22,10 @@ public class XMPPDecoder extends CumulativeProtocolDecoder
 		{
 			parser = new XMLLightweightParser("UTF-8");
 			session.setAttribute("XMLLightweightParser", parser);
-		}
+		}		
 		// Parse as many stanzas as possible from the received data
 		parser.read(in);
-
+		
 		if (parser.areThereMsgs())
 		{
 			for (String stanza : parser.getMsgs())

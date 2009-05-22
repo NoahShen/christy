@@ -13,6 +13,7 @@ public class Activator implements BundleActivator {
 	 */
 	public void start(BundleContext context) throws Exception {
 		RouterManager rm = new RouterManagerImpl();
+		rm.addC2s("c2s_1", "md5password");
 		rm.start();
 	}
 
