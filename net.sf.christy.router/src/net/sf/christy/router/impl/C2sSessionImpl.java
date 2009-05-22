@@ -16,22 +16,28 @@ public class C2sSessionImpl extends AbstractPropertied implements C2sSession
 	
 	private IoSession iosession;
 	
-
+	private RouterManagerImpl routerManager;
+	
 	/**
+	 * 
 	 * @param internalStreamId
-	 * @param name
+	 * @param c2sName
 	 * @param iosession
+	 * @param routerManager
 	 */
-	public C2sSessionImpl(String internalStreamId, String name, IoSession iosession)
+	public C2sSessionImpl(String internalStreamId, String c2sName, IoSession iosession, RouterManagerImpl routerManager)
 	{
 		this.internalStreamId = internalStreamId;
-		c2sName = name;
+		this.c2sName = c2sName;
 		this.iosession = iosession;
+		this.routerManager = routerManager;
+		routerManager.addC2sSession(c2sName, this);
 	}
 
 	@Override
 	public void close()
 	{
+		routerManager.removeC2sSession(c2sName);
 		iosession.close();
 	}
 
@@ -63,6 +69,12 @@ public class C2sSessionImpl extends AbstractPropertied implements C2sSession
 	public void write(XMLStanza stanza)
 	{
 		iosession.write(stanza);
+	}
+
+	@Override
+	public void write(String xml)
+	{
+		iosession.write(xml);
 	}
 
 }

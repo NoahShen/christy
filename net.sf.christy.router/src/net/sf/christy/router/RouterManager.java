@@ -62,6 +62,19 @@ public interface RouterManager extends Propertied
 	public void removeSm(String name);
 
 	/**
+	 * add component such as muc module
+	 * @param subDomain
+	 * @param md5Password
+	 */
+	public void addModule(String subDomain, String md5Password);
+	
+	/**
+	 * 
+	 * @param subDomain
+	 */
+	public void removeModule(String subDomain);
+	
+	/**
 	 * obtain max c2s module number
 	 * @return
 	 */
