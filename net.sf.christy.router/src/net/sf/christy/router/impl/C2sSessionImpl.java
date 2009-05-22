@@ -6,6 +6,7 @@ import org.apache.mina.common.IoSession;
 
 import net.sf.christy.router.C2sSession;
 import net.sf.christy.util.AbstractPropertied;
+import net.sf.christy.xmpp.CloseStream;
 import net.sf.christy.xmpp.XMLStanza;
 
 public class C2sSessionImpl extends AbstractPropertied implements C2sSession
@@ -37,8 +38,10 @@ public class C2sSessionImpl extends AbstractPropertied implements C2sSession
 	@Override
 	public void close()
 	{
-		routerManager.removeC2sSession(c2sName);
+		iosession.write(new CloseStream());
 		iosession.close();
+		routerManager.removeC2sSession(c2sName);
+		
 	}
 
 	@Override

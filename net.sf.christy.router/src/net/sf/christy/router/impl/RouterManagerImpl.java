@@ -51,119 +51,148 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	
 	private boolean started = false;
 	
-	private int c2sPort = 5333;
+	private int c2sPort = 8787;
+	
+	private int s2sPort = 8788;
+	
+	private int smPort = 8789;
+	
+	private int modulePort = 8790;
+	
+	private int c2sLimit = 0;
+
+	private int smLimit = 0;
+	
+	private String domain;
 	
 	private Map<String, C2sSessionImpl> c2sSessions = new ConcurrentHashMap<String, C2sSessionImpl>();
 	
-	private Map<String, String> c2sList = new ConcurrentHashMap<String, String>();
+	private Map<String, String> registeredC2sModules = new ConcurrentHashMap<String, String>();
+
+	private Map<String, String> registeredSmModules = new ConcurrentHashMap<String, String>();
+
+	private Map<String, String> registeredS2sModules = new ConcurrentHashMap<String, String>();
+	
+	private Map<String, String> registeredOtherModules = new ConcurrentHashMap<String, String>();
+
+	@Override
+	public void registerC2sModule(String name, String md5Password)
+	{
+		registeredC2sModules.put(name, md5Password);
+	}
+
+	@Override
+	public void registerSmModule(String name, String md5Password)
+	{
+		registeredSmModules.put(name, md5Password);
+	}
+
+	@Override
+	public void registerOtherModule(String subDomain, String md5Password)
+	{
+		registeredOtherModules.put(subDomain, md5Password);
+	}
+
+	@Override
+	public void unregisterOtherModule(String subDomain)
+	{
+		registeredOtherModules.remove(subDomain);
+	}
 	
 	@Override
-	public void addC2s(String name, String md5Password)
+	public void registerS2sModule(String name, String md5Password)
 	{
-		c2sList.put(name, md5Password);
+		registeredS2sModules.put(name, md5Password);
 	}
-
+	
 	@Override
-	public void addSm(String name, String md5Password)
+	public void unregisterS2sModule(String name)
 	{
-		// TODO Auto-generated method stub
-
+		registeredS2sModules.remove(name);
 	}
-
-	@Override
-	public void addModule(String subDomain, String md5Password)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void removeModule(String subDomain)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
+	
 	@Override
 	public void exit()
 	{
-		// TODO Auto-generated method stub
-
+		stop();
+		System.exit(0);
 	}
 
 	@Override
 	public int getC2sLimit()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return c2sLimit;
 	}
 
 	@Override
 	public String getDomain()
 	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getName()
-	{
-		// TODO Auto-generated method stub
-		return null;
+		return domain;
 	}
 
 	@Override
 	public int getSmLimit()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return smLimit;
 	}
 
 	@Override
-	public void removeC2s(String name)
+	public void unregisterC2sModule(String name)
 	{
-		c2sList.remove(name);
+		registeredC2sModules.remove(name);
 	}
 
 	@Override
-	public void removeSm(String name)
+	public void unregisterSmModule(String name)
 	{
-		// TODO Auto-generated method stub
-
+		registeredSmModules.remove(name);
 	}
 
 	@Override
-	public void setC2sLimit(int limit)
+	public void setC2sLimit(int c2sLimit)
 	{
-		// TODO Auto-generated method stub
-
+		if (c2sLimit < 0)
+		{
+			throw new IllegalArgumentException("c2sLimit must be > 0");
+		}
+		this.c2sLimit = c2sLimit;
 	}
 
 	@Override
 	public void setDomain(String domain)
 	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setName(String name)
-	{
-		// TODO Auto-generated method stub
-
+		this.domain = domain;
 	}
 
 	@Override
 	public void setSmLimit(int smLimit)
 	{
-		// TODO Auto-generated method stub
-
+		if (smLimit < 0)
+		{
+			throw new IllegalArgumentException("smLimit must be > 0");
+		}
+		this.smLimit = smLimit;
 	}
 
 	@Override
 	public void start()
 	{
 		logger.info("starting...");
+		
+		if (getDomain() == null || getDomain().isEmpty())
+		{
+			throw new IllegalStateException("domain has not been set");
+		}
+		
+		if (registeredC2sModules.isEmpty())
+		{
+			throw new IllegalStateException("c2s has not been registered");
+		}
+		
+		if (registeredSmModules.isEmpty())
+		{
+			throw new IllegalStateException("sm has not been registered");
+		}
 		
 		c2sAcceptor = new SocketAcceptor();
 		IoAcceptorConfig config = new SocketAcceptorConfig();
@@ -190,8 +219,15 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	@Override
 	public void stop()
 	{
-		// TODO Auto-generated method stub
-
+		for (C2sSessionImpl c2sSession : c2sSessions.values())
+		{
+			c2sSession.close();
+		}
+		c2sSessions.clear();
+		if (c2sAcceptor != null)
+		{
+			c2sAcceptor.unbindAll();
+		}
 		started = false;
 	}
 
@@ -210,8 +246,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	@Override
 	public int getSmPort()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return smPort;
 	}
 
 	@Override
@@ -223,22 +258,31 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	@Override
 	public void setSmPort(int smPort)
 	{
-		// TODO Auto-generated method stub
-		
+		this.smPort = smPort;
 	}
 
 	@Override
 	public int getS2sPort()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return s2sPort;
 	}
 
 	@Override
-	public void setS2sPort(int port)
+	public void setS2sPort(int s2sPort)
 	{
-		// TODO Auto-generated method stub
-		
+		this.s2sPort = s2sPort;
+	}
+	
+	@Override
+	public int getModulePort()
+	{
+		return modulePort;
+	}
+
+	@Override
+	public void setModulePort(int modulePort)
+	{
+		this.modulePort = modulePort;
 	}
 	
 	void addC2sSession(String c2sname, C2sSessionImpl c2sSession)
@@ -259,17 +303,13 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
-			// TODO Auto-generated method stub
 			logger.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
 			cause.printStackTrace();
-			
-			
 		}
 
 		@Override
 		public void messageReceived(IoSession session, Object message) throws Exception
 		{
-			// TODO Auto-generated method stub
 			logger.debug("session" + session + ": messageReceived:\n" + message);
 			
 			String xml = message.toString();
@@ -324,7 +364,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				String c2sname = parser.getAttributeValue("", "c2sname");
 				String password = parser.getAttributeValue("", "password");
 				
-				if (!c2sList.containsKey(c2sname))
+				if (!registeredC2sModules.containsKey(c2sname))
 				{
 					StreamError error = new StreamError();
 					error.addApplicationCondition("unregistered", C2SROUTER_AUTH_NAMESPACE);
@@ -334,7 +374,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 					return;
 				}
 				
-				String registeredPwd = c2sList.get(c2sname);
+				String registeredPwd = registeredC2sModules.get(c2sname);
 				if (password.equals(registeredPwd))
 				{
 					C2sSessionImpl c2sSession = 
@@ -418,7 +458,6 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void sessionClosed(IoSession session) throws Exception
 		{
-			// TODO Auto-generated method stub
 			logger.debug("session" + session + ": sessionClosed");
 		}
 
@@ -431,15 +470,20 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void sessionIdle(IoSession session, IdleStatus status) throws Exception
 		{
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void sessionOpened(IoSession session) throws Exception
 		{
 			logger.debug("session" + session + ": sessionOpened");
+			
+			if (getC2sLimit() != 0 && c2sSessions.size() == getC2sLimit())
+			{
+				session.close();
+				logger.info("closing session" + session + ": c2sSession limit reached");
+			}
 		}
 		
 	}
+
 }
