@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
+import net.sf.christy.mina.XMPPCodecFactory;
 import net.sf.christy.router.RouterManager;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.CloseStream;
@@ -181,16 +182,19 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		
 		if (getDomain() == null || getDomain().isEmpty())
 		{
+			logger.error("domain has not been set");
 			throw new IllegalStateException("domain has not been set");
 		}
 		
 		if (registeredC2sModules.isEmpty())
 		{
+			logger.error("c2s has not been registered");
 			throw new IllegalStateException("c2s has not been registered");
 		}
 		
 		if (registeredSmModules.isEmpty())
 		{
+			logger.error("sm has not been registered");
 			throw new IllegalStateException("sm has not been registered");
 		}
 		

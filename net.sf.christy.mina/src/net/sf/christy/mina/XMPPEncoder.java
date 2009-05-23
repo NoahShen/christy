@@ -1,4 +1,4 @@
-package net.sf.christy.router.impl;
+package net.sf.christy.mina;
 
 import net.sf.christy.xmpp.XMLStanza;
 

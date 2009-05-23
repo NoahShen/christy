@@ -31,9 +31,9 @@ public interface C2SManager extends Propertied
 	
 	/**
 	 * set max client connection number. 0 stands for no limit
-	 * @param maxClientLimit
+	 * @param clientLimit
 	 */
-	public void setClientLimit(int maxClientLimit);
+	public void setClientLimit(int clientLimit);
 	
 	/**
 	 * 
@@ -63,13 +63,13 @@ public interface C2SManager extends Propertied
 	 * 
 	 * @return
 	 */
-	public String getRouterIP();
+	public String getRouterIp();
 	
 	/**
 	 * 
 	 * @param routerIP
 	 */
-	public void setRouterIP(String routerIP);
+	public void setRouterIp(String routerIP);
 	
 	/**
 	 * 
