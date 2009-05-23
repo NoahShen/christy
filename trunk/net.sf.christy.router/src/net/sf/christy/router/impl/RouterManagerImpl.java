@@ -178,7 +178,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	@Override
 	public void start()
 	{
-		logger.info("starting...");
+		logger.info("router starting...");
 		
 		if (getDomain() == null || getDomain().isEmpty())
 		{
@@ -217,7 +217,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		}
 		
 		started = true;
-		logger.info("successful start");
+		logger.info("router successful start");
 	}
 
 	@Override
@@ -412,10 +412,22 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		{
 			String xmlns = parser.getAttributeValue("", "xmlns");
 			String to = parser.getAttributeValue("", "to");
+			String domain = parser.getAttributeValue("", "domain");
+
 			
 			if (!xmlns.equals(C2SROUTER_NAMESPACE))
 			{
 				StreamError error = new StreamError(StreamError.Condition.invalid_namespace);
+				session.write(error);
+				session.write(new CloseStream());
+				session.close();
+				return;
+			}
+			
+			if (!getDomain().equals(domain))
+			{
+				StreamError error = new StreamError();
+				error.addApplicationCondition("domain-error", C2SROUTER_NAMESPACE);
 				session.write(error);
 				session.write(new CloseStream());
 				session.close();
