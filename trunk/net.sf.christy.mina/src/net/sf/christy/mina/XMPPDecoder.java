@@ -1,4 +1,4 @@
-package net.sf.christy.router.impl;
+package net.sf.christy.mina;
 
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.IoSession;

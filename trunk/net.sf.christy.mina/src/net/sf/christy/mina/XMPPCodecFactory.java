@@ -1,4 +1,4 @@
-package net.sf.christy.router.impl;
+package net.sf.christy.mina;
 
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
 import org.apache.mina.filter.codec.ProtocolDecoder;
