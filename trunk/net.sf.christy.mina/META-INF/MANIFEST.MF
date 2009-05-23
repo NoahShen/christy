@@ -9,7 +9,8 @@ Bundle-ClassPath: bin/,
 Bundle-Activator: net.sf.christy.mina.Activator
 Bundle-Vendor: Noah
 Import-Package: net.sf.christy.xmpp,
- org.osgi.framework;version="1.3.0"
+ org.osgi.framework;version="1.3.0",
+ org.slf4j
 Eclipse-LazyStart: true
 Export-Package: net.sf.christy.mina,
  org.apache.mina.common,
