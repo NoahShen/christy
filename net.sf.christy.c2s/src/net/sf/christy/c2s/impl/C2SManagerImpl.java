@@ -108,48 +108,84 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 	@Override
 	public void setClientLimit(int clientLimit)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("c2s has started");
+		}
+		if (clientLimit < 0)
+		{
+			throw new IllegalArgumentException("clientLimit must be > 0");
+		}
 		this.clientLimit = clientLimit;
 	}
 
 	@Override
 	public void setDomain(String domain)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("c2s has started");
+		}
 		this.domain = domain;
 	}
 
 	@Override
 	public void setHostName(String hostName)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("c2s has started");
+		}
 		this.hostName = hostName;
 	}
 
 	@Override
 	public void setName(String name)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("c2s has started");
+		}
 		this.name = name;
 	}
 
 	@Override
 	public void setRouterIp(String routerIp)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("c2s has started");
+		}
 		this.routerIp = routerIp;
 	}
 
 	@Override
 	public void setRouterPassword(String routerPassword)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("c2s has started");
+		}
 		this.routerPassword = routerPassword;
 	}
 
 	@Override
 	public void setRouterPort(int routerPort)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("c2s has started");
+		}
 		this.routerPort = routerPort;
 	}
 
 	@Override
 	public void start()
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("c2s has started");
+		}
 		
 		logger.info("c2s starting...");
 		
