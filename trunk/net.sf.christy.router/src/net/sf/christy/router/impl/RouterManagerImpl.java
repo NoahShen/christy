@@ -226,7 +226,6 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		{
 			throw new IllegalStateException("router has started");
 		}
-		logger.info("router starting...");
 		
 		if (getDomain() == null || getDomain().isEmpty())
 		{
@@ -246,6 +245,9 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			throw new IllegalStateException("sm has not been registered");
 		}
 		
+		
+		logger.info("router starting...");
+		
 		c2sAcceptor = new SocketAcceptor();
 		IoAcceptorConfig config = new SocketAcceptorConfig();
 		DefaultIoFilterChainBuilder chain = config.getFilterChain();
@@ -262,6 +264,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		{
 			e.printStackTrace();
 			logger.error("start failure:" + e.getMessage());
+			return;
 		}
 		
 		started = true;
@@ -410,8 +413,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			catch (Exception e)
 			{
 				// e.printStackTrace();
-				logger.debug("pare xml error:[session" + session + "]:" + e.getMessage());
-				return;
+				throw e;
 			}
 
 			String elementName = parser.getName();
