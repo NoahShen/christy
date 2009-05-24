@@ -79,41 +79,65 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	@Override
 	public void registerC2sModule(String name, String md5Password)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		registeredC2sModules.put(name, md5Password);
 	}
 
 	@Override
 	public void registerSmModule(String name, String md5Password)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		registeredSmModules.put(name, md5Password);
 	}
 
 	@Override
 	public void registerOtherModule(String subDomain, String md5Password)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		registeredOtherModules.put(subDomain, md5Password);
 	}
 
 	@Override
 	public void unregisterOtherModule(String subDomain)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		registeredOtherModules.remove(subDomain);
 	}
 	
 	@Override
 	public void registerS2sModule(String name, String md5Password)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		registeredS2sModules.put(name, md5Password);
 	}
 	
 	@Override
 	public void unregisterS2sModule(String name)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		registeredS2sModules.remove(name);
 	}
 	
 	@Override
-	public void exit()
+	public synchronized void exit()
 	{
 		stop();
 		System.exit(0);
@@ -140,18 +164,30 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	@Override
 	public void unregisterC2sModule(String name)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		registeredC2sModules.remove(name);
 	}
 
 	@Override
 	public void unregisterSmModule(String name)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		registeredSmModules.remove(name);
 	}
 
 	@Override
 	public void setC2sLimit(int c2sLimit)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		if (c2sLimit < 0)
 		{
 			throw new IllegalArgumentException("c2sLimit must be > 0");
@@ -162,12 +198,20 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	@Override
 	public void setDomain(String domain)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		this.domain = domain;
 	}
 
 	@Override
 	public void setSmLimit(int smLimit)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		if (smLimit < 0)
 		{
 			throw new IllegalArgumentException("smLimit must be > 0");
@@ -176,8 +220,12 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	}
 
 	@Override
-	public void start()
+	public synchronized void start()
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		logger.info("router starting...");
 		
 		if (getDomain() == null || getDomain().isEmpty())
@@ -221,8 +269,13 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	}
 
 	@Override
-	public void stop()
+	public synchronized void stop()
 	{
+		if (!isStarted())
+		{
+			return;
+		}
+		
 		for (C2sSessionImpl c2sSession : c2sSessions.values())
 		{
 			c2sSession.close();
@@ -256,12 +309,20 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	@Override
 	public void setC2sPort(int c2sPort)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		this.c2sPort = c2sPort;
 	}
 
 	@Override
 	public void setSmPort(int smPort)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		this.smPort = smPort;
 	}
 
@@ -274,6 +335,10 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	@Override
 	public void setS2sPort(int s2sPort)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		this.s2sPort = s2sPort;
 	}
 	
@@ -286,6 +351,10 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	@Override
 	public void setModulePort(int modulePort)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("router has started");
+		}
 		this.modulePort = modulePort;
 	}
 	
@@ -367,6 +436,15 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			{
 				String c2sname = parser.getAttributeValue("", "c2sname");
 				String password = parser.getAttributeValue("", "password");
+				
+				if (c2sSessions.containsKey(c2sname))
+				{
+					StreamError error = new StreamError(StreamError.Condition.conflict);
+					session.write(error);
+					session.write(new CloseStream());
+					session.close();
+					return;
+				}
 				
 				if (!registeredC2sModules.containsKey(c2sname))
 				{
@@ -495,6 +573,10 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			
 			if (getC2sLimit() != 0 && c2sSessions.size() == getC2sLimit())
 			{
+				StreamError error = new StreamError(StreamError.Condition.internal_server_error);
+				error.addApplicationCondition("reach-c2s-limit", C2SROUTER_NAMESPACE);
+				session.write(error);
+				session.write(new CloseStream());
 				session.close();
 				logger.info("closing session" + session + ": c2sSession limit reached");
 			}
