@@ -3,7 +3,11 @@ package net.sf.christy.c2s.impl;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.mina.common.ConnectFuture;
 import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoHandler;
 import org.apache.mina.common.IoSession;
@@ -44,12 +48,16 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 	
 	private int routerPort = 8787;
 	
+	private int xmppClientPort = 5222;
+	
 	private boolean started = false;
+
+	private boolean routerConnected = false;
 	
 	private SocketConnector routerConnector;
-	
+
 	private IoSession routerSession;
-	
+
 	@Override
 	public void exit()
 	{
@@ -105,6 +113,12 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		return started;
 	}
 
+	@Override
+	public boolean isRouterConnected()
+	{
+		return routerConnected;
+	}
+	
 	@Override
 	public void setClientLimit(int clientLimit)
 	{
@@ -179,6 +193,26 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		this.routerPort = routerPort;
 	}
 
+	/**
+	 * @return the xmppClientPort
+	 */
+	public int getXmppClientPort()
+	{
+		return xmppClientPort;
+	}
+
+	/**
+	 * @param xmppClientPort the xmppClientPort to set
+	 */
+	public void setXmppClientPort(int xmppClientPort)
+	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("c2s has started");
+		}
+		this.xmppClientPort = xmppClientPort;
+	}
+
 	@Override
 	public void start()
 	{
@@ -213,7 +247,21 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			throw new IllegalStateException("routerPassword has not been set");
 		}
 		
+		connect2Router();
+		startService();
 		
+		started = true;
+		logger.info("c2s started");
+	}
+
+	private void startService()
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void connect2Router()
+	{
 		SocketConnectorConfig socketConnectorConfig = new SocketConnectorConfig();
 		socketConnectorConfig.getFilterChain().addLast("xmppCodec", new ProtocolCodecFilter(new XMPPCodecFactory()));
 		socketConnectorConfig.setThreadModel(ThreadModel.MANUAL);
@@ -222,24 +270,22 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		InetSocketAddress address =new InetSocketAddress(getRouterIp(), getRouterPort());
 		
 		routerConnector.connect(address, new RouterHandler(), socketConnectorConfig);
-		
-		logger.info("c2s successful start");
 	}
 
 	@Override
 	public void stop()
 	{
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	private class RouterHandler implements IoHandler
 	{
-
 		@Override
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
 			logger.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
+			cause.printStackTrace();
 		}
 
 		@Override
@@ -264,8 +310,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			catch (Exception e)
 			{
 				// e.printStackTrace();
-				logger.debug("pare xml error:[session" + session + "]:" + e.getMessage());
-				return;
+				throw e;
 			}
 
 			String elementName = parser.getName();
@@ -276,7 +321,8 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			else if ("success".equals(elementName))
 			{
 				routerSession = session;
-				logger.info("connect to router successful");
+				routerConnected = true;
+				logger.info("router auth successful");
 			}
 			else if ("failed".equals(elementName))
 			{
@@ -304,6 +350,9 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				return;
 			}
 			session.setAttribute("streamId", id);
+			
+			logger.debug("open stream successful");
+			
 			session.write("<internal xmlns='" + C2SROUTER_AUTH_NAMESPACE + "'" +
 						" c2sname='" + getName() + "' password='" + getRouterPassword() + "'/>");
 		}

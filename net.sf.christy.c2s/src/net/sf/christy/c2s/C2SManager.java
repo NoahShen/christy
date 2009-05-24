@@ -114,4 +114,10 @@ public interface C2SManager extends Propertied
 	 * 
 	 */
 	public boolean isStarted();
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isRouterConnected();
 }
