@@ -1,18 +1,22 @@
 package net.sf.christy.c2s.impl;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.mina.common.ConnectFuture;
+import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.common.IdleStatus;
+import org.apache.mina.common.IoAcceptorConfig;
 import org.apache.mina.common.IoHandler;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.common.ThreadModel;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.transport.socket.nio.SocketAcceptor;
+import org.apache.mina.transport.socket.nio.SocketAcceptorConfig;
 import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
 import org.slf4j.Logger;
@@ -23,6 +27,9 @@ import org.xmlpull.v1.XmlPullParser;
 import net.sf.christy.c2s.C2SManager;
 import net.sf.christy.mina.XMPPCodecFactory;
 import net.sf.christy.util.AbstractPropertied;
+import net.sf.christy.xmpp.CloseStream;
+import net.sf.christy.xmpp.Stream;
+import net.sf.christy.xmpp.StreamError;
 import net.sf.christy.xmpp.XMLStanza;
 
 public class C2SManagerImpl extends AbstractPropertied implements C2SManager
@@ -33,6 +40,8 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 	public static final String C2SROUTER_AUTH_NAMESPACE = "christy:internal:c2s2router:auth";
 	
 	private final Logger logger = LoggerFactory.getLogger(C2SManagerImpl.class);
+	
+	private Map<String, ClientSessionImpl> clientSessions = new ConcurrentHashMap<String, ClientSessionImpl>();
 	
 	private int clientLimit = 0;
 	
@@ -57,6 +66,8 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 	private SocketConnector routerConnector;
 
 	private IoSession routerSession;
+
+	private SocketAcceptor c2sAcceptor;
 
 	@Override
 	public void exit()
@@ -247,36 +258,88 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			throw new IllegalStateException("routerPassword has not been set");
 		}
 		
-		connect2Router();
-		startService();
+		try
+		{
+			connect2Router();
+			startService();
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			started = false;
+			logger.error("c2s starting failure:" + e.getMessage());
+			exit();
+			return;
+		}
 		
 		started = true;
 		logger.info("c2s started");
 	}
 
-	private void startService()
+	private void startService() throws IOException
 	{
-		// TODO Auto-generated method stub
+		logger.info("starting c2sAcceptor");
 		
+		SocketConnectorConfig socketConnectorConfig = new SocketConnectorConfig();
+		socketConnectorConfig.getFilterChain().addLast("xmppCodec", new ProtocolCodecFilter(new XMPPCodecFactory()));
+		socketConnectorConfig.setThreadModel(ThreadModel.MANUAL);
+		
+		c2sAcceptor = new SocketAcceptor();
+		IoAcceptorConfig config = new SocketAcceptorConfig();
+		DefaultIoFilterChainBuilder chain = config.getFilterChain();
+
+		chain.addFirst("xmppCodec", new ProtocolCodecFilter(new XMPPCodecFactory()));
+		
+		int xmppClientPort = getXmppClientPort();
+		
+		c2sAcceptor.bind(new InetSocketAddress(xmppClientPort), new C2sHandler(), config);
+		
+		logger.info("c2sAcceptor start successful");
 	}
 
-	private void connect2Router()
+	private void connect2Router() throws Exception
 	{
+		logger.info("connecting to router");
+		
 		SocketConnectorConfig socketConnectorConfig = new SocketConnectorConfig();
+		socketConnectorConfig.setConnectTimeout(30);
 		socketConnectorConfig.getFilterChain().addLast("xmppCodec", new ProtocolCodecFilter(new XMPPCodecFactory()));
 		socketConnectorConfig.setThreadModel(ThreadModel.MANUAL);
 		
 		routerConnector = new SocketConnector(Runtime.getRuntime().availableProcessors() + 1, Executors.newCachedThreadPool());
 		InetSocketAddress address =new InetSocketAddress(getRouterIp(), getRouterPort());
 		
-		routerConnector.connect(address, new RouterHandler(), socketConnectorConfig);
+		ConnectFuture future = routerConnector.connect(address, new RouterHandler(), socketConnectorConfig);
+		if (!future.join(30 * 1000) || !future.isConnected())
+		{
+			throw new Exception("connecting to router failure");
+		}
+		
+		logger.info("connecting to router successful");
 	}
 
 	@Override
 	public void stop()
 	{
-		// TODO Auto-generated method stub
+		if (!isStarted())
+		{
+			return;
+		}
 		
+		if (routerSession != null)
+		{
+			routerSession.close();
+		}
+		
+		routerConnector = null;
+		
+		if (c2sAcceptor != null)
+		{
+			c2sAcceptor.unbindAll();
+			c2sAcceptor = null;
+		}
+		started = false;
 	}
 
 	private class RouterHandler implements IoHandler
@@ -403,5 +466,147 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 						" domain='" + getDomain() + "'>");
 		}
 		
+	}
+	
+	private class C2sHandler implements IoHandler
+	{
+
+		@Override
+		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void messageReceived(IoSession session, Object message) throws Exception
+		{
+			// TODO Auto-generated method stub
+			logger.debug("session" + session + ": messageReceived:\n" + message);
+			String xml = message.toString();
+			if (xml.startsWith("<?xml"))
+			{
+				return;
+			}
+			
+			if ("</stream:stream>".equals(xml))
+			{
+				ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
+				if (clientSession == null)
+				{
+					session.close();
+				}
+				else
+				{
+					clientSession.close();
+				}
+				return;
+			}
+			
+			StringReader strReader = new StringReader(xml);
+			XmlPullParser parser = new MXParser();
+			parser.setInput(strReader);
+
+			try
+			{
+				parser.next();
+			}
+			catch (Exception e)
+			{
+				// e.printStackTrace();
+				throw e;
+			}
+
+			String elementName = parser.getName();
+			if ("stream".equals(elementName) || "stream:stream".equals(elementName))
+			{
+				ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
+				if (clientSession == null)
+				{
+					handleOpenStream(parser, session);
+				}
+			}
+			
+		}
+
+		private void handleOpenStream(XmlPullParser parser, IoSession session)
+		{
+			String xmlns = parser.getAttributeValue("", "xmlns");
+			String to = parser.getAttributeValue("", "to");
+			String version = parser.getAttributeValue("", "version");
+
+			
+			if (!xmlns.equals(Stream.JABBER_CLIENT_NAMESPACE))
+			{
+				StreamError error = new StreamError(StreamError.Condition.invalid_namespace);
+				session.write(error);
+				session.write(new CloseStream());
+				session.close();
+				return;
+			}
+			
+			if (!getDomain().equals(to))
+			{
+				StreamError error = new StreamError(StreamError.Condition.host_gone);
+				session.write(error);
+				session.write(new CloseStream());
+				session.close();
+				return;
+			}
+			
+			if (!"1.0".equals(version))
+			{
+				StreamError error = new StreamError(StreamError.Condition.unsupported_version);
+				session.write(error);
+				session.write(new CloseStream());
+				session.close();
+				return;
+			}
+				
+//			String streamId =  "c2s_internalstream_" + nextId();
+//			session.setAttribute("streamId", streamId);
+//			Stream responseStream = new Stream();
+//			String responseStream = "<stream:stream" +
+//								" xmlns='"+ JABBER_CLIENT_NAMESPACE + "'" +
+//								" xmlns:stream='http://etherx.jabber.org/streams'" +
+//								" from='router'" +
+//								" id='" + streamId + "'>";
+//			session.write(responseStream);
+		}
+
+		@Override
+		public void messageSent(IoSession session, Object message) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void sessionClosed(IoSession session) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void sessionCreated(IoSession session) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void sessionIdle(IoSession session, IdleStatus status) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void sessionOpened(IoSession session) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
 	}
 }

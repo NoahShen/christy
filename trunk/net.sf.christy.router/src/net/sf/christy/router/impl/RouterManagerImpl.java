@@ -400,6 +400,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				{
 					c2sSession.close();
 				}
+				return;
 			}
 			
 			StringReader strReader = new StringReader(xml);
