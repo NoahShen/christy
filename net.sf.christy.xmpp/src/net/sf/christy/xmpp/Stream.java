@@ -11,7 +11,11 @@ public class Stream extends AbstractXMLStanza
 	 * 
 	 */
 	private static final long serialVersionUID = -7016807001323179800L;
-
+	
+	public static final String JABBER_CLIENT_NAMESPACE = "jabber:client";
+	
+	public static final String STREAM_NAMESPACE = "http://etherx.jabber.org/streams";
+	
 	private JID to;
 
 	private JID from;
@@ -111,7 +115,7 @@ public class Stream extends AbstractXMLStanza
 		{
 			buf.append(" xml:lang=\"").append(getLang()).append("\"");
 		}
-		buf.append(" xmlns:stream=\"http://etherx.jabber.org/streams\" xmlns=\"jabber:client\"");
+		buf.append(" xmlns:stream=\"" + STREAM_NAMESPACE + "\" xmlns=\"" + JABBER_CLIENT_NAMESPACE + "\"");
 		buf.append(">");
 		return buf.toString();
 	}
