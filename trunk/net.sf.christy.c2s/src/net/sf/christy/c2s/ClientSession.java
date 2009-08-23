@@ -3,6 +3,7 @@ package net.sf.christy.c2s;
 import java.net.SocketAddress;
 
 import net.sf.christy.util.Propertied;
+import net.sf.christy.xmpp.XMLStanza;
 
 /**
  * @author noah
@@ -27,6 +28,12 @@ public interface ClientSession extends Propertied
 	 * @param stanza
 	 */
 	public void write(String stanza);
+	
+	/**
+	 * 
+	 * @param stanza
+	 */
+	public void write(XMLStanza stanza);
 	
 	/**
 	 * 

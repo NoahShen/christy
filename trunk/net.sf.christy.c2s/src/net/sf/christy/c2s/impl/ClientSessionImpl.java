@@ -10,6 +10,7 @@ import org.apache.mina.common.IoSession;
 
 import net.sf.christy.c2s.ClientSession;
 import net.sf.christy.util.AbstractPropertied;
+import net.sf.christy.xmpp.XMLStanza;
 
 /**
  * @author noah
@@ -46,6 +47,7 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 		this.iosession = iosession;
 		this.streamId = streamId;
 		this.clientSessions = clientSessions;
+		clientSessions.put(streamId, this);
 	}
 
 	/* (non-Javadoc)
@@ -149,6 +151,15 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 	 */
 	@Override
 	public void write(String stanza)
+	{
+		iosession.write(stanza);
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.sf.christy.c2s.ClientSession#write(java.lang.String)
+	 */
+	@Override
+	public void write(XMLStanza stanza)
 	{
 		iosession.write(stanza);
 	}

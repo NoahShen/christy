@@ -27,13 +27,24 @@ import org.xmlpull.v1.XmlPullParser;
 import net.sf.christy.c2s.C2SManager;
 import net.sf.christy.mina.XMPPCodecFactory;
 import net.sf.christy.util.AbstractPropertied;
+import net.sf.christy.util.StringUtils;
 import net.sf.christy.xmpp.CloseStream;
+import net.sf.christy.xmpp.JID;
 import net.sf.christy.xmpp.Stream;
 import net.sf.christy.xmpp.StreamError;
 import net.sf.christy.xmpp.XMLStanza;
 
 public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 {
+
+	private static String prefix = StringUtils.randomString(10) + "-";
+
+	private static long id = 0;
+
+	public static synchronized String nextStreamId()
+	{
+		return prefix + Long.toString(id++);
+	}
 	
 	public static final String C2SROUTER_NAMESPACE = "christy:internal:c2s2router";
 	
@@ -470,7 +481,6 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 	
 	private class C2sHandler implements IoHandler
 	{
-
 		@Override
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
@@ -562,16 +572,19 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				session.close();
 				return;
 			}
-				
-//			String streamId =  "c2s_internalstream_" + nextId();
-//			session.setAttribute("streamId", streamId);
-//			Stream responseStream = new Stream();
-//			String responseStream = "<stream:stream" +
-//								" xmlns='"+ JABBER_CLIENT_NAMESPACE + "'" +
-//								" xmlns:stream='http://etherx.jabber.org/streams'" +
-//								" from='router'" +
-//								" id='" + streamId + "'>";
-//			session.write(responseStream);
+			
+			
+			String streamId = nextStreamId();
+			session.setAttribute("streamId", streamId);
+			ClientSessionImpl clientSession = new ClientSessionImpl(session, streamId, clientSessions);
+			
+			Stream responseStream = new Stream();
+			responseStream.setFrom(new JID(getDomain()));
+			responseStream.setStanzaID(streamId);
+			
+			clientSession.write(responseStream);
+			
+			
 		}
 
 		@Override
