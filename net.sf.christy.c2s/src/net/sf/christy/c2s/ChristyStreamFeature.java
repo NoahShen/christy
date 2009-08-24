@@ -1,6 +1,6 @@
 package net.sf.christy.c2s;
 
-public class StreamFeature
+public class ChristyStreamFeature
 {
 	/**
 	 * 
@@ -13,7 +13,7 @@ public class StreamFeature
 
 	private boolean required = false;
 	
-	private SupportedFeatureType type;
+	private SupportedType type;
 
 	/**
 	 * 
@@ -21,7 +21,7 @@ public class StreamFeature
 	 * @param namespace
 	 * @param type
 	 */
-	public StreamFeature(String elementName, String namespace, SupportedFeatureType type)
+	public ChristyStreamFeature(String elementName, String namespace, SupportedType type)
 	{
 		this.elementName = elementName;
 		this.namespace = namespace;
@@ -61,7 +61,7 @@ public class StreamFeature
 	/**
 	 * @return the type
 	 */
-	public SupportedFeatureType getType()
+	public SupportedType getType()
 	{
 		return type;
 	}
@@ -69,7 +69,7 @@ public class StreamFeature
 	/**
 	 * @param type the type to set
 	 */
-	public void setType(SupportedFeatureType type)
+	public void setType(SupportedType type)
 	{
 		this.type = type;
 	}
@@ -77,7 +77,7 @@ public class StreamFeature
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
-		StreamFeature feature = (StreamFeature) super.clone();
+		ChristyStreamFeature feature = (ChristyStreamFeature) super.clone();
 		feature.elementName = this.elementName;
 		feature.namespace = this.namespace;
 		feature.required = this.required;
@@ -89,7 +89,7 @@ public class StreamFeature
 	 * @author noah
 	 *
 	 */
-	public enum SupportedFeatureType
+	public enum SupportedType
 	{
 		afterConnected,
 		

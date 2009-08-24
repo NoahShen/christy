@@ -11,16 +11,16 @@ import org.apache.mina.filter.codec.ProtocolDecoderOutput;
  * 
  * @author Gaston Dombiak
  */
-public class XMPPDecoder extends CumulativeProtocolDecoder
+public class XmppDecoder extends CumulativeProtocolDecoder
 {
 
 	protected boolean doDecode(IoSession session, ByteBuffer in, ProtocolDecoderOutput out) throws Exception
 	{
 		// Get the XML light parser from the IoSession
-		XMLLightweightParser parser = (XMLLightweightParser) session.getAttribute("XMLLightweightParser");
+		XmlLightweightParser parser = (XmlLightweightParser) session.getAttribute("XMLLightweightParser");
 		if (parser == null)
 		{
-			parser = new XMLLightweightParser("UTF-8");
+			parser = new XmlLightweightParser("UTF-8");
 			session.setAttribute("XMLLightweightParser", parser);
 		}		
 		// Parse as many stanzas as possible from the received data

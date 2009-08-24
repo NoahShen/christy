@@ -346,7 +346,7 @@ public class Message extends Packet
 			buf.append("<thread>").append(thread).append("</thread>");
 		}
 
-		XMPPError error = getError();
+		XmppError error = getError();
 		if (error != null)
 		{
 			buf.append(error.toXML());
@@ -387,7 +387,7 @@ public class Message extends Packet
 	 * Represents a message body, its language and the content of the
 	 * message.
 	 */
-	public static class Body implements XMLStanza
+	public static class Body implements XmlStanza
 	{
 
 		/**
@@ -483,7 +483,7 @@ public class Message extends Packet
 		
 	}
 	
-	public static class Subject implements XMLStanza
+	public static class Subject implements XmlStanza
 	{
 
 		/**

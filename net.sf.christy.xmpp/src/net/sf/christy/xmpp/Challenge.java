@@ -4,7 +4,7 @@ package net.sf.christy.xmpp;
  * @author noah
  *
  */
-public class Challenge implements XMLStanza
+public class Challenge implements XmlStanza
 {
 	/**
 	 * 

@@ -12,7 +12,7 @@ import java.util.Map;
  * @see http://www.ietf.org/rfc/rfc3920.txt
  * @author noah
  */
-public class StreamError implements XMLStanza
+public class StreamError implements XmlStanza
 {
 
 	/**
@@ -477,7 +477,7 @@ public class StreamError implements XMLStanza
 	}
 
 	
-	private class AppCondition implements XMLStanza
+	private class AppCondition implements XmlStanza
 	{
 		/**
 		 * 
@@ -550,7 +550,7 @@ public class StreamError implements XMLStanza
 		
 	}
 	
-	public class ErrorText implements XMLStanza
+	public class ErrorText implements XmlStanza
 	{
 		/**
 		 * 

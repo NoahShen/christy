@@ -20,12 +20,12 @@ import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
-import net.sf.christy.mina.XMPPCodecFactory;
+import net.sf.christy.mina.XmppCodecFactory;
 import net.sf.christy.router.RouterManager;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.CloseStream;
 import net.sf.christy.xmpp.StreamError;
-import net.sf.christy.xmpp.XMLStanza;
+import net.sf.christy.xmpp.XmlStanza;
 
 /**
  * 
@@ -252,7 +252,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		IoAcceptorConfig config = new SocketAcceptorConfig();
 		DefaultIoFilterChainBuilder chain = config.getFilterChain();
 
-		chain.addFirst("xmppCodec", new ProtocolCodecFilter(new XMPPCodecFactory()));
+		chain.addFirst("xmppCodec", new ProtocolCodecFilter(new XmppCodecFactory()));
 		
 		int c2sPort = getC2sPort();
 		
@@ -544,9 +544,9 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				{
 					s = message.toString();
 				}
-				else if (message instanceof XMLStanza)
+				else if (message instanceof XmlStanza)
 				{
-					s = ((XMLStanza)message).toXML();
+					s = ((XmlStanza)message).toXML();
 				}
 				logger.debug("session" + session + ": messageSent:\n" + s);
 			}

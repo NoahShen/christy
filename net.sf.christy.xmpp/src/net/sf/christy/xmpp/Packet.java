@@ -12,7 +12,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author noah
  *
  */
-public abstract class Packet extends AbstractXMLStanza
+public abstract class Packet extends AbstractXmlStanza
 {
 	
 	private JID to;
@@ -23,7 +23,7 @@ public abstract class Packet extends AbstractXMLStanza
 	
 	private List<PacketExtension> packetExtensions = new CopyOnWriteArrayList<PacketExtension>();
 	
-	private XMPPError error = null;
+	private XmppError error = null;
 	
 	
 	/**
@@ -77,7 +77,7 @@ public abstract class Packet extends AbstractXMLStanza
 	/**
 	 * @return the error
 	 */
-	public XMPPError getError()
+	public XmppError getError()
 	{
 		return error;
 	}
@@ -85,7 +85,7 @@ public abstract class Packet extends AbstractXMLStanza
 	/**
 	 * @param error the error to set
 	 */
-	public void setError(XMPPError error)
+	public void setError(XmppError error)
 	{
 		this.error = error;
 	}
@@ -199,7 +199,7 @@ public abstract class Packet extends AbstractXMLStanza
 		packet.language = this.language;
 		if (this.error != null)
 		{
-			packet.error = (XMPPError) this.error.clone();
+			packet.error = (XmppError) this.error.clone();
 		}
 		
 		packet.packetExtensions = new CopyOnWriteArrayList<PacketExtension>();

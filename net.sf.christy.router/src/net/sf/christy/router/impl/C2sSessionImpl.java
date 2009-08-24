@@ -7,7 +7,7 @@ import org.apache.mina.common.IoSession;
 import net.sf.christy.router.C2sSession;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.CloseStream;
-import net.sf.christy.xmpp.XMLStanza;
+import net.sf.christy.xmpp.XmlStanza;
 
 public class C2sSessionImpl extends AbstractPropertied implements C2sSession
 {
@@ -69,7 +69,7 @@ public class C2sSessionImpl extends AbstractPropertied implements C2sSession
 	}
 
 	@Override
-	public void write(XMLStanza stanza)
+	public void write(XmlStanza stanza)
 	{
 		iosession.write(stanza);
 	}

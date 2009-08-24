@@ -12,7 +12,7 @@ import java.util.Set;
  * @author noah
  * 
  */
-public class StreamFeature implements XMLStanza
+public class StreamFeature implements XmlStanza
 {
 	
 	/**
@@ -178,7 +178,7 @@ public class StreamFeature implements XMLStanza
 	}
 
 
-	public static class Feature implements XMLStanza
+	public static class Feature implements XmlStanza
 	{
 		/**
 		 * 

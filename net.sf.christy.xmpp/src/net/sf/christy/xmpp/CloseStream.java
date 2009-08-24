@@ -7,7 +7,7 @@ package net.sf.christy.xmpp;
  * @author noah
  *
  */
-public class CloseStream implements XMLStanza
+public class CloseStream implements XmlStanza
 {
 
 	/**

@@ -3,7 +3,7 @@ package net.sf.christy.c2s;
 import java.net.SocketAddress;
 
 import net.sf.christy.util.Propertied;
-import net.sf.christy.xmpp.XMLStanza;
+import net.sf.christy.xmpp.XmlStanza;
 
 /**
  * @author noah
@@ -33,20 +33,7 @@ public interface ClientSession extends Propertied
 	 * 
 	 * @param stanza
 	 */
-	public void write(XMLStanza stanza);
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public boolean isConnected();
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public boolean isAuthenticated();
-	
+	public void write(XmlStanza stanza);
 	/**
 	 * 
 	 * @return
@@ -61,20 +48,26 @@ public interface ClientSession extends Propertied
 	
 	/**
 	 * 
-	 * @return
-	 */
-	public boolean isSessionBinded();
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public boolean isResourceBinded();
-	
-	/**
-	 * 
 	 */
 	public void close();
 	
+	/**
+	 * 
+	 * @return
+	 */
+	public Status getStatus();
+	
+	public enum Status
+	{
+		disconnected,
+		
+		connected,
+		
+		authenticated,
+		
+		resourceBinded,
+		
+		sessionBinded
+	}
 	
 }

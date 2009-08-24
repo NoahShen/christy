@@ -17,7 +17,7 @@ import org.apache.mina.common.ByteBuffer;
  * @author Daniele Piras
  * @author Gaston Dombiak
  */
-class XMLLightweightParser
+class XmlLightweightParser
 {
 	// Chars that rappresent CDATA section start
 	protected static char[] CDATA_START = { '<', '!', '[', 'C', 'D', 'A', 'T', 'A', '[' };
@@ -61,7 +61,7 @@ class XMLLightweightParser
 	final String[] sstatus = { "INIT", "", "HEAD", "INSIDE", "PRETAIL", "TAIL", "VERIFY", "INSIDE_PARAM", "INSIDE_CDATA", "OUTSIDE" };
 
 	// Current robot status
-	protected int status = XMLLightweightParser.INIT;
+	protected int status = XmlLightweightParser.INIT;
 
 	// Index to looking for a CDATA section start or end.
 	protected int cdataOffset = 0;
@@ -91,7 +91,7 @@ class XMLLightweightParser
 
 	Charset encoder;
 
-	public XMLLightweightParser(String charset)
+	public XmlLightweightParser(String charset)
 	{
 		encoder = Charset.forName(charset);
 	}
@@ -145,7 +145,7 @@ class XMLLightweightParser
 			msgs.add(msg);
 		}
 		// Move the position into the buffer
-		status = XMLLightweightParser.INIT;
+		status = XmlLightweightParser.INIT;
 		tailCount = 0;
 		cdataOffset = 0;
 		head.setLength(0);
@@ -192,7 +192,7 @@ class XMLLightweightParser
 		{
 			ch = buf[i];
 //			ch = xml.charAt(i);
-			if (status == XMLLightweightParser.TAIL)
+			if (status == XmlLightweightParser.TAIL)
 			{
 				// Looking for the close tag
 				if (depth < 1 && ch == head.charAt(tailCount))
@@ -218,17 +218,17 @@ class XMLLightweightParser
 				else
 				{
 					tailCount = 0;
-					status = XMLLightweightParser.INSIDE;
+					status = XmlLightweightParser.INSIDE;
 				}
 			}
-			else if (status == XMLLightweightParser.PRETAIL)
+			else if (status == XmlLightweightParser.PRETAIL)
 			{
-				if (ch == XMLLightweightParser.CDATA_START[cdataOffset])
+				if (ch == XmlLightweightParser.CDATA_START[cdataOffset])
 				{
 					cdataOffset++;
-					if (cdataOffset == XMLLightweightParser.CDATA_START.length)
+					if (cdataOffset == XmlLightweightParser.CDATA_START.length)
 					{
-						status = XMLLightweightParser.INSIDE_CDATA;
+						status = XmlLightweightParser.INSIDE_CDATA;
 						cdataOffset = 0;
 						continue;
 					}
@@ -236,30 +236,30 @@ class XMLLightweightParser
 				else
 				{
 					cdataOffset = 0;
-					status = XMLLightweightParser.INSIDE;
+					status = XmlLightweightParser.INSIDE;
 				}
 				if (ch == '/')
 				{
-					status = XMLLightweightParser.TAIL;
+					status = XmlLightweightParser.TAIL;
 					depth--;
 				}
 				else if (ch == '!')
 				{
 					// This is a <! (comment) so
 					// ignore it
-					status = XMLLightweightParser.INSIDE;
+					status = XmlLightweightParser.INSIDE;
 				}
 				else
 				{
 					depth++;
 				}
 			}
-			else if (status == XMLLightweightParser.VERIFY_CLOSE_TAG)
+			else if (status == XmlLightweightParser.VERIFY_CLOSE_TAG)
 			{
 				if (ch == '>')
 				{
 					depth--;
-					status = XMLLightweightParser.OUTSIDE;
+					status = XmlLightweightParser.OUTSIDE;
 					if (depth < 1)
 					{
 						// Found a tag in
@@ -274,30 +274,30 @@ class XMLLightweightParser
 				}
 				else if (ch == '<')
 				{
-					status = XMLLightweightParser.PRETAIL;
+					status = XmlLightweightParser.PRETAIL;
 					insideChildrenTag = true;
 				}
 				else
 				{
-					status = XMLLightweightParser.INSIDE;
+					status = XmlLightweightParser.INSIDE;
 				}
 			}
-			else if (status == XMLLightweightParser.INSIDE_PARAM_VALUE)
+			else if (status == XmlLightweightParser.INSIDE_PARAM_VALUE)
 			{
 
 				if (ch == '"')
 				{
-					status = XMLLightweightParser.INSIDE;
+					status = XmlLightweightParser.INSIDE;
 				}
 			}
-			else if (status == XMLLightweightParser.INSIDE_CDATA)
+			else if (status == XmlLightweightParser.INSIDE_CDATA)
 			{
-				if (ch == XMLLightweightParser.CDATA_END[cdataOffset])
+				if (ch == XmlLightweightParser.CDATA_END[cdataOffset])
 				{
 					cdataOffset++;
-					if (cdataOffset == XMLLightweightParser.CDATA_END.length)
+					if (cdataOffset == XmlLightweightParser.CDATA_END.length)
 					{
-						status = XMLLightweightParser.OUTSIDE;
+						status = XmlLightweightParser.OUTSIDE;
 						cdataOffset = 0;
 					}
 				}
@@ -306,14 +306,14 @@ class XMLLightweightParser
 					cdataOffset = 0;
 				}
 			}
-			else if (status == XMLLightweightParser.INSIDE)
+			else if (status == XmlLightweightParser.INSIDE)
 			{
-				if (ch == XMLLightweightParser.CDATA_START[cdataOffset])
+				if (ch == XmlLightweightParser.CDATA_START[cdataOffset])
 				{
 					cdataOffset++;
-					if (cdataOffset == XMLLightweightParser.CDATA_START.length)
+					if (cdataOffset == XmlLightweightParser.CDATA_START.length)
 					{
-						status = XMLLightweightParser.INSIDE_CDATA;
+						status = XmlLightweightParser.INSIDE_CDATA;
 						cdataOffset = 0;
 						continue;
 					}
@@ -321,15 +321,15 @@ class XMLLightweightParser
 				else
 				{
 					cdataOffset = 0;
-					status = XMLLightweightParser.INSIDE;
+					status = XmlLightweightParser.INSIDE;
 				}
 				if (ch == '"')
 				{
-					status = XMLLightweightParser.INSIDE_PARAM_VALUE;
+					status = XmlLightweightParser.INSIDE_PARAM_VALUE;
 				}
 				else if (ch == '>')
 				{
-					status = XMLLightweightParser.OUTSIDE;
+					status = XmlLightweightParser.OUTSIDE;
 					if (insideRootTag
 							&& ("stream:stream>".equals(head.toString())
 									|| ("?xml>".equals(head.toString())) || ("flash:stream>"
@@ -354,10 +354,10 @@ class XMLLightweightParser
 				}
 				else if (ch == '/')
 				{
-					status = XMLLightweightParser.VERIFY_CLOSE_TAG;
+					status = XmlLightweightParser.VERIFY_CLOSE_TAG;
 				}
 			}
-			else if (status == XMLLightweightParser.HEAD)
+			else if (status == XmlLightweightParser.HEAD)
 			{
 				if (ch == ' ' || ch == '>')
 				{
@@ -365,26 +365,26 @@ class XMLLightweightParser
 					// searching </tag>
 					head.append(">");
 					if (ch == '>')
-						status = XMLLightweightParser.OUTSIDE;
+						status = XmlLightweightParser.OUTSIDE;
 					else
-						status = XMLLightweightParser.INSIDE;
+						status = XmlLightweightParser.INSIDE;
 					insideRootTag = true;
 					insideChildrenTag = false;
 					continue;
 				}
 				else if (ch == '/' && head.length() > 0)
 				{
-					status = XMLLightweightParser.VERIFY_CLOSE_TAG;
+					status = XmlLightweightParser.VERIFY_CLOSE_TAG;
 					depth--;
 				}
 				head.append(ch);
 
 			}
-			else if (status == XMLLightweightParser.INIT)
+			else if (status == XmlLightweightParser.INIT)
 			{
 				if (ch == '<')
 				{
-					status = XMLLightweightParser.HEAD;
+					status = XmlLightweightParser.HEAD;
 					depth = 1;
 				}
 				else
@@ -392,11 +392,11 @@ class XMLLightweightParser
 					startLastMsg++;
 				}
 			}
-			else if (status == XMLLightweightParser.OUTSIDE)
+			else if (status == XmlLightweightParser.OUTSIDE)
 			{
 				if (ch == '<')
 				{
-					status = XMLLightweightParser.PRETAIL;
+					status = XmlLightweightParser.PRETAIL;
 					cdataOffset = 1;
 					insideChildrenTag = true;
 				}

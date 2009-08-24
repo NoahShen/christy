@@ -13,7 +13,7 @@ import java.util.Map;
  * 
  * @author Matt Tucker
  */
-public class DNSUtil
+public class DnsUtil
 {
 
 	/**
