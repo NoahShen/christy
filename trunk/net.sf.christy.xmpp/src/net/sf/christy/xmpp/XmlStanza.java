@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @author noah
  *
  */
-public interface XMLStanza extends Serializable, Cloneable
+public interface XmlStanza extends Serializable, Cloneable
 {
 
 	/**

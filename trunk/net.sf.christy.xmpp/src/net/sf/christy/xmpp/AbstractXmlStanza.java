@@ -10,7 +10,7 @@ import net.sf.christy.util.StringUtils;
  * @author noah
  * 
  */
-public abstract class AbstractXMLStanza implements XMLStanza
+public abstract class AbstractXmlStanza implements XmlStanza
 {
 	/**
 	 * Constant used as packetID to indicate that a packet has no id. To
@@ -84,7 +84,7 @@ public abstract class AbstractXMLStanza implements XMLStanza
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
-		AbstractXMLStanza stanza = (AbstractXMLStanza) super.clone();
+		AbstractXmlStanza stanza = (AbstractXmlStanza) super.clone();
 		stanza.setStanzaID(this.stanzaID);
 		return stanza;
 	}

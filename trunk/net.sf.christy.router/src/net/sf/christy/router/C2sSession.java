@@ -6,7 +6,7 @@ package net.sf.christy.router;
 import java.net.SocketAddress;
 
 import net.sf.christy.util.Propertied;
-import net.sf.christy.xmpp.XMLStanza;
+import net.sf.christy.xmpp.XmlStanza;
 
 /**
  * @author noah
@@ -36,7 +36,7 @@ public interface C2sSession extends Propertied
 	 * 
 	 * @param stanza
 	 */
-	public void write(XMLStanza stanza);
+	public void write(XmlStanza stanza);
 	
 	/**
 	 * 

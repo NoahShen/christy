@@ -4,7 +4,7 @@ package net.sf.christy.xmpp;
  * @author noah
  * 
  */
-public class Stream extends AbstractXMLStanza
+public class Stream extends AbstractXmlStanza
 {
 
 	/**

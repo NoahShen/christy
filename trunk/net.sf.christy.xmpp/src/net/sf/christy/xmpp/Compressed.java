@@ -7,7 +7,7 @@ package net.sf.christy.xmpp;
  * @author noah
  *
  */
-public class Compressed implements XMLStanza
+public class Compressed implements XmlStanza
 {
 
 	/**

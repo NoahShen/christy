@@ -13,7 +13,7 @@ import java.util.Set;
  * @author noah
  * 
  */
-public class PrivacyList implements XMLStanza
+public class PrivacyList implements XmlStanza
 {
 	/**
 	 * 

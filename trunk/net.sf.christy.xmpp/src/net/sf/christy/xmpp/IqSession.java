@@ -6,7 +6,7 @@ package net.sf.christy.xmpp;
  * @see http://www.xmpp.org/specs/rfc3921.html
  * @author noah
  */
-public class IQSession implements PacketExtension
+public class IqSession implements PacketExtension
 {
 
 	/**
@@ -14,7 +14,7 @@ public class IQSession implements PacketExtension
 	 */
 	private static final long serialVersionUID = -1308104909346824034L;
 
-	public IQSession()
+	public IqSession()
 	{
 	}
 
@@ -40,7 +40,7 @@ public class IQSession implements PacketExtension
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
-		IQSession session = (IQSession) super.clone();
+		IqSession session = (IqSession) super.clone();
 		return session;
 	}
 	

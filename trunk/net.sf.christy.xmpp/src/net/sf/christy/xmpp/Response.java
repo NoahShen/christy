@@ -5,7 +5,7 @@ package net.sf.christy.xmpp;
  * @author noah
  * 
  */
-public class Response implements XMLStanza
+public class Response implements XmlStanza
 {
 
 	/**

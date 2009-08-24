@@ -9,14 +9,14 @@ import org.apache.mina.filter.codec.ProtocolEncoder;
  *
  * @author Gaston Dombiak
  */
-public class XMPPCodecFactory implements ProtocolCodecFactory {
+public class XmppCodecFactory implements ProtocolCodecFactory {
 
-    private final XMPPEncoder encoder;
-    private final XMPPDecoder decoder;
+    private final XmppEncoder encoder;
+    private final XmppDecoder decoder;
 
-    public XMPPCodecFactory() {
-        encoder = new XMPPEncoder();
-        decoder = new XMPPDecoder();
+    public XmppCodecFactory() {
+        encoder = new XmppEncoder();
+        decoder = new XmppDecoder();
     }
 
     public ProtocolEncoder getEncoder() throws Exception {

@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class XMPPError implements XMLStanza
+public class XmppError implements XmlStanza
 {
 
 	/**
@@ -39,7 +39,7 @@ public class XMPPError implements XMLStanza
 	 * @param condition
 	 *                  the error condition.
 	 */
-	public XMPPError(Condition condition)
+	public XmppError(Condition condition)
 	{
 		this.init(condition);
 		this.message = null;
@@ -59,7 +59,7 @@ public class XMPPError implements XMLStanza
 	 * @param messageText
 	 *                  a message describing the error.
 	 */
-	public XMPPError(Condition condition, String messageText)
+	public XmppError(Condition condition, String messageText)
 	{
 		this.init(condition);
 		this.message = messageText;
@@ -81,7 +81,7 @@ public class XMPPError implements XMLStanza
 	 * @param message
 	 *                  a message describing the error.
 	 */
-	public XMPPError(int code, Type type, String condition, String message, List<PacketExtension> extension)
+	public XmppError(int code, Type type, String condition, String message, List<PacketExtension> extension)
 	{
 		this.code = code;
 		this.type = type;
@@ -93,11 +93,11 @@ public class XMPPError implements XMLStanza
 	/**
 	 * 
 	 */
-	public XMPPError()
+	public XmppError()
 	{
 	}
 
-	public XMPPError(int code, Type type)
+	public XmppError(int code, Type type)
 	{
 		this.code = code;
 		this.type = type;
@@ -325,7 +325,7 @@ public class XMPPError implements XMLStanza
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
-		XMPPError error = (XMPPError) super.clone();
+		XmppError error = (XmppError) super.clone();
 		error.setCode(this.code);
 		error.setMessage(this.message);
 		error.setType(this.type);
@@ -475,39 +475,39 @@ public class XMPPError implements XMLStanza
 			Map<Condition, ErrorSpecification> instances = new HashMap<Condition, ErrorSpecification>(22);
 			instances.put(Condition.internal_server_error, new ErrorSpecification(Condition.internal_server_error, Type.WAIT, 500));
 			instances.put(Condition.forbidden, new ErrorSpecification(Condition.forbidden, Type.AUTH, 403));
-			instances.put(Condition.bad_request, new XMPPError.ErrorSpecification(Condition.bad_request, Type.MODIFY, 400));
-			instances.put(Condition.item_not_found, new XMPPError.ErrorSpecification(Condition.item_not_found, Type.CANCEL, 404));
-			instances.put(Condition.conflict, new XMPPError.ErrorSpecification(Condition.conflict, Type.CANCEL, 409));
-			instances.put(Condition.feature_not_implemented, new XMPPError.ErrorSpecification(Condition.feature_not_implemented,
+			instances.put(Condition.bad_request, new XmppError.ErrorSpecification(Condition.bad_request, Type.MODIFY, 400));
+			instances.put(Condition.item_not_found, new XmppError.ErrorSpecification(Condition.item_not_found, Type.CANCEL, 404));
+			instances.put(Condition.conflict, new XmppError.ErrorSpecification(Condition.conflict, Type.CANCEL, 409));
+			instances.put(Condition.feature_not_implemented, new XmppError.ErrorSpecification(Condition.feature_not_implemented,
 					Type.CANCEL, 501));
-			instances.put(Condition.gone, new XMPPError.ErrorSpecification(Condition.gone, Type.MODIFY, 302));
-			instances.put(Condition.jid_malformed, new XMPPError.ErrorSpecification(Condition.jid_malformed, Type.MODIFY, 400));
-			instances.put(Condition.no_acceptable, new XMPPError.ErrorSpecification(Condition.no_acceptable, Type.MODIFY, 406));
-			instances.put(Condition.not_allowed, new XMPPError.ErrorSpecification(Condition.not_allowed, Type.CANCEL, 405));
-			instances.put(Condition.not_authorized, new XMPPError.ErrorSpecification(Condition.not_authorized, Type.AUTH, 401));
-			instances.put(Condition.payment_required, new XMPPError.ErrorSpecification(Condition.payment_required, Type.AUTH, 402));
-			instances.put(Condition.recipient_unavailable, new XMPPError.ErrorSpecification(Condition.recipient_unavailable,
+			instances.put(Condition.gone, new XmppError.ErrorSpecification(Condition.gone, Type.MODIFY, 302));
+			instances.put(Condition.jid_malformed, new XmppError.ErrorSpecification(Condition.jid_malformed, Type.MODIFY, 400));
+			instances.put(Condition.no_acceptable, new XmppError.ErrorSpecification(Condition.no_acceptable, Type.MODIFY, 406));
+			instances.put(Condition.not_allowed, new XmppError.ErrorSpecification(Condition.not_allowed, Type.CANCEL, 405));
+			instances.put(Condition.not_authorized, new XmppError.ErrorSpecification(Condition.not_authorized, Type.AUTH, 401));
+			instances.put(Condition.payment_required, new XmppError.ErrorSpecification(Condition.payment_required, Type.AUTH, 402));
+			instances.put(Condition.recipient_unavailable, new XmppError.ErrorSpecification(Condition.recipient_unavailable,
 					Type.WAIT, 404));
-			instances.put(Condition.redirect, new XMPPError.ErrorSpecification(Condition.redirect, Type.MODIFY, 302));
-			instances.put(Condition.registration_required, new XMPPError.ErrorSpecification(Condition.registration_required,
+			instances.put(Condition.redirect, new XmppError.ErrorSpecification(Condition.redirect, Type.MODIFY, 302));
+			instances.put(Condition.registration_required, new XmppError.ErrorSpecification(Condition.registration_required,
 					Type.AUTH, 407));
-			instances.put(Condition.remote_server_not_found, new XMPPError.ErrorSpecification(Condition.remote_server_not_found,
+			instances.put(Condition.remote_server_not_found, new XmppError.ErrorSpecification(Condition.remote_server_not_found,
 					Type.CANCEL, 404));
-			instances.put(Condition.remote_server_timeout, new XMPPError.ErrorSpecification(Condition.remote_server_timeout,
+			instances.put(Condition.remote_server_timeout, new XmppError.ErrorSpecification(Condition.remote_server_timeout,
 					Type.WAIT, 504));
-			instances.put(Condition.remote_server_error, new XMPPError.ErrorSpecification(Condition.remote_server_error,
+			instances.put(Condition.remote_server_error, new XmppError.ErrorSpecification(Condition.remote_server_error,
 					Type.CANCEL, 502));
-			instances.put(Condition.resource_constraint, new XMPPError.ErrorSpecification(Condition.resource_constraint, Type.WAIT,
+			instances.put(Condition.resource_constraint, new XmppError.ErrorSpecification(Condition.resource_constraint, Type.WAIT,
 					500));
-			instances.put(Condition.service_unavailable, new XMPPError.ErrorSpecification(Condition.service_unavailable,
+			instances.put(Condition.service_unavailable, new XmppError.ErrorSpecification(Condition.service_unavailable,
 					Type.CANCEL, 503));
-			instances.put(Condition.subscription_required, new XMPPError.ErrorSpecification(Condition.subscription_required,
+			instances.put(Condition.subscription_required, new XmppError.ErrorSpecification(Condition.subscription_required,
 					Type.AUTH, 407));
-			instances.put(Condition.undefined_condition, new XMPPError.ErrorSpecification(Condition.undefined_condition, Type.WAIT,
+			instances.put(Condition.undefined_condition, new XmppError.ErrorSpecification(Condition.undefined_condition, Type.WAIT,
 					500));
-			instances.put(Condition.unexpected_condition, new XMPPError.ErrorSpecification(Condition.unexpected_condition,
+			instances.put(Condition.unexpected_condition, new XmppError.ErrorSpecification(Condition.unexpected_condition,
 					Type.WAIT, 400));
-			instances.put(Condition.request_timeout, new XMPPError.ErrorSpecification(Condition.request_timeout, Type.CANCEL, 408));
+			instances.put(Condition.request_timeout, new XmppError.ErrorSpecification(Condition.request_timeout, Type.CANCEL, 408));
 
 			return instances;
 		}

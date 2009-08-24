@@ -5,7 +5,7 @@ package net.sf.christy.xmpp;
  * @author noah
  *
  */
-public class Auth implements XMLStanza
+public class Auth implements XmlStanza
 {
 	/**
 	 * 

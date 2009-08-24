@@ -25,14 +25,19 @@ import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
 import net.sf.christy.c2s.C2SManager;
-import net.sf.christy.mina.XMPPCodecFactory;
+import net.sf.christy.c2s.ChristyStreamFeature;
+import net.sf.christy.c2s.ChristyStreamFeature.SupportedType;
+import net.sf.christy.mina.XmppCodecFactory;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.util.StringUtils;
 import net.sf.christy.xmpp.CloseStream;
+import net.sf.christy.xmpp.Failure;
 import net.sf.christy.xmpp.JID;
+import net.sf.christy.xmpp.Proceed;
 import net.sf.christy.xmpp.Stream;
 import net.sf.christy.xmpp.StreamError;
-import net.sf.christy.xmpp.XMLStanza;
+import net.sf.christy.xmpp.StreamFeature;
+import net.sf.christy.xmpp.XmlStanza;
 
 public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 {
@@ -79,6 +84,16 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 	private IoSession routerSession;
 
 	private SocketAcceptor c2sAcceptor;
+
+	private ChristyStreamFeatureServiceTracker streamFeatureStracker;
+	
+	/**
+	 * @param streamFeatureStracker
+	 */
+	public C2SManagerImpl(ChristyStreamFeatureServiceTracker streamFeatureStracker)
+	{
+		this.streamFeatureStracker = streamFeatureStracker;
+	}
 
 	@Override
 	public void exit()
@@ -293,14 +308,14 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		logger.info("starting c2sAcceptor");
 		
 		SocketConnectorConfig socketConnectorConfig = new SocketConnectorConfig();
-		socketConnectorConfig.getFilterChain().addLast("xmppCodec", new ProtocolCodecFilter(new XMPPCodecFactory()));
+		socketConnectorConfig.getFilterChain().addLast("xmppCodec", new ProtocolCodecFilter(new XmppCodecFactory()));
 		socketConnectorConfig.setThreadModel(ThreadModel.MANUAL);
 		
 		c2sAcceptor = new SocketAcceptor();
 		IoAcceptorConfig config = new SocketAcceptorConfig();
 		DefaultIoFilterChainBuilder chain = config.getFilterChain();
 
-		chain.addFirst("xmppCodec", new ProtocolCodecFilter(new XMPPCodecFactory()));
+		chain.addFirst("xmppCodec", new ProtocolCodecFilter(new XmppCodecFactory()));
 		
 		int xmppClientPort = getXmppClientPort();
 		
@@ -315,7 +330,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		
 		SocketConnectorConfig socketConnectorConfig = new SocketConnectorConfig();
 		socketConnectorConfig.setConnectTimeout(30);
-		socketConnectorConfig.getFilterChain().addLast("xmppCodec", new ProtocolCodecFilter(new XMPPCodecFactory()));
+		socketConnectorConfig.getFilterChain().addLast("xmppCodec", new ProtocolCodecFilter(new XmppCodecFactory()));
 		socketConnectorConfig.setThreadModel(ThreadModel.MANUAL);
 		
 		routerConnector = new SocketConnector(Runtime.getRuntime().availableProcessors() + 1, Executors.newCachedThreadPool());
@@ -353,6 +368,16 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		started = false;
 	}
 
+	void addClientSession(ClientSessionImpl clientSession)
+	{
+		clientSessions.put(clientSession.getStreamId(), clientSession);
+	}
+	
+	void removeClientSession(ClientSessionImpl clientSession)
+	{
+		clientSessions.remove(clientSession.getStreamId());
+	}
+	
 	private class RouterHandler implements IoHandler
 	{
 		@Override
@@ -441,9 +466,9 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				{
 					s = message.toString();
 				}
-				else if (message instanceof XMLStanza)
+				else if (message instanceof XmlStanza)
 				{
-					s = ((XMLStanza)message).toXML();
+					s = ((XmlStanza)message).toXML();
 				}
 				logger.debug("session" + session + ": messageSent:\n" + s);
 			}
@@ -485,7 +510,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
 			// TODO Auto-generated method stub
-			
+			cause.printStackTrace();
 		}
 
 		@Override
@@ -536,7 +561,39 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 					handleOpenStream(parser, session);
 				}
 			}
+			else if ("starttls".equals(elementName))
+			{
+				handleStarttls(parser, session);
+			}
 			
+		}
+
+		private void handleStarttls(XmlPullParser parser, IoSession session)
+		{
+			String xmlns = parser.getAttributeValue("", "xmlns");
+			if (!"urn:ietf:params:xml:ns:xmpp-tls".equals(xmlns))
+			{
+				StreamError error = new StreamError(StreamError.Condition.invalid_namespace);
+				session.write(error);
+				session.close();
+				return;
+			}
+			ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
+			ClientSessionImpl.Status status = clientSession.getStatus();
+			
+			if (status != ClientSessionImpl.Status.connected
+					|| clientSession.isUsingTLS())
+			{
+				Failure failure = new Failure("urn:ietf:params:xml:ns:xmpp-tls");
+				session.write(failure);
+				session.close();
+				return;
+			}
+			
+			Proceed proceed = new Proceed();
+			session.write(proceed);
+			
+			// TODO starttls
 		}
 
 		private void handleOpenStream(XmlPullParser parser, IoSession session)
@@ -575,8 +632,8 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			
 			
 			String streamId = nextStreamId();
-			session.setAttribute("streamId", streamId);
-			ClientSessionImpl clientSession = new ClientSessionImpl(session, streamId, clientSessions);
+			ClientSessionImpl clientSession = new ClientSessionImpl(session, streamId, C2SManagerImpl.this);
+			session.setAttachment(clientSession);
 			
 			Stream responseStream = new Stream();
 			responseStream.setFrom(new JID(getDomain()));
@@ -584,13 +641,35 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			
 			clientSession.write(responseStream);
 			
+			clientSession.setStatus(ClientSessionImpl.Status.connected);
 			
+			sendFeature(clientSession, ChristyStreamFeature.SupportedType.afterConnected);
+		}
+
+		private void sendFeature(ClientSessionImpl clientSession, SupportedType type)
+		{
+			ChristyStreamFeature[] features = streamFeatureStracker.getStreamFeatures(type);
+			StreamFeature streamFeature = new StreamFeature();
+			for (ChristyStreamFeature feature : features)
+			{
+				streamFeature.addFeature(feature.getElementName(), feature.getNamespace(), feature.isRequired());
+			}
+			clientSession.write(streamFeature);
 		}
 
 		@Override
 		public void messageSent(IoSession session, Object message) throws Exception
 		{
-			// TODO Auto-generated method stub
+			String messageStr = "";
+			if (message instanceof String)
+			{
+				messageStr = message.toString();
+			}
+			else if (message instanceof XmlStanza)
+			{
+				messageStr = ((XmlStanza) message).toXML();
+			}
+			logger.debug("session" + session + ": messageSent:\n" + messageStr);
 			
 		}
 

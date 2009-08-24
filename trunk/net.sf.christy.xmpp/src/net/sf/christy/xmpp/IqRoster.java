@@ -16,7 +16,7 @@ import net.sf.christy.util.StringUtils;
  * 
  * @author Matt Tucker
  */
-public class IQRoster implements PacketExtension
+public class IqRoster implements PacketExtension
 {
 
 	/**
@@ -26,7 +26,7 @@ public class IQRoster implements PacketExtension
 	
 	private final List<Item> rosterItems = new ArrayList<Item>();
 
-	public IQRoster()
+	public IqRoster()
 	{
 	}
 
@@ -107,7 +107,7 @@ public class IQRoster implements PacketExtension
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
-		IQRoster roster = (IQRoster) super.clone();
+		IqRoster roster = (IqRoster) super.clone();
 		for (Item item : rosterItems)
 		{
 			roster.addRosterItem((Item) item.clone());
@@ -120,7 +120,7 @@ public class IQRoster implements PacketExtension
 	 * A roster item, which consists of a JID, their name, the type of
 	 * subscription, and the groups the roster item belongs to.
 	 */
-	public static class Item implements XMLStanza
+	public static class Item implements XmlStanza
 	{
 
 		/**

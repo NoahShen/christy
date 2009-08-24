@@ -7,7 +7,7 @@ package net.sf.christy.xmpp;
  * @author noah
  *
  */
-public class StartTLS implements XMLStanza
+public class StartTls implements XmlStanza
 {
 
 	/**
@@ -15,7 +15,7 @@ public class StartTLS implements XMLStanza
 	 */
 	private static final long serialVersionUID = 1477469171102671284L;
 
-	public StartTLS()
+	public StartTls()
 	{
 	}
 	/* (non-Javadoc)
@@ -30,7 +30,7 @@ public class StartTLS implements XMLStanza
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
-		StartTLS starttls = (StartTLS) super.clone();
+		StartTls starttls = (StartTls) super.clone();
 		return starttls;
 	}
 

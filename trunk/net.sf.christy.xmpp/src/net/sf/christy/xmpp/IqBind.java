@@ -7,7 +7,7 @@ package net.sf.christy.xmpp;
  * @see http://www.ietf.org/rfc/rfc3921.txt
  * @author noah
  */
-public class IQBind implements PacketExtension
+public class IqBind implements PacketExtension
 {
 
 	/**
@@ -20,7 +20,7 @@ public class IQBind implements PacketExtension
 	private JID jid = null;
 
 
-	public IQBind()
+	public IqBind()
 	{
 
 	}
@@ -85,7 +85,7 @@ public class IQBind implements PacketExtension
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
-		IQBind iqBind = (IQBind) super.clone();
+		IqBind iqBind = (IqBind) super.clone();
 		iqBind.setResource(this.resource);
 		iqBind.setJid(this.jid);
 		return iqBind;

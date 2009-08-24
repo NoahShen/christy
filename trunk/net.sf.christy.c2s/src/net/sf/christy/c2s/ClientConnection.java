@@ -6,7 +6,7 @@ package net.sf.christy.c2s;
 import java.net.SocketAddress;
 
 import net.sf.christy.util.Propertied;
-import net.sf.christy.xmpp.XMLStanza;
+import net.sf.christy.xmpp.XmlStanza;
 
 /**
  * @author noah
@@ -93,7 +93,7 @@ public interface ClientConnection extends Propertied
 	 * Send a stanza to client
 	 * @param stanza
 	 */
-	public void writeStanza(XMLStanza stanza);
+	public void writeStanza(XmlStanza stanza);
 	
 	/**
 	 * Obtain connection's username if status is authenticated

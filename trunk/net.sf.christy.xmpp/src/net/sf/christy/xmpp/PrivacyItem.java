@@ -10,7 +10,7 @@ import net.sf.christy.util.StringUtils;
  * @author noah
  * 
  */
-public class PrivacyItem implements XMLStanza
+public class PrivacyItem implements XmlStanza
 {
 	/**
 	 * 

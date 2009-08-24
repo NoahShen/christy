@@ -5,7 +5,7 @@ package net.sf.christy.xmpp;
  * @author noah
  *
  */
-public class Failure implements XMLStanza
+public class Failure implements XmlStanza
 {
 	/**
 	 * 
@@ -78,7 +78,7 @@ public class Failure implements XMLStanza
 		}
 		else
 		{
-			buf.append("\"/>");
+			buf.append("/>");
 		}
 		
 		return buf.toString();
@@ -97,7 +97,7 @@ public class Failure implements XMLStanza
 		return failure;
 	}
 
-	public static class Error implements XMLStanza
+	public static class Error implements XmlStanza
 	{
 		/**
 		 * 
