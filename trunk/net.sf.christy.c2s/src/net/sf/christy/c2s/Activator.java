@@ -1,7 +1,13 @@
 package net.sf.christy.c2s;
 
+import java.util.Hashtable;
+
+import javax.net.ssl.SSLContext;
+
 import net.sf.christy.c2s.impl.C2SManagerImpl;
 import net.sf.christy.c2s.impl.ChristyStreamFeatureServiceTracker;
+import net.sf.christy.c2s.impl.TlsContextServiceTracker;
+import net.sf.christy.c2s.impl.tls.BogusSSLContextFactory;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -12,6 +18,8 @@ public class Activator implements BundleActivator
 
 	private ChristyStreamFeatureServiceTracker streamFeatureStracker;
 	private ServiceRegistration tlsFeatureRegistration;
+	private TlsContextServiceTracker tlsContextServiceTracker;
+	private ServiceRegistration sslContextRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -29,7 +37,16 @@ public class Activator implements BundleActivator
 		streamFeatureStracker = new ChristyStreamFeatureServiceTracker(context);
 		streamFeatureStracker.open();
 
-		C2SManagerImpl c2sManager = new C2SManagerImpl(streamFeatureStracker);
+		SSLContext sslContext = BogusSSLContextFactory.getInstance(true);
+		Hashtable<String, String> prop = new Hashtable<String, String>();
+		prop.put("tlsContext", "true");
+		
+		sslContextRegistration = context.registerService(SSLContext.class.getName(), sslContext, prop);
+		
+		tlsContextServiceTracker = new TlsContextServiceTracker(context);
+		tlsContextServiceTracker.open();
+		
+		C2SManagerImpl c2sManager = new C2SManagerImpl(streamFeatureStracker, tlsContextServiceTracker);
 		c2sManager.setName("c2s_1");
 		c2sManager.setDomain("example.com");
 		c2sManager.setRouterIp("localhost");
@@ -54,6 +71,18 @@ public class Activator implements BundleActivator
 		{
 			tlsFeatureRegistration.unregister();
 			tlsFeatureRegistration = null;
+		}
+		
+		if (tlsContextServiceTracker != null)
+		{
+			tlsContextServiceTracker.close();
+			tlsContextServiceTracker = null;
+		}
+		
+		if (sslContextRegistration != null)
+		{
+			sslContextRegistration.unregister();
+			sslContextRegistration = null;
 		}
 	}
 

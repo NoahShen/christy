@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
+import javax.net.ssl.SSLContext;
+
 import org.apache.mina.common.ConnectFuture;
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.common.IdleStatus;
@@ -14,6 +16,7 @@ import org.apache.mina.common.IoAcceptorConfig;
 import org.apache.mina.common.IoHandler;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.common.ThreadModel;
+import org.apache.mina.filter.SSLFilter;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.SocketAcceptor;
 import org.apache.mina.transport.socket.nio.SocketAcceptorConfig;
@@ -87,12 +90,16 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 
 	private ChristyStreamFeatureServiceTracker streamFeatureStracker;
 	
+	private TlsContextServiceTracker tlsContextServiceTracker;
+	
 	/**
 	 * @param streamFeatureStracker
 	 */
-	public C2SManagerImpl(ChristyStreamFeatureServiceTracker streamFeatureStracker)
+	public C2SManagerImpl(ChristyStreamFeatureServiceTracker streamFeatureStracker,
+						TlsContextServiceTracker tlsContextServiceTracker)
 	{
 		this.streamFeatureStracker = streamFeatureStracker;
+		this.tlsContextServiceTracker = tlsContextServiceTracker;
 	}
 
 	@Override
@@ -516,7 +523,6 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		@Override
 		public void messageReceived(IoSession session, Object message) throws Exception
 		{
-			// TODO Auto-generated method stub
 			logger.debug("session" + session + ": messageReceived:\n" + message);
 			String xml = message.toString();
 			if (xml.startsWith("<?xml"))
@@ -580,20 +586,29 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			}
 			ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
 			ClientSessionImpl.Status status = clientSession.getStatus();
-			
-			if (status != ClientSessionImpl.Status.connected
-					|| clientSession.isUsingTLS())
+
+			if (status != ClientSessionImpl.Status.connected || clientSession.isUsingTLS())
 			{
 				Failure failure = new Failure("urn:ietf:params:xml:ns:xmpp-tls");
 				session.write(failure);
 				session.close();
 				return;
 			}
-			
+
+			SSLContext context = tlsContextServiceTracker.getTlsContext();
+			SSLFilter sslFilter = new SSLFilter(context);
+			sslFilter.setUseClientMode(false);
+
+			session.getFilterChain().addFirst("tlsFilter", sslFilter);
+
+			// Disable encryption temporarilly.
+			// This attribute will be removed by SSLFilter
+			// inside the Session.write() call below.
+			session.setAttribute(SSLFilter.DISABLE_ENCRYPTION_ONCE, Boolean.TRUE);
+
 			Proceed proceed = new Proceed();
 			session.write(proceed);
-			
-			// TODO starttls
+
 		}
 
 		private void handleOpenStream(XmlPullParser parser, IoSession session)
