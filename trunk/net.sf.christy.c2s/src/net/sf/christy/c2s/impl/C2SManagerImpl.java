@@ -517,6 +517,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
 			// TODO Auto-generated method stub
+			logger.error("session" + session + ": messageReceived:\n" + cause.getMessage());
 			cause.printStackTrace();
 		}
 
@@ -564,7 +565,18 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
 				if (clientSession == null)
 				{
-					handleOpenStream(parser, session);
+					handleOpenStream(parser, session, ChristyStreamFeature.SupportedType.afterConnected);
+				}
+				else
+				{
+					if (clientSession.isUsingTLS())
+					{
+						handleOpenStream(parser, session, ChristyStreamFeature.SupportedType.afterTLS);
+					}
+					else if (clientSession.getStatus() == ClientSessionImpl.Status.authenticated)
+					{
+						handleOpenStream(parser, session, ChristyStreamFeature.SupportedType.afterAuth);
+					}
 				}
 			}
 			else if ("starttls".equals(elementName))
@@ -606,12 +618,13 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			// inside the Session.write() call below.
 			session.setAttribute(SSLFilter.DISABLE_ENCRYPTION_ONCE, Boolean.TRUE);
 
+			clientSession.setUsingTLS(true);
 			Proceed proceed = new Proceed();
 			session.write(proceed);
 
 		}
 
-		private void handleOpenStream(XmlPullParser parser, IoSession session)
+		private void handleOpenStream(XmlPullParser parser, IoSession session, ChristyStreamFeature.SupportedType supportedType)
 		{
 			String xmlns = parser.getAttributeValue("", "xmlns");
 			String to = parser.getAttributeValue("", "to");
@@ -622,7 +635,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			{
 				StreamError error = new StreamError(StreamError.Condition.invalid_namespace);
 				session.write(error);
-				session.write(new CloseStream());
+				session.write(CloseStream.getCloseStream());
 				session.close();
 				return;
 			}
@@ -631,7 +644,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			{
 				StreamError error = new StreamError(StreamError.Condition.host_gone);
 				session.write(error);
-				session.write(new CloseStream());
+				session.write(CloseStream.getCloseStream());
 				session.close();
 				return;
 			}
@@ -640,14 +653,29 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			{
 				StreamError error = new StreamError(StreamError.Condition.unsupported_version);
 				session.write(error);
-				session.write(new CloseStream());
+				session.write(CloseStream.getCloseStream());
 				session.close();
 				return;
 			}
 			
+			ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
+			if (clientSession != null)
+			{
+				if (clientSession.getStatus() == ClientSessionImpl.Status.sessionBinded
+						|| clientSession.getStatus() == ClientSessionImpl.Status.resourceBinded)
+				{
+					StreamError error = new StreamError(StreamError.Condition.restricted_xml);
+					clientSession.write(error);
+					clientSession.write(CloseStream.getCloseStream());
+					clientSession.close();
+					return;
+				}
+				clientSessions.remove(clientSession.getStreamId());
+				session.setAttachment(null);
+			}
 			
 			String streamId = nextStreamId();
-			ClientSessionImpl clientSession = new ClientSessionImpl(session, streamId, C2SManagerImpl.this);
+			clientSession = new ClientSessionImpl(session, streamId, C2SManagerImpl.this);
 			session.setAttachment(clientSession);
 			
 			Stream responseStream = new Stream();
@@ -656,9 +684,16 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			
 			clientSession.write(responseStream);
 			
-			clientSession.setStatus(ClientSessionImpl.Status.connected);
+			if (supportedType == ChristyStreamFeature.SupportedType.afterConnected)
+			{
+				clientSession.setStatus(ClientSessionImpl.Status.connected);
+			}
+			else if (supportedType == ChristyStreamFeature.SupportedType.afterAuth)
+			{
+				clientSession.setStatus(ClientSessionImpl.Status.authenticated);
+			}
 			
-			sendFeature(clientSession, ChristyStreamFeature.SupportedType.afterConnected);
+			sendFeature(clientSession, supportedType);
 		}
 
 		private void sendFeature(ClientSessionImpl clientSession, SupportedType type)

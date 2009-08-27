@@ -6,6 +6,7 @@ package net.sf.christy.c2s.impl;
 import javax.net.ssl.SSLContext;
 
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
 /**
@@ -22,7 +23,15 @@ public class TlsContextServiceTracker extends ServiceTracker
 
 	public SSLContext getTlsContext()
 	{
-		Object obj = getService();
-		return (SSLContext) obj;
+		ServiceReference sr = getServiceReference();
+		if (sr != null)
+		{
+			Object obj = sr.getProperty("tlsContext");
+			if ("true".equals(obj))
+			{
+				return (SSLContext) getService(sr);
+			}
+		}
+		return null;
 	}
 }
