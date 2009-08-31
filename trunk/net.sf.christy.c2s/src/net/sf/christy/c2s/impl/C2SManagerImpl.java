@@ -844,8 +844,12 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		@Override
 		public void sessionClosed(IoSession session) throws Exception
 		{
-			// TODO Auto-generated method stub
-			
+			ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
+			if (clientSession != null)
+			{
+				clientSession.close();
+			}
+			logger.debug("session" + session + ": sessionClosed:\n");
 		}
 
 		@Override
