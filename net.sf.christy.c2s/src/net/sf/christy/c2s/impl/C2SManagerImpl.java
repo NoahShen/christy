@@ -29,6 +29,9 @@ import org.xmlpull.v1.XmlPullParser;
 
 import net.sf.christy.c2s.C2SManager;
 import net.sf.christy.c2s.ChristyStreamFeature;
+import net.sf.christy.c2s.ClientSession;
+import net.sf.christy.c2s.UnauthorizedException;
+import net.sf.christy.c2s.UnsupportedMechanismException;
 import net.sf.christy.c2s.ChristyStreamFeature.SupportedType;
 import net.sf.christy.mina.XmppCodecFactory;
 import net.sf.christy.util.AbstractPropertied;
@@ -40,6 +43,7 @@ import net.sf.christy.xmpp.Proceed;
 import net.sf.christy.xmpp.Stream;
 import net.sf.christy.xmpp.StreamError;
 import net.sf.christy.xmpp.StreamFeature;
+import net.sf.christy.xmpp.Success;
 import net.sf.christy.xmpp.XmlStanza;
 
 public class C2SManagerImpl extends AbstractPropertied implements C2SManager
@@ -92,14 +96,18 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 	
 	private TlsContextServiceTracker tlsContextServiceTracker;
 	
+	private UserAuthenticatorTracker userAuthenticatorTracker;
+	
 	/**
 	 * @param streamFeatureStracker
 	 */
 	public C2SManagerImpl(ChristyStreamFeatureServiceTracker streamFeatureStracker,
-						TlsContextServiceTracker tlsContextServiceTracker)
+						TlsContextServiceTracker tlsContextServiceTracker,
+						UserAuthenticatorTracker userAuthenticatorTracker)
 	{
 		this.streamFeatureStracker = streamFeatureStracker;
 		this.tlsContextServiceTracker = tlsContextServiceTracker;
+		this.userAuthenticatorTracker = userAuthenticatorTracker;
 	}
 
 	@Override
@@ -587,12 +595,106 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			{
 				handleAuth(parser, session);
 			}
+			else if ("challenge".equals(elementName))
+			{
+				handleChallenge(parser, session);
+			}
+		}
+
+		private void handleChallenge(XmlPullParser parser, IoSession session)
+		{
+			String content;
+			try
+			{
+				content = parser.nextText();
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace();
+				StreamError error = new StreamError(StreamError.Condition.invalid_xml);
+				session.write(error);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				return;
+			}
+			
+			
+			try
+			{
+				ClientSession clientSession = (ClientSession) session.getAttachment();
+				userAuthenticatorTracker.response(clientSession, content);
+				if (clientSession.getStatus() == ClientSession.Status.authenticated)
+				{
+					Success success = new Success();
+					clientSession.write(success);
+				}
+			}
+			catch (UnauthorizedException e)
+			{
+				e.printStackTrace();
+				
+				Failure failure = new Failure();
+				failure.setNamespace("urn:ietf:params:xml:ns:xmpp-sasl");
+				session.write(failure);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				return;
+			}
 		}
 
 		private void handleAuth(XmlPullParser parser, IoSession session)
 		{
-			// TODO Auto-generated method stub
+			String mechanism = parser.getAttributeValue("", "mechanism");
+			String content = null;
+			ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
+			try
+			{
+				content = parser.nextText();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				StreamError error = new StreamError(StreamError.Condition.invalid_xml);
+				session.write(error);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				return;
+			}
 			
+			try
+			{
+				userAuthenticatorTracker.authenticate(clientSession, content, mechanism);
+				if (clientSession.getStatus() == ClientSession.Status.authenticated)
+				{
+					Success success = new Success();
+					clientSession.write(success);
+				}
+			}
+			catch (UnauthorizedException e)
+			{
+				e.printStackTrace();
+				
+				Failure failure = new Failure();
+				failure.setNamespace("urn:ietf:params:xml:ns:xmpp-sasl");
+				session.write(failure);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				
+				return;
+			}
+			catch (UnsupportedMechanismException e)
+			{
+				e.printStackTrace();
+				
+				Failure failure = new Failure();
+				failure.setError(Failure.Error.invalid_mechanism);
+				failure.setNamespace("urn:ietf:params:xml:ns:xmpp-sasl");
+				session.write(failure);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				
+				return;
+			}
 		}
 
 		private void handleStarttls(XmlPullParser parser, IoSession session)
@@ -713,6 +815,13 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			{
 				streamFeature.addFeature(feature.getElementName(), feature.getNamespace(), feature.isRequired());
 			}
+			
+			String[] mechanisms = userAuthenticatorTracker.getAllMechanisms();
+			for (String mech : mechanisms)
+			{
+				streamFeature.addMechanism(mech);
+			}
+			
 			clientSession.write(streamFeature);
 		}
 
