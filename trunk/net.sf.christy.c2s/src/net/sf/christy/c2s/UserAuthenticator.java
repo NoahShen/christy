@@ -16,28 +16,20 @@ public interface UserAuthenticator
 	public String getMechanismName();
 
 	/**
-	 * Returns true if the username and password are valid; otherwise
-	 * returns false.
-	 * <p>
 	 * 
-	 * @param username
-	 *                  the username.
-	 * @param password
-	 *                  the password
+	 * @param clientSession
+	 * @param content
 	 * @throws UnauthorizedException
 	 *                   if the username and password do not match any
 	 *                   existing user.
 	 */
-	public void authenticate(String username, String password) throws UnauthorizedException;
+	public void authenticate(ClientSession clientSession, String content) throws UnauthorizedException;
 
 	/**
-	 * Returns the user's password.
 	 * 
-	 * @param username
-	 *                  the username
-	 * @return the user's password.
-	 * @throws UserNotFoundException
-	 *                   if the given user's password could not be loaded.
+	 * @param clientSession
+	 * @param content
+	 * @throws UnauthorizedException
 	 */
-	public String getPassword(String username) throws UserNotFoundException;
+	public void response(ClientSession clientSession, String content) throws UnauthorizedException;
 }
