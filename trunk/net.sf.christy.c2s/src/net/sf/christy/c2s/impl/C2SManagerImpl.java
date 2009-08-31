@@ -583,6 +583,15 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			{
 				handleStarttls(parser, session);
 			}
+			else if ("auth".equals(elementName))
+			{
+				handleAuth(parser, session);
+			}
+		}
+
+		private void handleAuth(XmlPullParser parser, IoSession session)
+		{
+			// TODO Auto-generated method stub
 			
 		}
 
