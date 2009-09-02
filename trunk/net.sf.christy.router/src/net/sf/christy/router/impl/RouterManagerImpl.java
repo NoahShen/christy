@@ -248,6 +248,24 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		
 		logger.info("router starting...");
 		
+		try
+		{
+			startC2sAcceptor();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			logger.error("c2s acceptor start failure:" + e.getMessage());
+			return;
+		}
+		
+		
+		started = true;
+		logger.info("router successful start");
+	}
+
+	private void startC2sAcceptor() throws IOException
+	{
 		c2sAcceptor = new SocketAcceptor();
 		IoAcceptorConfig config = new SocketAcceptorConfig();
 		DefaultIoFilterChainBuilder chain = config.getFilterChain();
@@ -256,19 +274,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		
 		int c2sPort = getC2sPort();
 		
-		try
-		{
-			c2sAcceptor.bind(new InetSocketAddress(c2sPort), new C2sHandler(), config);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-			logger.error("start failure:" + e.getMessage());
-			return;
-		}
-		
-		started = true;
-		logger.info("router successful start");
+		c2sAcceptor.bind(new InetSocketAddress(c2sPort), new C2sHandler(), config);
 	}
 
 	@Override

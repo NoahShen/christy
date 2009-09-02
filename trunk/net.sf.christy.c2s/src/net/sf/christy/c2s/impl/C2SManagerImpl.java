@@ -603,7 +603,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 
 		private void handleChallenge(XmlPullParser parser, IoSession session)
 		{
-			String content;
+			String content = null;
 			try
 			{
 				content = parser.nextText();
