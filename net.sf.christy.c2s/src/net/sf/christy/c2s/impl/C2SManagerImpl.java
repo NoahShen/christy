@@ -498,7 +498,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		@Override
 		public void sessionCreated(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionOpened");
+			logger.debug("session" + session + ": sessionCreated");
 		}
 
 		@Override

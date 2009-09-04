@@ -1,38 +1,44 @@
+/**
+ * 
+ */
 package net.sf.christy.router.impl;
 
 import java.net.SocketAddress;
 
 import org.apache.mina.common.IoSession;
 
-import net.sf.christy.router.C2sSession;
+import net.sf.christy.router.SmSession;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.CloseStream;
 import net.sf.christy.xmpp.XmlStanza;
 
-public class C2sSessionImpl extends AbstractPropertied implements C2sSession
+/**
+ * @author noah
+ *
+ */
+public class SmSessionImpl extends AbstractPropertied implements SmSession
 {
 	private String internalStreamId;
 	
-	private String c2sName;
+	private String smName;
 	
 	private IoSession iosession;
 	
 	private RouterManagerImpl routerManager;
-	
+
 	/**
-	 * 
 	 * @param internalStreamId
-	 * @param c2sName
+	 * @param smName
 	 * @param iosession
 	 * @param routerManager
 	 */
-	public C2sSessionImpl(String internalStreamId, String c2sName, IoSession iosession, RouterManagerImpl routerManager)
+	public SmSessionImpl(String internalStreamId, String smName, IoSession iosession, RouterManagerImpl routerManager)
 	{
 		this.internalStreamId = internalStreamId;
-		this.c2sName = c2sName;
+		this.smName = smName;
 		this.iosession = iosession;
 		this.routerManager = routerManager;
-		routerManager.addC2sSession(c2sName, this);
+		routerManager.addSmSession(smName, this);
 	}
 
 	@Override
@@ -40,26 +46,27 @@ public class C2sSessionImpl extends AbstractPropertied implements C2sSession
 	{
 		iosession.write(CloseStream.getCloseStream());
 		iosession.close();
-		routerManager.removeC2sSession(c2sName);
-		
-	}
-
-	@Override
-	public SocketAddress getC2sAddress()
-	{
-		return iosession.getRemoteAddress();
-	}
-
-	@Override
-	public String getC2sName()
-	{
-		return c2sName;
+		routerManager.removeSmSession(smName);
 	}
 
 	@Override
 	public String getInternalStreamId()
 	{
 		return internalStreamId;
+	}
+
+
+	@Override
+	public SocketAddress getSmAddress()
+	{
+		return iosession.getRemoteAddress();
+	}
+
+	
+	@Override
+	public String getSmName()
+	{
+		return smName;
 	}
 
 	@Override
