@@ -46,6 +46,10 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	
 	public static final String C2SROUTER_AUTH_NAMESPACE = "christy:internal:c2s2router:auth";
 	
+	public static final String SMROUTER_NAMESPACE = "christy:internal:sm2router";
+	
+	public static final String SMROUTER_AUTH_NAMESPACE = "christy:internal:sm2router:auth";
+	
 	private final Logger logger = LoggerFactory.getLogger(RouterManagerImpl.class);
 
 	private IoAcceptor c2sAcceptor;
@@ -68,6 +72,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	
 	private Map<String, C2sSessionImpl> c2sSessions = new ConcurrentHashMap<String, C2sSessionImpl>();
 	
+	private Map<String, SmSessionImpl> smSessions = new ConcurrentHashMap<String, SmSessionImpl>();
+	
 	private Map<String, String> registeredC2sModules = new ConcurrentHashMap<String, String>();
 
 	private Map<String, String> registeredSmModules = new ConcurrentHashMap<String, String>();
@@ -75,6 +81,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	private Map<String, String> registeredS2sModules = new ConcurrentHashMap<String, String>();
 	
 	private Map<String, String> registeredOtherModules = new ConcurrentHashMap<String, String>();
+
+	private SocketAcceptor smAcceptor;
 
 	@Override
 	public void registerC2sModule(String name, String md5Password)
@@ -258,10 +266,32 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			logger.error("c2s acceptor start failure:" + e.getMessage());
 			return;
 		}
-		
+		try
+		{
+			startSmAcceptor();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			logger.error("sm acceptor start failure:" + e.getMessage());
+			return;
+		}
 		
 		started = true;
 		logger.info("router successful start");
+	}
+
+	private void startSmAcceptor() throws IOException
+	{
+		smAcceptor = new SocketAcceptor();
+		IoAcceptorConfig config = new SocketAcceptorConfig();
+		DefaultIoFilterChainBuilder chain = config.getFilterChain();
+
+		chain.addFirst("xmppCodec", new ProtocolCodecFilter(new XmppCodecFactory()));
+		
+		int smPort = getSmPort();
+		
+		smAcceptor.bind(new InetSocketAddress(smPort), new SmHandler(), config);
 	}
 
 	private void startC2sAcceptor() throws IOException
@@ -294,6 +324,19 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		{
 			c2sAcceptor.unbindAll();
 		}
+		
+		
+		for (SmSessionImpl smSession : smSessions.values())
+		{
+			smSession.close();
+		}
+		smSessions.clear();
+		if (smAcceptor != null)
+		{
+			smAcceptor.unbindAll();
+		}
+		
+		
 		started = false;
 	}
 
@@ -379,6 +422,18 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		logger.debug("remove c2sSession:" + c2sname);
 	}
 	
+	void addSmSession(String smname, SmSessionImpl smSession)
+	{
+		smSessions.put(smname, smSession);
+		logger.debug("add new smSession:" + smname);
+	}
+	
+	void removeSmSession(String smname)
+	{
+		smSessions.remove(smname);
+		logger.debug("remove smSession:" + smname);
+	}
+	
 	private class C2sHandler implements IoHandler
 	{
 
@@ -450,7 +505,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				{
 					StreamError error = new StreamError(StreamError.Condition.conflict);
 					session.write(error);
-					session.write(new CloseStream());
+					session.write(CloseStream.getCloseStream());
 					session.close();
 					return;
 				}
@@ -460,7 +515,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 					StreamError error = new StreamError();
 					error.addApplicationCondition("unregistered", C2SROUTER_AUTH_NAMESPACE);
 					session.write(error);
-					session.write(new CloseStream());
+					session.write(CloseStream.getCloseStream());
 					session.close();
 					return;
 				}
@@ -482,7 +537,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 					session.write("<failed xmlns='" + C2SROUTER_AUTH_NAMESPACE + "'>" +
 								"<reason>password error</reason>" +
 								"</failed>");
-					session.write(new CloseStream());
+					session.write(CloseStream.getCloseStream());
 					session.close();
 					return;
 				}
@@ -506,7 +561,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			{
 				StreamError error = new StreamError(StreamError.Condition.invalid_namespace);
 				session.write(error);
-				session.write(new CloseStream());
+				session.write(CloseStream.getCloseStream());
 				session.close();
 				return;
 			}
@@ -516,7 +571,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				StreamError error = new StreamError();
 				error.addApplicationCondition("domain-error", C2SROUTER_NAMESPACE);
 				session.write(error);
-				session.write(new CloseStream());
+				session.write(CloseStream.getCloseStream());
 				session.close();
 				return;
 			}
@@ -525,7 +580,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			{
 				StreamError error = new StreamError(StreamError.Condition.host_gone);
 				session.write(error);
-				session.write(new CloseStream());
+				session.write(CloseStream.getCloseStream());
 				session.close();
 				return;
 			}
@@ -567,7 +622,16 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void sessionCreated(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionOpened");
+			logger.debug("session" + session + ": sessionCreated");
+			if (getC2sLimit() != 0 && c2sSessions.size() == getC2sLimit())
+			{
+				StreamError error = new StreamError(StreamError.Condition.internal_server_error);
+				error.addApplicationCondition("reach-c2s-limit", C2SROUTER_NAMESPACE);
+				session.write(error);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				logger.info("closing session" + session + ": c2sSession limit reached");
+			}
 		}
 
 		@Override
@@ -580,15 +644,223 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		{
 			logger.debug("session" + session + ": sessionOpened");
 			
-			if (getC2sLimit() != 0 && c2sSessions.size() == getC2sLimit())
+		}
+		
+	}
+	
+	private class SmHandler implements IoHandler
+	{
+
+		@Override
+		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
+		{
+			logger.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
+			cause.printStackTrace();
+		}
+
+		@Override
+		public void messageReceived(IoSession session, Object message) throws Exception
+		{
+			logger.debug("session" + session + ": messageReceived:\n" + message);
+			String xml = message.toString();
+			if (xml.equals("</stream:stream>"))
+			{
+				SmSessionImpl smSession = (SmSessionImpl) session.getAttachment();
+				if (smSession == null)
+				{
+					session.close();
+				}
+				else
+				{
+					smSession.close();
+				}
+				return;
+			}
+			
+			StringReader strReader = new StringReader(xml);
+			XmlPullParser parser = new MXParser();
+			parser.setInput(strReader);
+
+			try
+			{
+				parser.next();
+			}
+			catch (Exception e)
+			{
+				// e.printStackTrace();
+				throw e;
+			}
+
+			String elementName = parser.getName();
+			if ("stream".equals(elementName) || "stream:stream".equals(elementName))
+			{
+				SmSessionImpl smSession = (SmSessionImpl) session.getAttachment();
+				if (smSession == null)
+				{
+					handleStream(parser, session);
+				}
+			}
+			else if ("internal".equals(elementName))
+			{
+				handleInternal(parser, session);
+			}
+			
+		}
+
+		private void handleInternal(XmlPullParser parser, IoSession session)
+		{
+			String streamId = session.getAttribute("streamId").toString();
+			if (streamId != null)
+			{
+				String smName = parser.getAttributeValue("", "smname");
+				String password = parser.getAttributeValue("", "password");
+				
+				if (smSessions.containsKey(smName))
+				{
+					StreamError error = new StreamError(StreamError.Condition.conflict);
+					session.write(error);
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return;
+				}
+				
+				if (!registeredSmModules.containsKey(smName))
+				{
+					StreamError error = new StreamError();
+					error.addApplicationCondition("unregistered", SMROUTER_AUTH_NAMESPACE);
+					session.write(error);
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return;
+				}
+				
+				String registeredPwd = registeredSmModules.get(smName);
+				if (password.equals(registeredPwd))
+				{
+					SmSessionImpl smSession = 
+						new SmSessionImpl(streamId, 
+										smName, 
+										session, 
+										RouterManagerImpl.this);
+					
+					smSession.write("<success xmlns='" + SMROUTER_AUTH_NAMESPACE + "' />");
+					return;
+				}
+				else
+				{
+					session.write("<failed xmlns='" + SMROUTER_AUTH_NAMESPACE + "'>" +
+								"<reason>password error</reason>" +
+								"</failed>");
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return;
+				}
+			}
+			// not open stream
+			else
+			{
+				session.close();
+				return;
+			}
+		}
+
+		private void handleStream(XmlPullParser parser, IoSession session)
+		{
+			String xmlns = parser.getAttributeValue("", "xmlns");
+			String to = parser.getAttributeValue("", "to");
+			String domain = parser.getAttributeValue("", "domain");
+
+			
+			if (!xmlns.equals(SMROUTER_NAMESPACE))
+			{
+				StreamError error = new StreamError(StreamError.Condition.invalid_namespace);
+				session.write(error);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				return;
+			}
+			
+			if (!getDomain().equals(domain))
+			{
+				StreamError error = new StreamError();
+				error.addApplicationCondition("domain-error", SMROUTER_NAMESPACE);
+				session.write(error);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				return;
+			}
+			
+			if (!to.equals("router"))
+			{
+				StreamError error = new StreamError(StreamError.Condition.host_gone);
+				session.write(error);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				return;
+			}
+			
+			String streamId =  "sm_internalstream_" + nextId();
+			session.setAttribute("streamId", streamId);
+			String responseStream = "<stream:stream" +
+								" xmlns='"+ SMROUTER_NAMESPACE + "'" +
+								" xmlns:stream='http://etherx.jabber.org/streams'" +
+								" from='router'" +
+								" id='" + streamId + "'>";
+			session.write(responseStream);
+		}
+
+		@Override
+		public void messageSent(IoSession session, Object message) throws Exception
+		{
+			if (logger.isDebugEnabled())
+			{
+				String s = null;
+				if (message instanceof String)
+				{
+					s = message.toString();
+				}
+				else if (message instanceof XmlStanza)
+				{
+					s = ((XmlStanza)message).toXML();
+				}
+				logger.debug("session" + session + ": messageSent:\n" + s);
+			}
+		}
+
+		@Override
+		public void sessionClosed(IoSession session) throws Exception
+		{
+			logger.debug("session" + session + ": sessionClosed");
+		}
+
+		@Override
+		public void sessionCreated(IoSession session) throws Exception
+		{
+			logger.debug("session" + session + ": sessionCreated");
+
+			if (getSmLimit() != 0 && smSessions.size() == getSmLimit())
 			{
 				StreamError error = new StreamError(StreamError.Condition.internal_server_error);
-				error.addApplicationCondition("reach-c2s-limit", C2SROUTER_NAMESPACE);
+				error.addApplicationCondition("reach-sm-limit", SMROUTER_NAMESPACE);
 				session.write(error);
-				session.write(new CloseStream());
+				session.write(CloseStream.getCloseStream());
 				session.close();
-				logger.info("closing session" + session + ": c2sSession limit reached");
+				logger.info("closing session" + session + ": smSession limit reached");
 			}
+		}
+
+		@Override
+		public void sessionIdle(IoSession session, IdleStatus status) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void sessionOpened(IoSession session) throws Exception
+		{
+			logger.debug("session" + session + ": sessionOpened");
+			
 		}
 		
 	}

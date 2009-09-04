@@ -1,7 +1,7 @@
 /**
  * 
  */
-package net.sf.christy.c2s;
+package net.sf.christy.sm;
 
 import net.sf.christy.util.Propertied;
 
@@ -9,7 +9,7 @@ import net.sf.christy.util.Propertied;
  * @author noah
  *
  */
-public interface C2SManager extends Propertied
+public interface SmManager extends Propertied
 {
 	/**
 	 * 
@@ -22,18 +22,6 @@ public interface C2SManager extends Propertied
 	 * @param name
 	 */
 	public void setName(String name);
-	
-	/**
-	 * max client connection number. 0 stands for no limit
-	 * @return
-	 */
-	public int getClientLimit();
-	
-	/**
-	 * set max client connection number. 0 stands for no limit
-	 * @param clientLimit
-	 */
-	public void setClientLimit(int clientLimit);
 	
 	/**
 	 * 
@@ -51,23 +39,11 @@ public interface C2SManager extends Propertied
 	 * 
 	 * @return
 	 */
-	public String getHostName();
-	
-	/**
-	 * 
-	 * @param hostName
-	 */
-	public void setHostName(String hostName);
-	
-	/**
-	 * 
-	 * @return
-	 */
 	public String getRouterIp();
 	
 	/**
 	 * 
-	 * @param routerIp
+	 * @param routerIP
 	 */
 	public void setRouterIp(String routerIp);
 	
