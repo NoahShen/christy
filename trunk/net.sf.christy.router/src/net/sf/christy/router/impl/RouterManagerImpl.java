@@ -23,7 +23,6 @@ import org.xmlpull.v1.XmlPullParser;
 import net.sf.christy.mina.XmppCodecFactory;
 import net.sf.christy.router.RouterManager;
 import net.sf.christy.router.SmSession;
-import net.sf.christy.router.impl.consistentHashingImpl.HashFunctionServiceTracker;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.CloseStream;
 import net.sf.christy.xmpp.StreamError;
