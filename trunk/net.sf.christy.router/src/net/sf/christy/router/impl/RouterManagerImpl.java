@@ -22,6 +22,8 @@ import org.xmlpull.v1.XmlPullParser;
 
 import net.sf.christy.mina.XmppCodecFactory;
 import net.sf.christy.router.RouterManager;
+import net.sf.christy.router.SmSession;
+import net.sf.christy.router.impl.consistentHashingImpl.HashFunctionServiceTracker;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.CloseStream;
 import net.sf.christy.xmpp.StreamError;
@@ -83,6 +85,16 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	private Map<String, String> registeredOtherModules = new ConcurrentHashMap<String, String>();
 
 	private SocketAcceptor smAcceptor;
+
+	private ResourceBinderServiceTracker resourceBinderServiceTracker;
+
+	/**
+	 * @param resourceBinderServiceTracker
+	 */
+	public RouterManagerImpl(ResourceBinderServiceTracker resourceBinderServiceTracker)
+	{
+		this.resourceBinderServiceTracker = resourceBinderServiceTracker;
+	}
 
 	@Override
 	public void registerC2sModule(String name, String md5Password)
@@ -253,6 +265,11 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			throw new IllegalStateException("sm has not been registered");
 		}
 		
+		if (resourceBinderServiceTracker.size() <= 0)
+		{
+			logger.error("no resourceBinder service");
+			throw new IllegalStateException("no resourceBinder service");
+		}
 		
 		logger.info("router starting...");
 		
@@ -742,8 +759,9 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 										smName, 
 										session, 
 										RouterManagerImpl.this);
-					
+					session.setAttachment(smSession);
 					smSession.write("<success xmlns='" + SMROUTER_AUTH_NAMESPACE + "' />");
+					resourceBinderServiceTracker.getResourceBinder().smSessionAdded(smSession);
 					return;
 				}
 				else
@@ -831,6 +849,11 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		public void sessionClosed(IoSession session) throws Exception
 		{
 			logger.debug("session" + session + ": sessionClosed");
+			Object atta = session.getAttachment();
+			if (atta != null || atta instanceof SmSession)
+			{
+				resourceBinderServiceTracker.getResourceBinder().smSessionRemoved((SmSession) atta);
+			}
 		}
 
 		@Override
