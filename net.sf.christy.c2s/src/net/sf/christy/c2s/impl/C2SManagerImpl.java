@@ -799,10 +799,10 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			{
 				clientSession.setStatus(ClientSessionImpl.Status.connected);
 			}
-			else if (supportedType == ChristyStreamFeature.SupportedType.afterAuth)
-			{
-				clientSession.setStatus(ClientSessionImpl.Status.authenticated);
-			}
+//			else if (supportedType == ChristyStreamFeature.SupportedType.afterAuth)
+//			{
+//				clientSession.setStatus(ClientSessionImpl.Status.authenticated);
+//			}
 			
 			sendFeature(clientSession, supportedType);
 		}

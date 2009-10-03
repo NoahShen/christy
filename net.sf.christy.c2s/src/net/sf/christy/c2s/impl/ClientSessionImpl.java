@@ -48,15 +48,16 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 	 */
 	@Override
 	public void close()
-	{
+	{		
+		c2sManager.removeClientSession(this);
+		status = Status.disconnected;
+		usingTLS = false;
+		
 		if (iosession != null && !iosession.isConnected())
 		{
 			iosession.close();
 		}
-		c2sManager.removeClientSession(this);
-		streamId = null;
-		status = Status.disconnected;
-		usingTLS = false;
+
 	}
 
 	/* (non-Javadoc)
