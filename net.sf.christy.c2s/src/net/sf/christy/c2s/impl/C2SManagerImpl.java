@@ -599,6 +599,84 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			{
 				handleChallenge(parser, session);
 			}
+			else if ("iq".equals(elementName))
+			{
+				handleIq(parser, session);
+			}
+		}
+
+		private void handleIq(XmlPullParser parser, IoSession session)
+		{
+			if (!tryHandlingPing(parser, session))
+			{
+				// TODO transfer the message to router
+				
+			}
+			
+		}
+
+		private boolean tryHandlingPing(XmlPullParser parser, IoSession session)
+		{
+			String from = parser.getAttributeValue("", "from");
+			String to = parser.getAttributeValue("", "to");
+			String id = parser.getAttributeValue("", "id");
+			String type = parser.getAttributeValue("", "type");
+			
+			if (!getDomain().equals(to))
+			{
+				return false;
+			}
+			
+			
+			try
+			{
+				parser.next();
+			}
+			catch (Exception e)
+			{
+				//e.printStackTrace();
+				StreamError error = new StreamError(StreamError.Condition.invalid_xml);
+				session.write(error);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				return true;
+			}
+			
+			String elementName = parser.getName();
+			String xmlns = parser.getAttributeValue("", "xmlns");
+			if ("ping".equals(elementName))
+			{
+				if (!"urn:xmpp:ping".equals(xmlns))
+				{
+					StreamError error = new StreamError(StreamError.Condition.invalid_namespace);
+					session.write(error);
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return true;
+				}
+				
+				if (!"get".equals(type))
+				{
+					StreamError error = new StreamError(StreamError.Condition.undefined_condition);
+					session.write(error);
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return true;
+				}
+				
+				StringBuilder sbuilder = new StringBuilder("<iq from=\"" + getDomain() + "\" id=\"" + id + "\"");
+				if (from != null && !from.isEmpty())
+				{
+					sbuilder.append(" to=\"" + from + "\"");
+				}
+				sbuilder.append(" type=\"result\"/>");
+				
+				session.write(sbuilder.toString());
+				return true;
+				
+			}
+			
+			return false;
 		}
 
 		private void handleChallenge(XmlPullParser parser, IoSession session)
@@ -610,7 +688,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			}
 			catch (Exception e1)
 			{
-				e1.printStackTrace();
+				//e1.printStackTrace();
 				StreamError error = new StreamError(StreamError.Condition.invalid_xml);
 				session.write(error);
 				session.write(CloseStream.getCloseStream());
@@ -664,11 +742,10 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			try
 			{
 				userAuthenticatorTracker.authenticate(clientSession, content, mechanism);
-				if (clientSession.getStatus() == ClientSession.Status.authenticated)
-				{
-					Success success = new Success();
-					clientSession.write(success);
-				}
+				clientSession.setStatus(ClientSession.Status.authenticated);
+				
+				Success success = new Success();
+				clientSession.write(success);
 			}
 			catch (UnauthorizedException e)
 			{
@@ -816,11 +893,15 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				streamFeature.addFeature(feature.getElementName(), feature.getNamespace(), feature.isRequired());
 			}
 			
-			String[] mechanisms = userAuthenticatorTracker.getAllMechanisms();
-			for (String mech : mechanisms)
+			if (type != SupportedType.afterAuth)
 			{
-				streamFeature.addMechanism(mech);
+				String[] mechanisms = userAuthenticatorTracker.getAllMechanisms();
+				for (String mech : mechanisms)
+				{
+					streamFeature.addMechanism(mech);
+				}
 			}
+			
 			
 			clientSession.write(streamFeature);
 		}
