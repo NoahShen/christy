@@ -24,6 +24,8 @@ public class Activator implements BundleActivator
 	private ServiceRegistration sslContextRegistration;
 	private ServiceRegistration plainUserAuthenticatorRegistration;
 	private UserAuthenticatorTracker userAuthenticatorTracker;
+	private ServiceRegistration resourceBindFeatureRegistration;
+	private ServiceRegistration sessionFeatureRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -39,6 +41,14 @@ public class Activator implements BundleActivator
 		tlsFeature.setRequired(true);
 		tlsFeatureRegistration = context.registerService(ChristyStreamFeature.class.getName(), tlsFeature, null);
 
+		ChristyStreamFeature resourceBindFeature = 
+			new ChristyStreamFeature("bind", "urn:ietf:params:xml:ns:xmpp-bind", ChristyStreamFeature.SupportedType.afterAuth);
+		resourceBindFeatureRegistration = context.registerService(ChristyStreamFeature.class.getName(), resourceBindFeature, null);
+
+		ChristyStreamFeature sessionFeature = 
+			new ChristyStreamFeature("session", "urn:ietf:params:xml:ns:xmpp-session", ChristyStreamFeature.SupportedType.afterAuth);
+		sessionFeatureRegistration = context.registerService(ChristyStreamFeature.class.getName(), sessionFeature, null);
+		
 		
 		streamFeatureStracker = new ChristyStreamFeatureServiceTracker(context);
 		streamFeatureStracker.open();
@@ -116,6 +126,18 @@ public class Activator implements BundleActivator
 		{
 			userAuthenticatorTracker.close();
 			userAuthenticatorTracker = null;
+		}
+		
+		if (resourceBindFeatureRegistration != null)
+		{
+			resourceBindFeatureRegistration.unregister();
+			resourceBindFeatureRegistration = null;
+		}
+		
+		if (sessionFeatureRegistration != null)
+		{
+			sessionFeatureRegistration.unregister();
+			sessionFeatureRegistration = null;
 		}
 		
 	}
