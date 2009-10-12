@@ -419,7 +419,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 
 			try
 			{
-				parser.next();
+				parser.nextTag();
 			}
 			catch (Exception e)
 			{
@@ -601,36 +601,29 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			}
 			else if ("iq".equals(elementName))
 			{
-				handleIq(parser, session);
+				handleIq(xml, parser, session);
 			}
 		}
 
-		private void handleIq(XmlPullParser parser, IoSession session)
+		private void handleIq(String xml, XmlPullParser parser, IoSession session)
 		{
-			if (!tryHandlingPing(parser, session))
+			if (!tryHandling(xml, parser, session))
 			{
-				// TODO transfer the message to router
-				
+				// TODO
 			}
 			
 		}
 
-		private boolean tryHandlingPing(XmlPullParser parser, IoSession session)
+		private boolean tryHandling(String xml, XmlPullParser parser, IoSession session)
 		{
 			String from = parser.getAttributeValue("", "from");
 			String to = parser.getAttributeValue("", "to");
 			String id = parser.getAttributeValue("", "id");
 			String type = parser.getAttributeValue("", "type");
 			
-			if (!getDomain().equals(to))
-			{
-				return false;
-			}
-			
-			
 			try
 			{
-				parser.next();
+				parser.nextTag();
 			}
 			catch (Exception e)
 			{
@@ -644,8 +637,19 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			
 			String elementName = parser.getName();
 			String xmlns = parser.getAttributeValue("", "xmlns");
+			
 			if ("ping".equals(elementName))
 			{
+				
+				if (to != null && !to.isEmpty() && !getDomain().equals(to))
+				{
+					StreamError error = new StreamError(StreamError.Condition.host_unknown);
+					session.write(error);
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return false;
+				}
+				
 				if (!"urn:xmpp:ping".equals(xmlns))
 				{
 					StreamError error = new StreamError(StreamError.Condition.invalid_namespace);
@@ -675,6 +679,49 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				return true;
 				
 			}
+			else if ("bind".equals(elementName))
+			{
+				if (to != null && !to.isEmpty() && !getDomain().equals(to))
+				{
+					StreamError error = new StreamError(StreamError.Condition.host_unknown);
+					session.write(error);
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return false;
+				}
+				
+				if (!"urn:ietf:params:xml:ns:xmpp-bind".equals(xmlns))
+				{
+					StreamError error = new StreamError(StreamError.Condition.invalid_namespace);
+					session.write(error);
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return true;
+				}
+				
+				if (!"set".equals(type))
+				{
+					StreamError error = new StreamError(StreamError.Condition.undefined_condition);
+					session.write(error);
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return true;
+				}
+				
+				ClientSession clientSession = (ClientSession) session.getAttachment();
+				StringBuilder sbuilder = 
+					new StringBuilder("<route from=\"")
+						.append(getName())
+						.append("\" streamid=\"").append(clientSession.getStreamId())
+						.append("\" type=\"set\">")
+						.append(xml)
+						.append("<bindResource xmlns=\"christy:internal:bindResource\"/>")
+						.append("</route>");
+
+				routerSession.write(sbuilder.toString());
+				return true;
+			}
+			
 			
 			return false;
 		}

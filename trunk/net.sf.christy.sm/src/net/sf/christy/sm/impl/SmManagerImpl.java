@@ -243,7 +243,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 
 			try
 			{
-				parser.next();
+				parser.nextTag();
 			}
 			catch (Exception e)
 			{
