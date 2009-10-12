@@ -486,7 +486,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 			try
 			{
-				parser.next();
+				parser.nextTag();
 			}
 			catch (Exception e)
 			{
@@ -507,6 +507,16 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			{
 				handleInternal(parser, session);
 			}
+			else if ("route".equals(elementName))
+			{
+				handleRoute(parser, session);
+			}
+		}
+
+		private void handleRoute(XmlPullParser parser, IoSession session)
+		{
+			// TODO Auto-generated method stub
+			
 		}
 
 		private void handleInternal(XmlPullParser parser, IoSession session)
@@ -699,7 +709,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 			try
 			{
-				parser.next();
+				parser.nextTag();
 			}
 			catch (Exception e)
 			{
