@@ -18,19 +18,19 @@ public interface ResourceBinder
 	/**
 	 * 
 	 * @param jidNode
-	 * @param resouce
+	 * @param xml
 	 * @return
 	 */
-	public BindTask bindResouce(String jidNode, String resouce);
+	public BindTask bindResouce(String jidNode, String xml);
 	
 	/**
 	 * 
 	 * @param jidNode
-	 * @param resouce
+	 * @param xml
 	 * @param listener
 	 * @return
 	 */
-	public BindTask bindResouce(String jidNode, String resouce, BindTaskListener listener);
+	public BindTask bindResouce(String jidNode, String xml, BindTaskListener listener);
 	
 	/**
 	 * 

@@ -15,6 +15,18 @@ public interface ClientSession extends Propertied
 	 * 
 	 * @return
 	 */
+	public String getUsername();
+
+	/**
+	 * 
+	 * @param username
+	 */
+	public void setUsername(String username);
+	
+	/**
+	 * 
+	 * @return
+	 */
 	public String getStreamId();
 	
 	/**

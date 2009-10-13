@@ -19,8 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import net.sf.christy.mina.XmppCodecFactory;
+import net.sf.christy.router.ResourceBinder;
 import net.sf.christy.router.RouterManager;
 import net.sf.christy.router.SmSession;
 import net.sf.christy.util.AbstractPropertied;
@@ -509,14 +511,39 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			}
 			else if ("route".equals(elementName))
 			{
-				handleRoute(parser, session);
+				handleRoute(xml, parser, session);
 			}
 		}
 
-		private void handleRoute(XmlPullParser parser, IoSession session)
+		private void handleRoute(String xml, XmlPullParser parser, IoSession session) throws XmlPullParserException, IOException
 		{
-			// TODO Auto-generated method stub
-			
+			boolean done = false;
+			while (!done)
+			{
+				int eventType = parser.next();
+				
+				if (eventType == XmlPullParser.START_TAG)
+				{
+					String elementName = parser.getName();
+					String xmlns = parser.getAttributeValue("", "xmlns");
+					if ("bindResource".equals(elementName)
+							&& "christy:internal:bindResource".equals(xmlns))
+					{
+						String jidNode = parser.getAttributeValue("", "jidNode");
+						ResourceBinder binder = resourceBinderServiceTracker.getResourceBinder();
+						binder.bindResouce(jidNode, xml);
+						return;
+					}
+				}
+				else if (eventType == XmlPullParser.END_TAG)
+				{
+					String elementName = parser.getName();
+					if ("route".equals(elementName))
+					{
+						done = true;
+					}
+				}
+			}
 		}
 
 		private void handleInternal(XmlPullParser parser, IoSession session)

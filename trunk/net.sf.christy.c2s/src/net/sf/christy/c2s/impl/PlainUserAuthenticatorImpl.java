@@ -26,6 +26,7 @@ public class PlainUserAuthenticatorImpl implements UserAuthenticator
 	{
 		// TODO Auto-generated method stub
 		System.out.println("===================" + content);
+		clientSession.setUsername("Noah");
 	}
 
 

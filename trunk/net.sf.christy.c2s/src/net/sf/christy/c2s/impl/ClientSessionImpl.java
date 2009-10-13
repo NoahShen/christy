@@ -17,6 +17,8 @@ import net.sf.christy.xmpp.XmlStanza;
  */
 public class ClientSessionImpl extends AbstractPropertied implements ClientSession
 {
+	private String username;
+	
 	private IoSession iosession;
 	
 	private String streamId;
@@ -38,14 +40,36 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 	public ClientSessionImpl(IoSession iosession, String streamId, C2SManagerImpl c2sManager)
 	{
 		this.iosession = iosession;
+		this.username = (String) iosession.getAttribute("username");
 		this.streamId = streamId;
 		this.c2sManager = c2sManager;
 		c2sManager.addClientSession(this);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.christy.c2s.ClientSession#close()
+	
+	/**
+	 * @return the username
 	 */
+	public String getUsername()
+	{
+		if (username == null)
+		{
+			return (String) iosession.getAttribute("username");
+		}
+		return username;
+	}
+
+
+	/**
+	 * @param username the username to set
+	 */
+	public void setUsername(String username)
+	{
+		this.username = username;
+		iosession.setAttribute("username", username);
+	}
+
+
 	@Override
 	public void close()
 	{		
@@ -60,9 +84,6 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.christy.c2s.ClientSession#getClientAddress()
-	 */
 	@Override
 	public SocketAddress getClientAddress()
 	{
@@ -73,45 +94,30 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.christy.c2s.ClientSession#getStreamId()
-	 */
 	@Override
 	public String getStreamId()
 	{
 		return streamId;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.christy.c2s.ClientSession#isUsingCompression()
-	 */
 	@Override
 	public boolean isUsingCompression()
 	{
 		return usingCompression;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.christy.c2s.ClientSession#isUsingTLS()
-	 */
 	@Override
 	public boolean isUsingTLS()
 	{
 		return usingTLS;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.christy.c2s.ClientSession#write(java.lang.String)
-	 */
 	@Override
 	public void write(String stanza)
 	{
 		iosession.write(stanza);
 	}
-	
-	/* (non-Javadoc)
-	 * @see net.sf.christy.c2s.ClientSession#write(java.lang.String)
-	 */
+
 	@Override
 	public void write(XmlStanza stanza)
 	{
