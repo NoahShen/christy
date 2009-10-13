@@ -42,18 +42,18 @@ public class ConsistentHashingResourceBinder implements ResourceBinder
 
 
 	@Override
-	public BindTask bindResouce(String jidNode, String resouce)
+	public BindTask bindResouce(String jidNode, String xml)
 	{
-		return bindResouce(jidNode, resouce, null);
+		return bindResouce(jidNode, xml, null);
 	}
 
 
 	@Override
-	public BindTask bindResouce(String jidNode, String resouce, BindTaskListener listener)
+	public BindTask bindResouce(String jidNode, String xml, BindTaskListener listener)
 	{
-		// TODO Auto-generated method stub
 		
-		
+		SmSession smSession = get(jidNode);
+		smSession.write(xml);
 		
 		if (!isStartBinding)
 		{

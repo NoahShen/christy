@@ -715,7 +715,9 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 						.append("\" streamid=\"").append(clientSession.getStreamId())
 						.append("\" type=\"set\">")
 						.append(xml)
-						.append("<bindResource xmlns=\"christy:internal:bindResource\"/>")
+						.append("<bindResource jidNode=\"")
+						.append(clientSession.getUsername())
+						.append("\" xmlns=\"christy:internal:bindResource\"/>")
 						.append("</route>");
 
 				routerSession.write(sbuilder.toString());
