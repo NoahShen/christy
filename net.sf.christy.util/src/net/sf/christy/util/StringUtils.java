@@ -747,6 +747,41 @@ public class StringUtils
 		return data;
 	}
 
+	public static byte[] hashBytes(String data, String algorithm)
+	{
+		try
+		{
+			return hashBytes(data.getBytes("utf-8"), algorithm);
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static byte[] hashBytes(byte[] bytes, String algorithm)
+	{
+		synchronized (algorithm.intern())
+		{
+			MessageDigest digest = digests.get(algorithm);
+			if (digest == null)
+			{
+				try
+				{
+					digest = MessageDigest.getInstance(algorithm);
+					digests.put(algorithm, digest);
+				}
+				catch (NoSuchAlgorithmException nsae)
+				{
+					nsae.printStackTrace();
+					return null;
+				}
+			}
+			digest.update(bytes);
+			return digest.digest();
+		}
+	}
 	/**
 	 * Hashes a byte array using the specified algorithm and returns the
 	 * result as a String of hexadecimal numbers. This method is

@@ -267,6 +267,8 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				logger.error("password error");
 				session.close();
 			}
+			
+			// TODO "route"
 		}
 
 		private void handleStream(XmlPullParser parser, IoSession session)

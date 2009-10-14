@@ -3,6 +3,7 @@
  */
 package net.sf.christy.router.impl.consistentHashingImpl;
 
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -26,6 +27,8 @@ public class ConsistentHashingResourceBinder implements ResourceBinder
 	private int newAddedSmSessionCount;
 	
 	private final int numberOfReplicas;
+	
+	private int rehash;
 
 	private final SortedMap<Integer, SmSession> circle = new TreeMap<Integer, SmSession>();
 
@@ -41,19 +44,56 @@ public class ConsistentHashingResourceBinder implements ResourceBinder
 	}
 
 
-	@Override
-	public BindTask bindResouce(String jidNode, String xml)
+	/**
+	 * @return the rehash
+	 */
+	public int getRehash()
 	{
-		return bindResouce(jidNode, xml, null);
+		return rehash;
+	}
+
+
+	/**
+	 * @param rehash the rehash to set
+	 */
+	public void setRehash(int rehash)
+	{
+		this.rehash = rehash;
 	}
 
 
 	@Override
-	public BindTask bindResouce(String jidNode, String xml, BindTaskListener listener)
+	public BindTask bindResouce(String jidNode, String xml, Map<String, Object> properties)
 	{
+		return bindResouce(jidNode, xml, properties, null);
+	}
+
+
+	@Override
+	public BindTask bindResouce(String jidNode, String xml, Map<String, Object> properties, BindTaskListener listener)
+	{		
+		String from = (String) properties.get("from");
+		String streamid = (String) properties.get("streamid");
+		
+		StringBuilder sbuilder = 
+			new StringBuilder("<route from=\"")
+				.append(from)
+				.append("\" streamid=\"").append(streamid)
+				.append("\" type=\"set\">")
+				.append(xml)
+				.append("<bindResource jidNode=\"")
+				.append(jidNode)
+				.append("\" xmlns=\"christy:internal:bindResource\"/>");
+		
+		if (newAddedSmSessionCount > 0)
+		{
+			sbuilder.append("<redirect times=\"0\" total=\"")
+					.append(newAddedSmSessionCount).append("\"/>");
+		}
+		sbuilder.append("</route>");
 		
 		SmSession smSession = get(jidNode);
-		smSession.write(xml);
+		smSession.write(sbuilder.toString());
 		
 		if (!isStartBinding)
 		{
@@ -71,25 +111,65 @@ public class ConsistentHashingResourceBinder implements ResourceBinder
 	@Override
 	public void smSessionAdded(SmSession smSession)
 	{
-
+		int rehash2 = rehash;
+		boolean success = false;
+		do
+		{
+			String key = smSession.getProperty("hashKey") != null ? 
+						smSession.getProperty("hashKey").toString() : smSession.getSmName();
+			if (hashDuplicate(key))
+			{
+				// duplicate
+				smSession.setProperty("hashKey", smSession.getSmName() + rehash2);
+				continue;
+			}
+			for (int i = 0; i < numberOfReplicas; i++)
+			{
+				circle.put(hashFunction.hash(key + i), smSession);
+			}
+			success = true;
+			break;
+		}
+		while (rehash2-- > 0);
+		
+		if (!success)
+		{
+			throw new RuntimeException("hash duplicate");
+		}
 		
 		if (isStartBinding)
 		{
 			++newAddedSmSessionCount;
 		}
+	}
 
+	private boolean hashDuplicate(String smName)
+	{
 		for (int i = 0; i < numberOfReplicas; i++)
 		{
-			circle.put(hashFunction.hash(smSession.getSmName() + i), smSession);
+			if (circle.containsKey(hashFunction.hash(smName + i)))
+			{
+				return true;
+			}
 		}
+		return false;
 	}
+
 
 	@Override
 	public void smSessionRemoved(SmSession smSession)
 	{
+		String key = smSession.getProperty("hashKey") != null ? 
+				smSession.getProperty("hashKey").toString() : smSession.getSmName();
+				
 		for (int i = 0; i < numberOfReplicas; i++)
 		{
-			circle.remove(hashFunction.hash(smSession.getSmName() + i));
+			circle.remove(hashFunction.hash(key + i));
+		}
+		
+		if (isStartBinding)
+		{
+			--newAddedSmSessionCount;
 		}
 
 	}
@@ -108,6 +188,5 @@ public class ConsistentHashingResourceBinder implements ResourceBinder
 		}
 		return circle.get(hash);
 	}
-
 
 }

@@ -14,10 +14,19 @@ public class Md5HashFunction implements HashFunction
 	@Override
 	public int hash(Object obj)
 	{
-		String str = obj.toString();
-		String hash = StringUtils.hash(str, "MD5");
-		int hashCode = Integer.valueOf(hash.substring(0, 7), 16);
+		byte[] b = StringUtils.hashBytes(obj.toString(), "MD5");
+		int hashCode = Math.abs(bytesToInt(b));
 		return hashCode;
+	}
+	
+
+	private static int bytesToInt(byte[] bytes)
+	{
+		int num = bytes[0] & 0xFF;
+		num |= ((bytes[1] << 8) & 0xFF00);
+		num |= ((bytes[2] << 16) & 0xFF0000);
+		num |= ((bytes[3] << 24) & 0xFF000000);
+		return num;
 	}
 
 }
