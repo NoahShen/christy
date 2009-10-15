@@ -3,6 +3,7 @@
  */
 package net.sf.christy.sm.impl;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import net.sf.christy.mina.XmppCodecFactory;
 import net.sf.christy.sm.SmManager;
@@ -55,6 +57,13 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	private SocketConnector routerConnector;
 
 	private IoSession routerSession;
+	
+	private XmppParserServiceTracker xmppParserServiceTracker;
+	
+	public SmManagerImpl(XmppParserServiceTracker xmppParserServiceTracker)
+	{
+		this.xmppParserServiceTracker = xmppParserServiceTracker;
+	}
 	
 	@Override
 	public void exit()
@@ -267,8 +276,61 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				logger.error("password error");
 				session.close();
 			}
+			else if ("route".equals(elementName))
+			{
+				handleRoute(parser, session);
+			}
+
+		}
+
+		private void handleRoute(XmlPullParser parser, IoSession session) throws Exception
+		{
+			XmlStanza stanza = null;
+			String jidNode = null;
 			
-			// TODO "route"
+			boolean isBindRes = false;
+			
+			String from = parser.getAttributeValue("", "from");
+			String streamid = parser.getAttributeValue("", "streamid");
+			boolean done = false;
+			while (!done)
+			{
+				
+				int eventType = parser.next();
+				String elementName = parser.getName();
+				if (eventType == XmlPullParser.START_TAG)
+				{
+					if ("iq".equals(elementName)
+							|| "message".equals(elementName)
+							|| "present".equals(elementName))
+					{
+						stanza = xmppParserServiceTracker.getParser().parseParser(parser);
+					}
+					else if ("bindResource".equals(elementName))
+					{
+						jidNode = parser.getAttributeValue("", "jidNode");
+						isBindRes = true;
+					}
+				}
+				else if (eventType == XmlPullParser.END_TAG)
+				{
+					if ("route".equals(elementName))
+					{
+						done = true;
+					}
+				}
+			}
+			
+			if (isBindRes)
+			{
+				bindResource(from ,streamid, jidNode, stanza);
+			}
+		}
+
+		private void bindResource(String from, String streamid, String jidNode, XmlStanza stanza)
+		{
+			// TODO Auto-generated method stub
+			
 		}
 
 		private void handleStream(XmlPullParser parser, IoSession session)
