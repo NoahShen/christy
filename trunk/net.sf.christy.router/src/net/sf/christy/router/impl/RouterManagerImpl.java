@@ -90,12 +90,16 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 	private ResourceBinderServiceTracker resourceBinderServiceTracker;
 
+	private RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker;
+
 	/**
 	 * @param resourceBinderServiceTracker
+	 * @param routerToSmInterceptorServiceTracker 
 	 */
-	public RouterManagerImpl(ResourceBinderServiceTracker resourceBinderServiceTracker)
+	public RouterManagerImpl(ResourceBinderServiceTracker resourceBinderServiceTracker, RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker)
 	{
 		this.resourceBinderServiceTracker = resourceBinderServiceTracker;
+		this.routerToSmInterceptorServiceTracker = routerToSmInterceptorServiceTracker;
 	}
 
 	@Override
@@ -267,11 +271,11 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			throw new IllegalStateException("sm has not been registered");
 		}
 		
-		if (resourceBinderServiceTracker.size() <= 0)
-		{
-			logger.error("no resourceBinder service");
-			throw new IllegalStateException("no resourceBinder service");
-		}
+//		if (resourceBinderServiceTracker.size() <= 0)
+//		{
+//			logger.error("no resourceBinder service");
+//			throw new IllegalStateException("no resourceBinder service");
+//		}
 		
 		logger.info("router starting...");
 		
@@ -563,7 +567,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			if (isBindRes)
 			{
 				ResourceBinder binder = resourceBinderServiceTracker.getResourceBinder();
-				binder.bindResouce(jidNode, iqStr, properties);
+				binder.handleRequest(jidNode, iqStr, properties);
 			}
 			
 		}
@@ -841,6 +845,13 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				return;
 			}
 			
+			if (routerToSmInterceptorServiceTracker.fireRouteMessageReceived(xml))
+			{
+				logger.debug("Message which recieved from " + session + "has been intercepted.Message:" + xml);
+				return;
+			}
+			
+			
 			StringReader strReader = new StringReader(xml);
 			XmlPullParser parser = new MXParser();
 			parser.setInput(strReader);
@@ -905,7 +916,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 						new SmSessionImpl(streamId, 
 										smName, 
 										session, 
-										RouterManagerImpl.this);
+										RouterManagerImpl.this,
+										routerToSmInterceptorServiceTracker);
 					session.setAttachment(smSession);
 					smSession.write("<success xmlns='" + SMROUTER_AUTH_NAMESPACE + "' />");
 					resourceBinderServiceTracker.getResourceBinder().smSessionAdded(smSession);

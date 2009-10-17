@@ -3,7 +3,6 @@
  */
 package net.sf.christy.sm.impl;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -20,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
 import net.sf.christy.mina.XmppCodecFactory;
 import net.sf.christy.sm.SmManager;
