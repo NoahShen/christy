@@ -22,19 +22,8 @@ public interface ResourceBinder
 	 * @param jidNode
 	 * @param xml
 	 * @param properties
-	 * @return
 	 */
-	public BindTask bindResouce(String jidNode, String xml, Map<String, Object> properties);
-	
-	/**
-	 * 
-	 * @param jidNode
-	 * @param xml
-	 * @param properties
-	 * @param listener
-	 * @return
-	 */
-	public BindTask bindResouce(String jidNode, String xml, Map<String, Object> properties, BindTaskListener listener);
+	public void handleRequest(String jidNode, String xml, Map<String, Object> properties);
 	
 	/**
 	 * 

@@ -2,25 +2,17 @@ package net.sf.christy.router;
 
 import net.sf.christy.router.impl.ResourceBinderServiceTracker;
 import net.sf.christy.router.impl.RouterManagerImpl;
-import net.sf.christy.router.impl.consistentHashingImpl.ConsistentHashingResourceBinder;
-import net.sf.christy.router.impl.consistentHashingImpl.HashFunction;
-import net.sf.christy.router.impl.consistentHashingImpl.HashFunctionServiceTracker;
-import net.sf.christy.router.impl.consistentHashingImpl.Md5HashFunction;
+import net.sf.christy.router.impl.RouterToSmInterceptorServiceTracker;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 
 public class Activator implements BundleActivator
 {
 
-	private ServiceRegistration md5HashFunctionRegistration;
-
-	private HashFunctionServiceTracker hashFunctionServiceTracker;
-
-	private ServiceRegistration consistentHashingResourceBinderRegistration;
 
 	private ResourceBinderServiceTracker resourceBinderServiceTracker;
+	private RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -30,22 +22,13 @@ public class Activator implements BundleActivator
 	public void start(BundleContext context) throws Exception
 	{
 
-		Md5HashFunction md5HashFunction = new Md5HashFunction();
-		md5HashFunctionRegistration = context.registerService(HashFunction.class.getName(), md5HashFunction, null);
-
-		hashFunctionServiceTracker = new HashFunctionServiceTracker(context);
-		hashFunctionServiceTracker.open();
-
-		ConsistentHashingResourceBinder consistentHashingResourceBinder = 
-			new ConsistentHashingResourceBinder(hashFunctionServiceTracker, 50);// 50 replicas
-
-		consistentHashingResourceBinderRegistration = 
-			context.registerService(ResourceBinder.class.getName(), consistentHashingResourceBinder, null);
-
 		resourceBinderServiceTracker = new ResourceBinderServiceTracker(context);
 		resourceBinderServiceTracker.open();
 
-		RouterManager rm = new RouterManagerImpl(resourceBinderServiceTracker);
+		routerToSmInterceptorServiceTracker = new RouterToSmInterceptorServiceTracker(context);
+		resourceBinderServiceTracker.open();
+		
+		RouterManager rm = new RouterManagerImpl(resourceBinderServiceTracker, routerToSmInterceptorServiceTracker);
 
 		// test code
 		rm.setDomain("example.com");
@@ -61,28 +44,16 @@ public class Activator implements BundleActivator
 	 */
 	public void stop(BundleContext context) throws Exception
 	{
-		if (md5HashFunctionRegistration != null)
-		{
-			md5HashFunctionRegistration.unregister();
-			md5HashFunctionRegistration = null;
-		}
-
-		if (hashFunctionServiceTracker != null)
-		{
-			hashFunctionServiceTracker.close();
-			hashFunctionServiceTracker = null;
-		}
-
-		if (consistentHashingResourceBinderRegistration != null)
-		{
-			consistentHashingResourceBinderRegistration.unregister();
-			consistentHashingResourceBinderRegistration = null;
-		}
-
 		if (resourceBinderServiceTracker != null)
 		{
 			resourceBinderServiceTracker.close();
 			resourceBinderServiceTracker = null;
+		}
+		
+		if (routerToSmInterceptorServiceTracker != null)
+		{
+			routerToSmInterceptorServiceTracker.close();
+			routerToSmInterceptorServiceTracker = null;
 		}
 	}
 
