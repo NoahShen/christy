@@ -14,12 +14,12 @@ public interface SmToRouterInterceptor
 	 * @param routeXml
 	 * @return
 	 */
-	public boolean routeMessageReceived(String routeXml);
+	public boolean smMessageReceived(String routeXml);
 	
 	/**
 	 * 
 	 * @param routeXml
 	 * @return
 	 */
-	public boolean routeMessageSended(String routeXml);
+	public boolean smMessageSent(String routeXml);
 }

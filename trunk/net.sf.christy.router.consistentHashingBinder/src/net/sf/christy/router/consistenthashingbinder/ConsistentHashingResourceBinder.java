@@ -6,6 +6,7 @@ package net.sf.christy.router.consistenthashingbinder;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sf.christy.router.ResourceBinder;
 import net.sf.christy.router.RouterToSmInterceptor;
@@ -23,7 +24,7 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 	
 	private boolean isStartBinding = false;
 	
-	private int newAddedSmSessionCount;
+	private AtomicInteger newAddedSmSessionCount;
 	
 	private final int numberOfReplicas;
 	
@@ -77,10 +78,10 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 				.append(jidNode)
 				.append("\" xmlns=\"christy:internal:bindResource\"/>");
 		
-		if (newAddedSmSessionCount > 0)
+		if (newAddedSmSessionCount.intValue() > 0)
 		{
 			sbuilder.append("<search times=\"0\" total=\"")
-					.append(newAddedSmSessionCount).append("\"/>");
+					.append(newAddedSmSessionCount.intValue()).append("\"/>");
 		}
 		sbuilder.append("</route>");
 		
@@ -130,7 +131,7 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 		
 		if (isStartBinding)
 		{
-			++newAddedSmSessionCount;
+			newAddedSmSessionCount.incrementAndGet();
 		}
 	}
 
@@ -160,7 +161,7 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 		
 		if (isStartBinding)
 		{
-			--newAddedSmSessionCount;
+			newAddedSmSessionCount.decrementAndGet();
 		}
 
 	}
