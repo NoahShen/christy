@@ -8,13 +8,14 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import net.sf.christy.router.ResourceBinder;
+import net.sf.christy.router.RouterToSmInterceptor;
 import net.sf.christy.router.SmSession;
 
 /**
  * @author noah
  *
  */
-public class ConsistentHashingResourceBinder implements ResourceBinder
+public class ConsistentHashingResourceBinder implements ResourceBinder, RouterToSmInterceptor
 {
 	private HashFunctionServiceTracker hashFunctionServiceTracker;
 
@@ -70,7 +71,7 @@ public class ConsistentHashingResourceBinder implements ResourceBinder
 			new StringBuilder("<route from=\"")
 				.append(from)
 				.append("\" streamid=\"").append(streamid)
-				.append("\" type=\"set\">")
+				.append("\" >")
 				.append(xml)
 				.append("<bindResource jidNode=\"")
 				.append(jidNode)
@@ -78,7 +79,7 @@ public class ConsistentHashingResourceBinder implements ResourceBinder
 		
 		if (newAddedSmSessionCount > 0)
 		{
-			sbuilder.append("<redirect times=\"0\" total=\"")
+			sbuilder.append("<search times=\"0\" total=\"")
 					.append(newAddedSmSessionCount).append("\"/>");
 		}
 		sbuilder.append("</route>");
@@ -177,6 +178,22 @@ public class ConsistentHashingResourceBinder implements ResourceBinder
 			hash = tailMap.isEmpty() ? circle.firstKey() : tailMap.firstKey();
 		}
 		return circle.get(hash);
+	}
+
+
+	@Override
+	public boolean routeMessageReceived(String routeXml)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+
+	@Override
+	public boolean routeMessageSent(String routeXml)
+	{
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

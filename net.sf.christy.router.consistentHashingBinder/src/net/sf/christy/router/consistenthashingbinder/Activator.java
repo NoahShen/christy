@@ -1,6 +1,7 @@
 package net.sf.christy.router.consistenthashingbinder;
 
 import net.sf.christy.router.ResourceBinder;
+import net.sf.christy.router.RouterToSmInterceptor;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -13,6 +14,8 @@ public class Activator implements BundleActivator
 	private ServiceRegistration md5HashFunctionRegistration;
 
 	private ServiceRegistration consistentHashingResourceBinderRegistration;
+
+	private ServiceRegistration consistentHashingRouterToSmInterceptorRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -32,6 +35,9 @@ public class Activator implements BundleActivator
 
 		consistentHashingResourceBinderRegistration = 
 			context.registerService(ResourceBinder.class.getName(), consistentHashingResourceBinder, null);
+		
+		consistentHashingRouterToSmInterceptorRegistration = 
+			context.registerService(RouterToSmInterceptor.class.getName(), consistentHashingResourceBinder, null);
 	}
 
 	/*
@@ -57,6 +63,12 @@ public class Activator implements BundleActivator
 		{
 			consistentHashingResourceBinderRegistration.unregister();
 			consistentHashingResourceBinderRegistration = null;
+		}
+		
+		if (consistentHashingRouterToSmInterceptorRegistration != null)
+		{
+			consistentHashingRouterToSmInterceptorRegistration.unregister();
+			consistentHashingRouterToSmInterceptorRegistration = null;
 		}
 	}
 
