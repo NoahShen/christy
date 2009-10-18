@@ -3,14 +3,17 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Xmppparser Plug-in
 Bundle-SymbolicName: net.sf.christy.xmppparser
 Bundle-Version: 1.0.0
-Bundle-ClassPath: bin/
+Bundle-ClassPath: bin/,
+ lib/xpp3-1.1.3.4.C.jar
 Bundle-Activator: net.sf.christy.xmppparser.Activator
 Bundle-Vendor: Noah
 Import-Package: net.sf.christy.util,
  net.sf.christy.xmpp,
  org.osgi.framework;version="1.3.0",
  org.osgi.util.tracker;version="1.3.3",
- org.slf4j,
+ org.slf4j
+Eclipse-LazyStart: true
+Export-Package: net.sf.christy.xmppparser,
  org.xmlpull.mxp1,
  org.xmlpull.mxp1_serializer,
  org.xmlpull.v1,
@@ -23,5 +26,3 @@ Import-Package: net.sf.christy.util,
  org.xmlpull.v1.util,
  org.xmlpull.v1.wrapper,
  org.xmlpull.v1.wrapper.classic
-Eclipse-LazyStart: true
-Export-Package: net.sf.christy.xmppparser

@@ -309,6 +309,10 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 						jidNode = parser.getAttributeValue("", "jidNode");
 						isBindRes = true;
 					}
+					else if ("search".equals(elementName))
+					{
+						
+					}
 				}
 				else if (eventType == XmlPullParser.END_TAG)
 				{

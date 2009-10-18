@@ -26,7 +26,7 @@ public class Activator implements BundleActivator
 		resourceBinderServiceTracker.open();
 
 		routerToSmInterceptorServiceTracker = new RouterToSmInterceptorServiceTracker(context);
-		resourceBinderServiceTracker.open();
+		routerToSmInterceptorServiceTracker.open();
 		
 		RouterManager rm = new RouterManagerImpl(resourceBinderServiceTracker, routerToSmInterceptorServiceTracker);
 
