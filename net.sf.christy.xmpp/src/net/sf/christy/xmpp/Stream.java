@@ -90,7 +90,7 @@ public class Stream extends AbstractXmlStanza
 		this.lang = lang;
 	}
 
-	public String toXML()
+	public String toXml()
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append("<stream:stream");

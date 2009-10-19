@@ -55,7 +55,7 @@ public class Compress implements XmlStanza
 	 * @see net.sf.mxlosgi.mxlosgixmppbundle.XMLStanza#toXML()
 	 */
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append("<compress xmlns=\"http://jabber.org/protocol/compress\">").append("<method>").append(compressMethod).append(

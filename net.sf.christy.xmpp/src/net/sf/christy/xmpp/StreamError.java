@@ -111,7 +111,7 @@ public class StreamError implements XmlStanza
 	}
 	
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append("<stream:error>");
@@ -122,13 +122,13 @@ public class StreamError implements XmlStanza
 		ErrorText text = getText();
 		if (text != null)
 		{
-			buf.append(text.toXML());
+			buf.append(text.toXml());
 		}
 		if (!applicationConditions.isEmpty())
 		{
 			for (AppCondition appCondition : applicationConditions.values())
 			{
-				buf.append(appCondition.toXML());
+				buf.append(appCondition.toXml());
 			}
 		}
 		buf.append("</stream:error>");
@@ -531,7 +531,7 @@ public class StreamError implements XmlStanza
 		}
 
 		@Override
-		public String toXML()
+		public String toXml()
 		{
 			StringBuffer buf = new StringBuffer();
 			buf.append("<").append(getElementName()).append(" xmlns=\"").append(getNamespace()).append("\"/>");
@@ -605,7 +605,7 @@ public class StreamError implements XmlStanza
 		 * @see net.sf.mxlosgi.mxlosgixmppbundle.XMLStanza#toXML()
 		 */
 		@Override
-		public String toXML()
+		public String toXml()
 		{
 			StringBuffer buf = new StringBuffer();
 			buf.append("<text xmlns=\"urn:ietf:params:xml:ns:xmpp-streams\"");

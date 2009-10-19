@@ -1,7 +1,7 @@
 /**
  * 
  */
-package net.sf.christy.sm.impl;
+package net.sf.christy.routemessageparser.impl;
 
 
 import net.sf.christy.xmppparser.XmppParser;

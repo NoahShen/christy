@@ -19,7 +19,7 @@ public class Proceed implements XmlStanza
 	
 	
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		return "<proceed xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/>";
 	}

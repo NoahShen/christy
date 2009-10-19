@@ -39,7 +39,7 @@ public class Challenge implements XmlStanza
 	}
 	
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append("<challenge xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\">").append(getContent()).append("</challenge>");

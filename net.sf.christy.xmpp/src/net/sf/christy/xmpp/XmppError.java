@@ -198,7 +198,7 @@ public class XmppError implements XmlStanza
 	 * 
 	 * @return the error as XML.
 	 */
-	public String toXML()
+	public String toXml()
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append("<error code=\"").append(code).append("\"");
@@ -231,7 +231,7 @@ public class XmppError implements XmlStanza
 		}
 		for (PacketExtension element : this.getExtensions())
 		{
-			buf.append(element.toXML());
+			buf.append(element.toXml());
 		}
 		buf.append("</error>");
 		return buf.toString();

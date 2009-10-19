@@ -86,7 +86,7 @@ public class IqRoster implements PacketExtension
 	}
 
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		StringBuilder buf = new StringBuilder();
 		buf.append("<" + getElementName() + " xmlns=\"" + getNamespace() + "\">");
@@ -94,7 +94,7 @@ public class IqRoster implements PacketExtension
 		{
 			for (Item entry : rosterItems)
 			{
-				buf.append(entry.toXML());
+				buf.append(entry.toXml());
 			}
 		}
 		buf.append("</" +  getElementName() + ">");
@@ -270,7 +270,7 @@ public class IqRoster implements PacketExtension
 		}
 
 		@Override
-		public String toXML()
+		public String toXml()
 		{
 			StringBuilder buf = new StringBuilder();
 			buf.append("<item jid=\"").append(jid.toBareJID()).append("\"");

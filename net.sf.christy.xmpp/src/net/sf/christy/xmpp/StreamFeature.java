@@ -118,14 +118,14 @@ public class StreamFeature implements XmlStanza
 
 
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append("<stream:features>");
 		
 		for (Feature feature : getFeatures())
 		{
-			buf.append(feature.toXML());
+			buf.append(feature.toXml());
 		}
 		
 		if (!getCompressionMethod().isEmpty())
@@ -240,7 +240,7 @@ public class StreamFeature implements XmlStanza
 
 
 		@Override
-		public String toXML()
+		public String toXml()
 		{
 			StringBuffer buf = new StringBuffer();
 			buf.append("<").append(getElementName()).append(" xmlns=\"").append(getNamespace()).append("\"");

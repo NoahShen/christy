@@ -66,7 +66,7 @@ public class IqBind implements PacketExtension
 	}
 
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		StringBuilder buf = new StringBuilder();
 		buf.append("<" + getElementName() + " xmlns=\"" + getNamespace() + "\">");

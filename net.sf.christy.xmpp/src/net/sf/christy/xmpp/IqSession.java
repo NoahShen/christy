@@ -31,7 +31,7 @@ public class IqSession implements PacketExtension
 	}
 
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		return "<" + getElementName() + " xmlns=\"" + getNamespace() + "\"/>";
 	}

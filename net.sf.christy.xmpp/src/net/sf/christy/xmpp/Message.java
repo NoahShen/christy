@@ -294,7 +294,7 @@ public class Message extends Packet
 		this.thread = thread;
 	}
 
-	public String toXML()
+	public String toXml()
 	{
 		StringBuilder buf = new StringBuilder();
 		buf.append("<message");
@@ -326,7 +326,7 @@ public class Message extends Packet
 		
 		for (Subject subj : getSubjects())
 		{
-			buf.append(subj.toXML());
+			buf.append(subj.toXml());
 		}
 		
 		// Add the body in the default language
@@ -338,7 +338,7 @@ public class Message extends Packet
 		// Add the bodies in other languages
 		for (Body body : getBodies())
 		{
-			buf.append(body.toXML());
+			buf.append(body.toXml());
 		}
 
 		if (thread != null)
@@ -349,7 +349,7 @@ public class Message extends Packet
 		XmppError error = getError();
 		if (error != null)
 		{
-			buf.append(error.toXML());
+			buf.append(error.toXml());
 		}
 
 		// Add packet extensions, if any are defined.
@@ -462,7 +462,7 @@ public class Message extends Packet
 		}
 
 		@Override
-		public String toXML()
+		public String toXml()
 		{
 			StringBuffer buf = new StringBuffer();			
 			buf.append("<body xml:lang=\"").append(langauge).append("\">");
@@ -527,7 +527,7 @@ public class Message extends Packet
 
 
 		@Override
-		public String toXML()
+		public String toXml()
 		{
 			StringBuffer buf = new StringBuffer();			
 			buf.append("<subject xml:lang=\"").append(lang).append("\">");

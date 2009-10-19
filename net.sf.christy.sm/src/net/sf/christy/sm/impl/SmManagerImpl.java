@@ -21,6 +21,7 @@ import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
 import net.sf.christy.mina.XmppCodecFactory;
+import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.sm.SmManager;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.XmlStanza;
@@ -56,11 +57,15 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 
 	private IoSession routerSession;
 	
-	private XmppParserServiceTracker xmppParserServiceTracker;
+	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	
-	public SmManagerImpl(XmppParserServiceTracker xmppParserServiceTracker)
+	private SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker;
+	
+	public SmManagerImpl(RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
+						SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker)
 	{
-		this.xmppParserServiceTracker = xmppParserServiceTracker;
+		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
+		this.smToRouterInterceptorServiceTracker = smToRouterInterceptorServiceTracker;
 	}
 	
 	@Override
@@ -246,6 +251,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 
 			StringReader strReader = new StringReader(xml);
 			XmlPullParser parser = new MXParser();
+			parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
 			parser.setInput(strReader);
 
 			try
@@ -276,68 +282,30 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			}
 			else if ("route".equals(elementName))
 			{
-				handleRoute(parser, session);
+				RouteMessage routeMessage = 
+					routeMessageParserServiceTracker.getRouteMessageParser().parseParser(parser);
+				handleRoute(routeMessage, session);
 			}
 
 		}
 
-		private void handleRoute(XmlPullParser parser, IoSession session) throws Exception
+		private void handleRoute(RouteMessage routeMessage, IoSession session)
 		{
-			XmlStanza stanza = null;
-			String jidNode = null;
-			
-			boolean isBindRes = false;
-			
-			String from = parser.getAttributeValue("", "from");
-			String streamid = parser.getAttributeValue("", "streamid");
-			boolean done = false;
-			while (!done)
+			if (smToRouterInterceptorServiceTracker.fireSmMessageReceived(routeMessage))
 			{
-				
-				int eventType = parser.next();
-				String elementName = parser.getName();
-				if (eventType == XmlPullParser.START_TAG)
-				{
-					if ("iq".equals(elementName)
-							|| "message".equals(elementName)
-							|| "present".equals(elementName))
-					{
-						stanza = xmppParserServiceTracker.getParser().parseParser(parser);
-					}
-					else if ("bindResource".equals(elementName))
-					{
-						jidNode = parser.getAttributeValue("", "jidNode");
-						isBindRes = true;
-					}
-					else if ("search".equals(elementName))
-					{
-						
-					}
-				}
-				else if (eventType == XmlPullParser.END_TAG)
-				{
-					if ("route".equals(elementName))
-					{
-						done = true;
-					}
-				}
+				logger.debug("Message which recieved from "
+							+ session + "has been intercepted.Message:"
+							+ routeMessage.toXml());
+				return;
 			}
 			
-			if (isBindRes)
-			{
-				bindResource(from ,streamid, jidNode, stanza);
-			}
-		}
-
-		private void bindResource(String from, String streamid, String jidNode, XmlStanza stanza)
-		{
-			// TODO Auto-generated method stub
-			
+			// TODO
+			System.out.println("=============" + routeMessage.toXml());
 		}
 
 		private void handleStream(XmlPullParser parser, IoSession session)
 		{
-			String xmlns = parser.getAttributeValue("", "xmlns");
+			String xmlns = parser.getNamespace(null);
 			String from = parser.getAttributeValue("", "from");
 			String id = parser.getAttributeValue("", "id");
 			
@@ -372,7 +340,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				}
 				else if (message instanceof XmlStanza)
 				{
-					s = ((XmlStanza)message).toXML();
+					s = ((XmlStanza)message).toXml();
 				}
 				logger.debug("session" + session + ": messageSent:\n" + s);
 			}

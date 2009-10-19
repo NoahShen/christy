@@ -17,7 +17,7 @@ public interface XmlStanza extends Serializable, Cloneable
 	 * 
 	 * @return the xml stanza.
 	 */
-	public String toXML();
+	public String toXml();
 	
 	/**
 	 * 

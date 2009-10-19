@@ -190,7 +190,7 @@ public class Presence extends Packet
 		this.show = show;
 	}
 
-	public String toXML()
+	public String toXml()
 	{
 		StringBuilder buf = new StringBuilder();
 		buf.append("<presence");
@@ -234,7 +234,7 @@ public class Presence extends Packet
 		XmppError error = getError();
 		if (error != null)
 		{
-			buf.append(error.toXML());
+			buf.append(error.toXml());
 		}
 
 		buf.append("</presence>");

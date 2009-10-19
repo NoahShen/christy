@@ -25,7 +25,7 @@ public class CloseStream implements XmlStanza
 	 * @see net.sf.christy.christyxmppbundle.XMLData#toXML()
 	 */
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		return "</stream:stream>";
 	}

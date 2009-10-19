@@ -121,7 +121,7 @@ public class Privacy implements PacketExtension
 	}
 
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append("<" + getElementName() + " xmlns=\"" + getNamespace() + "\">");
@@ -155,7 +155,7 @@ public class Privacy implements PacketExtension
 		while (it.hasNext())
 		{
 			PrivacyList privacyList = it.next();
-			buf.append(privacyList.toXML());
+			buf.append(privacyList.toXml());
 		}
 		
 		buf.append("</" + getElementName() + ">");

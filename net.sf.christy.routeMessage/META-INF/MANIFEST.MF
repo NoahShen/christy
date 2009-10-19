@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RouteMessage Plug-in
+Bundle-SymbolicName: net.sf.christy.routeMessage
+Bundle-Version: 1.0.0
+Bundle-ClassPath: bin/
+Bundle-Activator: net.sf.christy.routemessage.Activator
+Bundle-Vendor: Noah
+Import-Package: net.sf.christy.xmpp,
+ org.osgi.framework;version="1.3.0"
+Eclipse-LazyStart: true
+Export-Package: net.sf.christy.routemessage

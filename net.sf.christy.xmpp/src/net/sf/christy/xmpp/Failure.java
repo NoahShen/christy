@@ -66,14 +66,14 @@ public class Failure implements XmlStanza
 	}
 
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append("<failure xmlns=\"").append(getNamespace()).append("\"");
 		if (error != null)
 		{
 			buf.append(">");
-			buf.append(error.toXML());
+			buf.append(error.toXml());
 			buf.append("</failure>");
 		}
 		else
@@ -169,7 +169,7 @@ public class Failure implements XmlStanza
 		}
 		
 		@Override
-		public String toXML()
+		public String toXml()
 		{
 			return "<" + error + "/>";
 		}

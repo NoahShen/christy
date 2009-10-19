@@ -75,7 +75,7 @@ public abstract class AbstractXmlStanza implements XmlStanza
 	 * @see net.sf.mxlosgi.mxlosgixmppbundle.XMLStanza#toXML()
 	 */
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		// TODO Auto-generated method stub
 		return null;

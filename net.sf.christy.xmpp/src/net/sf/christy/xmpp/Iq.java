@@ -56,7 +56,7 @@ public class Iq extends Packet
 		}
 	}
 
-	public String toXML()
+	public String toXml()
 	{
 		StringBuilder buf = new StringBuilder();
 		buf.append("<iq ");
@@ -90,7 +90,7 @@ public class Iq extends Packet
 		XmppError error = getError();
 		if (error != null)
 		{
-			buf.append(error.toXML());
+			buf.append(error.toXml());
 		}
 		buf.append("</iq>");
 		return buf.toString();
