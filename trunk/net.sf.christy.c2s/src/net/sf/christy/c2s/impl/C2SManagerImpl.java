@@ -483,7 +483,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				}
 				else if (message instanceof XmlStanza)
 				{
-					s = ((XmlStanza)message).toXML();
+					s = ((XmlStanza)message).toXml();
 				}
 				logger.debug("session" + session + ": messageSent:\n" + s);
 			}
@@ -965,7 +965,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			}
 			else if (message instanceof XmlStanza)
 			{
-				messageStr = ((XmlStanza) message).toXML();
+				messageStr = ((XmlStanza) message).toXml();
 			}
 			logger.debug("session" + session + ": messageSent:\n" + messageStr);
 			

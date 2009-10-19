@@ -70,7 +70,7 @@ public class UnknownPacketExtension implements PacketExtension
 	 * @see net.sf.christy.christyxmppbundle.XMLData#toXML()
 	 */
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		return content;
 	}

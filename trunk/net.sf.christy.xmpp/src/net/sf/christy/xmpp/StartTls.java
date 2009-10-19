@@ -22,7 +22,7 @@ public class StartTls implements XmlStanza
 	 * @see net.sf.christy.christyxmppbundle.XMLData#toXML()
 	 */
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		return "<starttls xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/>";
 	}

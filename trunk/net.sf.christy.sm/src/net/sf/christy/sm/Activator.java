@@ -1,7 +1,8 @@
 package net.sf.christy.sm;
 
+import net.sf.christy.sm.impl.RouteMessageParserServiceTracker;
 import net.sf.christy.sm.impl.SmManagerImpl;
-import net.sf.christy.sm.impl.XmppParserServiceTracker;
+import net.sf.christy.sm.impl.SmToRouterInterceptorServiceTracker;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -9,7 +10,8 @@ import org.osgi.framework.BundleContext;
 public class Activator implements BundleActivator
 {
 
-	private XmppParserServiceTracker xmppParserServiceTracker;
+	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
+	private SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -18,10 +20,14 @@ public class Activator implements BundleActivator
 	 */
 	public void start(BundleContext context) throws Exception
 	{
-		xmppParserServiceTracker = new XmppParserServiceTracker(context);
-		xmppParserServiceTracker.open();
+		routeMessageParserServiceTracker = new RouteMessageParserServiceTracker(context);
+		routeMessageParserServiceTracker.open();
 		
-		SmManagerImpl smManager = new SmManagerImpl(xmppParserServiceTracker);
+		smToRouterInterceptorServiceTracker = new SmToRouterInterceptorServiceTracker(context);
+		smToRouterInterceptorServiceTracker.open();
+		
+		SmManagerImpl smManager = 
+			new SmManagerImpl(routeMessageParserServiceTracker,smToRouterInterceptorServiceTracker);
 		smManager.setName("sm_1");
 		smManager.setDomain("example.com");
 		smManager.setRouterIp("localhost");
@@ -36,10 +42,16 @@ public class Activator implements BundleActivator
 	 */
 	public void stop(BundleContext context) throws Exception
 	{
-		if (xmppParserServiceTracker != null)
+		if (routeMessageParserServiceTracker != null)
 		{
-			xmppParserServiceTracker.close();
-			xmppParserServiceTracker = null;
+			routeMessageParserServiceTracker.close();
+			routeMessageParserServiceTracker = null;
+		}
+		
+		if (smToRouterInterceptorServiceTracker != null)
+		{
+			smToRouterInterceptorServiceTracker.close();
+			smToRouterInterceptorServiceTracker = null;
 		}
 	}
 

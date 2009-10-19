@@ -180,7 +180,7 @@ public abstract class Packet extends AbstractXmlStanza
 		// Add in all standard extension sub-packets.
 		for (PacketExtension extension : getExtensions())
 		{
-			buf.append(extension.toXML());
+			buf.append(extension.toXml());
 		}
 
 		return buf.toString();

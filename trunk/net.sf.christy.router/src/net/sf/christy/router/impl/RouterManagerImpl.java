@@ -775,7 +775,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				}
 				else if (message instanceof XmlStanza)
 				{
-					s = ((XmlStanza)message).toXML();
+					s = ((XmlStanza)message).toXml();
 				}
 				logger.debug("session" + session + ": messageSent:\n" + s);
 			}
@@ -998,7 +998,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				}
 				else if (message instanceof XmlStanza)
 				{
-					s = ((XmlStanza)message).toXML();
+					s = ((XmlStanza)message).toXml();
 				}
 				logger.debug("session" + session + ": messageSent:\n" + s);
 			}

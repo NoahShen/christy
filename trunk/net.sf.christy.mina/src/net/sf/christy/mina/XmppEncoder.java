@@ -25,7 +25,7 @@ public class XmppEncoder extends ProtocolEncoderAdapter
 		if (message instanceof XmlStanza)
 		{
 			XmlStanza stanza = (XmlStanza) message;
-			ByteBuffer btyeBuffer = ByteBuffer.wrap(stanza.toXML().getBytes("UTF-8"));
+			ByteBuffer btyeBuffer = ByteBuffer.wrap(stanza.toXml().getBytes("UTF-8"));
 			out.write(btyeBuffer);
 			out.flush();
 		}

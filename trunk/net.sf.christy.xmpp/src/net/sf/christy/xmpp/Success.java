@@ -31,7 +31,7 @@ public class Success implements XmlStanza
 	}
 
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		StringBuffer buf = new StringBuffer();
 

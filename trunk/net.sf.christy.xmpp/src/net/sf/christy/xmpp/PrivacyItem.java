@@ -164,7 +164,7 @@ public class PrivacyItem implements XmlStanza
 		return !this.isFilterIQ() && !this.isFilterMessage() && !this.isFilterPresence_in() && !this.isFilterPresence_out();
 	}
 	 
-	public String toXML()
+	public String toXml()
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append("<item");

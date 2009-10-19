@@ -19,7 +19,7 @@ public class Compressed implements XmlStanza
 	 * @see net.sf.mxlosgi.mxlosgixmppbundle.XMLStanza#toXML()
 	 */
 	@Override
-	public String toXML()
+	public String toXml()
 	{
 		return "<compressed xmlns=\"http://jabber.org/protocol/compress\"/>";
 	}

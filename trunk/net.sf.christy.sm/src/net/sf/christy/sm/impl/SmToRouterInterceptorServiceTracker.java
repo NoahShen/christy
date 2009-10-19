@@ -4,6 +4,7 @@
 package net.sf.christy.sm.impl;
 
 
+import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.sm.SmToRouterInterceptor;
 
 import org.osgi.framework.BundleContext;
@@ -21,7 +22,7 @@ public class SmToRouterInterceptorServiceTracker extends ServiceTracker
 		super(context, SmToRouterInterceptor.class.getName(), null);
 	}
 
-	public boolean fireSmMessageReceived(String routeXml)
+	public boolean fireSmMessageReceived(RouteMessage routeMessage)
 	{
 		Object[] services = getServices();
 		if (services != null)
@@ -29,7 +30,7 @@ public class SmToRouterInterceptorServiceTracker extends ServiceTracker
 			for (Object service : services)
 			{
 				SmToRouterInterceptor interceptor = (SmToRouterInterceptor) service;
-				if (interceptor.smMessageReceived(routeXml))
+				if (interceptor.smMessageReceived(routeMessage))
 				{
 					return true;
 				}
@@ -39,7 +40,7 @@ public class SmToRouterInterceptorServiceTracker extends ServiceTracker
 		return false;
 	}
 	
-	public boolean fireSmMessageSent(String routeXml)
+	public boolean fireSmMessageSent(RouteMessage routeMessage)
 	{
 		Object[] services = getServices();
 		if (services != null)
@@ -47,7 +48,7 @@ public class SmToRouterInterceptorServiceTracker extends ServiceTracker
 			for (Object service : services)
 			{
 				SmToRouterInterceptor interceptor = (SmToRouterInterceptor) service;
-				if (interceptor.smMessageSent(routeXml))
+				if (interceptor.smMessageSent(routeMessage))
 				{
 					return true;
 				}

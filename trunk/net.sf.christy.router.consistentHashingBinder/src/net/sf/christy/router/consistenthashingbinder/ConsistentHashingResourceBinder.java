@@ -24,7 +24,7 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 	
 	private boolean isStartBinding = false;
 	
-	private AtomicInteger newAddedSmSessionCount;
+	private AtomicInteger newAddedSmSessionCount = new AtomicInteger(0);
 	
 	private final int numberOfReplicas;
 	

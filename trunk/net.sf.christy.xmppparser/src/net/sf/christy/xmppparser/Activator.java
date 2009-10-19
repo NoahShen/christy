@@ -11,6 +11,7 @@ public class Activator implements BundleActivator
 {
 
 	private ServiceRegistration sr;
+	private ExtensionParserServiceTracker tracker;
 
 	/*
 	 * (non-Javadoc)
@@ -19,7 +20,7 @@ public class Activator implements BundleActivator
 	 */
 	public void start(BundleContext context) throws Exception
 	{
-		ExtensionParserServiceTracker tracker = new ExtensionParserServiceTracker(context);
+		tracker = new ExtensionParserServiceTracker(context);
 		tracker.open();
 		XMPPParserImpl parser = new XMPPParserImpl(tracker);
 		sr = context.registerService(XmppParser.class.getName(), parser, null);
@@ -36,6 +37,12 @@ public class Activator implements BundleActivator
 		{
 			sr.unregister();
 			sr = null;
+		}
+		
+		if (tracker != null)
+		{
+			tracker.close();
+			tracker = null;
 		}
 	}
 

@@ -95,7 +95,7 @@ public class PrivacyList implements XmlStanza
 		return Collections.unmodifiableCollection(items);
 	}
 	
-	public String toXML()
+	public String toXml()
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append("<list");
@@ -108,7 +108,7 @@ public class PrivacyList implements XmlStanza
 		while (it.hasNext())
 		{
 			PrivacyItem item = it.next();
-			buf.append(item.toXML());
+			buf.append(item.toXml());
 		}
 		buf.append("</list>");
 		return buf.toString();
