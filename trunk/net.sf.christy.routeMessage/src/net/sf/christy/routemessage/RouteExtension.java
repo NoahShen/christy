@@ -3,13 +3,13 @@
  */
 package net.sf.christy.routemessage;
 
-import java.io.Serializable;
+import net.sf.christy.xmpp.XmlStanza;
 
 /**
  * @author Noah
  * 
  */
-public interface RouteExtension extends Serializable, Cloneable
+public interface RouteExtension  extends XmlStanza
 {
 
 	/**

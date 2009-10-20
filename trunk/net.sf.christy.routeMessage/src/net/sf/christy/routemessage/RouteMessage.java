@@ -3,7 +3,6 @@
  */
 package net.sf.christy.routemessage;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -13,7 +12,7 @@ import net.sf.christy.xmpp.XmlStanza;
  * @author Noah
  * 
  */
-public class RouteMessage implements Serializable, Cloneable
+public class RouteMessage implements XmlStanza
 {
 
 	/**
