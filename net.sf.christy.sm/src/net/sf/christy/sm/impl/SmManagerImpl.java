@@ -5,6 +5,8 @@ package net.sf.christy.sm.impl;
 
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
 import org.apache.mina.common.ConnectFuture;
@@ -56,6 +58,8 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	private SocketConnector routerConnector;
 
 	private IoSession routerSession;
+	
+	private Map<String, OnlineUserImpl> onlineUsers = new ConcurrentHashMap<String , OnlineUserImpl>();
 	
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	
@@ -298,9 +302,9 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 							+ routeMessage.toXml());
 				return;
 			}
-			
+
 			// TODO
-			System.out.println("=============" + routeMessage.toXml());
+			
 		}
 
 		private void handleStream(XmlPullParser parser, IoSession session)

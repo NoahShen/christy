@@ -8,6 +8,10 @@ public class BindRouteExtension implements RouteExtension
 	 */
 	private static final long serialVersionUID = -4488865867947619256L;
 
+	public static final String ELEMENTNAME = "bindResource";
+	
+	public static final String NAMESPACE = "christy:internal:bindResource";
+	
 	private String jidNode;
 	
 	private String bindedResource;
@@ -19,7 +23,7 @@ public class BindRouteExtension implements RouteExtension
 	{
 		this.jidNode = jidNode;
 	}
-
+	
 	/**
 	 * @return the jidNode
 	 */
@@ -55,13 +59,13 @@ public class BindRouteExtension implements RouteExtension
 	@Override
 	public String getElementName()
 	{
-		return "bindResource";
+		return ELEMENTNAME;
 	}
 
 	@Override
 	public String getNamespace()
 	{
-		return "christy:internal:bindResource";
+		return NAMESPACE;
 	}
 
 	@Override
