@@ -24,7 +24,9 @@ import org.xmlpull.v1.XmlPullParser;
 
 import net.sf.christy.mina.XmppCodecFactory;
 import net.sf.christy.routemessage.RouteMessage;
+import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.SmManager;
+import net.sf.christy.sm.UserResource;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.XmlStanza;
 
@@ -64,6 +66,10 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	
 	private SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker;
+	
+	private int onlineUsersLimit;
+	
+	private int resourceLimitPerUser;
 	
 	public SmManagerImpl(RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
 						SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker)
@@ -231,7 +237,71 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		routerConnector = null;
 		started = false;
 	}
-	
+
+
+	@Override
+	public int getNumberOfOnlineUsers()
+	{
+		return onlineUsers.size();
+	}
+
+	@Override
+	public OnlineUser getOnlineUser(String node)
+	{
+		return onlineUsers.get(node);
+	}
+
+	@Override
+	public UserResource getUserResource(String node, String resource)
+	{
+		OnlineUserImpl onlineUser = onlineUsers.get(node);
+		if (onlineUser != null)
+		{
+			onlineUser.getUserResource(resource);
+		}
+		return null;
+	}
+
+	@Override
+	public int getOnlineUsersLimit()
+	{
+		return onlineUsersLimit;
+	}
+
+	@Override
+	public int getResourceLimitPerUser()
+	{
+		return resourceLimitPerUser;
+	}
+
+	@Override
+	public void setOnlineUsersLimit(int onlineUsersLimit)
+	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("sm has started");
+		}
+		if (onlineUsersLimit < 0)
+		{
+			throw new IllegalArgumentException("onlineUsersLimit must be > 0");
+		}
+		this.onlineUsersLimit = onlineUsersLimit;
+	}
+
+	@Override
+	public void setResourceLimitPerUser(int resourceLimitPerUser)
+	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("sm has started");
+		}
+		if (resourceLimitPerUser < 0)
+		{
+			throw new IllegalArgumentException("resourceLimitPerUser must be > 0");
+		}
+		this.resourceLimitPerUser = resourceLimitPerUser;
+	}
+
 	private class RouterHandler implements IoHandler
 	{
 
@@ -381,5 +451,6 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		}
 	
 	}
+
 
 }
