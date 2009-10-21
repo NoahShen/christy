@@ -96,4 +96,49 @@ public interface SmManager extends Propertied
 	 * @return
 	 */
 	public boolean isRouterConnected();
+	
+	/**
+	 * 
+	 * @param node
+	 * @return
+	 */
+	public OnlineUser getOnlineUser(String node);
+	
+	/**
+	 * 
+	 * @param node
+	 * @param resource
+	 * @return
+	 */
+	public UserResource getUserResource(String node, String resource);
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getNumberOfOnlineUsers();
+	
+	/**
+	 * 
+	 * @param onlineUsersLimit
+	 */
+	public void setOnlineUsersLimit(int onlineUsersLimit);
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getOnlineUsersLimit();
+	
+	/**
+	 * 
+	 * @param resourceLimitPerUser
+	 */
+	public void setResourceLimitPerUser(int resourceLimitPerUser);
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getResourceLimitPerUser();
 }

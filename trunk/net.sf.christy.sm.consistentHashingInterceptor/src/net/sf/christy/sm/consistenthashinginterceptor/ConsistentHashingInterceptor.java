@@ -5,7 +5,13 @@ import net.sf.christy.sm.SmToRouterInterceptor;
 
 public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 {
+	private SmManagerTracker smManagerTracker;
 	
+	public ConsistentHashingInterceptor(SmManagerTracker smManagerTracker)
+	{
+		this.smManagerTracker = smManagerTracker;
+	}
+
 	@Override
 	public boolean smMessageReceived(RouteMessage routeMessage)
 	{
