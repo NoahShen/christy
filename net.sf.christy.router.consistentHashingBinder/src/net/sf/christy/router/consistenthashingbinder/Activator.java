@@ -1,7 +1,9 @@
 package net.sf.christy.router.consistenthashingbinder;
 
+import net.sf.christy.routemessageparser.RouteExtensionParser;
 import net.sf.christy.router.ResourceBinder;
 import net.sf.christy.router.RouterToSmInterceptor;
+import net.sf.christy.router.consistenthashingbinder.parser.SearchRouteExtensionParser;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -17,6 +19,8 @@ public class Activator implements BundleActivator
 
 	private ServiceRegistration consistentHashingRouterToSmInterceptorRegistration;
 
+	private ServiceRegistration searchRouteExtensionParserRegistration;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -24,6 +28,10 @@ public class Activator implements BundleActivator
 	 */
 	public void start(BundleContext context) throws Exception
 	{
+		SearchRouteExtensionParser searchRouteExtensionParser = new SearchRouteExtensionParser();
+		searchRouteExtensionParserRegistration = 
+			context.registerService(RouteExtensionParser.class.getName(), searchRouteExtensionParser, null);
+		
 		Md5HashFunction md5HashFunction = new Md5HashFunction();
 		md5HashFunctionRegistration = context.registerService(HashFunction.class.getName(), md5HashFunction, null);
 
@@ -47,6 +55,12 @@ public class Activator implements BundleActivator
 	 */
 	public void stop(BundleContext context) throws Exception
 	{
+		if (searchRouteExtensionParserRegistration != null)
+		{
+			searchRouteExtensionParserRegistration.unregister();
+			searchRouteExtensionParserRegistration = null;
+		}
+		
 		if (md5HashFunctionRegistration != null)
 		{
 			md5HashFunctionRegistration.unregister();

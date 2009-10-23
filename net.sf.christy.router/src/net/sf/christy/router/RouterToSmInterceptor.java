@@ -3,6 +3,8 @@
  */
 package net.sf.christy.router;
 
+import net.sf.christy.routemessage.RouteMessage;
+
 /**
  * @author noah
  *
@@ -11,15 +13,17 @@ public interface RouterToSmInterceptor
 {
 	/**
 	 * 
-	 * @param routeXml
+	 * @param routeMessage
+	 * @param smSession
 	 * @return
 	 */
-	public boolean routeMessageReceived(String routeXml);
+	public boolean routeMessageReceived(RouteMessage routeMessage, SmSession smSession);
 	
 	/**
 	 * 
-	 * @param routeXml
+	 * @param routeMessagel
+	 * @param smSession
 	 * @return
 	 */
-	public boolean routeMessageSent(String routeXml);
+	public boolean routeMessageSent(RouteMessage routeMessagel, SmSession smSession);
 }

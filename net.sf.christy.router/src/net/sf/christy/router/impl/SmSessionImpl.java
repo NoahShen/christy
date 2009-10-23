@@ -9,10 +9,10 @@ import org.apache.mina.common.IoSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.router.SmSession;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.CloseStream;
-import net.sf.christy.xmpp.XmlStanza;
 
 /**
  * @author noah
@@ -86,20 +86,20 @@ public class SmSessionImpl extends AbstractPropertied implements SmSession
 	}
 
 	@Override
-	public void write(XmlStanza stanza)
+	public void write(RouteMessage routeMessage)
 	{
-		iosession.write(stanza);
+		if (routerToSmInterceptorServiceTracker.fireRouteMessageSent(routeMessage, this))
+		{
+			logger.debug("Message which will send to " + iosession + "has been intercepted.Message:" + routeMessage.toXml());
+			return;
+		}
+		
+		iosession.write(routeMessage.toXml());
 	}
 
 	@Override
 	public void write(String xml)
 	{
-		if (routerToSmInterceptorServiceTracker.fireRouteMessageSent(xml))
-		{
-			logger.debug("Message which will send to " + iosession + "has been intercepted.Message:" + xml);
-			return;
-		}
-		
 		iosession.write(xml);
 	}
 
