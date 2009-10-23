@@ -6,7 +6,9 @@ Bundle-Version: 1.0.0
 Bundle-ClassPath: bin/
 Bundle-Activator: net.sf.christy.router.consistenthashingbinder.Activator
 Bundle-Vendor: Noah
-Import-Package: net.sf.christy.router,
+Import-Package: net.sf.christy.routemessage,
+ net.sf.christy.routemessageparser,
+ net.sf.christy.router,
  net.sf.christy.util,
  net.sf.christy.xmpp,
  org.osgi.framework;version="1.3.0",

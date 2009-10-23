@@ -8,6 +8,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.sf.christy.routemessage.BindRouteExtension;
+import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.router.ResourceBinder;
 import net.sf.christy.router.RouterToSmInterceptor;
 import net.sf.christy.router.SmSession;
@@ -62,11 +64,16 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 	}
 
 	@Override
-	public void handleRequest(String jidNode, String xml, Map<String, Object> properties)
+	public void handleRequest(String jidNode, String xml, SmSession smSession, Map<String, Object> properties)
 	{
 		
 		String from = (String) properties.get("from");
 		String streamid = (String) properties.get("streamid");
+		
+		RouteMessage routeMessage = new RouteMessage(from, streamid);
+		routeMessage.setXmlStranzaStr(xml);
+		BindRouteExtension extension = new BindRouteExtension(jidNode);
+		routeMessage.addRouteExtension(extension);
 		
 		StringBuilder sbuilder = 
 			new StringBuilder("<route from=\"")
@@ -80,13 +87,14 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 		
 		if (newAddedSmSessionCount.intValue() > 0)
 		{
-			sbuilder.append("<search times=\"0\" total=\"")
-					.append(newAddedSmSessionCount.intValue()).append("\"/>");
+			SearchRouteExtension searchExtension = 
+				new SearchRouteExtension(0, newAddedSmSessionCount.intValue(), smSession.getSmName());
+			routeMessage.addRouteExtension(searchExtension);
 		}
 		sbuilder.append("</route>");
 		
-		SmSession smSession = get(jidNode);
-		smSession.write(sbuilder.toString());
+		SmSession selectedSmSession = get(jidNode);
+		selectedSmSession.write(routeMessage);
 		
 		if (!isStartBinding)
 		{
@@ -183,7 +191,7 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 
 
 	@Override
-	public boolean routeMessageReceived(String routeXml)
+	public boolean routeMessageReceived(RouteMessage routeMessage, SmSession smSession)
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -191,7 +199,7 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 
 
 	@Override
-	public boolean routeMessageSent(String routeXml)
+	public boolean routeMessageSent(RouteMessage routeMessage, SmSession smSession)
 	{
 		// TODO Auto-generated method stub
 		return false;

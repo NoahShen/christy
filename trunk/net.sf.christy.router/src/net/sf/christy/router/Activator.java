@@ -1,6 +1,7 @@
 package net.sf.christy.router;
 
 import net.sf.christy.router.impl.ResourceBinderServiceTracker;
+import net.sf.christy.router.impl.RouteMessageParserServiceTracker;
 import net.sf.christy.router.impl.RouterManagerImpl;
 import net.sf.christy.router.impl.RouterToSmInterceptorServiceTracker;
 
@@ -13,6 +14,7 @@ public class Activator implements BundleActivator
 
 	private ResourceBinderServiceTracker resourceBinderServiceTracker;
 	private RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker;
+	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -28,7 +30,12 @@ public class Activator implements BundleActivator
 		routerToSmInterceptorServiceTracker = new RouterToSmInterceptorServiceTracker(context);
 		routerToSmInterceptorServiceTracker.open();
 		
-		RouterManager rm = new RouterManagerImpl(resourceBinderServiceTracker, routerToSmInterceptorServiceTracker);
+		routeMessageParserServiceTracker = new RouteMessageParserServiceTracker(context);
+		routeMessageParserServiceTracker.open();
+		
+		RouterManager rm = new RouterManagerImpl(resourceBinderServiceTracker, 
+											routerToSmInterceptorServiceTracker,
+											routeMessageParserServiceTracker);
 
 		// test code
 		rm.setDomain("example.com");
@@ -54,6 +61,12 @@ public class Activator implements BundleActivator
 		{
 			routerToSmInterceptorServiceTracker.close();
 			routerToSmInterceptorServiceTracker = null;
+		}
+		
+		if (routeMessageParserServiceTracker != null)
+		{
+			routeMessageParserServiceTracker.close();
+			routeMessageParserServiceTracker = null;
 		}
 	}
 

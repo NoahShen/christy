@@ -21,9 +21,10 @@ public interface ResourceBinder
 	 * 
 	 * @param jidNode
 	 * @param xml
+	 * @param smSession
 	 * @param properties
 	 */
-	public void handleRequest(String jidNode, String xml, Map<String, Object> properties);
+	public void handleRequest(String jidNode, String xml, SmSession smSession, Map<String, Object> properties);
 	
 	/**
 	 * 

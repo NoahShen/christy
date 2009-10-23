@@ -23,6 +23,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import net.sf.christy.mina.XmppCodecFactory;
+import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.router.ResourceBinder;
 import net.sf.christy.router.RouterManager;
 import net.sf.christy.router.SmSession;
@@ -92,14 +93,20 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 	private RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker;
 
+	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
+
 	/**
 	 * @param resourceBinderServiceTracker
 	 * @param routerToSmInterceptorServiceTracker 
+	 * @param routeMessageParserServiceTracker 
 	 */
-	public RouterManagerImpl(ResourceBinderServiceTracker resourceBinderServiceTracker, RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker)
+	public RouterManagerImpl(ResourceBinderServiceTracker resourceBinderServiceTracker, 
+						RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker, 
+						RouteMessageParserServiceTracker routeMessageParserServiceTracker)
 	{
 		this.resourceBinderServiceTracker = resourceBinderServiceTracker;
 		this.routerToSmInterceptorServiceTracker = routerToSmInterceptorServiceTracker;
+		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 	}
 
 	@Override
@@ -567,7 +574,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			if (isBindRes)
 			{
 				ResourceBinder binder = resourceBinderServiceTracker.getResourceBinder();
-				binder.handleRequest(jidNode, iqStr, properties);
+				binder.handleRequest(jidNode, iqStr, (SmSession) session.getAttachment(), properties);
 			}
 			
 		}
@@ -845,12 +852,6 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				return;
 			}
 			
-			if (routerToSmInterceptorServiceTracker.fireRouteMessageReceived(xml))
-			{
-				logger.debug("Message which recieved from " + session + "has been intercepted.Message:" + xml);
-				return;
-			}
-			
 			
 			StringReader strReader = new StringReader(xml);
 			XmlPullParser parser = new MXParser();
@@ -879,6 +880,28 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			{
 				handleInternal(parser, session);
 			}
+			else if ("route".equals(elementName))
+			{
+				RouteMessage routeMessage = 
+					routeMessageParserServiceTracker.getRouteMessageParser().parseParser(parser);
+				handleRoute(routeMessage, session);
+			}
+			
+		}
+		
+		private void handleRoute(RouteMessage routeMessage, IoSession session)
+		{
+			
+			if (routerToSmInterceptorServiceTracker.fireRouteMessageReceived(routeMessage, 
+															(SmSession) session.getAttachment()))
+			{
+				logger.debug("Message which recieved from "
+							+ session + "has been intercepted.Message:"
+							+ routeMessage.toXml());
+				return;
+			}
+
+			// TODO
 			
 		}
 

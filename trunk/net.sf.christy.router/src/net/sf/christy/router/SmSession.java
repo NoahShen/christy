@@ -5,8 +5,8 @@ package net.sf.christy.router;
 
 import java.net.SocketAddress;
 
+import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.util.Propertied;
-import net.sf.christy.xmpp.XmlStanza;
 
 /**
  * @author noah
@@ -34,9 +34,9 @@ public interface SmSession extends Propertied
 	
 	/**
 	 * 
-	 * @param stanza
+	 * @param routeMessage
 	 */
-	public void write(XmlStanza stanza);
+	public void write(RouteMessage routeMessage);
 	
 	/**
 	 * 
