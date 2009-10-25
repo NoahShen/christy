@@ -13,7 +13,6 @@ public class Activator implements BundleActivator
 
 	private ServiceRegistration searchRouteExtensionParserRegistration;
 	private ServiceRegistration consistentHashingInterceptorRegistration;
-	private SmManagerTracker smManagerTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -26,10 +25,7 @@ public class Activator implements BundleActivator
 		searchRouteExtensionParserRegistration = 
 			context.registerService(RouteExtensionParser.class.getName(), searchRouteExtensionParser, null);
 		
-		smManagerTracker = new SmManagerTracker(context);
-		smManagerTracker.open();
-		
-		ConsistentHashingInterceptor consistentHashingInterceptor = new ConsistentHashingInterceptor(smManagerTracker);
+		ConsistentHashingInterceptor consistentHashingInterceptor = new ConsistentHashingInterceptor();
 		consistentHashingInterceptorRegistration =
 			context.registerService(SmToRouterInterceptor.class.getName(), consistentHashingInterceptor, null);
 	}
@@ -45,12 +41,6 @@ public class Activator implements BundleActivator
 		{
 			searchRouteExtensionParserRegistration.unregister();
 			searchRouteExtensionParserRegistration = null;
-		}
-		
-		if (smManagerTracker != null)
-		{
-			smManagerTracker.close();
-			smManagerTracker = null;
 		}
 		
 		if (consistentHashingInterceptorRegistration != null)

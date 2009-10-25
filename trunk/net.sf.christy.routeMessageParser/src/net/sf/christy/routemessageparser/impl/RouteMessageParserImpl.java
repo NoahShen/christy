@@ -67,10 +67,7 @@ public class RouteMessageParserImpl implements RouteMessageParser
 				String namespace = parser.getNamespace(null);
 				if ("bindResource".equals(elementName))
 				{
-					String jidNode = parser.getAttributeValue("", "jidNode");
-					String bindedResource =  parser.getAttributeValue("", "bindedResource");
-					BindRouteExtension extension = new BindRouteExtension(jidNode);
-					extension.setBindedResource(bindedResource);
+					BindRouteExtension extension = new BindRouteExtension();
 					routeMessage.addRouteExtension(extension);
 				}
 				else if ("iq".equals(elementName)

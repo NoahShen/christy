@@ -301,6 +301,21 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		}
 		this.resourceLimitPerUser = resourceLimitPerUser;
 	}
+	
+
+	@Override
+	public void sendToRouter(RouteMessage routeMessage)
+	{
+		if (smToRouterInterceptorServiceTracker.fireSmMessageSent(routeMessage, SmManagerImpl.this))
+		{
+			logger.debug("Message which will send to router"
+						+ "has been intercepted.Message:"
+						+ routeMessage.toXml());
+			return;
+		}
+		
+		routerSession.write(routeMessage.toXml());		
+	}
 
 	private class RouterHandler implements IoHandler
 	{
@@ -365,7 +380,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 
 		private void handleRoute(RouteMessage routeMessage, IoSession session)
 		{
-			if (smToRouterInterceptorServiceTracker.fireSmMessageReceived(routeMessage))
+			if (smToRouterInterceptorServiceTracker.fireSmMessageReceived(routeMessage, SmManagerImpl.this))
 			{
 				logger.debug("Message which recieved from "
 							+ session + "has been intercepted.Message:"
@@ -451,6 +466,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		}
 	
 	}
+
 
 
 }
