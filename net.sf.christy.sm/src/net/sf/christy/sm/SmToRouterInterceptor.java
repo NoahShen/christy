@@ -14,14 +14,16 @@ public interface SmToRouterInterceptor
 	/**
 	 * 
 	 * @param routeMessage
+	 * @param smManager
 	 * @return
 	 */
-	public boolean smMessageReceived(RouteMessage routeMessage);
+	public boolean smMessageReceived(RouteMessage routeMessage, SmManager smManager);
 	
 	/**
 	 * 
 	 * @param routeMessage
+	 * @param smManager
 	 * @return
 	 */
-	public boolean smMessageSent(RouteMessage routeMessage);
+	public boolean smMessageSent(RouteMessage routeMessage, SmManager smManager);
 }

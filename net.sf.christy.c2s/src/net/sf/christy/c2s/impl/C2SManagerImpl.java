@@ -30,6 +30,7 @@ import org.xmlpull.v1.XmlPullParser;
 import net.sf.christy.c2s.C2SManager;
 import net.sf.christy.c2s.ChristyStreamFeature;
 import net.sf.christy.c2s.ClientSession;
+import net.sf.christy.c2s.OpenStreamException;
 import net.sf.christy.c2s.UnauthorizedException;
 import net.sf.christy.c2s.UnsupportedMechanismException;
 import net.sf.christy.c2s.ChristyStreamFeature.SupportedType;
@@ -383,8 +384,12 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		started = false;
 	}
 
-	void addClientSession(ClientSessionImpl clientSession)
+	void addClientSession(ClientSessionImpl clientSession) throws OpenStreamException
 	{
+		if (clientSessions.containsKey(clientSession.getStreamId()))
+		{
+			throw new OpenStreamException("stream duplication");
+		}
 		clientSessions.put(clientSession.getStreamId(), clientSession);
 	}
 	
@@ -524,9 +529,19 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		@Override
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
-			// TODO Auto-generated method stub
 			logger.error("session" + session + ": messageReceived:\n" + cause.getMessage());
+			
+			// TODO remove it in release
 			cause.printStackTrace();
+			
+			if (cause instanceof OpenStreamException)
+			{
+				session.write(new StreamError(StreamError.Condition.conflict));
+				session.write(CloseStream.getCloseStream());
+				session.close();
+			}
+			
+			
 		}
 
 		@Override
@@ -861,7 +876,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 
 		}
 
-		private void handleOpenStream(XmlPullParser parser, IoSession session, ChristyStreamFeature.SupportedType supportedType)
+		private void handleOpenStream(XmlPullParser parser, IoSession session, ChristyStreamFeature.SupportedType supportedType) throws OpenStreamException
 		{
 			String xmlns = parser.getAttributeValue("", "xmlns");
 			String to = parser.getAttributeValue("", "to");

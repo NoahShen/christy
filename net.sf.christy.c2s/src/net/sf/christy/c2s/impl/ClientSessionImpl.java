@@ -8,6 +8,7 @@ import java.net.SocketAddress;
 import org.apache.mina.common.IoSession;
 
 import net.sf.christy.c2s.ClientSession;
+import net.sf.christy.c2s.OpenStreamException;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.XmlStanza;
 
@@ -36,8 +37,9 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 	 * @param iosession
 	 * @param streamId
 	 * @param clientSessions
+	 * @throws OpenStreamException 
 	 */
-	public ClientSessionImpl(IoSession iosession, String streamId, C2SManagerImpl c2sManager)
+	public ClientSessionImpl(IoSession iosession, String streamId, C2SManagerImpl c2sManager) throws OpenStreamException
 	{
 		this.iosession = iosession;
 		this.username = (String) iosession.getAttribute("username");

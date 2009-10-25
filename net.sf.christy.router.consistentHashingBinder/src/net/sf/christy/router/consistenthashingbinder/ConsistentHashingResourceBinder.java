@@ -72,18 +72,9 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 		
 		RouteMessage routeMessage = new RouteMessage(from, streamid);
 		routeMessage.setXmlStranzaStr(xml);
-		BindRouteExtension extension = new BindRouteExtension(jidNode);
+		BindRouteExtension extension = new BindRouteExtension();
 		routeMessage.addRouteExtension(extension);
-		
-		StringBuilder sbuilder = 
-			new StringBuilder("<route from=\"")
-				.append(from)
-				.append("\" streamid=\"").append(streamid)
-				.append("\" >")
-				.append(xml)
-				.append("<bindResource jidNode=\"")
-				.append(jidNode)
-				.append("\" xmlns=\"christy:internal:bindResource\"/>");
+
 		
 		if (newAddedSmSessionCount.intValue() > 0)
 		{
@@ -91,7 +82,6 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 				new SearchRouteExtension(0, newAddedSmSessionCount.intValue(), smSession.getSmName());
 			routeMessage.addRouteExtension(searchExtension);
 		}
-		sbuilder.append("</route>");
 		
 		SmSession selectedSmSession = get(jidNode);
 		selectedSmSession.write(routeMessage);

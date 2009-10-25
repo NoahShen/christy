@@ -3,6 +3,7 @@
  */
 package net.sf.christy.sm;
 
+import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.util.Propertied;
 
 /**
@@ -141,4 +142,10 @@ public interface SmManager extends Propertied
 	 * @return
 	 */
 	public int getResourceLimitPerUser();
+	
+	/**
+	 * 
+	 * @param routeMessage
+	 */
+	public void sendToRouter(RouteMessage routeMessage);
 }

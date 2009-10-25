@@ -24,6 +24,8 @@ public class RouteMessage implements XmlStanza
 
 	private String to;
 
+	private String toUserNode;
+	
 	private String streamId;
 
 	private XmlStanza xmlStanza;
@@ -49,6 +51,22 @@ public class RouteMessage implements XmlStanza
 		this.from = from;
 		this.to = to;
 		this.streamId = streamId;
+	}
+
+	/**
+	 * @return the toUserNode
+	 */
+	public String getToUserNode()
+	{
+		return toUserNode;
+	}
+
+	/**
+	 * @param toUserNode the toUserNode to set
+	 */
+	public void setToUserNode(String toUserNode)
+	{
+		this.toUserNode = toUserNode;
 	}
 
 	/**
@@ -200,6 +218,12 @@ public class RouteMessage implements XmlStanza
 		{
 			builder.append(" streamid=\"").append(getStreamId()).append("\"");
 		}
+		
+		if (getToUserNode() != null)
+		{
+			builder.append(" toUserNode=\"").append(getToUserNode()).append("\"");
+		}
+		
 		builder.append(">");
 
 		if (getXmlStanza() != null)
