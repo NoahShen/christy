@@ -5,6 +5,7 @@ package net.sf.christy.sm.impl;
 
 
 import net.sf.christy.routemessage.RouteMessage;
+import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.SmManager;
 import net.sf.christy.sm.SmToRouterInterceptor;
 
@@ -23,7 +24,7 @@ public class SmToRouterInterceptorServiceTracker extends ServiceTracker
 		super(context, SmToRouterInterceptor.class.getName(), null);
 	}
 
-	public boolean fireSmMessageReceived(RouteMessage routeMessage, SmManager smManager)
+	public boolean fireSmMessageReceived(RouteMessage routeMessage, SmManager smManager, OnlineUser onlineUser)
 	{
 		Object[] services = getServices();
 		if (services != null)
@@ -31,7 +32,7 @@ public class SmToRouterInterceptorServiceTracker extends ServiceTracker
 			for (Object service : services)
 			{
 				SmToRouterInterceptor interceptor = (SmToRouterInterceptor) service;
-				if (interceptor.smMessageReceived(routeMessage, smManager))
+				if (interceptor.smMessageReceived(routeMessage, smManager, onlineUser))
 				{
 					return true;
 				}
@@ -41,7 +42,7 @@ public class SmToRouterInterceptorServiceTracker extends ServiceTracker
 		return false;
 	}
 	
-	public boolean fireSmMessageSent(RouteMessage routeMessage, SmManager smManager)
+	public boolean fireSmMessageSent(RouteMessage routeMessage, SmManager smManager, OnlineUser onlineUser)
 	{
 		Object[] services = getServices();
 		if (services != null)
@@ -49,7 +50,7 @@ public class SmToRouterInterceptorServiceTracker extends ServiceTracker
 			for (Object service : services)
 			{
 				SmToRouterInterceptor interceptor = (SmToRouterInterceptor) service;
-				if (interceptor.smMessageSent(routeMessage, smManager))
+				if (interceptor.smMessageSent(routeMessage, smManager, onlineUser))
 				{
 					return true;
 				}
