@@ -31,7 +31,20 @@ $(document).ready(function() {
 	error.setCondition("bad-request");
 	error.setMessage("message");
 	error.addCondition("e", "ns");
-	innerHtml = error.toXml();
+//	innerHtml = error.toXml();
+	
+//	var iq = new Iq(IqType.RESULT);
+//	iq.setLanguage("en");
+//	iq.setFrom(JID.createJID("Noah@example.com/res"));
+//	iq.setTo(JID.createJID("Noah2@example.com/res"));
+//	innerHtml = iq.toXml();
+	
+	var presence = new Presence(PresenceType.AVAILABLE);
+	presence.setShow(PresenceShow.DND);
+	presence.setUserStatus("status");
+	presence.setPriority(1);
+	presence.setXmppError(error)
+	innerHtml = presence.toXml();
 	
 	$("#testId1").text(innerHtml);
 	
