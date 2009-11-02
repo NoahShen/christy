@@ -337,3 +337,20 @@ function SHA1 (msg) {
 	return temp.toLowerCase();
  
 }
+
+var numbersAndLetters = ("0123456789abcdefghijklmnopqrstuvwxyz" + "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+
+
+StringUtils.randomString = function(length){
+	if (length < 1){
+		return null;
+	}
+	
+	var str = "";
+	for (var i = 0; i < length; ++i){
+		var index = Math.floor(Math.random() * numbersAndLetters.length);
+		str += numbersAndLetters.charAt(index);
+	}
+	return str;
+};
+
