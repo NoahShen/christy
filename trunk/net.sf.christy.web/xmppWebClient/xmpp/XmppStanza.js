@@ -60,7 +60,7 @@ var PacketExtension = XmlStanza.extend({
 	    this._super();
 	},
 	
-	getElementName:  function(){
+	getElementName: function(){
 		return null;
 	},
 	
@@ -272,7 +272,220 @@ var Packet = AbstractXmlStanza.extend({
 		return xml;
 	}
 	
-	
 });
 
 // end of Packet
+
+
+// start of Iq
+
+var IqType = {
+	GET: 'get',
+	SET: 'set',
+	ERROR: 'error',
+	RESULT: 'result'
+}
+
+var Iq = Packet.extend({
+	init: function(type) {
+	    this._super();
+	    this.type = type;
+	},
+	
+	setType: function(type){
+		this.type = type;
+	},
+	
+	getType: function(){
+		return this.type;
+	},
+	
+	toXml: function(){
+        var xml = "";
+        xml += "<iq";
+        
+        if (this.getLanguage() != null){
+        	xml += " xml:lang=\"" + this.getLanguage() + "\"";
+        }
+        
+        if (this.getStanzaId() != null){
+			xml += " id=\"" + this.getStanzaId() + "\"";
+        }
+        
+        if (this.getTo() != null){
+			xml += " to=\"" + this.getTo().toFullJID() + "\"";
+        }
+        
+        if (this.getFrom() != null){
+			xml += " from=\"" + this.getFrom().toFullJID() + "\"";
+        }
+        
+        if (this.type == null){
+        	xml += " type=\"get\">";
+        } else {
+            xml += " type=\"" + this.getType() + "\">";
+        }
+
+        var extensionXml = this.getExtensionsXml();
+        if (extensionXml != null){
+        	xml += extensionXml;
+        }
+        // Add the error sub-packet, if there is one.
+        var error = this.getXmppError();
+        
+        if (error != null){
+			xml += error.toXml();
+        }
+        xml += "</iq>";
+        return xml;
+    }
+	
+});
+
+// end of Iq
+
+
+// start of Presence
+
+var PresenceType = {
+	
+	AVAILABLE: "available",
+	
+    UNAVAILABLE: "unavailable",
+
+    SUBSCRIBE: "subscribe",
+
+    SUBSCRIBED: "subscribed",
+
+    UNSUBSCRIBE: "unsubscribe",
+
+    UNSUBSCRIBED: "unsubscribed",
+
+    PROBE: "probe",
+
+    ERROR: "error"
+	
+}
+
+var PresenceShow = {
+	
+	CHAT: "chat",
+
+    AVAILABLE: "available",
+
+    AWAY: "away",
+
+    XA: "xa",
+
+    DND: "dnd"
+
+}
+
+var Presence = Packet.extend({
+	init: function(type) {
+	    this._super();
+	    this.type = type;
+	},
+	
+	isAvailable: function(){
+    	return this.type == PresenceType.AVAILABLE;
+    },
+    
+    isAway: function(){
+		return this.type == PresenceType.AVAILABLE
+				&& (this.show == PresenceShow.AWAY 
+						|| this.show == PresenceShow.XA
+						|| this.show == PresenceShow.DND);
+	},
+	
+	setType: function(type){
+		this.type = type;
+	},
+	
+	getType: function(){
+		return this.type;
+	},
+	
+	setUserStatus: function(userStatus){
+		this.userStatus = userStatus
+	},
+	
+	getUserStatus: function(){
+		return this.userStatus;
+	},
+	
+	setPriority: function(priority){
+		if (priority < -128 || priority > 128){
+        	throw new Error(0, 
+        					"Priority value " + 
+        					priority + 
+        					" is not valid. Valid range is -128 through 128.");
+        }
+		
+		this.priority = priority;
+	},
+	
+	getPriority: function(){
+		return this.priority;
+	},
+	
+	setShow: function(show){
+		this.show = show;
+	},
+	
+	getShow: function(){
+		return this.show;
+	},
+	
+	toXml: function(){
+        var xml = "";
+        xml += "<presence";
+        if (this.getLanguage() != null){
+        	xml += " xml:lang=\"" + this.getLanguage() + "\"";
+        }
+        if (this.getStanzaId() != null){
+			xml += " id=\"" + this.getStanzaId() + "\"";
+        }
+        if (this.getTo() != null){
+        	xml += " to=\"" + this.getTo().toFullJID() + "\"";
+        }
+        if (this.getFrom() != null){
+			xml += " from=\"" + this.getFrom().toFullJID() + "\"";
+        }
+        if (this.type != PresenceType.AVAILABLE){
+			xml += " type=\"" + this.type + "\"";
+        }
+        xml += ">";
+        if (this.getUserStatus() != null){
+			xml += "<status>" + this.getUserStatus() + "</status>";
+        }
+        if (this.priority != null){
+			xml += "<priority>" + this.priority + "</priority>";
+        }
+        if (this.show != null && this.show != PresenceShow.AVAILABLE){
+			xml += "<show>" + this.show + "</show>";
+        }
+
+		var extensionXml = this.getExtensionsXml();
+        if (extensionXml != null){
+        	xml += extensionXml;
+        }
+
+        // Add the error sub-packet, if there is one.
+        var error = this.getXmppError();
+        if (error != null){
+			xml += error.toXml();
+        }
+
+        xml += "</presence>";
+
+        return xml;
+	}
+
+	
+	
+	
+    
+	
+});
+// end of Presence
