@@ -354,3 +354,25 @@ StringUtils.randomString = function(length){
 	return str;
 };
 
+StringUtils.escapeXml = function(xml){
+	
+	
+	var xml = xml.replace(/\&/g,'&amp;')
+				.replace(/</g,'&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/\'/g, '&apos;')
+				.replace(/\"/g, '&quot;');
+
+	return xml;
+}
+
+StringUtils.unescapeXml = function(xml){
+
+	var xml = xml.replace(/\&amp;/g,'&')
+				.replace(/\&lt;/g,'<')
+				.replace(/\&gt;/g, '>')
+				.replace(/\'/g, '\'')
+				.replace(/\&quot;/g, '\"');
+
+	return xml;
+}

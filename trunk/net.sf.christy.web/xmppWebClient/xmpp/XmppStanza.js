@@ -180,7 +180,7 @@ var XmppError = XmlStanza.extend({
 	    if (this.message != null)
 	    {
 	    	xml += "<text xmlns=\"urn:ietf:params:xml:ns:xmpp-stanzas\">";
-			xml += this.message;
+			xml += StringUtils.escapeXml(this.message);
 			xml += "</text>";
 	    }
 	    
@@ -245,6 +245,7 @@ var Packet = AbstractXmlStanza.extend({
 		for (var i = 0; i < this.packetExtensions.length; ++i){
 			if (this.packetExtensions[i] == exten){
 				this.packetExtensions.splice(i,1);
+				break;
 			}
 		}
 	},
@@ -457,7 +458,7 @@ var Presence = Packet.extend({
         }
         xml += ">";
         if (this.getUserStatus() != null){
-			xml += "<status>" + this.getUserStatus() + "</status>";
+			xml += "<status>" + StringUtils.escapeXml(this.getUserStatus()) + "</status>";
         }
         if (this.priority != null){
 			xml += "<priority>" + this.priority + "</priority>";
@@ -482,10 +483,241 @@ var Presence = Packet.extend({
         return xml;
 	}
 
-	
-	
-	
-    
-	
 });
 // end of Presence
+
+//start of Message
+
+var MessageType = {
+	
+	NORMAL: "normal",
+
+	CHAT: "chat",
+
+	GROUPCHAT: "groupchat",
+
+	HEADLINE: "headline",
+
+	ERROR: "error"
+	
+}
+
+var MessageBody = XmlStanza.extend({
+	init: function(language, body) {
+	    this._super();
+	    this.language = language;
+	    this.body = body;
+	},
+	
+	setLanguage: function(language){
+		this.language = language;
+	},
+	
+	getLanguage: function(){
+		return this.language;
+	},
+	
+	setBody: function(body){
+		this.body = body;
+	},
+	
+	getBody: function(){
+		return this.body;
+	},
+	
+	toXml: function(){
+		var xml = "";         
+        xml += "<body xml:lang=\"" + this.language + "\">";
+        xml += StringUtils.escapeXml(this.body);
+        xml += "</body>";
+        return xml;
+		
+	}
+});
+
+
+var MessageSubject = XmlStanza.extend({
+	init: function(language, subject) {
+	    this._super();
+	    this.language = language;
+	    this.subject = subject;
+	},
+	
+	setLanguage: function(language){
+		this.language = language;
+	},
+	
+	getLanguage: function(){
+		return this.language;
+	},
+	
+	setSubject: function(subject){
+		this.subject = subject;
+	},
+	
+	getSubject: function(){
+		return this.subject;
+	},
+	
+	toXml: function(){
+		var xml = "";         
+        xml += "<subject xml:lang=\"" + this.language + "\">";
+        xml += StringUtils.escapeXml(this.subject);
+        xml += "</subject>";
+        return xml;
+		
+	}
+});
+
+var Message = Packet.extend({
+	init: function(type) {
+	    this._super();
+	    this.type = type;
+	    this.bodies = new Array();
+	    this.subjects = new Array();
+	},
+	
+	setType: function(type){
+		this.type = type;
+	},
+	
+	getType: function(){
+		return this.type;
+	},
+	
+	setThread: function(thread){
+		this.thread = thread;
+	},
+	
+	getThread: function(){
+		return this.thread;
+	},
+	
+	setBody: function(body){
+		this.body = body;
+	},
+	
+	getBody: function(){
+		return this.body;
+	},
+	
+	addBody: function(body){
+		this.bodies.push(body);
+	},
+	
+	removeBody: function(body){
+		if (body instanceof MessageBody){
+			for (var i = 0; i < this.bodies.length; ++i){
+				if (this.bodies[i] == body){
+					this.bodies.splice(i,1);
+					break;
+				}
+			}
+		} else if (body instanceof String){
+			for (var i = 0; i < this.bodies.length; ++i){
+				if (this.bodies[i].getLanguage() == body){
+					this.bodies.splice(i,1);
+					break;
+				}
+			}
+		}
+		
+	},
+	
+	getBodies: function(){
+		return this.bodies;
+	},
+	
+	setSubject: function(subject){
+		this.subject = subject;
+	},
+	
+	getSubject: function(){
+		return this.subject;
+	},
+	
+	addSubject: function(subject){
+		this.subjects.push(subject);
+	},
+	
+	removeSubject: function(subject){
+		if (subject instanceof MessageSubject){
+			for (var i = 0; i < this.subjects.length; ++i){
+				if (this.subjects[i] == subject){
+					this.subjects.splice(i,1);
+					break;
+				}
+			}
+		} else if (subject instanceof String){
+			for (var i = 0; i < this.subjects.length; ++i){
+				if (this.subjects[i].getLanguage() == body){
+					this.subjects.splice(i,1);
+					break;
+				}
+			}
+		}
+		
+	},
+	
+	getSubjects: function(){
+		return this.subjects;
+	},
+	
+	toXml: function(){
+		var xml = "";
+        xml += "<message";
+        if (this.getLanguage() != null){
+			xml += " xml:lang=\"" + this.getLanguage() + "\"";
+        }
+        if (this.getStanzaId() != null){
+			xml += " id=\"" + this.getStanzaId() + "\"";
+        }
+        if (this.getTo() != null){
+			xml += " to=\"" + StringUtils.escapeXml(this.getTo().toFullJID()) + "\"";
+        }
+        if (this.getFrom() != null){
+			xml += " from=\"" + this.getFrom().toFullJID() + "\"";
+        }
+        if (this.type != MessageType.NORMAL){
+			xml += " type=\"" + this.type + "\"";
+        }
+        xml += ">";
+        
+        if (this.subject != null){
+			xml += "<subject>" + StringUtils.escapeXml(this.subject) + "</subject>";
+        }
+        
+        for (var i = 0; i < this.subjects.length; ++i){
+			xml += this.subjects[i].toXml();
+		}
+        
+        // Add the body in the default language
+        if (this.getBody() != null){
+			xml += "<body>" + StringUtils.escapeXml(this.getBody()) + "</body>";
+        }
+
+        for (var i = 0; i < this.bodies.length; ++i){
+			xml += this.bodies[i].toXml();
+		}
+
+        if (this.thread != null){
+			xml += "<thread>" + this.thread + "</thread>";
+        }
+
+		var extensionXml = this.getExtensionsXml();
+        if (extensionXml != null){
+        	xml += extensionXml;
+        }
+
+        // Add the error sub-packet, if there is one.
+        var error = this.getXmppError();
+        if (error != null){
+			xml += error.toXml();
+        }
+        xml += "</message>";
+        return xml;
+		
+	}
+	
+});
+// end of Message
