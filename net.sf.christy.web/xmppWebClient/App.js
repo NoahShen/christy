@@ -29,7 +29,7 @@ $(document).ready(function() {
 	
 	var error = new XmppError(500, ErrorType.CANCEL);
 	error.setCondition("bad-request");
-	error.setMessage("message");
+	error.setMessage("messag");
 	error.addCondition("e", "ns");
 //	innerHtml = error.toXml();
 	
@@ -39,12 +39,23 @@ $(document).ready(function() {
 //	iq.setTo(JID.createJID("Noah2@example.com/res"));
 //	innerHtml = iq.toXml();
 	
-	var presence = new Presence(PresenceType.AVAILABLE);
-	presence.setShow(PresenceShow.DND);
-	presence.setUserStatus("status");
-	presence.setPriority(1);
-	presence.setXmppError(error)
-	innerHtml = presence.toXml();
+//	var presence = new Presence(PresenceType.AVAILABLE);
+//	presence.setShow(PresenceShow.DND);
+//	presence.setUserStatus("status");
+//	presence.setPriority(1);
+//	presence.setXmppError(error)
+//	innerHtml = presence.toXml();
+	
+	var message = new Message(MessageType.CHAT);
+	message.setFrom(JID.createJID("Noah@example.com/res"));
+	message.setTo(JID.createJID("Noah2@example.com/res"));
+	message.setThread("thread");
+	message.setBody("body<>&'\"");
+	message.setSubject("subject");
+	message.addBody(new MessageBody("zh-CN", "你好"));
+	message.addSubject(new MessageSubject("zh-CN", "主题"));
+	innerHtml = message.toXml();
+	
 	
 	$("#testId1").text(innerHtml);
 	
