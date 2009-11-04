@@ -7,8 +7,10 @@ import javax.net.ssl.SSLContext;
 import net.sf.christy.c2s.impl.C2SManagerImpl;
 import net.sf.christy.c2s.impl.ChristyStreamFeatureServiceTracker;
 import net.sf.christy.c2s.impl.PlainUserAuthenticatorImpl;
+import net.sf.christy.c2s.impl.RouteMessageParserServiceTracker;
 import net.sf.christy.c2s.impl.TlsContextServiceTracker;
 import net.sf.christy.c2s.impl.UserAuthenticatorTracker;
+import net.sf.christy.c2s.impl.XmppParserServiceTracker;
 import net.sf.christy.c2s.impl.tls.BogusSSLContextFactory;
 
 import org.osgi.framework.BundleActivator;
@@ -26,6 +28,8 @@ public class Activator implements BundleActivator
 	private UserAuthenticatorTracker userAuthenticatorTracker;
 	private ServiceRegistration resourceBindFeatureRegistration;
 	private ServiceRegistration sessionFeatureRegistration;
+	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
+	private XmppParserServiceTracker xmppParserServiceTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -74,10 +78,17 @@ public class Activator implements BundleActivator
 		//authenticator
 		
 		
+		routeMessageParserServiceTracker = new RouteMessageParserServiceTracker(context);
+		routeMessageParserServiceTracker.open();
+
+		xmppParserServiceTracker = new XmppParserServiceTracker(context);
+		xmppParserServiceTracker.open();
 		
 		C2SManagerImpl c2sManager = new C2SManagerImpl(streamFeatureStracker, 
 												tlsContextServiceTracker,
-												userAuthenticatorTracker);
+												userAuthenticatorTracker,
+												xmppParserServiceTracker,
+												routeMessageParserServiceTracker);
 		c2sManager.setName("c2s_1");
 		c2sManager.setDomain("example.com");
 		c2sManager.setRouterIp("localhost");
@@ -139,6 +150,20 @@ public class Activator implements BundleActivator
 			sessionFeatureRegistration.unregister();
 			sessionFeatureRegistration = null;
 		}
+		
+		if (routeMessageParserServiceTracker != null)
+		{
+			routeMessageParserServiceTracker.close();
+			routeMessageParserServiceTracker = null;
+		}
+		
+		if (xmppParserServiceTracker != null)
+		{
+			xmppParserServiceTracker.close();
+			xmppParserServiceTracker = null;
+		}
+		
+		
 		
 	}
 

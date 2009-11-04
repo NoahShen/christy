@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.christy.xmpp.Auth;
 import net.sf.christy.xmpp.Challenge;
 import net.sf.christy.xmpp.CloseStream;
 import net.sf.christy.xmpp.Compressed;
@@ -22,6 +23,7 @@ import net.sf.christy.xmpp.Privacy;
 import net.sf.christy.xmpp.PrivacyItem;
 import net.sf.christy.xmpp.PrivacyList;
 import net.sf.christy.xmpp.Proceed;
+import net.sf.christy.xmpp.StartTls;
 import net.sf.christy.xmpp.Stream;
 import net.sf.christy.xmpp.StreamError;
 import net.sf.christy.xmpp.StreamFeature;
@@ -73,20 +75,20 @@ public class XMPPParserImpl implements XmppParser
 		{
 			return parseStreamError(parser);
 		}
-//		else if ("starttls".equals(elementName))
-//		{
-//			StartTLS startTLS = new StartTLS();
-//			return startTLS;
-//		}
-//		else if ("auth".equals(elementName))
-//		{
-//			String mechanism = parser.getAttributeValue("", "mechanism");
-//			String content = parser.nextText();
-//			Auth auth = new Auth();
-//			auth.setMechanism(mechanism);
-//			auth.setContent(content);
-//			return auth;
-//		}
+		else if ("starttls".equals(elementName))
+		{
+			StartTls startTls = new StartTls();
+			return startTls;
+		}
+		else if ("auth".equals(elementName))
+		{
+			String mechanism = parser.getAttributeValue("", "mechanism");
+			String content = parser.nextText();
+			Auth auth = new Auth();
+			auth.setMechanism(mechanism);
+			auth.setContent(content);
+			return auth;
+		}
 		else if ("proceed".equals(elementName))
 		{
 			return new Proceed();
@@ -393,7 +395,7 @@ public class XMPPParserImpl implements XmppParser
 			Message.Type type = Message.Type.valueOf(strType);
 			message.setType(type);
 		}
-		message.setStanzaID(id == null ? Packet.ID_NOT_AVAILABLE : id);
+		message.setStanzaId(id == null ? Packet.ID_NOT_AVAILABLE : id);
 		
 		if (to != null && !to.isEmpty())
 		{
@@ -509,7 +511,7 @@ public class XMPPParserImpl implements XmppParser
 		String from = parser.getAttributeValue("", "from");
 		String language = getLanguageAttribute(parser);
 		
-		presence.setStanzaID(id == null ? Packet.ID_NOT_AVAILABLE : id);
+		presence.setStanzaId(id == null ? Packet.ID_NOT_AVAILABLE : id);
 		if (to != null && !to.isEmpty())
 		{
 			presence.setTo(new JID(to));
@@ -581,7 +583,7 @@ public class XMPPParserImpl implements XmppParser
 			iq.setFrom(new JID(from));
 		}
 		iq.setLanguage(lang);
-		iq.setStanzaID(id == null ? Packet.ID_NOT_AVAILABLE : id);
+		iq.setStanzaId(id == null ? Packet.ID_NOT_AVAILABLE : id);
 		iq.setType(Iq.Type.fromString(strType));
 		
 		
@@ -963,13 +965,18 @@ public class XMPPParserImpl implements XmppParser
 			Stream stream = new Stream();
 			if (id == null || id.isEmpty())
 			{
-				stream.setStanzaID(Stream.ID_NOT_AVAILABLE);
+				stream.setStanzaId(Stream.ID_NOT_AVAILABLE);
 			}
 			else
 			{
-				stream.setStanzaID(id);
+				stream.setStanzaId(id);
 			}
-			stream.setFrom(new JID(from));
+			
+			if (from != null)
+			{
+				stream.setFrom(new JID(from));
+			}
+			
 			if (to != null)
 			{
 				stream.setTo(new JID(to));
