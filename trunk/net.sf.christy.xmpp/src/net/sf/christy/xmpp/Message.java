@@ -302,9 +302,9 @@ public class Message extends Packet
 		{
 			buf.append(" xml:lang=\"").append(getLanguage()).append("\"");
 		}
-		if (getStanzaID() != null)
+		if (getStanzaId() != null)
 		{
-			buf.append(" id=\"").append(getStanzaID()).append("\"");
+			buf.append(" id=\"").append(getStanzaId()).append("\"");
 		}
 		if (getTo() != null)
 		{

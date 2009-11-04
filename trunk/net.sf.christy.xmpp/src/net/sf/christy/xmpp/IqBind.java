@@ -15,6 +15,10 @@ public class IqBind implements PacketExtension
 	 */
 	private static final long serialVersionUID = -6690374851149855246L;
 
+	public static final String ELEMENTNAME = "bind";
+	
+	public static final String NAMESPACE = "urn:ietf:params:xml:ns:xmpp-bind";
+	
 	private String resource = null;
 
 	private JID jid = null;
@@ -56,13 +60,13 @@ public class IqBind implements PacketExtension
 	@Override
 	public String getElementName()
 	{
-		return "bind";
+		return ELEMENTNAME;
 	}
 
 	@Override
 	public String getNamespace()
 	{
-		return "urn:ietf:params:xml:ns:xmpp-bind";
+		return NAMESPACE;
 	}
 
 	@Override

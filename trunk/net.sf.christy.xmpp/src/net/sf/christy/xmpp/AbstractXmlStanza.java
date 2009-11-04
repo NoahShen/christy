@@ -43,49 +43,40 @@ public abstract class AbstractXmlStanza implements XmlStanza
 		return prefix + Long.toString(id++);
 	}
 
-	private String stanzaID;
+	private String stanzaId;
 
 	/**
 	 * @return the stanzaID
 	 */
-	public String getStanzaID()
+	public String getStanzaId()
 	{
-		if (ID_NOT_AVAILABLE.equals(stanzaID))
+		if (ID_NOT_AVAILABLE.equals(stanzaId))
 		{
 			return null;
 		}
 
-		if (stanzaID == null)
+		if (stanzaId == null)
 		{
-			stanzaID = nextID();
+			stanzaId = nextID();
 		}
-		return stanzaID;
+		return stanzaId;
 	}
 
 	/**
-	 * @param stanzaID
+	 * @param stanzaId
 	 *                  the stanzaID to set
 	 */
-	public void setStanzaID(String stanzaID)
+	public void setStanzaId(String stanzaId)
 	{
-		this.stanzaID = stanzaID;
+		this.stanzaId = stanzaId;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.mxlosgi.mxlosgixmppbundle.XMLStanza#toXML()
-	 */
-	@Override
-	public String toXml()
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
 		AbstractXmlStanza stanza = (AbstractXmlStanza) super.clone();
-		stanza.setStanzaID(this.stanzaID);
+		stanza.setStanzaId(this.stanzaId);
 		return stanza;
 	}
 	

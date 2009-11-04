@@ -25,7 +25,7 @@ public class PlainUserAuthenticatorImpl implements UserAuthenticator
 	public void authenticate(ClientSession clientSession, String content) throws UnauthorizedException
 	{
 		// TODO Auto-generated method stub
-		System.out.println("===================" + content);
+//		System.out.println("===================" + content);
 		clientSession.setUsername("Noah");
 	}
 

@@ -60,9 +60,9 @@ public class Iq extends Packet
 	{
 		StringBuilder buf = new StringBuilder();
 		buf.append("<iq ");
-		if (getStanzaID() != null)
+		if (getStanzaId() != null)
 		{
-			buf.append("id=\"" + getStanzaID() + "\" ");
+			buf.append("id=\"" + getStanzaId() + "\" ");
 		}
 		if (getTo() != null)
 		{
