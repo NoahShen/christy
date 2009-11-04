@@ -21,6 +21,12 @@ public interface UserResource extends Propertied
 	 * 
 	 * @return
 	 */
+	public String getRelatedC2s();
+	
+	/**
+	 * 
+	 * @return
+	 */
 	public String getResource();
 	
 	

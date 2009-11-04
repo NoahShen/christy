@@ -3,6 +3,7 @@ package net.sf.christy.router.consistenthashingbinder;
 import net.sf.christy.routemessageparser.RouteExtensionParser;
 import net.sf.christy.router.ResourceBinder;
 import net.sf.christy.router.RouterToSmInterceptor;
+import net.sf.christy.router.consistenthashingbinder.parser.SearchCompletedExtensionParser;
 import net.sf.christy.router.consistenthashingbinder.parser.SearchRouteExtensionParser;
 
 import org.osgi.framework.BundleActivator;
@@ -21,6 +22,8 @@ public class Activator implements BundleActivator
 
 	private ServiceRegistration searchRouteExtensionParserRegistration;
 
+	private ServiceRegistration searchCompletedExtensionParserRegistration;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -31,6 +34,10 @@ public class Activator implements BundleActivator
 		SearchRouteExtensionParser searchRouteExtensionParser = new SearchRouteExtensionParser();
 		searchRouteExtensionParserRegistration = 
 			context.registerService(RouteExtensionParser.class.getName(), searchRouteExtensionParser, null);
+		
+		SearchCompletedExtensionParser searchCompletedExtensionParser = new SearchCompletedExtensionParser();
+		searchCompletedExtensionParserRegistration = 
+			context.registerService(RouteExtensionParser.class.getName(), searchCompletedExtensionParser, null);
 		
 		Md5HashFunction md5HashFunction = new Md5HashFunction();
 		md5HashFunctionRegistration = context.registerService(HashFunction.class.getName(), md5HashFunction, null);
@@ -59,6 +66,13 @@ public class Activator implements BundleActivator
 		{
 			searchRouteExtensionParserRegistration.unregister();
 			searchRouteExtensionParserRegistration = null;
+		}
+		
+		if (searchCompletedExtensionParserRegistration != null)
+		{
+			searchCompletedExtensionParserRegistration.unregister();
+			searchCompletedExtensionParserRegistration = null;
+			
 		}
 		
 		if (md5HashFunctionRegistration != null)

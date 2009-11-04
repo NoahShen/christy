@@ -9,31 +9,16 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	
 	private String resource;
 	
-	
+	private String relatedC2s;
 	/**
 	 * @param node
 	 * @param resource
 	 */
-	public UserResourceImpl(String node, String resource)
+	public UserResourceImpl(String node, String resource, String relatedC2s)
 	{
 		this.node = node;
 		this.resource = resource;
-	}
-
-	/**
-	 * @param node the node to set
-	 */
-	public void setNode(String node)
-	{
-		this.node = node;
-	}
-
-	/**
-	 * @param resource the resource to set
-	 */
-	public void setResource(String resource)
-	{
-		this.resource = resource;
+		this.relatedC2s = relatedC2s;
 	}
 
 	@Override
@@ -46,6 +31,13 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	public String getResource()
 	{
 		return resource;
+	}
+
+	@Override
+	public String getRelatedC2s()
+	{
+
+		return relatedC2s;
 	}
 
 }

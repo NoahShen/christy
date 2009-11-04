@@ -2,6 +2,7 @@ package net.sf.christy.sm.consistenthashinginterceptor;
 
 import net.sf.christy.routemessageparser.RouteExtensionParser;
 import net.sf.christy.sm.SmToRouterInterceptor;
+import net.sf.christy.sm.consistenthashinginterceptor.parser.SearchCompletedExtensionParser;
 import net.sf.christy.sm.consistenthashinginterceptor.parser.SearchRouteExtensionParser;
 
 import org.osgi.framework.BundleActivator;
@@ -13,6 +14,7 @@ public class Activator implements BundleActivator
 
 	private ServiceRegistration searchRouteExtensionParserRegistration;
 	private ServiceRegistration consistentHashingInterceptorRegistration;
+	private ServiceRegistration searchCompletedExtensionParserRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -24,6 +26,10 @@ public class Activator implements BundleActivator
 		SearchRouteExtensionParser searchRouteExtensionParser = new SearchRouteExtensionParser();
 		searchRouteExtensionParserRegistration = 
 			context.registerService(RouteExtensionParser.class.getName(), searchRouteExtensionParser, null);
+		
+		SearchCompletedExtensionParser searchCompletedExtensionParser = new SearchCompletedExtensionParser();
+		searchCompletedExtensionParserRegistration = 
+			context.registerService(RouteExtensionParser.class.getName(), searchCompletedExtensionParser, null);
 		
 		ConsistentHashingInterceptor consistentHashingInterceptor = new ConsistentHashingInterceptor();
 		consistentHashingInterceptorRegistration =
@@ -47,6 +53,13 @@ public class Activator implements BundleActivator
 		{
 			consistentHashingInterceptorRegistration.unregister();
 			consistentHashingInterceptorRegistration = null;
+		}
+		
+		if (searchCompletedExtensionParserRegistration != null)
+		{
+			searchCompletedExtensionParserRegistration.unregister();
+			searchCompletedExtensionParserRegistration = null;
+			
 		}
 	}
 

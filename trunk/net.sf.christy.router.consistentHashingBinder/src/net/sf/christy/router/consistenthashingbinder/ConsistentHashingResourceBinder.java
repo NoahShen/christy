@@ -68,13 +68,18 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 		
 		if (newAddedSmSessionCount.intValue() > 0)
 		{
+			String c2sName = routeMessage.getFrom();
 			SearchRouteExtension searchExtension = 
-				new SearchRouteExtension(0, newAddedSmSessionCount.intValue(), smSession.getSmName());
+				new SearchRouteExtension(0, 
+										newAddedSmSessionCount.intValue(), 
+										smSession.getSmName(), 
+										c2sName);
 			routeMessage.addRouteExtension(searchExtension);
 		}
 		
 		String toUserNode = routeMessage.getPrepedUserNode();
 		SmSession selectedSmSession = get(toUserNode);
+		
 		selectedSmSession.write(routeMessage);
 		
 		if (!isStartBinding)
@@ -122,6 +127,7 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 		{
 			newAddedSmSessionCount.incrementAndGet();
 		}
+
 	}
 
 	private boolean hashDuplicate(String smName)

@@ -12,15 +12,17 @@ public class SearchRouteExtension implements RouteExtension
 	 */
 	private static final long serialVersionUID = -135747334750316200L;
 
-	public static final String ELEMENTNAME = "bindResource";
+	public static final String ELEMENTNAME = "search";
 	
-	public static final String NAMESPACE = "christy:internal:bindResource";
+	public static final String NAMESPACE = "christy:internal:searchResource";
 	
 	private int times;
 	
 	private int total;
 	
 	private String startNode;
+	
+	private String fromc2s;
 	
 	private List<CheckedNode> checkedNodes = new ArrayList<CheckedNode>();
 	
@@ -29,11 +31,12 @@ public class SearchRouteExtension implements RouteExtension
 	 * @param total
 	 * @param startNode
 	 */
-	public SearchRouteExtension(int times, int total, String startNode)
+	public SearchRouteExtension(int times, int total, String startNode, String fromc2s)
 	{
 		this.times = times;
 		this.total = total;
 		this.startNode = startNode;
+		this.fromc2s = fromc2s;
 	}
 
 	/**
@@ -58,6 +61,11 @@ public class SearchRouteExtension implements RouteExtension
 	public String getStartNode()
 	{
 		return startNode;
+	}
+	
+	public String getFromc2s() {
+	
+		return fromc2s;
 	}
 
 	public void addCheckedNode(CheckedNode node)
@@ -91,11 +99,11 @@ public class SearchRouteExtension implements RouteExtension
 	public String toXml()
 	{
 		StringBuilder builder = 
-			new StringBuilder("<search times=\"")
+			new StringBuilder("<" + ELEMENTNAME + " times=\"")
 			.append(getTimes()).append("\"")
 			.append(" total=\"").append(getTotal()).append("\"")
 			.append(" startNode=\"").append(getStartNode()).append("\"")
-			.append("xmlns=\"christy:internal:searchResource\"");
+			.append("xmlns=\"" + NAMESPACE + "\"");
 		
 		if (checkedNodes.isEmpty())
 		{

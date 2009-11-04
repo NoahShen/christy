@@ -431,6 +431,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			if (xml.equals("</stream:stream>"))
 			{
 				session.close();
+				return;
 			}
 			
 			StringReader strReader = new StringReader(xml);
