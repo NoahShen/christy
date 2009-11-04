@@ -215,7 +215,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			return;
 		}
 		
-		started = false;
+		started = true;
 		logger.info("connecting to router successful");
 		
 	}
@@ -262,6 +262,27 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		return null;
 	}
 
+
+	@Override
+	public void removeOnlineUser(OnlineUser onlineUser)
+	{
+		onlineUsers.remove(onlineUser.getNode());
+	}
+	
+	@Override
+	public void removeOnlineUser(String node)
+	{
+		onlineUsers.remove(node);
+	}
+	
+
+	@Override
+	public void createOnlineUser(String userNode, String resource, String relatedC2s)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	
 	@Override
 	public int getOnlineUsersLimit()
 	{
@@ -339,6 +360,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			if (xml.equals("</stream:stream>"))
 			{
 				session.close();
+				return;
 			}
 
 			StringReader strReader = new StringReader(xml);
@@ -394,8 +416,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				return;
 			}
 
-			// TODO
-			
+			// TODO handle
 		}
 
 		private void handleStream(XmlPullParser parser, IoSession session)
@@ -420,9 +441,16 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			
 			logger.debug("open stream successful");
 			
+			// TODO 
+			String smname = getName();
+			if (id.endsWith("1"))
+			{
+				smname += "_1";
+			}
 			session.write("<internal xmlns='" + SMROUTER_AUTH_NAMESPACE + "'" +
-						" smname='" + getName() + "' password='" + getRouterPassword() + "'/>");
+						" smname='" + smname + "' password='" + getRouterPassword() + "'/>");
 		}
+		
 		@Override
 		public void messageSent(IoSession session, Object message) throws Exception
 		{
@@ -472,6 +500,8 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		}
 	
 	}
+
+
 
 
 

@@ -796,9 +796,9 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				
 				if (!registeredSmModules.containsKey(smName))
 				{
-					StreamError error = new StreamError();
-					error.addApplicationCondition("unregistered", SMROUTER_AUTH_NAMESPACE);
-					session.write(error);
+					session.write("<error>" +
+									"<unregistered xmlns=\"christy:internal:sm2router:auth\"/>" +
+									"</error> ");
 					session.write(CloseStream.getCloseStream());
 					session.close();
 					return;

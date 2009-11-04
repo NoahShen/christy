@@ -89,6 +89,8 @@ public class Activator implements BundleActivator
 												userAuthenticatorTracker,
 												xmppParserServiceTracker,
 												routeMessageParserServiceTracker);
+		
+		// TODO
 		c2sManager.setName("c2s_1");
 		c2sManager.setDomain("example.com");
 		c2sManager.setRouterIp("localhost");

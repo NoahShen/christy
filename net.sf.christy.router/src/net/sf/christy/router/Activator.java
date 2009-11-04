@@ -37,9 +37,10 @@ public class Activator implements BundleActivator
 											routerToSmInterceptorServiceTracker,
 											routeMessageParserServiceTracker);
 
-		// test code
+		// TODO test code
 		rm.setDomain("example.com");
 		rm.registerSmModule("sm_1", "md5password");
+		rm.registerSmModule("sm_1_1", "md5password");
 		rm.registerC2sModule("c2s_1", "md5password");
 		rm.start();
 	}

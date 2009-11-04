@@ -148,4 +148,24 @@ public interface SmManager extends Propertied
 	 * @param routeMessage
 	 */
 	public void sendToRouter(RouteMessage routeMessage);
+
+	/**
+	 * 
+	 * @param onlineUser
+	 */
+	public void removeOnlineUser(OnlineUser onlineUser);
+
+	/**
+	 * 
+	 * @param node
+	 */
+	public void removeOnlineUser(String node);
+
+	/**
+	 * 
+	 * @param userNode
+	 * @param resource
+	 * @param relatedC2s
+	 */
+	public void createOnlineUser(String userNode, String resource, String relatedC2s);
 }

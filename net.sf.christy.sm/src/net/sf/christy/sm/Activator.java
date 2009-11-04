@@ -28,6 +28,8 @@ public class Activator implements BundleActivator
 		
 		SmManagerImpl smManager = 
 			new SmManagerImpl(routeMessageParserServiceTracker,smToRouterInterceptorServiceTracker);
+		
+		// TODO
 		smManager.setName("sm_1");
 		smManager.setDomain("example.com");
 		smManager.setRouterIp("localhost");
