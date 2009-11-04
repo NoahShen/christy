@@ -15,6 +15,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public abstract class Packet extends AbstractXmlStanza
 {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2212958546542495776L;
+
 	private JID to;
 
 	private JID from;

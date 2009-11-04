@@ -3,7 +3,8 @@
  */
 package net.sf.christy.router;
 
-import java.util.Map;
+
+import net.sf.christy.routemessage.RouteMessage;
 
 /**
  * @author noah
@@ -19,12 +20,10 @@ public interface ResourceBinder
 	
 	/**
 	 * 
-	 * @param jidNode
-	 * @param xml
+	 * @param routeMessage
 	 * @param smSession
-	 * @param properties
 	 */
-	public void handleRequest(String jidNode, String xml, SmSession smSession, Map<String, Object> properties);
+	public void handleRequest(RouteMessage routeMessage, SmSession smSession);
 	
 	/**
 	 * 
@@ -37,4 +36,5 @@ public interface ResourceBinder
 	 * @param smSession
 	 */
 	public void smSessionRemoved(SmSession smSession);
+
 }

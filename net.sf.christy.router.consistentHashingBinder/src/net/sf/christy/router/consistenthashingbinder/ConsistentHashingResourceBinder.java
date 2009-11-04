@@ -3,12 +3,10 @@
  */
 package net.sf.christy.router.consistenthashingbinder;
 
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.sf.christy.routemessage.BindRouteExtension;
 import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.router.ResourceBinder;
 import net.sf.christy.router.RouterToSmInterceptor;
@@ -64,16 +62,8 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 	}
 
 	@Override
-	public void handleRequest(String jidNode, String xml, SmSession smSession, Map<String, Object> properties)
+	public void handleRequest(RouteMessage routeMessage, SmSession smSession)
 	{
-		
-		String from = (String) properties.get("from");
-		String streamid = (String) properties.get("streamid");
-		
-		RouteMessage routeMessage = new RouteMessage(from, streamid);
-		routeMessage.setXmlStranzaStr(xml);
-		BindRouteExtension extension = new BindRouteExtension();
-		routeMessage.addRouteExtension(extension);
 
 		
 		if (newAddedSmSessionCount.intValue() > 0)
@@ -83,7 +73,8 @@ public class ConsistentHashingResourceBinder implements ResourceBinder, RouterTo
 			routeMessage.addRouteExtension(searchExtension);
 		}
 		
-		SmSession selectedSmSession = get(jidNode);
+		String toUserNode = routeMessage.getPrepedUserNode();
+		SmSession selectedSmSession = get(toUserNode);
 		selectedSmSession.write(routeMessage);
 		
 		if (!isStartBinding)

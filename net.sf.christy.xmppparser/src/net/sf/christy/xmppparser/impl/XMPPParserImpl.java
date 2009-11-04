@@ -124,7 +124,7 @@ public class XMPPParserImpl implements XmppParser
 	}
 	
 	@Override
-	public XmlStanza parseXML(String xml) throws Exception
+	public XmlStanza parseXml(String xml) throws Exception
 	{
 		
 		XmlPullParser parser = new MXParser();

@@ -306,7 +306,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	@Override
 	public void sendToRouter(RouteMessage routeMessage)
 	{
-		String userNode = routeMessage.getToUserNode().toLowerCase();
+		String userNode = routeMessage.getPrepedUserNode();
 		OnlineUser user = onlineUsers.get(userNode);
 		
 		if (smToRouterInterceptorServiceTracker.fireSmMessageSent(routeMessage, SmManagerImpl.this, user))
@@ -383,7 +383,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 
 		private void handleRoute(RouteMessage routeMessage, IoSession session)
 		{
-			String userNode = routeMessage.getToUserNode().toLowerCase();
+			String userNode = routeMessage.getPrepedUserNode();
 			OnlineUser user = onlineUsers.get(userNode);
 			
 			if (smToRouterInterceptorServiceTracker.fireSmMessageReceived(routeMessage, SmManagerImpl.this, user))

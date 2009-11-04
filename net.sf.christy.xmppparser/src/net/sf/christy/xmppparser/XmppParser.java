@@ -24,7 +24,7 @@ public interface XmppParser
 	 * @return
 	 * @throws XmlPullParserException
 	 */
-	public XmlStanza parseXML(String xml) throws Exception;
+	public XmlStanza parseXml(String xml) throws Exception;
 	
 	/**
 	 * 
