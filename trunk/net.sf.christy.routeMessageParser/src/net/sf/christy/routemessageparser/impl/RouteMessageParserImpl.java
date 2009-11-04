@@ -54,7 +54,9 @@ public class RouteMessageParserImpl implements RouteMessageParser
 		String from = parser.getAttributeValue("", "from");
 		String to = parser.getAttributeValue("", "to");
 		String streamId = parser.getAttributeValue("", "streamid");
+		String toUserNode = parser.getAttributeValue("", "toUserNode");
 		RouteMessage routeMessage = new RouteMessage(from, to, streamId);
+		routeMessage.setToUserNode(toUserNode);
 		
 		boolean done = false;
 		while (!done)

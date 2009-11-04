@@ -506,13 +506,6 @@ public class StreamError implements XmlStanza
 			return elementName;
 		}
 
-		/**
-		 * @param elementName the elementName to set
-		 */
-		public void setElementName(String elementName)
-		{
-			this.elementName = elementName;
-		}
 
 		/**
 		 * @return the namespace
@@ -522,13 +515,6 @@ public class StreamError implements XmlStanza
 			return namespace;
 		}
 
-		/**
-		 * @param namespace the namespace to set
-		 */
-		public void setNamespace(String namespace)
-		{
-			this.namespace = namespace;
-		}
 
 		@Override
 		public String toXml()

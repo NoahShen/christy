@@ -3,7 +3,6 @@ package net.sf.christy.router.impl;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +22,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import net.sf.christy.mina.XmppCodecFactory;
+import net.sf.christy.routemessage.BindRouteExtension;
 import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.router.ResourceBinder;
 import net.sf.christy.router.RouterManager;
@@ -514,161 +514,33 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				C2sSessionImpl c2sSession = (C2sSessionImpl) session.getAttachment();
 				if (c2sSession == null)
 				{
-					handleStream(parser, session);
+					c2shandleStream(parser, session);
 				}
 			}
 			else if ("internal".equals(elementName))
 			{
-				handleInternal(parser, session);
+				c2shandleInternal(parser, session);
 			}
 			else if ("route".equals(elementName))
 			{
-				handleRoute(xml, parser, session);
+				RouteMessage routeMessage = 
+					routeMessageParserServiceTracker.getRouteMessageParser().parseParser(parser);
+				c2shandleRoute(routeMessage, session);
 			}
 		}
 
-		private void handleRoute(String xml, XmlPullParser parser, IoSession session) throws XmlPullParserException, IOException
+		private void c2shandleRoute(RouteMessage routeMessage, IoSession session) throws XmlPullParserException, IOException
 		{
-
-			String from = parser.getAttributeValue("", "from");
-			String streamid = parser.getAttributeValue("", "streamid");
-			
-			Map<String, Object> properties = new HashMap<String, Object>();
-			properties.put("from", from);
-			properties.put("streamid", streamid);
-			
-			String jidNode = null;
-			String iqStr = null;
-			boolean isBindRes = false;
-			
-			boolean done = false;
-			while (!done)
-			{
-				int eventType = parser.next();
-				
-				if (eventType == XmlPullParser.START_TAG)
-				{
-					String elementName = parser.getName();
-					String xmlns = parser.getAttributeValue("", "xmlns");
-					if ("bindResource".equals(elementName)
-							&& "christy:internal:bindResource".equals(xmlns))
-					{
-						jidNode = parser.getAttributeValue("", "jidNode");						
-						isBindRes = true;
-					}
-					else if ("iq".equals(elementName))
-					{
-						iqStr = iqToString(parser, elementName, xmlns);
-					}
-				}
-				else if (eventType == XmlPullParser.END_TAG)
-				{
-					String elementName = parser.getName();
-					if ("route".equals(elementName))
-					{
-						done = true;
-					}
-				}
-			}			
-			
-			if (isBindRes)
+			if (routeMessage.containExtension(BindRouteExtension.ELEMENTNAME, 
+													BindRouteExtension.NAMESPACE))
 			{
 				ResourceBinder binder = resourceBinderServiceTracker.getResourceBinder();
-				binder.handleRequest(jidNode, iqStr, (SmSession) session.getAttachment(), properties);
+				binder.handleRequest(routeMessage, (SmSession) session.getAttachment());
 			}
 			
 		}
 
-		private String iqToString(XmlPullParser parser, String elementName, String namespace) throws XmlPullParserException, IOException
-		{
-			StringBuffer buf = new StringBuffer();
-			
-			String prefix = parser.getPrefix();
-			if (prefix != null)
-			{
-				buf.append("<" + prefix + ":" + elementName);
-				String prefixNamespace = parser.getNamespace(prefix);
-				if (prefixNamespace != null)
-				{
-					buf.append(" xmlns:" + prefix + "=\"" + prefixNamespace + "\"");
-				}
-			}
-			else
-			{
-				buf.append("<" + elementName);
-			}
-			if (namespace != null)
-			{
-				buf.append(" xmlns=\"" + namespace + "\"");
-			}
-			
-			for (int i = 0; i < parser.getAttributeCount(); ++i)
-			{
-				buf.append(" " + parser.getAttributeName(i) + "=\"" + parser.getAttributeValue(i) + "\"");
-			}
-			
-			buf.append(">");
-			
-			boolean done = false;
-			while (!done)
-			{
-				int eventType = parser.next();
-				String currentElement = parser.getName();
-				if (eventType == XmlPullParser.START_TAG)
-				{
-					String prefix2 = parser.getPrefix();
-					String nspace2 = parser.getNamespace(null);
-					if (prefix2 != null)
-					{
-						buf.append("<" + prefix2 + ":" + currentElement);
-						String prefixNamespace = parser.getNamespace(prefix2);
-						if (prefixNamespace != null)
-						{
-							buf.append(" xmlns:" + prefix2 + "=\"" + prefixNamespace + "\"");
-						}
-						
-					}
-					else
-					{
-						buf.append("<" + currentElement);
-					}
-					
-					if (nspace2 != null && !nspace2.equals(namespace))
-					{
-						buf.append(" xmlns=\"" + nspace2 + "\"");
-					}
-					for (int i = 0; i < parser.getAttributeCount(); ++i)
-					{
-						buf.append(" " + parser.getAttributeName(i) + "=\"" + parser.getAttributeValue(i) + "\"");
-					}
-					
-					buf.append(">");
-				}
-				else if (eventType == XmlPullParser.TEXT)
-				{
-					buf.append(parser.getText());
-				}
-				else if (eventType == XmlPullParser.END_TAG)
-				{
-					String prefix2 = parser.getPrefix();
-					if (prefix2 != null)
-					{
-						buf.append("</" + prefix2 + ":" + currentElement + ">");
-					}
-					else
-					{
-						buf.append("</" + currentElement + ">");
-					}
-					if (currentElement.equals(elementName))
-					{
-						done = true;
-					}
-				}
-			}
-			return buf.toString();
-		}
-
-		private void handleInternal(XmlPullParser parser, IoSession session)
+		private void c2shandleInternal(XmlPullParser parser, IoSession session)
 		{
 			String streamId = session.getAttribute("streamId").toString();
 			if (streamId != null)
@@ -725,7 +597,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			}
 		}
 
-		private void handleStream(XmlPullParser parser, IoSession session)
+		private void c2shandleStream(XmlPullParser parser, IoSession session)
 		{
 			String xmlns = parser.getAttributeValue("", "xmlns");
 			String to = parser.getAttributeValue("", "to");
@@ -873,23 +745,23 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				SmSessionImpl smSession = (SmSessionImpl) session.getAttachment();
 				if (smSession == null)
 				{
-					handleStream(parser, session);
+					smhandleStream(parser, session);
 				}
 			}
 			else if ("internal".equals(elementName))
 			{
-				handleInternal(parser, session);
+				smhandleInternal(parser, session);
 			}
 			else if ("route".equals(elementName))
 			{
 				RouteMessage routeMessage = 
 					routeMessageParserServiceTracker.getRouteMessageParser().parseParser(parser);
-				handleRoute(routeMessage, session);
+				smhandleRoute(routeMessage, session);
 			}
 			
 		}
 		
-		private void handleRoute(RouteMessage routeMessage, IoSession session)
+		private void smhandleRoute(RouteMessage routeMessage, IoSession session)
 		{
 			
 			if (routerToSmInterceptorServiceTracker.fireRouteMessageReceived(routeMessage, 
@@ -905,7 +777,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			
 		}
 
-		private void handleInternal(XmlPullParser parser, IoSession session)
+		private void smhandleInternal(XmlPullParser parser, IoSession session)
 		{
 			String streamId = session.getAttribute("streamId").toString();
 			if (streamId != null)
@@ -964,7 +836,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			}
 		}
 
-		private void handleStream(XmlPullParser parser, IoSession session)
+		private void smhandleStream(XmlPullParser parser, IoSession session)
 		{
 			String xmlns = parser.getAttributeValue("", "xmlns");
 			String to = parser.getAttributeValue("", "to");

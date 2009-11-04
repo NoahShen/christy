@@ -581,7 +581,8 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				// e.printStackTrace();
 				throw e;
 			}
-
+			
+			// TODO parseXml
 			String elementName = parser.getName();
 			if ("stream".equals(elementName) || "stream:stream".equals(elementName))
 			{
@@ -625,6 +626,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			if (!tryHandling(xml, parser, session))
 			{
 				// TODO
+				
 			}
 			
 		}
@@ -656,12 +658,9 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			if ("ping".equals(elementName))
 			{
 				
-				if (to != null && !to.isEmpty() && !getDomain().equals(to))
+				if (to != null && !getDomain().equals(to))
 				{
-					StreamError error = new StreamError(StreamError.Condition.host_unknown);
-					session.write(error);
-					session.write(CloseStream.getCloseStream());
-					session.close();
+					// ping other user
 					return false;
 				}
 				
@@ -702,7 +701,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 					session.write(error);
 					session.write(CloseStream.getCloseStream());
 					session.close();
-					return false;
+					return true;
 				}
 				
 				if (!"urn:ietf:params:xml:ns:xmpp-bind".equals(xmlns))
@@ -726,13 +725,12 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				ClientSession clientSession = (ClientSession) session.getAttachment();
 				StringBuilder sbuilder = 
 					new StringBuilder("<route from=\"")
-						.append(getName())
-						.append("\" streamid=\"").append(clientSession.getStreamId())
-						.append("\" >")
+						.append(getName()).append("\"")
+						.append(" streamid=\"").append(clientSession.getStreamId()).append("\"")
+						.append(" toUserNode=\"").append(clientSession.getUsername()).append("\"")
+						.append(">")
 						.append(xml)
-						.append("<bindResource jidNode=\"")
-						.append(clientSession.getUsername())
-						.append("\" xmlns=\"christy:internal:bindResource\"/>")
+						.append("<bindResource xmlns=\"christy:internal:bindResource\"/>")
 						.append("</route>");
 
 				routerSession.write(sbuilder.toString());

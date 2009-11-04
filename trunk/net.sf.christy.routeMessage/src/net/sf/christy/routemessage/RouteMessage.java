@@ -62,6 +62,19 @@ public class RouteMessage implements XmlStanza
 	}
 
 	/**
+	 * 
+	 * @return
+	 */
+	public String getPrepedUserNode()
+	{
+		if (toUserNode == null)
+		{
+			return null;
+		}
+		return toUserNode.toLowerCase();
+	}
+	
+	/**
 	 * @param toUserNode the toUserNode to set
 	 */
 	public void setToUserNode(String toUserNode)
@@ -179,6 +192,25 @@ public class RouteMessage implements XmlStanza
 	{
 
 		routeExtensions.remove(extension);
+	}
+	
+	public boolean containExtension(String elementName, String namespace)
+	{
+		for (RouteExtension extension : routeExtensions)
+		{
+
+			if (elementName.equals(extension.getElementName()) && namespace.equals(extension.getNamespace()))
+			{
+
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean containExtension(RouteExtension routeExtension)
+	{
+		return routeExtensions.contains(routeExtension);
 	}
 
 	protected String getRouteExtensionXml()
