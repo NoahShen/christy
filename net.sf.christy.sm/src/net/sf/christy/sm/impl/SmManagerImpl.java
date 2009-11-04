@@ -67,9 +67,9 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	
 	private SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker;
 	
-	private int onlineUsersLimit;
+	private int onlineUsersLimit = -1;
 	
-	private int resourceLimitPerUser;
+	private int resourceLimitPerUser = -1;
 	
 	public SmManagerImpl(RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
 						SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker)
@@ -248,13 +248,13 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	@Override
 	public OnlineUser getOnlineUser(String node)
 	{
-		return onlineUsers.get(node);
+		return onlineUsers.get(node.toLowerCase());
 	}
 
 	@Override
 	public UserResource getUserResource(String node, String resource)
 	{
-		OnlineUserImpl onlineUser = onlineUsers.get(node);
+		OnlineUserImpl onlineUser = (OnlineUserImpl) getOnlineUser(node);
 		if (onlineUser != null)
 		{
 			onlineUser.getUserResource(resource);
@@ -266,21 +266,44 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	@Override
 	public void removeOnlineUser(OnlineUser onlineUser)
 	{
-		onlineUsers.remove(onlineUser.getNode());
+		onlineUsers.remove(onlineUser.getNode().toLowerCase());
 	}
 	
 	@Override
 	public void removeOnlineUser(String node)
 	{
-		onlineUsers.remove(node);
+		onlineUsers.remove(node.toLowerCase());
 	}
 	
 
 	@Override
-	public void createOnlineUser(String userNode, String resource, String relatedC2s)
+	public OnlineUser createOnlineUser(String userNode, String resource, String relatedC2s)
 	{
-		// TODO Auto-generated method stub
+		if (getOnlineUsersLimit() > 0)
+		{
+			if (onlineUsers.size() == getOnlineUsersLimit())
+			{
+				throw new IllegalStateException("reach onlineuser limit");
+			}
+		}
+		OnlineUserImpl onlineUser = (OnlineUserImpl) getOnlineUser(userNode);
+		if (onlineUser == null)
+		{
+			onlineUser = new OnlineUserImpl(userNode);
+			onlineUsers.put(userNode.toLowerCase(), onlineUser);
+		}
 		
+		if (getResourceLimitPerUser() > 0)
+		{
+			if (onlineUser.getResourceCount() == getResourceLimitPerUser())
+			{
+				throw new IllegalStateException("reach resourceLimitPerUser");
+			}
+		}
+		
+		onlineUser.addUserResource(new UserResourceImpl(userNode, resource, relatedC2s));
+		
+		return onlineUser;
 	}
 	
 	@Override
@@ -328,7 +351,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	public void sendToRouter(RouteMessage routeMessage)
 	{
 		String userNode = routeMessage.getPrepedUserNode();
-		OnlineUser user = onlineUsers.get(userNode);
+		OnlineUser user = getOnlineUser(userNode);
 		
 		if (smToRouterInterceptorServiceTracker.fireSmMessageSent(routeMessage, SmManagerImpl.this, user))
 		{
@@ -417,6 +440,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			}
 
 			// TODO handle
+			
 		}
 
 		private void handleStream(XmlPullParser parser, IoSession session)

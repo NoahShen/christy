@@ -13,7 +13,6 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 	public boolean smMessageReceived(RouteMessage routeMessage, SmManager smManager, OnlineUser onlineUser)
 	{
 
-		
 		if (!routeMessage.containExtension(SearchRouteExtension.ELEMENTNAME, SearchRouteExtension.NAMESPACE))
 		{
 			return false;
@@ -42,10 +41,10 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 				{
 					String resource = bindedRes.getName();
 					String relatedC2s = bindedRes.getRelatedC2s();
-					smManager.createOnlineUser(userNode, resource, relatedC2s);
+					OnlineUser user = smManager.createOnlineUser(userNode, resource, relatedC2s);
+					user.setProperty("searchCompleted");
 				}
-			}
-			
+			}			
 			return false;
 		}
 		else if (times < total)
@@ -82,7 +81,11 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 	@Override
 	public boolean smMessageSent(RouteMessage routeMessage, SmManager smManager, OnlineUser onlineUser)
 	{
-		// TODO Auto-generated method stub
+		if (onlineUser.containsProperty("searchCompleted"))
+		{
+			onlineUser.removeProperty("searchCompleted");
+			routeMessage.addRouteExtension(new SearchCompletedExtension());
+		}
 		return false;
 	}
 
