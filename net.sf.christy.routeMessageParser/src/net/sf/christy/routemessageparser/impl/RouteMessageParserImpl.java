@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
-import net.sf.christy.routemessage.BindRouteExtension;
 import net.sf.christy.routemessage.RouteExtension;
 import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.routemessageparser.RouteExtensionParser;
@@ -67,12 +66,7 @@ public class RouteMessageParserImpl implements RouteMessageParser
 			if (eventType == XmlPullParser.START_TAG)
 			{
 				String namespace = parser.getNamespace(null);
-				if ("bindResource".equals(elementName))
-				{
-					BindRouteExtension extension = new BindRouteExtension();
-					routeMessage.addRouteExtension(extension);
-				}
-				else if ("iq".equals(elementName)
+				if ("iq".equals(elementName)
 						|| "message".equals(elementName)
 						|| "present".equals(elementName))
 				{
