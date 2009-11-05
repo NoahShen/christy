@@ -35,7 +35,6 @@ import net.sf.christy.c2s.UnauthorizedException;
 import net.sf.christy.c2s.UnsupportedMechanismException;
 import net.sf.christy.c2s.ChristyStreamFeature.SupportedType;
 import net.sf.christy.mina.XmppCodecFactory;
-import net.sf.christy.routemessage.BindRouteExtension;
 import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.util.StringUtils;
@@ -697,7 +696,6 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				RouteMessage routeMessage = new RouteMessage(getName(), clientSession.getStreamId());
 				routeMessage.setToUserNode(clientSession.getUsername());
 				routeMessage.setXmlStanza(iq);
-				routeMessage.addRouteExtension(new BindRouteExtension());
 
 				routerSession.write(routeMessage.toXml());
 				return true;

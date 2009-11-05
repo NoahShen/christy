@@ -188,7 +188,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 	public boolean routeMessageReceived(RouteMessage routeMessage, SmSession smSession)
 	{
 		if (routeMessage.containExtension(SearchCompletedExtension.ELEMENTNAME, 
-						SearchCompletedExtension.NAMESPACE))
+									SearchCompletedExtension.NAMESPACE))
 		{
 			String node = routeMessage.getPrepedUserNode();
 			List<RouteMessage> messages = blockedMessages.removeAll(node);
@@ -316,9 +316,9 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 				String c2sName = routeMessage.getFrom();
 				SearchRouteExtension searchExtension = 
 					new SearchRouteExtension(0, 
-								newAddedSmSessionCount.get(), 
-								smSession.getSmName(), 
-								c2sName);
+										newAddedSmSessionCount.get(), 
+										smSession.getSmName(), 
+										c2sName);
 				routeMessage.addRouteExtension(searchExtension);
 			}
 
