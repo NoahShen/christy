@@ -39,6 +39,21 @@ public class SearchRouteExtension implements RouteExtension
 		this.fromc2s = fromc2s;
 	}
 
+	public void setTimes(int times)
+	{
+		this.times = times;
+	}
+
+	public void incrementTimes()
+	{
+		++times;
+	}
+	
+	public void setTotal(int total)
+	{
+		this.total = total;
+	}
+
 	/**
 	 * @return the times
 	 */
@@ -81,6 +96,23 @@ public class SearchRouteExtension implements RouteExtension
 	public CheckedNode[] getCheckedNode()
 	{
 		return checkedNodes.toArray(new CheckedNode[]{});
+	}
+	
+	public boolean containCheckedNode(String nodeName)
+	{
+		for (CheckedNode node : checkedNodes)
+		{
+			if (nodeName.equals(node.getName()))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void removeAllCheckedNode()
+	{
+		checkedNodes.clear();
 	}
 	
 	@Override

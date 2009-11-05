@@ -184,14 +184,31 @@ public class RouteMessage implements XmlStanza
 
 	public void addRouteExtension(RouteExtension extension)
 	{
-
 		routeExtensions.add(extension);
 	}
 
 	public void removeRouteExtension(RouteExtension extension)
 	{
-
 		routeExtensions.remove(extension);
+	}
+	
+	public RouteExtension removeRouteExtension(String elementName, String namespace)
+	{
+		for (int i = routeExtensions.size() - 1; i >= 0; --i)
+		{
+			RouteExtension extension = routeExtensions.get(i);
+			if (elementName.equals(extension.getElementName()) 
+					&& namespace.equals(extension.getNamespace()))
+			{
+				return routeExtensions.remove(i);
+			}
+		}
+		return null;
+	}
+	
+	public void removeAllRouteExtension()
+	{
+		routeExtensions.clear();
 	}
 	
 	public boolean containExtension(String elementName, String namespace)
@@ -199,7 +216,8 @@ public class RouteMessage implements XmlStanza
 		for (RouteExtension extension : routeExtensions)
 		{
 
-			if (elementName.equals(extension.getElementName()) && namespace.equals(extension.getNamespace()))
+			if (elementName.equals(extension.getElementName()) 
+					&& namespace.equals(extension.getNamespace()))
 			{
 
 				return true;
@@ -212,7 +230,12 @@ public class RouteMessage implements XmlStanza
 	{
 		return routeExtensions.contains(routeExtension);
 	}
-
+	
+	public boolean isExtensionEmpty()
+	{
+		return routeExtensions.size() == 0;
+	}
+	
 	protected String getRouteExtensionXml()
 	{
 
