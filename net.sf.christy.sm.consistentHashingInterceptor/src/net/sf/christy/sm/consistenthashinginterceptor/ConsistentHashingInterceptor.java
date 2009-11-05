@@ -31,7 +31,9 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 			return false;
 		}
 		
-		if (times == total)
+		
+		// search completed
+		if (times > total)
 		{
 			String userNode = routeMessage.getToUserNode();
 			CheckedNode[] checkedNodes = searchExtension.getCheckedNode();
@@ -41,16 +43,20 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 				{
 					String resource = bindedRes.getName();
 					String relatedC2s = bindedRes.getRelatedC2s();
-					OnlineUser user = smManager.createOnlineUser(userNode, resource, relatedC2s);
-					if (!user.containsProperty("searchCompleted"))
-					{
-						user.setProperty("searchCompleted");
-					}
+					smManager.createOnlineUser(userNode, resource, relatedC2s);
 				}
-			}			
-			return false;
+			}
+			
+
+			RouteMessage searchCompleted = new RouteMessage(smManager.getName(),routeMessage.getStreamId());
+			searchCompleted.setToUserNode(userNode);
+			searchCompleted.addRouteExtension(new SearchCompletedExtension());
+			smManager.sendToRouter(searchCompleted);
+			
+			return true;
 		}
-		else if (times < total)
+		// times <= total searching 
+		else
 		{
 			CheckedNode node = new CheckedNode(smManager.getName());
 			if (onlineUser != null)
@@ -63,32 +69,17 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 			}
 			searchExtension.addCheckedNode(node);
 			routeMessage.setFrom(smManager.getName());
-			routeMessage.setTo("router");
 			smManager.sendToRouter(routeMessage);
 			
 			smManager.removeOnlineUser(onlineUser);
 			
 			return true;
 		}
-		// invalid
-		else if (times > total)
-		{
-			smManager.exit();
-			return true;
-		}
-		
-		
-		return false;
 	}
 
 	@Override
 	public boolean smMessageSent(RouteMessage routeMessage, SmManager smManager, OnlineUser onlineUser)
 	{
-		if (onlineUser.containsProperty("searchCompleted"))
-		{
-			onlineUser.removeProperty("searchCompleted");
-			routeMessage.addRouteExtension(new SearchCompletedExtension());
-		}
 		return false;
 	}
 
