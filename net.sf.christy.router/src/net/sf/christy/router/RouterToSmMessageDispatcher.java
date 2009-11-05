@@ -10,7 +10,7 @@ import net.sf.christy.routemessage.RouteMessage;
  * @author noah
  *
  */
-public interface ResourceBinder
+public interface RouterToSmMessageDispatcher
 {
 	/**
 	 * 
@@ -20,10 +20,8 @@ public interface ResourceBinder
 	
 	/**
 	 * 
-	 * @param routeMessage
-	 * @param smSession
 	 */
-	public void handleRequest(RouteMessage routeMessage, SmSession smSession);
+	public void sendMessage(RouteMessage routeMessage);
 	
 	/**
 	 * 

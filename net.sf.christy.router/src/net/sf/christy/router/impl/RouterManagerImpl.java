@@ -22,9 +22,8 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import net.sf.christy.mina.XmppCodecFactory;
-import net.sf.christy.routemessage.BindRouteExtension;
 import net.sf.christy.routemessage.RouteMessage;
-import net.sf.christy.router.ResourceBinder;
+import net.sf.christy.router.RouterToSmMessageDispatcher;
 import net.sf.christy.router.RouterManager;
 import net.sf.christy.router.SmSession;
 import net.sf.christy.util.AbstractPropertied;
@@ -89,7 +88,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 	private SocketAcceptor smAcceptor;
 
-	private ResourceBinderServiceTracker resourceBinderServiceTracker;
+	private RouterToSmMessageDispatcherTracker dispatcherServiceTracker;
 
 	private RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker;
 
@@ -100,11 +99,11 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	 * @param routerToSmInterceptorServiceTracker 
 	 * @param routeMessageParserServiceTracker 
 	 */
-	public RouterManagerImpl(ResourceBinderServiceTracker resourceBinderServiceTracker, 
+	public RouterManagerImpl(RouterToSmMessageDispatcherTracker resourceBinderServiceTracker, 
 						RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker, 
 						RouteMessageParserServiceTracker routeMessageParserServiceTracker)
 	{
-		this.resourceBinderServiceTracker = resourceBinderServiceTracker;
+		this.dispatcherServiceTracker = resourceBinderServiceTracker;
 		this.routerToSmInterceptorServiceTracker = routerToSmInterceptorServiceTracker;
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 	}
@@ -531,12 +530,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 		private void c2shandleRoute(RouteMessage routeMessage, IoSession session) throws XmlPullParserException, IOException
 		{
-			if (routeMessage.containExtension(BindRouteExtension.ELEMENTNAME, 
-													BindRouteExtension.NAMESPACE))
-			{
-				ResourceBinder binder = resourceBinderServiceTracker.getResourceBinder();
-				binder.handleRequest(routeMessage, (SmSession) session.getAttachment());
-			}
+			RouterToSmMessageDispatcher dispatcher = dispatcherServiceTracker.getResourceBinder();
+			dispatcher.sendMessage(routeMessage);
 			
 		}
 
@@ -797,8 +792,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				if (!registeredSmModules.containsKey(smName))
 				{
 					session.write("<error>" +
-									"<unregistered xmlns=\"christy:internal:sm2router:auth\"/>" +
-									"</error> ");
+								"<unregistered xmlns=\"christy:internal:sm2router:auth\"/>" +
+								"</error> ");
 					session.write(CloseStream.getCloseStream());
 					session.close();
 					return;
@@ -815,7 +810,23 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 										routerToSmInterceptorServiceTracker);
 					session.setAttachment(smSession);
 					smSession.write("<success xmlns='" + SMROUTER_AUTH_NAMESPACE + "' />");
-					resourceBinderServiceTracker.getResourceBinder().smSessionAdded(smSession);
+					try
+					{
+						dispatcherServiceTracker.getResourceBinder().smSessionAdded(smSession);
+					}
+					catch (Exception e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						
+						logger.error("resourceBinder add smsession error");
+						session.write("<error>" +
+									"<internal-error xmlns=\"christy:internal:sm2router:auth\"/>" +
+									"</error> ");
+						session.write(CloseStream.getCloseStream());
+						session.close();
+						
+					}
 					return;
 				}
 				else
@@ -906,7 +917,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			Object atta = session.getAttachment();
 			if (atta != null || atta instanceof SmSession)
 			{
-				resourceBinderServiceTracker.getResourceBinder().smSessionRemoved((SmSession) atta);
+				dispatcherServiceTracker.getResourceBinder().smSessionRemoved((SmSession) atta);
 			}
 		}
 

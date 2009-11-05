@@ -42,7 +42,10 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 					String resource = bindedRes.getName();
 					String relatedC2s = bindedRes.getRelatedC2s();
 					OnlineUser user = smManager.createOnlineUser(userNode, resource, relatedC2s);
-					user.setProperty("searchCompleted");
+					if (!user.containsProperty("searchCompleted"))
+					{
+						user.setProperty("searchCompleted");
+					}
 				}
 			}			
 			return false;
