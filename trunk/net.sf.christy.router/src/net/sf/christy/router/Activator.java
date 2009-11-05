@@ -1,6 +1,6 @@
 package net.sf.christy.router;
 
-import net.sf.christy.router.impl.ResourceBinderServiceTracker;
+import net.sf.christy.router.impl.RouterToSmMessageDispatcherTracker;
 import net.sf.christy.router.impl.RouteMessageParserServiceTracker;
 import net.sf.christy.router.impl.RouterManagerImpl;
 import net.sf.christy.router.impl.RouterToSmInterceptorServiceTracker;
@@ -12,7 +12,7 @@ public class Activator implements BundleActivator
 {
 
 
-	private ResourceBinderServiceTracker resourceBinderServiceTracker;
+	private RouterToSmMessageDispatcherTracker routerToSmMessageDispatcherTracker;
 	private RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker;
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 
@@ -24,8 +24,8 @@ public class Activator implements BundleActivator
 	public void start(BundleContext context) throws Exception
 	{
 
-		resourceBinderServiceTracker = new ResourceBinderServiceTracker(context);
-		resourceBinderServiceTracker.open();
+		routerToSmMessageDispatcherTracker = new RouterToSmMessageDispatcherTracker(context);
+		routerToSmMessageDispatcherTracker.open();
 
 		routerToSmInterceptorServiceTracker = new RouterToSmInterceptorServiceTracker(context);
 		routerToSmInterceptorServiceTracker.open();
@@ -33,7 +33,7 @@ public class Activator implements BundleActivator
 		routeMessageParserServiceTracker = new RouteMessageParserServiceTracker(context);
 		routeMessageParserServiceTracker.open();
 		
-		RouterManager rm = new RouterManagerImpl(resourceBinderServiceTracker, 
+		RouterManager rm = new RouterManagerImpl(routerToSmMessageDispatcherTracker, 
 											routerToSmInterceptorServiceTracker,
 											routeMessageParserServiceTracker);
 
@@ -52,10 +52,10 @@ public class Activator implements BundleActivator
 	 */
 	public void stop(BundleContext context) throws Exception
 	{
-		if (resourceBinderServiceTracker != null)
+		if (routerToSmMessageDispatcherTracker != null)
 		{
-			resourceBinderServiceTracker.close();
-			resourceBinderServiceTracker = null;
+			routerToSmMessageDispatcherTracker.close();
+			routerToSmMessageDispatcherTracker = null;
 		}
 		
 		if (routerToSmInterceptorServiceTracker != null)
