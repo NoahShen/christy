@@ -28,6 +28,8 @@ import net.sf.christy.router.RouterManager;
 import net.sf.christy.router.SmSession;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.CloseStream;
+import net.sf.christy.xmpp.JID;
+import net.sf.christy.xmpp.Packet;
 import net.sf.christy.xmpp.StreamError;
 import net.sf.christy.xmpp.XmlStanza;
 
@@ -530,7 +532,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 		private void c2shandleRoute(RouteMessage routeMessage, IoSession session) throws XmlPullParserException, IOException
 		{
-			RouterToSmMessageDispatcher dispatcher = dispatcherServiceTracker.getResourceBinder();
+			RouterToSmMessageDispatcher dispatcher = dispatcherServiceTracker.getDispatcher();
 			dispatcher.sendMessage(routeMessage);
 			
 		}
@@ -768,7 +770,45 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				return;
 			}
 
-			// TODO
+			String userNode = routeMessage.getToUserNode();
+			String to = routeMessage.getTo();
+			
+			if (userNode != null)
+			{
+				dispatcherServiceTracker.getDispatcher().sendMessage(routeMessage);
+			}
+			else if (to != null)
+			{
+				if (to.startsWith("c2s_"))
+				{
+					C2sSessionImpl c2sSession = c2sSessions.get(to);
+					if (c2sSession != null)
+					{
+						c2sSession.write(routeMessage);
+					}
+				}
+				else if (to.startsWith("sm_"))
+				{
+					SmSessionImpl smSession = smSessions.get(to);
+					if (smSession != null)
+					{
+						smSession.write(routeMessage);
+					}
+				}
+			}
+			else
+			{
+				XmlStanza stanza = routeMessage.getXmlStanza();
+				if (stanza instanceof Packet)
+				{
+					Packet packet = (Packet) stanza;
+					JID jid = packet.getTo();
+					if (!jid.getDomain().equals(getDomain()))
+					{
+						// TODO send to s2s
+					}
+				}
+			}
 			
 		}
 
@@ -812,7 +852,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 					smSession.write("<success xmlns='" + SMROUTER_AUTH_NAMESPACE + "' />");
 					try
 					{
-						dispatcherServiceTracker.getResourceBinder().smSessionAdded(smSession);
+						dispatcherServiceTracker.getDispatcher().smSessionAdded(smSession);
 					}
 					catch (Exception e)
 					{
@@ -917,7 +957,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			Object atta = session.getAttachment();
 			if (atta != null || atta instanceof SmSession)
 			{
-				dispatcherServiceTracker.getResourceBinder().smSessionRemoved((SmSession) atta);
+				dispatcherServiceTracker.getDispatcher().smSessionRemoved((SmSession) atta);
 			}
 		}
 

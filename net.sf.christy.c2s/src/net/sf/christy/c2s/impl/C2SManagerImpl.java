@@ -43,7 +43,6 @@ import net.sf.christy.xmpp.Challenge;
 import net.sf.christy.xmpp.CloseStream;
 import net.sf.christy.xmpp.Failure;
 import net.sf.christy.xmpp.Iq;
-import net.sf.christy.xmpp.IqBind;
 import net.sf.christy.xmpp.JID;
 import net.sf.christy.xmpp.Proceed;
 import net.sf.christy.xmpp.StartTls;
@@ -468,6 +467,20 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				// TODO
 				RouteMessage routeMessage = 
 					routeMessageParserServiceTracker.getRouteMessageParser().parseXml(xml);
+				handleRoute(routeMessage, session);
+			}
+		}
+
+		private void handleRoute(RouteMessage routeMessage, IoSession session)
+		{
+			String streamId = routeMessage.getStreamId();
+			if (streamId != null)
+			{
+				ClientSessionImpl clientSession = clientSessions.get(streamId);
+				if (clientSession != null)
+				{
+					clientSession.write(routeMessage.getXmlStanza());
+				}
 			}
 		}
 
@@ -627,16 +640,32 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			{
 				handleIq((Iq) stanza, session);
 			}
+			else
+			{
+				handleStanza(stanza, session);
+			}
+		}
+
+		private void handleStanza(XmlStanza stanza, IoSession session)
+		{
+
+			ClientSession clientSession = (ClientSession) session.getAttachment();
+			
+			RouteMessage routeMessage = new RouteMessage(getName(), clientSession.getStreamId());
+			routeMessage.setToUserNode(clientSession.getUsername());
+			routeMessage.setXmlStanza(stanza);
+
+			routerSession.write(routeMessage.toXml());
 		}
 
 		private void handleIq(Iq iq, IoSession session)
 		{
-			if (!tryHandling(iq, session))
+			if (tryHandling(iq, session))
 			{
-				// TODO
-				
+				return;
 			}
 			
+			handleStanza(iq, session);
 		}
 
 		private boolean tryHandling(Iq iq, IoSession session)
@@ -668,37 +697,6 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				session.write(iqResult);
 				return true;
 				
-			}
-			else if (iq.getExtension(IqBind.ELEMENTNAME, IqBind.NAMESPACE) != null)
-			{
-				JID to = iq.getTo();
-				if (to != null && !getDomain().equals(to.toPrepedBareJID()))
-				{
-					StreamError error = new StreamError(StreamError.Condition.host_unknown);
-					session.write(error);
-					session.write(CloseStream.getCloseStream());
-					session.close();
-					return true;
-				}
-				
-				
-				if (iq.getType() != Iq.Type.set)
-				{
-					StreamError error = new StreamError(StreamError.Condition.undefined_condition);
-					session.write(error);
-					session.write(CloseStream.getCloseStream());
-					session.close();
-					return true;
-				}
-				
-				ClientSession clientSession = (ClientSession) session.getAttachment();
-				
-				RouteMessage routeMessage = new RouteMessage(getName(), clientSession.getStreamId());
-				routeMessage.setToUserNode(clientSession.getUsername());
-				routeMessage.setXmlStanza(iq);
-
-				routerSession.write(routeMessage.toXml());
-				return true;
 			}
 			
 			

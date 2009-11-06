@@ -28,7 +28,14 @@ import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.SmManager;
 import net.sf.christy.sm.UserResource;
 import net.sf.christy.util.AbstractPropertied;
+import net.sf.christy.xmpp.CloseStream;
+import net.sf.christy.xmpp.Iq;
+import net.sf.christy.xmpp.IqBind;
+import net.sf.christy.xmpp.IqSession;
+import net.sf.christy.xmpp.JID;
+import net.sf.christy.xmpp.StreamError;
 import net.sf.christy.xmpp.XmlStanza;
+import net.sf.christy.xmpp.XmppError;
 
 /**
  * @author noah
@@ -262,7 +269,6 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		return null;
 	}
 
-
 	@Override
 	public void removeOnlineUser(OnlineUser onlineUser)
 	{
@@ -277,7 +283,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	
 
 	@Override
-	public OnlineUser createOnlineUser(String userNode, String resource, String relatedC2s)
+	public UserResource createUserResource(String userNode, String resource, String relatedC2s, String streamId)
 	{
 		if (getOnlineUsersLimit() > 0)
 		{
@@ -301,9 +307,33 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			}
 		}
 		
-		onlineUser.addUserResource(new UserResourceImpl(userNode, resource, relatedC2s));
+		UserResourceImpl userResource = 
+			new UserResourceImpl(userNode, resource, relatedC2s, streamId, this);
 		
-		return onlineUser;
+		onlineUser.addUserResource(userResource);
+		
+		return userResource;
+	}
+	
+	@Override
+	public boolean containUserResource(String userNode, String resource)
+	{
+		OnlineUserImpl onlineUser = onlineUsers.get(userNode.toLowerCase());
+		if (onlineUser != null)
+		{
+			return onlineUser.containUserResource(resource);
+		}
+		return false;
+	}
+	
+	@Override
+	public void removeUserResource(String node, String resource)
+	{
+		OnlineUserImpl onlineUser = onlineUsers.get(node.toLowerCase());
+		if (onlineUser != null)
+		{
+			onlineUser.removeUserResource(resource);
+		}
 	}
 	
 	@Override
@@ -351,7 +381,12 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	public void sendToRouter(RouteMessage routeMessage)
 	{
 		String userNode = routeMessage.getPrepedUserNode();
-		OnlineUser user = getOnlineUser(userNode);
+		OnlineUser user = null;
+		if (userNode != null)
+		{
+			user = getOnlineUser(userNode);
+		}
+		
 		
 		if (smToRouterInterceptorServiceTracker.fireSmMessageSent(routeMessage, SmManagerImpl.this, user))
 		{
@@ -363,7 +398,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		
 		routerSession.write(routeMessage.toXml());		
 	}
-
+	
 	private class RouterHandler implements IoHandler
 	{
 
@@ -439,9 +474,118 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				return;
 			}
 
-			// TODO handle
+			XmlStanza stanza = routeMessage.getXmlStanza();
+			if (stanza instanceof Iq)
+			{
+				handleIq(routeMessage, (Iq) stanza);
+			}
+		}
+
+		private void handleIq(RouteMessage routeMessage, Iq stanza)
+		{
+			IqBind bind = 
+				(IqBind) stanza.getExtension(IqBind.ELEMENTNAME, IqBind.NAMESPACE);
+			if (bind != null)
+			{
+				handleBindResource(routeMessage, stanza, bind);
+			}
+			
+			IqSession iqSession = 
+				(IqSession) stanza.getExtension(IqSession.ELEMENTNAME, IqSession.NAMESPACE);
+			
+			if (iqSession != null)
+			{
+				handleBindSession(routeMessage, stanza, iqSession);
+			}
+			
 			
 		}
+
+		private void handleBindSession(RouteMessage routeMessage, Iq iqRequest, IqSession iqSession)
+		{
+			String node = routeMessage.getToUserNode();
+			String streamId = routeMessage.getStreamId();
+			UserResourceImpl userResource = getUserResourceByStreamId(node, streamId);
+			if (userResource != null)
+			{
+				userResource.setSessionBinded(true);
+				
+				Iq iqResult = new Iq(Iq.Type.result);
+				iqResult.setStanzaId(iqRequest.getStanzaId());
+				
+				userResource.sendToSelfClient(iqResult);
+			}
+		}
+		
+
+		private UserResourceImpl getUserResourceByStreamId(String node, String streamId)
+		{
+			OnlineUserImpl onlineUser = (OnlineUserImpl) getOnlineUser(node);
+			if (onlineUser != null)
+			{
+				return (UserResourceImpl) onlineUser.getUserResourceByStreamId(streamId);
+			}
+			return null;
+		}
+
+
+		private void handleBindResource(RouteMessage routeMessage, Iq iqRequest, IqBind bind)
+		{
+			String node = routeMessage.getToUserNode();
+			String c2sName = routeMessage.getFrom();
+			String streamId = routeMessage.getStreamId();
+			String resource = bind.getResource();
+			if (resource == null || resource.isEmpty())
+			{
+				XmppError error = new XmppError(XmppError.Condition.bad_request);
+				
+				Iq iqError = new Iq(Iq.Type.error);
+				iqError.setStanzaId(iqRequest.getStanzaId());
+				iqError.addExtension(bind);
+				iqError.setError(error);
+				
+				
+				RouteMessage responseMessage = 
+					new RouteMessage(getName(), 
+							routeMessage.getFrom(),
+							routeMessage.getStreamId());
+				responseMessage.setXmlStanza(iqError);
+				sendToRouter(responseMessage);
+				
+				RouteMessage closeRouteMessage = 
+					new RouteMessage(getName(), c2sName, streamId);
+				closeRouteMessage.setXmlStanza(CloseStream.getCloseStream());
+				sendToRouter(closeRouteMessage);
+				return;
+			}
+			
+			
+			UserResource userResource = getUserResource(node, resource);
+			if (userResource != null)
+			{
+				StreamError streamError = 
+					new StreamError(StreamError.Condition.conflict);
+				
+				userResource.sendToSelfClient(streamError);
+				userResource.sendToSelfClient(CloseStream.getCloseStream());
+				removeUserResource(node, resource);
+				
+			}
+			
+			
+			userResource = createUserResource(node, resource, c2sName, streamId);
+			
+			Iq iqResult = new Iq(Iq.Type.result);
+			iqResult.setStanzaId(iqRequest.getStanzaId());
+			IqBind resultBind = new IqBind();
+			resultBind.setJid(new JID(node, getDomain(), resource));
+			iqResult.addExtension(resultBind);
+			
+			userResource.sendToSelfClient(iqResult);
+			
+		}
+
+		
 
 		private void handleStream(XmlPullParser parser, IoSession session)
 		{
@@ -465,7 +609,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			
 			logger.debug("open stream successful");
 			
-			// TODO 
+			// TODO test code
 			String smname = getName();
 			if (id.endsWith("1"))
 			{

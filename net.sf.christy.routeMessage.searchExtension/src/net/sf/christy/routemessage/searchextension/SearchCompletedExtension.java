@@ -1,4 +1,4 @@
-package net.sf.christy.sm.consistenthashinginterceptor;
+package net.sf.christy.routemessage.searchextension;
 
 
 import net.sf.christy.routemessage.RouteExtension;

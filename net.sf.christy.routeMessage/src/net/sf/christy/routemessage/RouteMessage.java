@@ -29,8 +29,6 @@ public class RouteMessage implements XmlStanza
 	private String streamId;
 
 	private XmlStanza xmlStanza;
-
-	private String xmlStranzaStr;
 	
 	private List<RouteExtension> routeExtensions = new CopyOnWriteArrayList<RouteExtension>();
 
@@ -80,22 +78,6 @@ public class RouteMessage implements XmlStanza
 	public void setToUserNode(String toUserNode)
 	{
 		this.toUserNode = toUserNode;
-	}
-
-	/**
-	 * @return the xmlStranzaStr
-	 */
-	public String getXmlStranzaStr()
-	{
-		return xmlStranzaStr;
-	}
-
-	/**
-	 * @param xmlStranzaStr the xmlStranzaStr to set
-	 */
-	public void setXmlStranzaStr(String xmlStranzaStr)
-	{
-		this.xmlStranzaStr = xmlStranzaStr;
 	}
 
 	/**
@@ -285,11 +267,6 @@ public class RouteMessage implements XmlStanza
 		{
 			builder.append(getXmlStanza().toXml());
 		}
-		
-		if (getXmlStranzaStr() != null)
-		{
-			builder.append(getXmlStranzaStr());
-		}
 
 		builder.append(getRouteExtensionXml());
 
@@ -308,7 +285,6 @@ public class RouteMessage implements XmlStanza
 		routeMessage.streamId = this.streamId;
 
 		routeMessage.xmlStanza = (XmlStanza) this.xmlStanza.clone();
-		routeMessage.xmlStranzaStr = this.xmlStranzaStr;
 		
 		routeMessage.routeExtensions = new CopyOnWriteArrayList<RouteExtension>();
 		for (RouteExtension extension : routeExtensions)

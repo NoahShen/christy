@@ -7,6 +7,7 @@ Bundle-ClassPath: bin/
 Bundle-Activator: net.sf.christy.sm.consistenthashinginterceptor.Activator
 Bundle-Vendor: Noah
 Import-Package: net.sf.christy.routemessage,
+ net.sf.christy.routemessage.searchextension,
  net.sf.christy.routemessageparser,
  net.sf.christy.sm,
  net.sf.christy.util,

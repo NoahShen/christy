@@ -1,16 +1,15 @@
-package net.sf.christy.router.consistenthashingdispatcher.parser;
+package net.sf.christy.routemessage.searchextension.parser;
 
-import java.io.IOException;
 
 import net.sf.christy.routemessage.RouteExtension;
+import net.sf.christy.routemessage.searchextension.CheckedNode;
+import net.sf.christy.routemessage.searchextension.SearchRouteExtension;
+import net.sf.christy.routemessage.searchextension.CheckedNode.BindedResouce;
 import net.sf.christy.routemessageparser.RouteExtensionParser;
 import net.sf.christy.routemessageparser.RouteMessageParser;
-import net.sf.christy.router.consistenthashingdispatcher.CheckedNode;
-import net.sf.christy.router.consistenthashingdispatcher.SearchRouteExtension;
-import net.sf.christy.router.consistenthashingdispatcher.CheckedNode.BindedResouce;
+import net.sf.christy.xmpp.Presence;
 
 import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
 public class SearchRouteExtensionParser implements RouteExtensionParser
 {
@@ -18,6 +17,13 @@ public class SearchRouteExtensionParser implements RouteExtensionParser
 	
 	public static final String NAMESPACE = "christy:internal:searchResource";
 	
+	private XmppParserServiceTracker xmppParserServiceTracker;
+	
+	public SearchRouteExtensionParser(XmppParserServiceTracker xmppParserServiceTracker)
+	{
+		this.xmppParserServiceTracker = xmppParserServiceTracker;
+	}
+
 	@Override
 	public String getElementName()
 	{
@@ -65,7 +71,7 @@ public class SearchRouteExtensionParser implements RouteExtensionParser
 		return searchRouteExtension;
 	}
 
-	private CheckedNode parseCheckNode(XmlPullParser parser) throws XmlPullParserException, IOException
+	private CheckedNode parseCheckNode(XmlPullParser parser) throws Exception
 	{
 		String name = parser.getAttributeValue("", "name");
 		CheckedNode node = new CheckedNode(name);
@@ -80,11 +86,7 @@ public class SearchRouteExtensionParser implements RouteExtensionParser
 			{
 				if ("bindedResouce".equals(elementName))
 				{
-					String resName = parser.getAttributeValue("", "name");
-					String relatedC2s = parser.getAttributeValue("", "relatedC2s");
-					
-					BindedResouce resource = node.new BindedResouce(resName, relatedC2s);
-					node.addBindedResouce(resource);
+					parseBindedResource(node, parser);
 				}
 			}
 			else if (eventType == XmlPullParser.END_TAG)
@@ -96,6 +98,44 @@ public class SearchRouteExtensionParser implements RouteExtensionParser
 			}
 		}
 		return node;
+	}
+
+	private BindedResouce parseBindedResource(CheckedNode node, XmlPullParser parser) throws Exception
+	{
+		String resName = parser.getAttributeValue("", "name");
+		String relatedC2s = parser.getAttributeValue("", "relatedC2s");
+		String streamId = parser.getAttributeValue("", "streamId");
+		String sessionBindedStr = parser.getAttributeValue("", "sessionBinded");
+		boolean sessionBinded = Boolean.valueOf(sessionBindedStr);
+		
+		
+		BindedResouce resource = node.new BindedResouce(resName, relatedC2s, streamId, sessionBinded);
+		node.addBindedResouce(resource);
+		
+		boolean done = false;
+		while (!done)
+		{
+			int eventType = parser.next();
+			String elementName = parser.getName();
+			
+			if (eventType == XmlPullParser.START_TAG)
+			{
+				if ("presence".equals(elementName))
+				{
+					Presence presence = 
+						(Presence) xmppParserServiceTracker.getParser().parseParser(parser);
+					resource.setPresence(presence);
+				}
+			}
+			else if (eventType == XmlPullParser.END_TAG)
+			{
+				if ("bindedResouce".equals(elementName))
+				{
+					done = true;
+				}
+			}
+		}
+		return resource;
 	}
 
 }

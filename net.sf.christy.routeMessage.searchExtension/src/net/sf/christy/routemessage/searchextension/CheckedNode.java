@@ -1,8 +1,9 @@
-package net.sf.christy.router.consistenthashingdispatcher;
+package net.sf.christy.routemessage.searchextension;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.christy.xmpp.Presence;
 import net.sf.christy.xmpp.XmlStanza;
 
 public class CheckedNode implements XmlStanza
@@ -96,14 +97,29 @@ public class CheckedNode implements XmlStanza
 		
 		private String relatedC2s;
 		
-		/**
-		 * @param name
-		 * @param relatedC2s
-		 */
-		public BindedResouce(String name, String relatedC2s)
+		private String streamId;
+		
+		private boolean sesseionBinded;
+
+		private Presence presence;
+		
+		public BindedResouce(String name, String relatedC2s, String streamId, boolean sessionBinded)
 		{
+			super();
 			this.name = name;
 			this.relatedC2s = relatedC2s;
+			this.streamId = streamId;
+			this.sesseionBinded = sessionBinded;
+		}
+
+		public Presence getPresence()
+		{
+			return presence;
+		}
+
+		public void setPresence(Presence presence)
+		{
+			this.presence = presence;
 		}
 
 		/**
@@ -123,19 +139,32 @@ public class CheckedNode implements XmlStanza
 		}
 
 
+		public String getStreamId()
+		{
+			return streamId;
+		}
+
+		public boolean isSesseionBinded()
+		{
+			return sesseionBinded;
+		}
+
 		public Object clone() throws CloneNotSupportedException
 		{
 			BindedResouce bindedResource = (BindedResouce) super.clone();
 			bindedResource.name = this.name;
 			bindedResource.relatedC2s = this.relatedC2s;
-			
+			bindedResource.streamId = this.streamId;
 			return bindedResource;
 		}
 
 		@Override
 		public String toXml()
 		{
-			return "<bindedResouce name=\"" + getName() + "\" relatedC2s=\"" + getRelatedC2s() + "\"/>";
+			return "<bindedResouce name=\"" + getName() + "\"" +
+					" relatedC2s=\"" + getRelatedC2s() + "\"" +
+					" streamId=\"" + getStreamId() +"\"" +
+					" sessionBinded=\"" + isSesseionBinded() + "/>";
 		}
 		
 	}

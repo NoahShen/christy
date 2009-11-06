@@ -166,6 +166,23 @@ public interface SmManager extends Propertied
 	 * @param userNode
 	 * @param resource
 	 * @param relatedC2s
+	 * @param streamId
+	 * @return
 	 */
-	public OnlineUser createOnlineUser(String userNode, String resource, String relatedC2s);
+	public UserResource createUserResource(String userNode, String resource, String relatedC2s, String streamId);
+	
+	/**
+	 * 
+	 * @param userNode
+	 * @param resource
+	 * @return
+	 */
+	public boolean containUserResource(String userNode, String resource);
+	
+	/**
+	 * 
+	 * @param node
+	 * @param resource
+	 */
+	public void removeUserResource(String node, String resource);
 }

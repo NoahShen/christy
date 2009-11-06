@@ -1,8 +1,8 @@
 package net.sf.christy.sm.impl;
 
 import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.UserResource;
@@ -12,7 +12,7 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 {
 	private String node;
 	
-	private List<UserResource> userResources = new CopyOnWriteArrayList<UserResource>();
+	private Set<UserResource> userResources = new CopyOnWriteArraySet<UserResource>();
 	
 	/**
 	 * @param node
@@ -53,6 +53,20 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 		return null;
 	}
 	
+	@Override
+	public UserResource getUserResourceByStreamId(String streamId)
+	{
+		for (UserResource res : userResources)
+		{
+			if (streamId.equals(res.getStreamId()))
+			{
+				return res;
+			}
+		}
+		return null;
+	}
+	
+	
 	public boolean addUserResource(UserResource userResource)
 	{
 		return userResources.add(userResource);
@@ -77,4 +91,23 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 		return null;
 	}
 
+	public boolean containUserResource(String resource)
+	{
+		for (UserResource res : userResources)
+		{
+			if (resource.equals(res.getResource()))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "OnlineUserImpl [node=" + node + ", userResources=" + userResources + "]";
+	}
+	
+	
 }
