@@ -4,10 +4,10 @@ import java.net.SocketAddress;
 
 import org.apache.mina.common.IoSession;
 
+import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.router.C2sSession;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.CloseStream;
-import net.sf.christy.xmpp.XmlStanza;
 
 public class C2sSessionImpl extends AbstractPropertied implements C2sSession
 {
@@ -69,9 +69,9 @@ public class C2sSessionImpl extends AbstractPropertied implements C2sSession
 	}
 
 	@Override
-	public void write(XmlStanza stanza)
+	public void write(RouteMessage routeMessage)
 	{
-		iosession.write(stanza);
+		iosession.write(routeMessage.toXml());
 	}
 
 	@Override

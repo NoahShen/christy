@@ -1,6 +1,9 @@
 package net.sf.christy.sm.consistenthashinginterceptor;
 
 import net.sf.christy.routemessage.RouteMessage;
+import net.sf.christy.routemessage.searchextension.CheckedNode;
+import net.sf.christy.routemessage.searchextension.SearchCompletedExtension;
+import net.sf.christy.routemessage.searchextension.SearchRouteExtension;
 import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.SmManager;
 import net.sf.christy.sm.SmToRouterInterceptor;
@@ -43,7 +46,11 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 				{
 					String resource = bindedRes.getName();
 					String relatedC2s = bindedRes.getRelatedC2s();
-					smManager.createOnlineUser(userNode, resource, relatedC2s);
+					String streamId = bindedRes.getStreamId();
+					UserResource userResource = 
+						smManager.createUserResource(userNode, resource, relatedC2s, streamId);
+					
+					userResource.setPresence(bindedRes.getPresence());
 				}
 			}
 			
@@ -64,7 +71,13 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 				UserResource[] resources = onlineUser.getAllUserResources();
 				for (UserResource res : resources)
 				{
-					node.addBindedResouce(node.new BindedResouce(res.getResource(), res.getRelatedC2s()));
+					CheckedNode.BindedResouce bindedResource = 
+						node.new BindedResouce(res.getResource(), 
+									res.getRelatedC2s(), 
+									res.getStreamId(),
+									res.isSessionBinded());
+					bindedResource.setPresence(res.getPresence());
+					node.addBindedResouce(bindedResource);
 				}
 			}
 			searchExtension.addCheckedNode(node);

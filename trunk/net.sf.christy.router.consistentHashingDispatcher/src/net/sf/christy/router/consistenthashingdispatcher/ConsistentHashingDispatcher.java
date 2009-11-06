@@ -11,16 +11,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.sf.christy.routemessage.RouteExtension;
+import net.sf.christy.routemessage.RouteMessage;
+import net.sf.christy.routemessage.searchextension.SearchCompletedExtension;
+import net.sf.christy.routemessage.searchextension.SearchRouteExtension;
+import net.sf.christy.router.RouterToSmInterceptor;
+import net.sf.christy.router.RouterToSmMessageDispatcher;
+import net.sf.christy.router.SmSession;
+import net.sf.christy.xmpp.XmlStanza;
+
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
-
-import net.sf.christy.routemessage.RouteExtension;
-import net.sf.christy.routemessage.RouteMessage;
-import net.sf.christy.router.RouterToSmMessageDispatcher;
-import net.sf.christy.router.RouterToSmInterceptor;
-import net.sf.christy.router.SmSession;
-import net.sf.christy.xmpp.XmlStanza;
 
 /**
  * @author noah

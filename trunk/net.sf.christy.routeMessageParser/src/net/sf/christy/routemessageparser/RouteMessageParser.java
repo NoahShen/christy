@@ -36,4 +36,5 @@ public interface RouteMessageParser
 	 * @return
 	 */
 	public RouteExtensionParser getRouteExtensionParser(String elementName, String namespace);
+
 }

@@ -14,6 +14,10 @@ public class IqSession implements PacketExtension
 	 */
 	private static final long serialVersionUID = -1308104909346824034L;
 
+	public static final String ELEMENTNAME = "session";
+	
+	public static final String NAMESPACE = "urn:ietf:params:xml:ns:xmpp-session";
+	
 	public IqSession()
 	{
 	}
@@ -21,13 +25,13 @@ public class IqSession implements PacketExtension
 	@Override
 	public String getElementName()
 	{
-		return "session";
+		return ELEMENTNAME;
 	}
 
 	@Override
 	public String getNamespace()
 	{
-		return "urn:ietf:params:xml:ns:xmpp-session";
+		return NAMESPACE;
 	}
 
 	@Override

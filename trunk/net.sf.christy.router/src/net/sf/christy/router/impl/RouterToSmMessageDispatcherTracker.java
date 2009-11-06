@@ -13,7 +13,7 @@ public class RouterToSmMessageDispatcherTracker extends ServiceTracker
 		super(context, RouterToSmMessageDispatcher.class.getName(), null);
 	}
 
-	public RouterToSmMessageDispatcher getResourceBinder()
+	public RouterToSmMessageDispatcher getDispatcher()
 	{
 		return (RouterToSmMessageDispatcher) getService();
 	}

@@ -35,4 +35,18 @@ public interface OnlineUser extends Propertied
 	 * @return
 	 */
 	public UserResource getUserResource(String resource);
+	
+	/**
+	 * 
+	 * @param resource
+	 * @return
+	 */
+	public boolean containUserResource(String resource);
+
+	/**
+	 * 
+	 * @param streamId
+	 * @return
+	 */
+	public UserResource getUserResourceByStreamId(String streamId);
 }

@@ -1,11 +1,11 @@
-package net.sf.christy.sm.consistenthashinginterceptor.parser;
+package net.sf.christy.routemessage.searchextension.parser;
 
 import org.xmlpull.v1.XmlPullParser;
 
 import net.sf.christy.routemessage.RouteExtension;
+import net.sf.christy.routemessage.searchextension.SearchCompletedExtension;
 import net.sf.christy.routemessageparser.RouteExtensionParser;
 import net.sf.christy.routemessageparser.RouteMessageParser;
-import net.sf.christy.sm.consistenthashinginterceptor.SearchCompletedExtension;
 
 
 public class SearchCompletedExtensionParser implements RouteExtensionParser {

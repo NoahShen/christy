@@ -1,4 +1,4 @@
-package net.sf.christy.router.consistenthashingdispatcher;
+package net.sf.christy.routemessage.searchextension;
 
 import java.util.ArrayList;
 import java.util.List;
