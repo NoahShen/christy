@@ -3,8 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: C2s Plug-in
 Bundle-SymbolicName: net.sf.christy.c2s
 Bundle-Version: 1.0.0
-Bundle-ClassPath: bin/,
- lib/xpp3-1.1.3.4.C.jar
+Bundle-ClassPath: bin/
 Bundle-Activator: net.sf.christy.c2s.Activator
 Bundle-Vendor: Noah
 Import-Package: net.sf.christy.mina,

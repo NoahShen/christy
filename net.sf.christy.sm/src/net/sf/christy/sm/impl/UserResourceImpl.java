@@ -27,9 +27,10 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	 * @param node
 	 * @param resource
 	 */
-	public UserResourceImpl(String node, String resource, String relatedC2s, 
-					String streamId,
-					SmManagerImpl smManager)
+	public UserResourceImpl(String node, String resource, 
+								String relatedC2s, 
+								String streamId,
+								SmManagerImpl smManager)
 	{
 		this.node = node;
 		this.resource = resource;
@@ -53,7 +54,6 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	@Override
 	public String getRelatedC2s()
 	{
-
 		return relatedC2s;
 	}
 
