@@ -17,7 +17,7 @@ public interface UserResource extends Propertied
 	 * 
 	 * @return
 	 */
-	public String getNode();
+	public OnlineUser getOnlineUser();
 	
 	/**
 	 * 

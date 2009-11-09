@@ -5,9 +5,12 @@ package net.sf.christy.sm.impl;
 
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.mina.common.ConnectFuture;
 import org.apache.mina.common.IdleStatus;
@@ -22,6 +25,10 @@ import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
+
 import net.sf.christy.mina.XmppCodecFactory;
 import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.sm.OnlineUser;
@@ -33,6 +40,7 @@ import net.sf.christy.xmpp.Iq;
 import net.sf.christy.xmpp.IqBind;
 import net.sf.christy.xmpp.IqSession;
 import net.sf.christy.xmpp.JID;
+import net.sf.christy.xmpp.Packet;
 import net.sf.christy.xmpp.StreamError;
 import net.sf.christy.xmpp.XmlStanza;
 import net.sf.christy.xmpp.XmppError;
@@ -74,15 +82,23 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	
 	private SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker;
 	
+	private PacketHandlerServiceTracker packetHandlerServiceTracker;
+	
 	private int onlineUsersLimit = -1;
 	
 	private int resourceLimitPerUser = -1;
 	
+	private HandlerManager handlerManager;
+
+	
 	public SmManagerImpl(RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
-						SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker)
+						SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker, 
+						PacketHandlerServiceTracker packetHandlerServiceTracker)
 	{
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 		this.smToRouterInterceptorServiceTracker = smToRouterInterceptorServiceTracker;
+		this.packetHandlerServiceTracker = packetHandlerServiceTracker;
+		this.handlerManager = new HandlerManager();
 	}
 	
 	@Override
@@ -308,7 +324,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		}
 		
 		UserResourceImpl userResource = 
-			new UserResourceImpl(userNode, resource, relatedC2s, streamId, this);
+			new UserResourceImpl(onlineUser, resource, relatedC2s, streamId, this);
 		
 		onlineUser.addUserResource(userResource);
 		
@@ -479,6 +495,32 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			{
 				handleIq(routeMessage, (Iq) stanza);
 			}
+			else
+			{
+				transferToHandlerManager(routeMessage);
+				
+			}
+		}
+
+		private void transferToHandlerManager(RouteMessage routeMessage)
+		{
+			
+			XmlStanza stanza = routeMessage.getXmlStanza();
+			if (!(stanza instanceof Packet))
+			{
+				return;
+			}
+			
+			String node = routeMessage.getToUserNode();
+			String streamId = routeMessage.getStreamId();
+			UserResource userResource = getUserResourceByStreamId(node, streamId);
+			
+			if (userResource == null)
+			{
+				return;
+			}
+			handlerManager.handlePacket(userResource, (Packet) stanza);
+			
 		}
 
 		private void handleIq(RouteMessage routeMessage, Iq stanza)
@@ -488,6 +530,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			if (bind != null)
 			{
 				handleBindResource(routeMessage, stanza, bind);
+				return;
 			}
 			
 			IqSession iqSession = 
@@ -496,8 +539,10 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			if (iqSession != null)
 			{
 				handleBindSession(routeMessage, stanza, iqSession);
+				return;
 			}
 			
+			transferToHandlerManager(routeMessage);
 			
 		}
 
@@ -670,7 +715,84 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	}
 
 
+	/**
+	 * confirm there is only one thread which is handling all the packet sent by same user 
+	 * @author Noah
+	 *
+	 */
+	private class HandlerManager
+	{
+		private ListMultimap<String, Packet> messageQueue;
+		
+		private Lock lock = new ReentrantLock();
+		
+		public HandlerManager()
+		{
+			messageQueue = LinkedListMultimap.create();
+			messageQueue = Multimaps.synchronizedListMultimap(messageQueue);
+		}
+		
+		public void handlePacket(UserResource resource, Packet packet)
+		{
+			String node = resource.getOnlineUser().getNode().toLowerCase();
+			
+			lock.lock();
+			try
+			{
+
+				if (messageQueue.containsKey(node))
+				{
+					messageQueue.put(node, packet);
+					return;
+				}
+				
+				messageQueue.put(node, packet);
+				
+			}
+			finally
+			{
+				lock.unlock();
+			}
+			
+			notifyHandler(node, resource);
+		}
+
+		private void notifyHandler(String node, UserResource userResource)
+		{
+			Packet packet = getMessage(node);
+			do
+			{
+				
+				if (packet != null)
+				{
+					packetHandlerServiceTracker.handlePacket(userResource, packet);
+				}
+				
+			}
+			while((packet = getMessage(node)) != null);
+		}
+
+		private Packet getMessage(String node)
+		{
+			lock.lock();
+			try
+			{
+
+				List<Packet> packets = messageQueue.get(node);
+				if (packets == null || packets.isEmpty())
+				{
+					return null;
+				}
+				return packets.remove(0);
+			}
+			finally
+			{
+				lock.unlock();
+			}
+			
+			
+		}
 
 
-
+	}
 }

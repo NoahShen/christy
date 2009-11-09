@@ -1,6 +1,7 @@
 package net.sf.christy.sm.impl;
 
 import net.sf.christy.routemessage.RouteMessage;
+import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.UserResource;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.JID;
@@ -10,7 +11,7 @@ import net.sf.christy.xmpp.XmlStanza;
 
 public class UserResourceImpl extends AbstractPropertied implements UserResource
 {
-	private String node;
+	private OnlineUserImpl onlineUser;
 	
 	private String resource;
 	
@@ -27,12 +28,12 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	 * @param node
 	 * @param resource
 	 */
-	public UserResourceImpl(String node, String resource, 
+	public UserResourceImpl(OnlineUserImpl onlineUser, String resource, 
 								String relatedC2s, 
 								String streamId,
 								SmManagerImpl smManager)
 	{
-		this.node = node;
+		this.onlineUser = onlineUser;
 		this.resource = resource;
 		this.relatedC2s = relatedC2s;
 		this.streamId = streamId;
@@ -40,9 +41,9 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	}
 
 	@Override
-	public String getNode()
+	public OnlineUser getOnlineUser()
 	{
-		return node;
+		return onlineUser;
 	}
 
 	@Override
@@ -141,8 +142,8 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	{
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((node == null) ? 0 : node.hashCode());
 		result = prime * result + ((resource == null) ? 0 : resource.hashCode());
+		result = prime * result + ((streamId == null) ? 0 : streamId.hashCode());
 		return result;
 	}
 
@@ -156,13 +157,6 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 		if (getClass() != obj.getClass())
 			return false;
 		UserResourceImpl other = (UserResourceImpl) obj;
-		if (node == null)
-		{
-			if (other.node != null)
-				return false;
-		}
-		else if (!node.equals(other.node))
-			return false;
 		if (resource == null)
 		{
 			if (other.resource != null)
@@ -170,13 +164,24 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 		}
 		else if (!resource.equals(other.resource))
 			return false;
+		if (streamId == null)
+		{
+			if (other.streamId != null)
+				return false;
+		}
+		else if (!streamId.equals(other.streamId))
+			return false;
 		return true;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "UserResourceImpl [node=" + node + ", relatedC2s=" + relatedC2s + ", resource=" + resource + "]";
+		return "UserResourceImpl [node=" + onlineUser.getNode() + ", resource=" + resource + ", sessionBinded=" + sessionBinded + ", streamId=" + streamId + "]";
 	}
 
+	
+
+
+	
 }
