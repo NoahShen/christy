@@ -7,7 +7,11 @@ Bundle-ClassPath: bin/,
  lib/google-collect-1.0-rc3.jar
 Bundle-Activator: net.sf.christy.router.consistenthashingdispatcher.Activator
 Bundle-Vendor: Noah
-Import-Package: net.sf.christy.routemessage,
+Import-Package: com.google.common.annotations,
+ com.google.common.base,
+ com.google.common.base.internal,
+ com.google.common.collect,
+ net.sf.christy.routemessage,
  net.sf.christy.routemessage.searchextension,
  net.sf.christy.routemessageparser,
  net.sf.christy.router,

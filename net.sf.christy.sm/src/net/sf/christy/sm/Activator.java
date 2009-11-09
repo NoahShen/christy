@@ -1,5 +1,6 @@
 package net.sf.christy.sm;
 
+import net.sf.christy.sm.impl.PacketHandlerServiceTracker;
 import net.sf.christy.sm.impl.RouteMessageParserServiceTracker;
 import net.sf.christy.sm.impl.SmManagerImpl;
 import net.sf.christy.sm.impl.SmToRouterInterceptorServiceTracker;
@@ -12,6 +13,7 @@ public class Activator implements BundleActivator
 
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	private SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker;
+	private PacketHandlerServiceTracker packetHandlerServiceTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -26,8 +28,13 @@ public class Activator implements BundleActivator
 		smToRouterInterceptorServiceTracker = new SmToRouterInterceptorServiceTracker(context);
 		smToRouterInterceptorServiceTracker.open();
 		
+		packetHandlerServiceTracker = new PacketHandlerServiceTracker(context);
+		packetHandlerServiceTracker.open();
+		
 		SmManagerImpl smManager = 
-			new SmManagerImpl(routeMessageParserServiceTracker,smToRouterInterceptorServiceTracker);
+			new SmManagerImpl(routeMessageParserServiceTracker,
+					smToRouterInterceptorServiceTracker,
+					packetHandlerServiceTracker);
 		
 		// TODO
 		smManager.setName("sm_1");
@@ -54,6 +61,12 @@ public class Activator implements BundleActivator
 		{
 			smToRouterInterceptorServiceTracker.close();
 			smToRouterInterceptorServiceTracker = null;
+		}
+		
+		if (packetHandlerServiceTracker != null)
+		{
+			packetHandlerServiceTracker.close();
+			packetHandlerServiceTracker = null;
 		}
 	}
 
