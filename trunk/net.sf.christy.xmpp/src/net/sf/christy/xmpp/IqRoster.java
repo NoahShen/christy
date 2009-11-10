@@ -24,6 +24,10 @@ public class IqRoster implements PacketExtension
 	 */
 	private static final long serialVersionUID = 8673323783374803789L;
 	
+	public static final String ELEMENTNAME = "query";
+	
+	public static final String NAMESPACE = "jabber:iq:roster";
+	
 	private final List<Item> rosterItems = new ArrayList<Item>();
 
 	public IqRoster()
@@ -76,13 +80,13 @@ public class IqRoster implements PacketExtension
 	@Override
 	public String getElementName()
 	{
-		return "query";
+		return ELEMENTNAME;
 	}
 
 	@Override
 	public String getNamespace()
 	{
-		return "jabber:iq:roster";
+		return NAMESPACE;
 	}
 
 	@Override

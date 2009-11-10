@@ -3,8 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: ConsistentHashingDispatcher Plug-in
 Bundle-SymbolicName: net.sf.christy.router.consistentHashingDispatcher
 Bundle-Version: 1.0.0
-Bundle-ClassPath: bin/,
- lib/google-collect-1.0-rc3.jar
+Bundle-ClassPath: bin/
 Bundle-Activator: net.sf.christy.router.consistenthashingdispatcher.Activator
 Bundle-Vendor: Noah
 Import-Package: com.google.common.annotations,
