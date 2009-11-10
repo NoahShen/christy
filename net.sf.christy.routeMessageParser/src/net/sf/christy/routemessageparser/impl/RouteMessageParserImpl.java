@@ -68,7 +68,7 @@ public class RouteMessageParserImpl implements RouteMessageParser
 				String namespace = parser.getNamespace(null);
 				if ("iq".equals(elementName)
 						|| "message".equals(elementName)
-						|| "present".equals(elementName))
+						|| "presence".equals(elementName))
 				{
 					routeMessage.setXmlStanza(xmppParserServiceTracker.getParser().parseParser(parser));
 				}

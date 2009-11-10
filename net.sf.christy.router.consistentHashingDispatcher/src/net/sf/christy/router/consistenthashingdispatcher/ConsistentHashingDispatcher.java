@@ -253,7 +253,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 				}
 				
 				
-				if (smSession2 == null)
+				if (smSession2 == null || !smSession2.isConnected())
 				{
 					// SM Module may be breakdown, research 
 					routeMessage.removeRouteExtension(searchExtension);
