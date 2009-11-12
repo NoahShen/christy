@@ -14,7 +14,7 @@ import net.sf.christy.util.StringUtils;
 /**
  * Represents XMPP roster packets.
  * 
- * @author Matt Tucker
+ * @author noah
  */
 public class IqRoster implements PacketExtension
 {
