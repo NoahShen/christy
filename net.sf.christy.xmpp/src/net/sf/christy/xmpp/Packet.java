@@ -160,6 +160,14 @@ public abstract class Packet extends AbstractXmlStanza
 			packetExtensions.add(extension);
 		}
 	}
+	
+	public void addExtensions(Collection<PacketExtension> extensions)
+	{
+		if (extensions != null)
+		{
+			packetExtensions.addAll(extensions);
+		}
+	}
 
 	/**
 	 * Removes a packet extension from the packet.

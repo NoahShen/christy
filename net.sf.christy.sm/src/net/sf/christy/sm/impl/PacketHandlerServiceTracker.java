@@ -19,12 +19,12 @@ public class PacketHandlerServiceTracker extends ServiceTracker
 		super(context, PacketHandler.class.getName(), null);
 	}
 
-	public void handlePacket(UserResource userResource, Packet packet)
+	public boolean handlePacket(UserResource userResource, Packet packet)
 	{
 		Object[] services = getServices();
 		if (services == null)
 		{
-			return;
+			return false;
 		}
 		
 		for (Object obj : services)
@@ -33,7 +33,10 @@ public class PacketHandlerServiceTracker extends ServiceTracker
 			if (packetHandler.accept(userResource, packet))
 			{
 				packetHandler.handlePacket(userResource, packet);
+				return true;
 			}
 		}
+		
+		return false;
 	}
 }

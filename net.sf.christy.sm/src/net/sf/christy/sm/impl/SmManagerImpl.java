@@ -765,11 +765,34 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				
 				if (packet != null)
 				{
-					packetHandlerServiceTracker.handlePacket(userResource, packet);
+					if (!packetHandlerServiceTracker.handlePacket(userResource, packet))
+					{
+						returnUnsupportError(packet, userResource);
+					}
 				}
 				
 			}
 			while((packet = getMessage(node)) != null);
+		}
+
+		private void returnUnsupportError(Packet packet, UserResource userResource)
+		{
+			if (packet instanceof Iq)
+			{
+				Iq iqRequest = (Iq) packet;
+				Iq iqError = new Iq(Iq.Type.error);
+				iqError.setStanzaId(iqRequest.getStanzaId());
+				JID to = new JID(userResource.getOnlineUser().getNode(), 
+						getDomain(), 
+						userResource.getResource());
+				iqError.setTo(to);
+				iqError.addExtensions(iqRequest.getExtensions());
+				
+				XmppError error = new XmppError(XmppError.Condition.feature_not_implemented);
+				iqError.setError(error);
+				userResource.sendToSelfClient(iqError);
+			}
+			
 		}
 
 		private Packet getMessage(String node)

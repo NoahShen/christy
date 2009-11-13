@@ -37,8 +37,6 @@ public class ContactHandler implements PacketHandler
 	@Override
 	public void handlePacket(UserResource userResource, Packet packet)
 	{
-		// TODO
-		System.out.println("=====================" + packet.toXml());
 		
 		if (packet instanceof Iq)
 		{
@@ -46,7 +44,7 @@ public class ContactHandler implements PacketHandler
 			Iq iqResult = new Iq(Iq.Type.result);
 			iqResult.setStanzaId(iq.getStanzaId());
 			
-			// TODO
+			// TODO change to db
 			IqRoster iqRoster = new IqRoster();
 			IqRoster.Item item = new IqRoster.Item(new JID("Noah.Shen87@gmail.com"));
 			item.setSubscription(IqRoster.Subscription.both);
