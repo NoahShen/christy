@@ -336,12 +336,9 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 	{
 		logger.info("starting c2sAcceptor");
 		
-		SocketConnectorConfig socketConnectorConfig = new SocketConnectorConfig();
-		socketConnectorConfig.getFilterChain().addLast("xmppCodec", new ProtocolCodecFilter(new XmppCodecFactory()));
-		socketConnectorConfig.setThreadModel(ThreadModel.MANUAL);
-		
 		c2sAcceptor = new SocketAcceptor();
 		IoAcceptorConfig config = new SocketAcceptorConfig();
+		config.setThreadModel(ThreadModel.MANUAL);
 		DefaultIoFilterChainBuilder chain = config.getFilterChain();
 
 		chain.addFirst("xmppCodec", new ProtocolCodecFilter(new XmppCodecFactory()));
