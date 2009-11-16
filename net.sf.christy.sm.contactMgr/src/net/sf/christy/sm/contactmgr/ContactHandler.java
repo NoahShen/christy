@@ -40,25 +40,45 @@ public class ContactHandler implements PacketHandler
 		
 		if (packet instanceof Iq)
 		{
-			Iq iq = (Iq) packet;
-			Iq iqResult = new Iq(Iq.Type.result);
-			iqResult.setStanzaId(iq.getStanzaId());
+			handleRoster(userResource, (Iq) packet);
 			
-			// TODO change to db
-			IqRoster iqRoster = new IqRoster();
-			IqRoster.Item item = new IqRoster.Item(new JID("Noah.Shen87@gmail.com"));
-			item.setSubscription(IqRoster.Subscription.both);
-			iqRoster.addRosterItem(item);
-			
-			iqResult.addExtension(iqRoster);
-			
-			userResource.sendToSelfClient(iqResult);
 		}
 		else if (packet instanceof Presence)
 		{
-			Presence presence = (Presence) packet;
+			handlePresence(userResource, (Presence) packet);
 		}
 		
+	}
+
+	private void handlePresence(UserResource userResource, Presence presence)
+	{
+		Presence.Type type = presence.getType();
+		if (type == Presence.Type.available
+				|| type == Presence.Type.unavailable)
+		{
+			handleStateChanged(userResource, presence);
+		}
+	}
+
+	private void handleStateChanged(UserResource userResource, Presence presence)
+	{
+		// TODO
+	}
+
+	private void handleRoster(UserResource userResource, Iq iq)
+	{
+		Iq iqResult = new Iq(Iq.Type.result);
+		iqResult.setStanzaId(iq.getStanzaId());
+		
+		// TODO change to db
+		IqRoster iqRoster = new IqRoster();
+		IqRoster.Item item = new IqRoster.Item(new JID("Noah.Shen87@gmail.com"));
+		item.setSubscription(IqRoster.Subscription.both);
+		iqRoster.addRosterItem(item);
+		
+		iqResult.addExtension(iqRoster);
+		
+		userResource.sendToSelfClient(iqResult);
 	}
 
 }
