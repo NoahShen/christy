@@ -41,7 +41,6 @@ public class ContactHandler implements PacketHandler
 		if (packet instanceof Iq)
 		{
 			handleRoster(userResource, (Iq) packet);
-			
 		}
 		else if (packet instanceof Presence)
 		{
@@ -62,7 +61,8 @@ public class ContactHandler implements PacketHandler
 
 	private void handleStateChanged(UserResource userResource, Presence presence)
 	{
-		// TODO
+		// TODO check stanza's "to" attribute
+		
 	}
 
 	private void handleRoster(UserResource userResource, Iq iq)
