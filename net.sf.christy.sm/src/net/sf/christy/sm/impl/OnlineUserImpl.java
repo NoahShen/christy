@@ -13,13 +13,16 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 	private String node;
 	
 	private Set<UserResource> userResources = new CopyOnWriteArraySet<UserResource>();
+
+	private SmManagerImpl smManagerImpl;
 	
 	/**
 	 * @param node
 	 */
-	public OnlineUserImpl(String node)
+	public OnlineUserImpl(String node, SmManagerImpl smManagerImpl)
 	{
 		this.node = node;
+		this.smManagerImpl = smManagerImpl;
 	}
 
 	@Override
@@ -74,21 +77,34 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 	
 	public boolean removeUserResource(UserResource userResource)
 	{
-		return userResources.remove(userResource);
+		boolean b = userResources.remove(userResource);
+		if (userResources.isEmpty())
+		{
+			smManagerImpl.removeOnlineUser(this);
+		}
+		return b;
 	}
 	
 	public UserResource removeUserResource(String resource)
 	{
+		UserResource userResource = null;
 		for (Iterator<UserResource> it = userResources.iterator(); it.hasNext();)
 		{
 			UserResource res = it.next();
 			if (resource.equals(res.getResource()))
 			{
 				it.remove();
-				return res;
+				userResource = res;
+				break;
 			}
 		}
-		return null;
+		
+		if (userResources.isEmpty())
+		{
+			smManagerImpl.removeOnlineUser(this);
+		}
+		
+		return userResource;
 	}
 
 	public boolean containUserResource(String resource)

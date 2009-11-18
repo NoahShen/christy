@@ -66,7 +66,11 @@ public class RouteMessageParserImpl implements RouteMessageParser
 			if (eventType == XmlPullParser.START_TAG)
 			{
 				String namespace = parser.getNamespace(null);
-				if ("iq".equals(elementName)
+				if ("closeStream".equals(elementName))
+				{
+					routeMessage.setCloseStream(true);
+				}
+				else if ("iq".equals(elementName)
 						|| "message".equals(elementName)
 						|| "presence".equals(elementName))
 				{

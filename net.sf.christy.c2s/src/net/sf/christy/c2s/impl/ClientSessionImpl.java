@@ -73,8 +73,12 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 
 
 	@Override
-	public void close()
-	{		
+	public synchronized void close()
+	{
+		if (status == Status.disconnected)
+		{
+			return;
+		}
 		c2sManager.removeClientSession(this);
 		status = Status.disconnected;
 		usingTLS = false;

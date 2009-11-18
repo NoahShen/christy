@@ -78,4 +78,9 @@ public interface UserResource extends Propertied
 	 * @param presence
 	 */
 	public void setPresence(Presence presence);
+	
+	/**
+	 * 
+	 */
+	public void logOut();
 }

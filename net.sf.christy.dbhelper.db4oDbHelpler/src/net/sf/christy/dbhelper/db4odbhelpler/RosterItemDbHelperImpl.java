@@ -4,6 +4,9 @@
 package net.sf.christy.dbhelper.db4odbhelpler;
 
 import com.db4o.Db4o;
+import com.db4o.ObjectContainer;
+import com.db4o.ObjectSet;
+import com.db4o.query.Predicate;
 
 import net.sf.christy.sm.contactmgr.RosterItem;
 import net.sf.christy.sm.contactmgr.RosterItemDbHelper;
@@ -17,8 +20,11 @@ import net.sf.christy.xmpp.JID;
  */
 public class RosterItemDbHelperImpl implements RosterItemDbHelper
 {
+	private ObjectContainer objectContainer;
+	
 	public RosterItemDbHelperImpl()
 	{
+		objectContainer = ObjectContainerInstance.getInstance();
 		Db4o.configure().objectClass(RosterItem.class.getName()).cascadeOnDelete(true);
 		Db4o.configure().objectClass(RosterItem.class.getName()).cascadeOnUpdate(true);
 	}
@@ -26,64 +32,140 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 	@Override
 	public void addRosterItem(RosterItem rosterItem)
 	{
-		// TODO Auto-generated method stub
 		
+		objectContainer.set(rosterItem);
+		objectContainer.commit();
 	}
 
 	@Override
-	public RosterItem[] getRosterItems(String username)
+	public RosterItem[] getRosterItems(final String username)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		ObjectSet<RosterItem> objSet = objectContainer.query(new Predicate<RosterItem>(){
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 985534606769456822L;
+
+			@Override
+			public boolean match(RosterItem rosterItem)
+			{
+				if (rosterItem.getUsername().equalsIgnoreCase(username))
+				{
+					return true;
+				}
+				return false;
+			}
+			
+		});
+		
+		
+		return objSet.toArray(new RosterItem[]{});
 	}
 
 	@Override
 	public void removeRosterItem(RosterItem rosterItem)
 	{
-		// TODO Auto-generated method stub
-
+		objectContainer.delete(rosterItem);
 	}
 
 	@Override
-	public void removeRosterItem(String username, JID rosterJID)
+	public void removeRosterItem(final String username, final JID rosterJID)
 	{
-		// TODO Auto-generated method stub
+		RosterItem rosterItem = getRosterItem(username, rosterJID);
+		if (rosterItem != null)
+		{
+			objectContainer.delete(rosterItem);
+			objectContainer.commit();
+		}
+		
+	}
 
+	private RosterItem getRosterItem(final String username, final JID rosterJID)
+	{
+		ObjectSet<RosterItem> objSet = objectContainer.query(new Predicate<RosterItem>(){
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 985534606769456822L;
+
+			@Override
+			public boolean match(RosterItem rosterItem)
+			{
+				if (rosterItem.getUsername().equalsIgnoreCase(username)
+						&& rosterItem.getRosterJID().equals(rosterJID))
+				{
+					return true;
+				}
+				return false;
+			}
+			
+		});
+		if (!objSet.isEmpty())
+		{
+			return objSet.get(0);
+		}
+		
+		return null;
 	}
 
 	@Override
 	public void updateRosterItem(RosterItem rosterItem)
 	{
-		// TODO Auto-generated method stub
-
+		objectContainer.set(rosterItem);
+		objectContainer.commit();
 	}
 
 	@Override
 	public void updateRosterItemAsk(String username, JID rosterJID, Ask ask)
 	{
-		// TODO Auto-generated method stub
+		RosterItem rosterItem = getRosterItem(username, rosterJID);
+		if (rosterItem != null)
+		{
+			rosterItem.setAsk(ask);
+			objectContainer.set(rosterItem);
+			objectContainer.commit();
+		}
 
 	}
 
 	@Override
 	public void updateRosterItemGroups(String username, JID rosterJID, String[] groups)
 	{
-		// TODO Auto-generated method stub
-
+		RosterItem rosterItem = getRosterItem(username, rosterJID);
+		if (rosterItem != null)
+		{
+			rosterItem.setGroups(groups);
+			objectContainer.set(rosterItem);
+			objectContainer.commit();
+		}
 	}
 
 	@Override
 	public void updateRosterItemNickname(String username, JID rosterJID, String nickname)
 	{
-		// TODO Auto-generated method stub
+		RosterItem rosterItem = getRosterItem(username, rosterJID);
+		if (rosterItem != null)
+		{
+			rosterItem.setNickname(nickname);
+			objectContainer.set(rosterItem);
+			objectContainer.commit();
+		}
 
 	}
 
 	@Override
 	public void updateRosterItemSubscription(String username, JID rosterJID, Subscription subscription)
 	{
-		// TODO Auto-generated method stub
+		RosterItem rosterItem = getRosterItem(username, rosterJID);
+		if (rosterItem != null)
+		{
+			rosterItem.setSubscription(subscription);
+			objectContainer.set(rosterItem);
+			objectContainer.commit();
+		}
 
 	}
-
+	
 }
