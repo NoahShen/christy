@@ -4,6 +4,7 @@
 package net.sf.christy.sm.contactmgr;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import net.sf.christy.xmpp.JID;
 
@@ -132,6 +133,13 @@ public class RosterItem implements Serializable
 	public void setGroups(String[]  groups)
 	{
 		this.groups = groups;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "RosterItem [ask=" + ask + ", groups=" + Arrays.toString(groups) + ", nickname=" + nickname + ", rosterJID=" + rosterJID
+				+ ", subscription=" + subscription + ", username=" + username + "]";
 	}
 
 	/**

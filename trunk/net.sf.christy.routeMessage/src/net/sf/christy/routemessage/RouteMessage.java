@@ -28,6 +28,8 @@ public class RouteMessage implements XmlStanza
 	
 	private String streamId;
 
+	private boolean closeStream;
+	
 	private XmlStanza xmlStanza;
 	
 	private List<RouteExtension> routeExtensions = new CopyOnWriteArrayList<RouteExtension>();
@@ -124,6 +126,16 @@ public class RouteMessage implements XmlStanza
 	{
 
 		this.streamId = streamId;
+	}
+
+	public boolean isCloseStream()
+	{
+		return closeStream;
+	}
+
+	public void setCloseStream(boolean closeStream)
+	{
+		this.closeStream = closeStream;
 	}
 
 	public void setXmlStanza(XmlStanza xmlStanza)
@@ -262,7 +274,11 @@ public class RouteMessage implements XmlStanza
 		}
 		
 		builder.append(">");
-
+		
+		if (isCloseStream())
+		{
+			builder.append("<closeStream/>");
+		}
 		if (getXmlStanza() != null)
 		{
 			builder.append(getXmlStanza().toXml());

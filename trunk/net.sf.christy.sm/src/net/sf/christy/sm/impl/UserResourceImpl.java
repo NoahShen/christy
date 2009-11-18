@@ -175,10 +175,17 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	}
 
 	@Override
+	public void logOut()
+	{
+		onlineUser.removeUserResource(this);
+	}
+	
+	@Override
 	public String toString()
 	{
 		return "UserResourceImpl [node=" + onlineUser.getNode() + ", resource=" + resource + ", sessionBinded=" + sessionBinded + ", streamId=" + streamId + "]";
 	}
+
 
 	
 

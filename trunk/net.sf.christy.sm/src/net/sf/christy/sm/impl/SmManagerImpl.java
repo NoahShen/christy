@@ -311,7 +311,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		OnlineUserImpl onlineUser = (OnlineUserImpl) getOnlineUser(userNode);
 		if (onlineUser == null)
 		{
-			onlineUser = new OnlineUserImpl(userNode);
+			onlineUser = new OnlineUserImpl(userNode, this);
 			onlineUsers.put(userNode.toLowerCase(), onlineUser);
 		}
 		
@@ -491,14 +491,28 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			}
 
 			XmlStanza stanza = routeMessage.getXmlStanza();
-			if (stanza instanceof Iq)
+			if (routeMessage.isCloseStream())
+			{
+				handleCloseStream(routeMessage);
+			}
+			else if (stanza instanceof Iq)
 			{
 				handleIq(routeMessage, (Iq) stanza);
 			}
 			else
 			{
 				transferToHandlerManager(routeMessage);
-				
+			}
+		}
+
+		private void handleCloseStream(RouteMessage routeMessage)
+		{
+			String node = routeMessage.getToUserNode();
+			String streamId = routeMessage.getStreamId();
+			UserResource userResource = getUserResourceByStreamId(node, streamId);
+			if (userResource != null)
+			{
+				userResource.logOut();
 			}
 		}
 
@@ -514,11 +528,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			String node = routeMessage.getToUserNode();
 			String streamId = routeMessage.getStreamId();
 			UserResource userResource = getUserResourceByStreamId(node, streamId);
-			
-			if (userResource == null)
-			{
-				return;
-			}
+
 			handlerManager.handlePacket(userResource, (Packet) stanza);
 			
 		}

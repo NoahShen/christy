@@ -879,6 +879,12 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		public void sessionClosed(IoSession session) throws Exception
 		{
 			ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
+			
+			RouteMessage routeMessage = new RouteMessage(getName(), clientSession.getStreamId());
+			routeMessage.setToUserNode(clientSession.getUsername());
+			routeMessage.setCloseStream(true);
+			routerSession.write(routeMessage.toXml());
+
 			if (clientSession != null)
 			{
 				clientSession.close();

@@ -10,6 +10,7 @@ public class Activator implements BundleActivator
 {
 
 	private ServiceRegistration contactHandlerRegistration;
+	private RosterItemDbHelperTracker rosterItemDbHelperTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -18,8 +19,11 @@ public class Activator implements BundleActivator
 	 */
 	public void start(BundleContext context) throws Exception
 	{
-		ContactHandler contactHandler = new ContactHandler();
-		contactHandlerRegistration = context.registerService(PacketHandler.class.getName(), contactHandler, null);
+		rosterItemDbHelperTracker = new RosterItemDbHelperTracker(context);
+		rosterItemDbHelperTracker.open();
+		
+		ContactManager contactManager = new ContactManager(rosterItemDbHelperTracker);
+		contactHandlerRegistration = context.registerService(PacketHandler.class.getName(), contactManager, null);
 	}
 
 	/*
@@ -33,6 +37,12 @@ public class Activator implements BundleActivator
 		{
 			contactHandlerRegistration.unregister();
 			contactHandlerRegistration = null;
+		}
+		
+		if (rosterItemDbHelperTracker != null)
+		{
+			rosterItemDbHelperTracker.close();
+			rosterItemDbHelperTracker = null;
 		}
 	}
 
