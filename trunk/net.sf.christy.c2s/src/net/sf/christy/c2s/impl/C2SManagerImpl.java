@@ -476,7 +476,17 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				ClientSessionImpl clientSession = clientSessions.get(streamId);
 				if (clientSession != null)
 				{
-					clientSession.write(routeMessage.getXmlStanza());
+					if (routeMessage.isCloseStream())
+					{
+						clientSession.write(CloseStream.getCloseStream());
+						clientSession.setProperty("sessionCleared");
+						clientSession.close();
+					}
+					else
+					{
+						clientSession.write(routeMessage.getXmlStanza());
+					}
+					
 				}
 			}
 		}
@@ -880,10 +890,14 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		{
 			ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
 			
-			RouteMessage routeMessage = new RouteMessage(getName(), clientSession.getStreamId());
-			routeMessage.setToUserNode(clientSession.getUsername());
-			routeMessage.setCloseStream(true);
-			routerSession.write(routeMessage.toXml());
+			if (!clientSession.containsProperty("sessionCleared"))
+			{
+				RouteMessage routeMessage = new RouteMessage(getName(), clientSession.getStreamId());
+				routeMessage.setToUserNode(clientSession.getUsername());
+				routeMessage.setCloseStream(true);
+				routerSession.write(routeMessage.toXml());
+			}
+			
 
 			if (clientSession != null)
 			{

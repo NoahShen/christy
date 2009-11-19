@@ -13,6 +13,11 @@ import net.sf.christy.util.StringUtils;
 public abstract class AbstractXmlStanza implements XmlStanza
 {
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3209002697000842775L;
+
+	/**
 	 * Constant used as packetID to indicate that a packet has no id. To
 	 * indicate that a packet has no id set this constant as the packet's
 	 * id. When the packet is asked for its id the answer will be

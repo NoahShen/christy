@@ -3,13 +3,17 @@ package net.sf.christy.sm.contactmgr;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.PacketHandler;
+import net.sf.christy.sm.SmManager;
 import net.sf.christy.sm.UserResource;
 import net.sf.christy.util.collections.LRULinkedHashMap;
 import net.sf.christy.xmpp.Iq;
 import net.sf.christy.xmpp.IqRoster;
+import net.sf.christy.xmpp.JID;
 import net.sf.christy.xmpp.Packet;
 import net.sf.christy.xmpp.Presence;
+import net.sf.christy.xmpp.XmppError;
 
 /**
  * 
@@ -64,7 +68,7 @@ public class ContactManager implements PacketHandler
 	}
 
 	@Override
-	public boolean accept(UserResource userResource, Packet packet)
+	public boolean accept(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Packet packet)
 	{
 		if (packet instanceof Iq)
 		{
@@ -82,37 +86,121 @@ public class ContactManager implements PacketHandler
 	}
 
 	@Override
-	public void handlePacket(UserResource userResource, Packet packet)
+	public void handleClientPacket(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Packet packet)
 	{
 		
 		if (packet instanceof Iq)
 		{
-			handleRoster(userResource, (Iq) packet);
+			handleRoster(smManager, onlineUser, userResource, (Iq) packet);
 		}
 		else if (packet instanceof Presence)
 		{
-			handlePresence(userResource, (Presence) packet);
+			handlePresence(smManager, onlineUser, userResource, (Presence) packet);
 		}
 		
 	}
 
-	private void handlePresence(UserResource userResource, Presence presence)
+	private void handlePresence(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
 	{
 		Presence.Type type = presence.getType();
 		if (type == Presence.Type.available
 				|| type == Presence.Type.unavailable)
 		{
-			handleStateChanged(userResource, presence);
+			handleStateChanged(smManager, onlineUser, userResource, presence);
 		}
+		// TODO subscription
 	}
 
-	private void handleStateChanged(UserResource userResource, Presence presence)
+	private void handleStateChanged(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
 	{
-		// TODO check stanza's "to" attribute
+		if (presence.getTo() != null)
+		{
+			Presence presenceError;
+			try
+			{
+				presenceError = (Presence) presence.clone();
+				presenceError.setType(Presence.Type.error);
+				presenceError.setFrom(null);
+				presenceError.setTo(presence.getFrom());
+				XmppError error = new XmppError(XmppError.Condition.bad_request);
+				presenceError.setError(error);
+				userResource.sendToSelfClient(presenceError);
+			}
+			catch (CloneNotSupportedException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return;
+			
+		}
+		
+		String username = userResource.getOnlineUser().getNode().toLowerCase();
+		IqRoster roster = getIqRoster(username);
+		
+		boolean firstPresence = false;
+		if (userResource.getPresence() == null || !userResource.getPresence().isAvailable())
+		{
+			firstPresence = true;
+		}
+		
+		userResource.setPresence(presence);
+		
+		Presence toRosterPresence = null;
+		try
+		{
+			toRosterPresence = (Presence) presence.clone();
+		}
+		catch (CloneNotSupportedException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
+		
+		
+		for (IqRoster.Item item : roster.getRosterItems())
+		{
+			IqRoster.Subscription subscription = item.getSubscription();
+			if (subscription == IqRoster.Subscription.both
+					|| subscription == IqRoster.Subscription.from)
+			{
+				toRosterPresence.setTo(item.getJid());
+				userResource.sendToOtherUser(toRosterPresence);
+				
+				if (firstPresence)
+				{
+					Presence presenceProbe = new Presence(Presence.Type.probe);
+					presenceProbe.setFrom(new JID(onlineUser.getNode(), smManager.getDomain(), userResource.getResource()));
+					presenceProbe.setTo(item.getJid());
+					
+					userResource.sendToOtherUser(presenceProbe);
+				}
+				
+			}
+			else if (subscription == IqRoster.Subscription.from)
+			{
+				toRosterPresence.setTo(item.getJid());
+				userResource.sendToOtherUser(toRosterPresence);
+			}
+			else if (subscription == IqRoster.Subscription.to)
+			{
+				if (firstPresence)
+				{
+					Presence presenceProbe = new Presence(Presence.Type.probe);
+					presenceProbe.setFrom(new JID(onlineUser.getNode(), smManager.getDomain(), userResource.getResource()));
+					presenceProbe.setTo(item.getJid());
+					
+					userResource.sendToOtherUser(presenceProbe);
+				}
+				
+			}
+		}
 		
 	}
 
-	private void handleRoster(UserResource userResource, Iq iq)
+	private void handleRoster(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Iq iq)
 	{
 		Iq.Type type = iq.getType();
 		if (type == Iq.Type.get)
@@ -128,6 +216,7 @@ public class ContactManager implements PacketHandler
 			userResource.sendToSelfClient(iqResult);
 
 		}
+		// TODO add remove update roster
 		
 	}
 
@@ -196,5 +285,36 @@ public class ContactManager implements PacketHandler
 		
 		return iqRoster;
 	}
+
+	@Override
+	public void handleOtherUserPacket(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Packet packet)
+	{
+		if (packet instanceof Presence)
+		{
+			handleOtherPresence(smManager, onlineUser, userResource, (Presence) packet);
+		}
+	}
+
+	private void handleOtherPresence(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
+	{
+		Presence.Type type = presence.getType();
+		if (type == Presence.Type.available
+				|| type == Presence.Type.unavailable)
+		{
+			handleOtherStateChanged(smManager, onlineUser, userResource, presence);
+		}
+		// TODO subscription
+	}
+
+	private void handleOtherStateChanged(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
+	{
+		if (presence.getFrom() == null)
+		{
+			// TODO
+			return;
+		}
+		userResource.sendToSelfClient(presence);
+	}
+
 
 }

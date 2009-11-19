@@ -1,6 +1,8 @@
 package net.sf.christy.sm.impl;
 
+import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.PacketHandler;
+import net.sf.christy.sm.SmManager;
 import net.sf.christy.sm.UserResource;
 import net.sf.christy.xmpp.Packet;
 
@@ -19,7 +21,7 @@ public class PacketHandlerServiceTracker extends ServiceTracker
 		super(context, PacketHandler.class.getName(), null);
 	}
 
-	public boolean handlePacket(UserResource userResource, Packet packet)
+	public boolean handleClientPacket(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Packet packet)
 	{
 		Object[] services = getServices();
 		if (services == null)
@@ -30,9 +32,30 @@ public class PacketHandlerServiceTracker extends ServiceTracker
 		for (Object obj : services)
 		{
 			PacketHandler packetHandler = (PacketHandler) obj;
-			if (packetHandler.accept(userResource, packet))
+			if (packetHandler.accept(smManager, onlineUser, userResource, packet))
 			{
-				packetHandler.handlePacket(userResource, packet);
+				packetHandler.handleClientPacket(smManager, onlineUser, userResource, packet);
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public boolean handleOtherUserPacket(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Packet packet)
+	{
+		Object[] services = getServices();
+		if (services == null)
+		{
+			return false;
+		}
+		
+		for (Object obj : services)
+		{
+			PacketHandler packetHandler = (PacketHandler) obj;
+			if (packetHandler.accept(smManager, onlineUser, userResource, packet))
+			{
+				packetHandler.handleOtherUserPacket(smManager, onlineUser, userResource, packet);
 				return true;
 			}
 		}

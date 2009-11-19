@@ -807,6 +807,13 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 					{
 						// TODO send to s2s
 					}
+					else 
+					{
+						String node = jid.getNode();
+						routeMessage.setToUserNode(node);
+						
+						dispatcherServiceTracker.getDispatcher().sendMessage(routeMessage);
+					}
 				}
 			}
 			

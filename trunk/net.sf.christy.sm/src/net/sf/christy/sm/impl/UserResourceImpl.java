@@ -110,7 +110,7 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	public void sendToOtherUser(XmlStanza stanza)
 	{
 		RouteMessage routeMessage = 
-			new RouteMessage(smManager.getName(), getStreamId());
+			new RouteMessage(smManager.getName());
 		routeMessage.setXmlStanza(stanza);
 		if (stanza instanceof Packet)
 		{
