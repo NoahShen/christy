@@ -34,6 +34,12 @@ public class RouteMessage implements XmlStanza
 	
 	private List<RouteExtension> routeExtensions = new CopyOnWriteArrayList<RouteExtension>();
 
+	public RouteMessage(String from)
+	{
+		this.from = from;
+	}
+
+	
 	public RouteMessage(String from, String streamId)
 	{
 
