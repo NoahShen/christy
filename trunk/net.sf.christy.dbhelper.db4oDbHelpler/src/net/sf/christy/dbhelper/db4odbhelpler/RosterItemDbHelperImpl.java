@@ -30,7 +30,7 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 	}
 	
 	@Override
-	public void addRosterItem(RosterItem rosterItem)
+	public void addRosterItem(RosterItem rosterItem) throws Exception
 	{
 		
 		objectContainer.set(rosterItem);
@@ -38,7 +38,7 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 	}
 
 	@Override
-	public RosterItem[] getRosterItems(final String username)
+	public RosterItem[] getRosterItems(final String username) throws Exception
 	{
 		ObjectSet<RosterItem> objSet = objectContainer.query(new Predicate<RosterItem>(){
 
@@ -64,13 +64,13 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 	}
 
 	@Override
-	public void removeRosterItem(RosterItem rosterItem)
+	public void removeRosterItem(RosterItem rosterItem) throws Exception
 	{
 		objectContainer.delete(rosterItem);
 	}
 
 	@Override
-	public void removeRosterItem(final String username, final JID rosterJID)
+	public void removeRosterItem(final String username, final JID rosterJID) throws Exception
 	{
 		RosterItem rosterItem = getRosterItem(username, rosterJID);
 		if (rosterItem != null)
@@ -81,7 +81,7 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 		
 	}
 
-	private RosterItem getRosterItem(final String username, final JID rosterJID)
+	private RosterItem getRosterItem(final String username, final JID rosterJID) throws Exception
 	{
 		ObjectSet<RosterItem> objSet = objectContainer.query(new Predicate<RosterItem>(){
 
@@ -111,14 +111,14 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 	}
 
 	@Override
-	public void updateRosterItem(RosterItem rosterItem)
+	public void updateRosterItem(RosterItem rosterItem) throws Exception
 	{
 		objectContainer.set(rosterItem);
 		objectContainer.commit();
 	}
 
 	@Override
-	public void updateRosterItemAsk(String username, JID rosterJID, Ask ask)
+	public void updateRosterItemAsk(String username, JID rosterJID, Ask ask) throws Exception
 	{
 		RosterItem rosterItem = getRosterItem(username, rosterJID);
 		if (rosterItem != null)
@@ -131,7 +131,7 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 	}
 
 	@Override
-	public void updateRosterItemGroups(String username, JID rosterJID, String[] groups)
+	public void updateRosterItemGroups(String username, JID rosterJID, String[] groups) throws Exception
 	{
 		RosterItem rosterItem = getRosterItem(username, rosterJID);
 		if (rosterItem != null)
@@ -143,7 +143,7 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 	}
 
 	@Override
-	public void updateRosterItemNickname(String username, JID rosterJID, String nickname)
+	public void updateRosterItemNickname(String username, JID rosterJID, String nickname) throws Exception
 	{
 		RosterItem rosterItem = getRosterItem(username, rosterJID);
 		if (rosterItem != null)
@@ -156,7 +156,7 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 	}
 
 	@Override
-	public void updateRosterItemSubscription(String username, JID rosterJID, Subscription subscription)
+	public void updateRosterItemSubscription(String username, JID rosterJID, Subscription subscription) throws Exception
 	{
 		RosterItem rosterItem = getRosterItem(username, rosterJID);
 		if (rosterItem != null)

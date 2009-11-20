@@ -1,6 +1,8 @@
 package net.sf.christy.dbhelper.db4odbhelpler;
 
 import net.sf.christy.sm.contactmgr.RosterItemDbHelper;
+import net.sf.christy.sm.privacy.UserPrivacyListDbHelper;
+import net.sf.christy.sm.privacy.UserPrivacyListItemDbHelper;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -10,6 +12,8 @@ public class Activator implements BundleActivator
 {
 
 	private ServiceRegistration rosterItemDbHelperRegistration;
+	private ServiceRegistration userPrivacyListDbHelperRegistration;
+	private ServiceRegistration userPrivacyListItemDbHelperRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -20,8 +24,15 @@ public class Activator implements BundleActivator
 	public void start(BundleContext context) throws Exception
 	{
 		RosterItemDbHelperImpl rosterItemDbHelper = new RosterItemDbHelperImpl();
-		
 		rosterItemDbHelperRegistration = context.registerService(RosterItemDbHelper.class.getName(), rosterItemDbHelper, null);
+	
+		UserPrivacyListDbHelperImpl userPrivacyListDbHelper = new UserPrivacyListDbHelperImpl();
+		userPrivacyListDbHelperRegistration = context.registerService(UserPrivacyListDbHelper.class.getName(), userPrivacyListDbHelper, null);
+		
+		UserPrivacyListItemDbHelperImpl userPrivacyListItemDbHelper = new UserPrivacyListItemDbHelperImpl();
+		userPrivacyListItemDbHelperRegistration = context.registerService(UserPrivacyListItemDbHelper.class.getName(), userPrivacyListItemDbHelper, null);
+	
+		
 	}
 
 	/*
@@ -37,9 +48,21 @@ public class Activator implements BundleActivator
 			rosterItemDbHelperRegistration.unregister();
 			rosterItemDbHelperRegistration = null;
 		}
+		
+		if (userPrivacyListDbHelperRegistration != null)
+		{
+			userPrivacyListDbHelperRegistration.unregister();
+			userPrivacyListDbHelperRegistration = null;
+		}
+		
+		if (userPrivacyListItemDbHelperRegistration != null)
+		{
+			userPrivacyListItemDbHelperRegistration.unregister();
+			userPrivacyListItemDbHelperRegistration = null;
+		}
 	}
 
-//	public static void main(String[] args)
+//	public static void main(String[] args) throws Exception
 //	{
 //		RosterItemDbHelperImpl rosterItemDbHelper = new RosterItemDbHelperImpl();
 //		
@@ -61,5 +84,47 @@ public class Activator implements BundleActivator
 ////		rosterItemDbHelper.removeRosterItem("Noah", new JID("Noah.Shen87@gmail.com"));
 //		net.sf.christy.sm.contactmgr.RosterItem[] item = rosterItemDbHelper.getRosterItems("Noah");
 //		System.out.println(java.util.Arrays.toString(item));
+		
+//		UserPrivacyListDbHelperImpl userPrivacyListDbHelper = new UserPrivacyListDbHelperImpl();
+		
+//		net.sf.christy.sm.privacy.UserPrivacyList list = new net.sf.christy.sm.privacy.UserPrivacyList();
+//		list.setUsername("Noah");
+//		list.setPrivacyName("privacyName");
+//		list.setDefaultList(true);
+//		userPrivacyListDbHelper.insertUserPrivacyList(list);
+		
+//		System.out.println(java.util.Arrays.toString(userPrivacyListDbHelper.getUserPrivacyLists("Noah")));
+		
+//		userPrivacyListDbHelper.cancelDefaultPrivacyList("Noah");
+//		System.out.println(userPrivacyListDbHelper.getUserPrivacyList("Noah", "privacyName"));
+//		userPrivacyListDbHelper.setDefaultPrivacyList("Noah", "privacyName");
+//		net.sf.christy.sm.privacy.UserPrivacyList list = userPrivacyListDbHelper.getDefaultUserPrivacyList("Noah");
+//		System.out.println(list);
+//		list.setPrivacyName("p2");
+		
+//		final net.sf.christy.sm.privacy.UserPrivacyListItem item = new net.sf.christy.sm.privacy.UserPrivacyListItem();
+//		item.setUsername("Noah");
+//		item.setPrivacyName("p2");
+//		item.setType(net.sf.christy.sm.privacy.UserPrivacyListItem.Type.subscription);
+//		item.setValue("both");
+//		item.setOrder(0);
+//		item.setAction(net.sf.christy.sm.privacy.UserPrivacyListItem.Action.allow);
+//		list.setItems(new java.util.ArrayList<net.sf.christy.sm.privacy.UserPrivacyListItem>(){{add(item);}});
+//		
+//		userPrivacyListDbHelper.updateUserPrivacyList(list);
+		
+//		UserPrivacyListItemDbHelperImpl userPrivacyListItemDbHelper = new UserPrivacyListItemDbHelperImpl();
+//		final net.sf.christy.sm.privacy.UserPrivacyListItem item = new net.sf.christy.sm.privacy.UserPrivacyListItem();
+//		item.setUsername("Noah");
+//		item.setPrivacyName("p2");
+//		item.setType(net.sf.christy.sm.privacy.UserPrivacyListItem.Type.subscription);
+//		item.setValue("to");
+//		item.setOrder(1);
+//		item.setAction(net.sf.christy.sm.privacy.UserPrivacyListItem.Action.deny);
+//		userPrivacyListItemDbHelper.insertUserPrivacyListItem(item);
+//		System.out.println(java.util.Arrays.toString(userPrivacyListItemDbHelper.getUserPrivacyListItems("Noah", "p2")));
+//		userPrivacyListItemDbHelper.deleteUserPrivacyListItem(userPrivacyListItemDbHelper.getUserPrivacyListItems("Noah", "p2")[0]);
+		
+		
 //	}
 }
