@@ -41,6 +41,7 @@ import net.sf.christy.xmpp.IqBind;
 import net.sf.christy.xmpp.IqSession;
 import net.sf.christy.xmpp.JID;
 import net.sf.christy.xmpp.Packet;
+import net.sf.christy.xmpp.Privacy;
 import net.sf.christy.xmpp.StreamError;
 import net.sf.christy.xmpp.XmlStanza;
 import net.sf.christy.xmpp.XmppError;
@@ -558,26 +559,37 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			
 		}
 
-		private void handleIq(OnlineUser user, RouteMessage routeMessage, Iq stanza)
+		private void handleIq(OnlineUser user, RouteMessage routeMessage, Iq iq)
 		{
 			IqBind bind = 
-				(IqBind) stanza.getExtension(IqBind.ELEMENTNAME, IqBind.NAMESPACE);
+				(IqBind) iq.getExtension(IqBind.ELEMENTNAME, IqBind.NAMESPACE);
 			if (bind != null)
 			{
-				handleBindResource(routeMessage, stanza, bind);
+				handleBindResource(routeMessage, iq, bind);
 				return;
 			}
 			
 			IqSession iqSession = 
-				(IqSession) stanza.getExtension(IqSession.ELEMENTNAME, IqSession.NAMESPACE);
+				(IqSession) iq.getExtension(IqSession.ELEMENTNAME, IqSession.NAMESPACE);
 			
 			if (iqSession != null)
 			{
-				handleBindSession(routeMessage, stanza, iqSession);
+				handleBindSession(routeMessage, iq, iqSession);
 				return;
 			}
 			
+			Privacy privacy = (Privacy) iq.getExtension(Privacy.ELEMENTNAME, Privacy.NAMESPACE);
+			if (privacy != null)
+			{
+				handlePrivacy(routeMessage, iq, privacy);
+			}
 			transferToHandlerManager(user, routeMessage);
+			
+		}
+
+		private void handlePrivacy(RouteMessage routeMessage, Iq iq, Privacy privacy)
+		{
+			// TODO Auto-generated method stub
 			
 		}
 
