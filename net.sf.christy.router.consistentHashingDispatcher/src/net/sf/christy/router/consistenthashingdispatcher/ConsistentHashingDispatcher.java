@@ -84,11 +84,12 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 	@Override
 	public void sendMessage(RouteMessage routeMessage)
 	{
-
+		
 		String toUserNode = routeMessage.getPrepedUserNode();
 		SmSession selectedSmSession = get(toUserNode);
 		
 		selectedSmSession.write(routeMessage);
+		
 		
 		if (!isStartWorking.get())
 		{

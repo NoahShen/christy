@@ -528,23 +528,32 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			String from = routeMessage.getFrom();
 			UserResource userResource = null;
 			MessageQueueWrapper wrapper = null;
-			// message from local user
+			// message from local user's client
 			if (from.startsWith("c2s_"))
 			{
 				String streamId = routeMessage.getStreamId();
-				userResource = user.getUserResourceByStreamId(streamId);
+				// if user is not online or to=exampe.com
+				if (user != null)
+				{
+					userResource = user.getUserResourceByStreamId(streamId);
+				}
+				
 				wrapper = new MessageQueueWrapper(packet, true);
 			}
-			// message from other domain's user
+			// message from other user
 			else
 			{
 				JID to = packet.getTo();
 				String resource = to.getResource();
-				userResource = user.getUserResource(resource);
+				if (user != null)
+				{
+					userResource = user.getUserResource(resource);
+				}
 				wrapper = new MessageQueueWrapper(packet, false);
-				
 			}
 
+			
+			
 			handlerManager.handleWrapper(user, userResource, wrapper);
 			
 		}

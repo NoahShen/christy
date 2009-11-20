@@ -137,7 +137,16 @@ public class ContactManager implements PacketHandler
 		}
 		
 		String username = userResource.getOnlineUser().getNode().toLowerCase();
-		IqRoster roster = getIqRoster(username);
+		IqRoster roster = null;
+		try
+		{
+			roster = getIqRoster(username);
+		}
+		catch (Exception e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		boolean firstPresence = false;
 		if (userResource.getPresence() == null || !userResource.getPresence().isAvailable())
@@ -205,22 +214,52 @@ public class ContactManager implements PacketHandler
 		Iq.Type type = iq.getType();
 		if (type == Iq.Type.get)
 		{
-			Iq iqResult = new Iq(Iq.Type.result);
-			iqResult.setStanzaId(iq.getStanzaId());
 			
-			String username =  userResource.getOnlineUser().getNode();
-			IqRoster iqRoster = getIqRoster(username);
 			
-			iqResult.addExtension(iqRoster);
+			String username =  onlineUser.getNode();
+			IqRoster iqRoster = null;
+			try
+			{
+				iqRoster = getIqRoster(username);
+				Iq iqResult = new Iq(Iq.Type.result);
+				iqResult.setStanzaId(iq.getStanzaId());
+				
+				iqResult.addExtension(iqRoster);
+				
+				userResource.sendToSelfClient(iqResult);
+				
+			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+//				e.printStackTrace();
+				
+				Iq iqError = null;
+				try
+				{
+					iqError = (Iq) iq.clone();
+				}
+				catch (CloneNotSupportedException e1)
+				{
+					// TODO Auto-generated catch block
+//					e1.printStackTrace();
+					return;
+				}
+				iqError.setType(Iq.Type.error);
+				iqError.setFrom(new JID(null, smManager.getDomain(), null));
+				iqError.setTo(iq.getFrom());
+				
+				userResource.sendToSelfClient(iqError);
+			}
 			
-			userResource.sendToSelfClient(iqResult);
+			
 
 		}
 		// TODO add remove update roster
 		
 	}
 
-	private IqRoster getIqRoster(String username)
+	private IqRoster getIqRoster(String username) throws Exception
 	{
 		if (isCacheRoster())
 		{

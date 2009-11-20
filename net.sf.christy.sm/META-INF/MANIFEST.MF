@@ -53,4 +53,5 @@ Import-Package: com.google.common.annotations,
  org.xmlpull.v1.wrapper,
  org.xmlpull.v1.wrapper.classic
 Eclipse-LazyStart: true
-Export-Package: net.sf.christy.sm
+Export-Package: net.sf.christy.sm,
+ net.sf.christy.sm.privacy
