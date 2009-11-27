@@ -544,6 +544,8 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			// message from other user
 			else
 			{
+				// TODO need check privacy
+				
 				JID to = packet.getTo();
 				String resource = to.getResource();
 				if (user != null)
@@ -553,7 +555,6 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				wrapper = new MessageQueueWrapper(packet, false);
 			}
 
-			
 			
 			handlerManager.handleWrapper(user, userResource, wrapper);
 			
@@ -582,7 +583,9 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			if (privacy != null)
 			{
 				handlePrivacy(routeMessage, iq, privacy);
+				return;
 			}
+			
 			transferToHandlerManager(user, routeMessage);
 			
 		}
@@ -820,9 +823,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 							JID to = packet.getTo();
 							if (to != null && !to.getDomain().equals(getDomain()))
 							{
-								RouteMessage routeMessage = new RouteMessage(getName());
-								routeMessage.setXmlStanza(packet);
-								sendToRouter(routeMessage);
+								userResource.sendToOtherUser(packet);
 							}
 							else
 							{
@@ -838,9 +839,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 							JID to = packet.getTo();
 							if (to != null && !to.getDomain().equals(getDomain()))
 							{
-								RouteMessage routeMessage = new RouteMessage(getName());
-								routeMessage.setXmlStanza(packet);
-								sendToRouter(routeMessage);
+								userResource.sendToSelfClient(packet);
 							}
 							else
 							{
@@ -915,6 +914,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				List<MessageQueueWrapper> wrappers = messageQueue.get(node);
 				if (wrappers == null || wrappers.isEmpty())
 				{
+					messageQueue.removeAll(node);
 					return null;
 				}
 				return wrappers.remove(0);
