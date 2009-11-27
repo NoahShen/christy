@@ -592,7 +592,23 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 
 		private void handlePrivacy(RouteMessage routeMessage, Iq iq, Privacy privacy)
 		{
-			// TODO Auto-generated method stub
+			String node = routeMessage.getToUserNode();
+			String streamId = routeMessage.getStreamId();
+			UserResourceImpl userResource = getUserResourceByStreamId(node, streamId);
+			if (userResource == null)
+			{
+				return;
+			}
+			
+			Iq.Type type = iq.getType();
+			if (type == Iq.Type.get)
+			{
+				
+			}
+			else if (type == Iq.Type.set)
+			{
+				
+			}
 			
 		}
 

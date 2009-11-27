@@ -36,10 +36,10 @@ public class Privacy implements PacketExtension
 	private Map<String, PrivacyList> privacyLists = new HashMap<String, PrivacyList>();
 	
 	/** declineActiveList is true when the user declines the use of the active list **/
-	private boolean declineActiveList=false;
+	private boolean declineActiveList = false;
 	
 	/** declineDefaultList is true when the user declines the use of the default list **/
-	private boolean declineDefaultList=false;
+	private boolean declineDefaultList = false;
 	
 	
 	public Privacy()
