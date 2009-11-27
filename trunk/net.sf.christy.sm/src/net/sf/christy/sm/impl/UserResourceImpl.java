@@ -109,6 +109,7 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	@Override
 	public void sendToOtherUser(XmlStanza stanza)
 	{
+		// TODO privacy
 		RouteMessage routeMessage = 
 			new RouteMessage(smManager.getName());
 		routeMessage.setXmlStanza(stanza);
