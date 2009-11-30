@@ -81,10 +81,12 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 	public boolean removeUserResource(UserResource userResource)
 	{
 		boolean b = userResources.remove(userResource);
+		
 		if (userResources.isEmpty())
 		{
 			smManagerImpl.removeOnlineUser(this);
 		}
+		smManagerImpl.fireUserResourceRemoved(this, (UserResourceImpl) userResource);
 		return b;
 	}
 	
@@ -106,7 +108,7 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 		{
 			smManagerImpl.removeOnlineUser(this);
 		}
-		
+		smManagerImpl.fireUserResourceRemoved(this, (UserResourceImpl) userResource);
 		return userResource;
 	}
 

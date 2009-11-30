@@ -107,6 +107,14 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		this.privacyManager = new PrivacyManager(userPrivacyListDbHelperTracker);
 	}
 	
+	/**
+	 * @return the privacyManager
+	 */
+	public PrivacyManager getPrivacyManager()
+	{
+		return privacyManager;
+	}
+
 	@Override
 	public void exit()
 	{
@@ -334,9 +342,23 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		
 		onlineUser.addUserResource(userResource);
 		
+		fireUserResourceAdded(onlineUser, userResource);
+		
 		return userResource;
 	}
 	
+	private void fireUserResourceAdded(OnlineUserImpl onlineUser, UserResourceImpl userResource)
+	{
+		// TODO Auto-generated method stub
+		privacyManager.userResourceAdded(onlineUser, userResource);
+	}
+	
+	void fireUserResourceRemoved(OnlineUserImpl onlineUser, UserResourceImpl userResource)
+	{
+		// TODO Auto-generated method stub
+		privacyManager.userResourceRemoved(onlineUser, userResource);
+	}
+
 	@Override
 	public boolean containUserResource(String userNode, String resource)
 	{
@@ -548,14 +570,17 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			}
 			// message from other user
 			else
-			{
-				// TODO need check privacy
-				
+			{				
 				JID to = packet.getTo();
 				String resource = to.getResource();
 				if (user != null)
 				{
 					userResource = user.getUserResource(resource);
+				}
+				
+				if (privacyManager.shouldBlockReceivePacket(user, userResource, packet))
+				{
+					return;
 				}
 				wrapper = new MessageQueueWrapper(packet, false);
 			}
