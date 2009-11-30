@@ -210,6 +210,13 @@ public class UserPrivacyListDbHelperImpl implements UserPrivacyListDbHelper
 	@Override
 	public void updateUserPrivacyList(UserPrivacyList userPrivacyList) throws Exception
 	{
+		String username = userPrivacyList.getUsername();
+		String privacyName = userPrivacyList.getPrivacyName();
+		UserPrivacyList oldUserPrivacyList = getUserPrivacyList(username, privacyName);
+		if (oldUserPrivacyList != null)
+		{
+			objectContainer.delete(oldUserPrivacyList);
+		}
 		objectContainer.set(userPrivacyList);
 		objectContainer.commit();
 	}

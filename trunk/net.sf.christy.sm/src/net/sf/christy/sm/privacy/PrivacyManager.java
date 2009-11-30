@@ -3,13 +3,17 @@
  */
 package net.sf.christy.sm.privacy;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.sm.OnlineUser;
+import net.sf.christy.sm.UserResource;
 import net.sf.christy.sm.impl.OnlineUserImpl;
 import net.sf.christy.sm.impl.UserResourceImpl;
 import net.sf.christy.xmpp.Iq;
+import net.sf.christy.xmpp.Packet;
 import net.sf.christy.xmpp.PacketUtils;
 import net.sf.christy.xmpp.Privacy;
 import net.sf.christy.xmpp.PrivacyItem;
@@ -93,10 +97,8 @@ public class PrivacyManager
 			}
 			
 		}
-		
-		
 		// decline default list
-		if (privacy.isDeclineDefaultList())
+		else if (privacy.isDeclineDefaultList())
 		{
 			// conflict~!
 			if (onlineUser.getResourceCount() > 1)
@@ -175,11 +177,109 @@ public class PrivacyManager
 		}
 		
 		PrivacyList privacyList = privacyLists.iterator().next();
-		// TODO check conflict
+		if (isConflict(onlineUser, userResource, privacyList.getListName()))
+		{
+			Iq iqError = PacketUtils.createErrorIq(iq);
+			iqError.setError(new XmppError(XmppError.Condition.conflict));
+			userResource.sendToSelfClient(iqError);
+			return;
+		}
 		
-		Iq iqResult = PacketUtils.createResultIq(iq);
-		userResource.sendToSelfClient(iqResult);
+		UserPrivacyList userPrivacyList = privacyListToUserPrivacyList(node, privacyList);
+		UserPrivacyListDbHelper dbHelper = userPrivacyListDbHelperTracker.getUserPrivacyListDbHelper();
+		try
+		{
+			dbHelper.updateUserPrivacyList(userPrivacyList);
+			
+			notifyOtherResource(onlineUser, userResource, privacyList.getListName());
+			// return result-iq
+			Iq iqResult = PacketUtils.createResultIq(iq);
+			userResource.sendToSelfClient(iqResult);
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
+		
+	}
+
+
+	private void notifyOtherResource(OnlineUserImpl onlineUser, UserResourceImpl userResource, String listName)
+	{
+		Iq iq = new Iq(Iq.Type.set);
+		Privacy privacy = new Privacy();
+		privacy.addPrivacyList(new PrivacyList(listName));
+		iq.addExtension(privacy);
+		
+		for (UserResource res : onlineUser.getAllUserResources())
+		{
+			if (res != userResource)
+			{
+				res.sendToSelfClient(iq);
+			}
+		}
+	}
+
+	private UserPrivacyList privacyListToUserPrivacyList(String username, PrivacyList privacyList)
+	{
+		UserPrivacyList userPrivacyList = new UserPrivacyList();
+		userPrivacyList.setUsername(username);
+		userPrivacyList.setPrivacyName(privacyList.getListName());
+		
+		List<UserPrivacyListItem> userPItems = new ArrayList<UserPrivacyListItem>();
+		for (PrivacyItem item : privacyList.getItems())
+		{
+			UserPrivacyListItem userPItem = new UserPrivacyListItem();
+			userPItem.setUsername(username);
+			userPItem.setPrivacyName(privacyList.getListName());
+			PrivacyItem.Type type = item.getType();
+			if (type != null)
+			{
+				userPItem.setType(UserPrivacyListItem.Type.valueOf(type.name()));
+			}
+			userPItem.setValue(item.getValue());
+			if (item.isAction())
+			{
+				userPItem.setAction(UserPrivacyListItem.Action.allow);
+			}
+			else
+			{
+				userPItem.setAction(UserPrivacyListItem.Action.deny);
+			}
+			userPItem.setOrder(item.getOrder());
+			userPItem.setIqFilter(item.isFilterIQ());
+			userPItem.setMessageFilter(item.isFilterMessage());
+			userPItem.setPresenceInFilter(item.isFilterPresence_in());
+			userPItem.setPresenceOutFilter(item.isFilterPresence_out());
+			
+			userPItems.add(userPItem);
+		}
+		
+		userPrivacyList.setItems(userPItems);
+		
+		return userPrivacyList;
+	}
+
+	
+	private boolean isConflict(OnlineUserImpl onlineUser, UserResourceImpl userResource, String listName)
+	{
+		PrivacyList defaultPrivacyList = onlineUser.getDefaultPrivacyList();
+		if (defaultPrivacyList != null && listName.equals(defaultPrivacyList.getListName()))
+		{
+			return true;
+		}
+		
+		for (UserResource res : onlineUser.getAllUserResources())
+		{
+			PrivacyList activeList = res.getActivePrivacyList();
+			if (activeList != null && listName.equals(activeList.getListName()))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void handleGet(OnlineUser onlineUser, UserResourceImpl userResource, RouteMessage routeMessage, Iq iq, Privacy privacy)
@@ -280,6 +380,46 @@ public class PrivacyManager
 		}
 		
 		return privacyList;
+	}
+
+	public void userResourceAdded(OnlineUserImpl onlineUser, UserResourceImpl userResource)
+	{
+		UserPrivacyListDbHelper dbHelper = userPrivacyListDbHelperTracker.getUserPrivacyListDbHelper();
+		try
+		{
+			UserPrivacyList userPrivacyList = dbHelper.getDefaultUserPrivacyList(onlineUser.getNode());
+			if (userPrivacyList != null)
+			{
+				PrivacyList privacyList = userPrivacyListToPrivacyList(userPrivacyList);
+				onlineUser.setDefaultPrivacyList(privacyList);
+			}
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void userResourceRemoved(OnlineUserImpl onlineUser, UserResourceImpl userResource)
+	{
+		userResource.setActivePrivacyList(null);
+		if (onlineUser.getResourceCount() == 0)
+		{
+			onlineUser.setDefaultPrivacyList(null);
+		}
+	}
+
+	public boolean shouldBlockReceivePacket(OnlineUser user, UserResource userResource, Packet packet)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public boolean shouldBlockSend2ClientPacket(OnlineUserImpl onlineUser, UserResourceImpl userResourceImpl, Packet packet)
+	{
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 }
