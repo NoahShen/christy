@@ -34,6 +34,8 @@ import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.SmManager;
 import net.sf.christy.sm.UserResource;
+import net.sf.christy.sm.privacy.PrivacyManager;
+import net.sf.christy.sm.privacy.UserPrivacyListDbHelperTracker;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.CloseStream;
 import net.sf.christy.xmpp.Iq;
@@ -91,15 +93,18 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	
 	private HandlerManager handlerManager;
 
+	private PrivacyManager privacyManager;
 	
 	public SmManagerImpl(RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
 						SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker, 
-						PacketHandlerServiceTracker packetHandlerServiceTracker)
+						PacketHandlerServiceTracker packetHandlerServiceTracker,
+						UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker)
 	{
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 		this.smToRouterInterceptorServiceTracker = smToRouterInterceptorServiceTracker;
 		this.packetHandlerServiceTracker = packetHandlerServiceTracker;
 		this.handlerManager = new HandlerManager();
+		this.privacyManager = new PrivacyManager(userPrivacyListDbHelperTracker);
 	}
 	
 	@Override
@@ -593,22 +598,15 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		private void handlePrivacy(RouteMessage routeMessage, Iq iq, Privacy privacy)
 		{
 			String node = routeMessage.getToUserNode();
+			OnlineUser user = getOnlineUser(node);
 			String streamId = routeMessage.getStreamId();
-			UserResourceImpl userResource = getUserResourceByStreamId(node, streamId);
+			UserResource userResource = user.getUserResourceByStreamId(streamId);
 			if (userResource == null)
 			{
 				return;
 			}
 			
-			Iq.Type type = iq.getType();
-			if (type == Iq.Type.get)
-			{
-				
-			}
-			else if (type == Iq.Type.set)
-			{
-				
-			}
+			SmManagerImpl.this.privacyManager.handlePrivacy(user, (UserResourceImpl) userResource, routeMessage, iq, privacy);
 			
 		}
 

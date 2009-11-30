@@ -4,6 +4,7 @@ import net.sf.christy.sm.impl.PacketHandlerServiceTracker;
 import net.sf.christy.sm.impl.RouteMessageParserServiceTracker;
 import net.sf.christy.sm.impl.SmManagerImpl;
 import net.sf.christy.sm.impl.SmToRouterInterceptorServiceTracker;
+import net.sf.christy.sm.privacy.UserPrivacyListDbHelperTracker;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -14,6 +15,7 @@ public class Activator implements BundleActivator
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	private SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker;
 	private PacketHandlerServiceTracker packetHandlerServiceTracker;
+	private UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -31,10 +33,13 @@ public class Activator implements BundleActivator
 		packetHandlerServiceTracker = new PacketHandlerServiceTracker(context);
 		packetHandlerServiceTracker.open();
 		
+		userPrivacyListDbHelperTracker = new UserPrivacyListDbHelperTracker(context);
+		
 		SmManagerImpl smManager = 
 			new SmManagerImpl(routeMessageParserServiceTracker,
 					smToRouterInterceptorServiceTracker,
-					packetHandlerServiceTracker);
+					packetHandlerServiceTracker,
+					userPrivacyListDbHelperTracker);
 		
 		// TODO
 		smManager.setName("sm_1");
@@ -67,6 +72,12 @@ public class Activator implements BundleActivator
 		{
 			packetHandlerServiceTracker.close();
 			packetHandlerServiceTracker = null;
+		}
+		
+		if (userPrivacyListDbHelperTracker != null)
+		{
+			userPrivacyListDbHelperTracker.close();
+			userPrivacyListDbHelperTracker = null;
 		}
 	}
 

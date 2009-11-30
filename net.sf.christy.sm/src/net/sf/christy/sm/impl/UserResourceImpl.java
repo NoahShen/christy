@@ -7,6 +7,7 @@ import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.JID;
 import net.sf.christy.xmpp.Packet;
 import net.sf.christy.xmpp.Presence;
+import net.sf.christy.xmpp.PrivacyList;
 import net.sf.christy.xmpp.XmlStanza;
 
 public class UserResourceImpl extends AbstractPropertied implements UserResource
@@ -23,6 +24,8 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	
 	private Presence presence;
 
+	private PrivacyList activePrivacyList;
+	
 	private SmManagerImpl smManager;
 	/**
 	 * @param node
@@ -137,6 +140,17 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	{
 		this.sessionBinded = sessionBinded;
 	}
+	
+	@Override
+	public PrivacyList getActivePrivacyList()
+	{
+		return activePrivacyList;
+	}
+	
+	public void setActivePrivacyList(PrivacyList activePrivacyList)
+	{
+		this.activePrivacyList = activePrivacyList;
+	}
 
 	@Override
 	public int hashCode()
@@ -186,6 +200,8 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	{
 		return "UserResourceImpl [node=" + onlineUser.getNode() + ", resource=" + resource + ", sessionBinded=" + sessionBinded + ", streamId=" + streamId + "]";
 	}
+
+	
 
 
 	
