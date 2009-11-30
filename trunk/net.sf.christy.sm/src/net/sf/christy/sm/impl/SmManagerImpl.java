@@ -538,7 +538,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			if (from.startsWith("c2s_"))
 			{
 				String streamId = routeMessage.getStreamId();
-				// if user is not online or to=exampe.com
+				// user == null when user is not online or to=example.com
 				if (user != null)
 				{
 					userResource = user.getUserResourceByStreamId(streamId);
@@ -559,7 +559,12 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				}
 				wrapper = new MessageQueueWrapper(packet, false);
 			}
-
+			
+			if (userResource != null
+					&& !userResource.isAvailable())
+			{
+				return;
+			}
 			
 			handlerManager.handleWrapper(user, userResource, wrapper);
 			
@@ -606,7 +611,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				return;
 			}
 			
-			SmManagerImpl.this.privacyManager.handlePrivacy(user, (UserResourceImpl) userResource, routeMessage, iq, privacy);
+			SmManagerImpl.this.privacyManager.handlePrivacy((OnlineUserImpl) user, (UserResourceImpl) userResource, routeMessage, iq, privacy);
 			
 		}
 
