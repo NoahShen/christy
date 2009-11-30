@@ -7,10 +7,13 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.UserResource;
 import net.sf.christy.util.AbstractPropertied;
+import net.sf.christy.xmpp.PrivacyList;
 
 public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 {
 	private String node;
+	
+	private PrivacyList defaultPrivacyList;
 	
 	private Set<UserResource> userResources = new CopyOnWriteArraySet<UserResource>();
 
@@ -119,7 +122,19 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 		return false;
 	}
 
+
+	@Override
+	public PrivacyList getDefaultPrivacyList()
+	{
+		return defaultPrivacyList;
+	}
 	
+	
+	public void setDefaultPrivacyList(PrivacyList defaultPrivacyList)
+	{
+		this.defaultPrivacyList = defaultPrivacyList;
+	}
+
 	@Override
 	public int hashCode()
 	{
@@ -154,6 +169,7 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 	{
 		return "OnlineUserImpl [node=" + node + ", userResources=" + userResources + "]";
 	}
+
 	
 	
 }
