@@ -34,15 +34,19 @@ import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.SmManager;
 import net.sf.christy.sm.UserResource;
+import net.sf.christy.sm.contactmgr.ContactManager;
+import net.sf.christy.sm.contactmgr.RosterItemDbHelperTracker;
 import net.sf.christy.sm.privacy.PrivacyManager;
 import net.sf.christy.sm.privacy.UserPrivacyListDbHelperTracker;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.CloseStream;
 import net.sf.christy.xmpp.Iq;
 import net.sf.christy.xmpp.IqBind;
+import net.sf.christy.xmpp.IqRoster;
 import net.sf.christy.xmpp.IqSession;
 import net.sf.christy.xmpp.JID;
 import net.sf.christy.xmpp.Packet;
+import net.sf.christy.xmpp.Presence;
 import net.sf.christy.xmpp.Privacy;
 import net.sf.christy.xmpp.StreamError;
 import net.sf.christy.xmpp.XmlStanza;
@@ -94,17 +98,21 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	private HandlerManager handlerManager;
 
 	private PrivacyManager privacyManager;
+
+	private ContactManager contactManager;
 	
 	public SmManagerImpl(RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
 						SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker, 
 						PacketHandlerServiceTracker packetHandlerServiceTracker,
-						UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker)
+						UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker, 
+						RosterItemDbHelperTracker rosterItemDbHelperTracker)
 	{
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 		this.smToRouterInterceptorServiceTracker = smToRouterInterceptorServiceTracker;
 		this.packetHandlerServiceTracker = packetHandlerServiceTracker;
 		this.handlerManager = new HandlerManager();
-		this.privacyManager = new PrivacyManager(userPrivacyListDbHelperTracker);
+		this.contactManager = new ContactManager(rosterItemDbHelperTracker);
+		this.privacyManager = new PrivacyManager(this, userPrivacyListDbHelperTracker);
 	}
 	
 	/**
@@ -113,6 +121,14 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	public PrivacyManager getPrivacyManager()
 	{
 		return privacyManager;
+	}
+
+	/**
+	 * @return the contactManager
+	 */
+	public ContactManager getContactManager()
+	{
+		return contactManager;
 	}
 
 	@Override
@@ -442,6 +458,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		
 		routerSession.write(routeMessage.toXml());		
 	}
+
 	
 	private class RouterHandler implements IoHandler
 	{
@@ -508,78 +525,59 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		private void handleRoute(RouteMessage routeMessage, IoSession session)
 		{
 			String userNode = routeMessage.getPrepedUserNode();
-			OnlineUser user = onlineUsers.get(userNode);
+			OnlineUserImpl onlineUser = onlineUsers.get(userNode);
 			
-			if (smToRouterInterceptorServiceTracker.fireSmMessageReceived(routeMessage, SmManagerImpl.this, user))
+			if (smToRouterInterceptorServiceTracker.fireSmMessageReceived(routeMessage, SmManagerImpl.this, onlineUser))
 			{
 				logger.debug("Message which recieved from "
 							+ session + "has been intercepted.Message:"
 							+ routeMessage.toXml());
 				return;
 			}
-
-			XmlStanza stanza = routeMessage.getXmlStanza();
-			if (routeMessage.isCloseStream())
-			{
-				handleCloseStream(user, routeMessage);
-			}
-			else if (stanza instanceof Iq)
-			{
-				handleIq(user, routeMessage, (Iq) stanza);
-			}
-			else
-			{
-				transferToHandlerManager(user, routeMessage);
-			}
+			transferToHandlerManager(onlineUser, routeMessage);
 		}
 
-		private void handleCloseStream(OnlineUser user, RouteMessage routeMessage)
-		{
-			String streamId = routeMessage.getStreamId();
-			UserResource userResource = user.getUserResourceByStreamId(streamId);
-			if (userResource != null)
-			{
-				userResource.logOut();
-			}
-		}
-
-		private void transferToHandlerManager(OnlineUser user, RouteMessage routeMessage)
+		private void transferToHandlerManager(OnlineUserImpl onlineUser, RouteMessage routeMessage)
 		{
 			
 			XmlStanza stanza = routeMessage.getXmlStanza();
-			if (!(stanza instanceof Packet))
-			{
-				return;
-			}
-			
-			Packet packet = (Packet) stanza;
+
 			String from = routeMessage.getFrom();
+			String node = null;
 			UserResource userResource = null;
 			MessageQueueWrapper wrapper = null;
 			// message from local user's client
 			if (from.startsWith("c2s_"))
 			{
 				String streamId = routeMessage.getStreamId();
+				node = routeMessage.getPrepedUserNode();
 				// user == null when user is not online or to=example.com
-				if (user != null)
+				if (onlineUser != null)
 				{
-					userResource = user.getUserResourceByStreamId(streamId);
+					userResource = onlineUser.getUserResourceByStreamId(streamId);
 				}
 				
-				wrapper = new MessageQueueWrapper(packet, true);
+				wrapper = new MessageQueueWrapper(routeMessage, true);
 			}
 			// message from other user
 			else
-			{				
-				JID to = packet.getTo();
-				String resource = to.getResource();
-				if (user != null)
+			{
+				if (!(stanza instanceof Packet))
 				{
-					userResource = user.getUserResource(resource);
+					return;
+				}
+				
+				Packet packet = (Packet) stanza;
+				JID to = packet.getTo();
+				node = to.getNode().toLowerCase();
+				String resource = to.getResource();
+				if (onlineUser != null)
+				{
+					userResource = onlineUser.getUserResource(resource);
 				}
 				
 				//block
-				if (privacyManager.shouldBlockReceivePacket(user, userResource, packet))
+				if (privacyManager.shouldBlockReceivePacket(onlineUser, userResource, packet))
 				{
 					return;
 				}
@@ -589,144 +587,15 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				{
 					return;
 				}
+
+				wrapper = new MessageQueueWrapper(routeMessage, false);
 				
-				wrapper = new MessageQueueWrapper(packet, false);
 			}
 			
 						
-			handlerManager.handleWrapper(user, userResource, wrapper);
+			handlerManager.handleWrapper(node, onlineUser, (UserResourceImpl) userResource, wrapper);
 			
 		}
-
-		private void handleIq(OnlineUser user, RouteMessage routeMessage, Iq iq)
-		{
-			IqBind bind = 
-				(IqBind) iq.getExtension(IqBind.ELEMENTNAME, IqBind.NAMESPACE);
-			if (bind != null)
-			{
-				handleBindResource(routeMessage, iq, bind);
-				return;
-			}
-			
-			IqSession iqSession = 
-				(IqSession) iq.getExtension(IqSession.ELEMENTNAME, IqSession.NAMESPACE);
-			
-			if (iqSession != null)
-			{
-				handleBindSession(routeMessage, iq, iqSession);
-				return;
-			}
-			
-			Privacy privacy = (Privacy) iq.getExtension(Privacy.ELEMENTNAME, Privacy.NAMESPACE);
-			if (privacy != null)
-			{
-				handlePrivacy(routeMessage, iq, privacy);
-				return;
-			}
-			
-			transferToHandlerManager(user, routeMessage);
-			
-		}
-
-		private void handlePrivacy(RouteMessage routeMessage, Iq iq, Privacy privacy)
-		{
-			String node = routeMessage.getToUserNode();
-			OnlineUser user = getOnlineUser(node);
-			String streamId = routeMessage.getStreamId();
-			UserResource userResource = user.getUserResourceByStreamId(streamId);
-			if (userResource == null)
-			{
-				return;
-			}
-			
-			SmManagerImpl.this.privacyManager.handlePrivacy((OnlineUserImpl) user, (UserResourceImpl) userResource, routeMessage, iq, privacy);
-			
-		}
-
-		private void handleBindSession(RouteMessage routeMessage, Iq iqRequest, IqSession iqSession)
-		{
-			String node = routeMessage.getToUserNode();
-			String streamId = routeMessage.getStreamId();
-			UserResourceImpl userResource = getUserResourceByStreamId(node, streamId);
-			if (userResource != null)
-			{
-				userResource.setSessionBinded(true);
-				
-				Iq iqResult = new Iq(Iq.Type.result);
-				iqResult.setStanzaId(iqRequest.getStanzaId());
-				
-				userResource.sendToSelfClient(iqResult);
-			}
-		}
-		
-
-		private UserResourceImpl getUserResourceByStreamId(String node, String streamId)
-		{
-			OnlineUserImpl onlineUser = (OnlineUserImpl) getOnlineUser(node);
-			if (onlineUser != null)
-			{
-				return (UserResourceImpl) onlineUser.getUserResourceByStreamId(streamId);
-			}
-			return null;
-		}
-
-
-		private void handleBindResource(RouteMessage routeMessage, Iq iqRequest, IqBind bind)
-		{
-			String node = routeMessage.getToUserNode();
-			String c2sName = routeMessage.getFrom();
-			String streamId = routeMessage.getStreamId();
-			String resource = bind.getResource();
-			if (resource == null || resource.isEmpty())
-			{
-				XmppError error = new XmppError(XmppError.Condition.bad_request);
-				
-				Iq iqError = new Iq(Iq.Type.error);
-				iqError.setStanzaId(iqRequest.getStanzaId());
-				iqError.addExtension(bind);
-				iqError.setError(error);
-				
-				
-				RouteMessage responseMessage = 
-					new RouteMessage(getName(), 
-							routeMessage.getFrom(),
-							routeMessage.getStreamId());
-				responseMessage.setXmlStanza(iqError);
-				sendToRouter(responseMessage);
-				
-				RouteMessage closeRouteMessage = 
-					new RouteMessage(getName(), c2sName, streamId);
-				closeRouteMessage.setXmlStanza(CloseStream.getCloseStream());
-				sendToRouter(closeRouteMessage);
-				return;
-			}
-			
-			
-			UserResource userResource = getUserResource(node, resource);
-			if (userResource != null)
-			{
-				StreamError streamError = 
-					new StreamError(StreamError.Condition.conflict);
-				
-				userResource.sendToSelfClient(streamError);
-				userResource.sendToSelfClient(CloseStream.getCloseStream());
-				removeUserResource(node, resource);
-				
-			}
-			
-			
-			userResource = createUserResource(node, resource, c2sName, streamId);
-			
-			Iq iqResult = new Iq(Iq.Type.result);
-			iqResult.setStanzaId(iqRequest.getStanzaId());
-			IqBind resultBind = new IqBind();
-			resultBind.setJid(new JID(node, getDomain(), resource));
-			iqResult.addExtension(resultBind);
-			
-			userResource.sendToSelfClient(iqResult);
-			
-		}
-
 		
 
 		private void handleStream(XmlPullParser parser, IoSession session)
@@ -829,9 +698,13 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			messageQueue = Multimaps.synchronizedListMultimap(messageQueue);
 		}
 		
-		public void handleWrapper(OnlineUser onlineUser, UserResource resource, MessageQueueWrapper wrapper)
+		public void handleWrapper(String node, OnlineUserImpl onlineUser, UserResourceImpl resource, MessageQueueWrapper wrapper)
 		{
-			String node = onlineUser.getNode().toLowerCase();
+			if (node == null)
+			{
+				return;
+			}
+			
 			lock.lock();
 			try
 			{
@@ -853,7 +726,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			notifyHandler(onlineUser, node, resource);
 		}
 
-		private void notifyHandler(OnlineUser onlineUser, String node, UserResource userResource)
+		private void notifyHandler(OnlineUserImpl onlineUser, String node, UserResourceImpl userResource)
 		{
 			MessageQueueWrapper wrapper = getMessage(node);
 			do
@@ -861,9 +734,35 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				
 				if (wrapper != null)
 				{
-					Packet packet = wrapper.getPacket();
+					RouteMessage routeMessage = wrapper.getRouteMessage();
+					XmlStanza stanza = routeMessage.getXmlStanza();
 					if (wrapper.isFromClient())
 					{
+
+						if (routeMessage.isCloseStream())
+						{
+							handleCloseStream(userResource, routeMessage);
+						}
+						else if (stanza instanceof Iq)
+						{
+							if (handleIq(onlineUser, userResource, routeMessage, (Iq) stanza))
+							{
+								return;
+							}
+						}
+						else if (stanza instanceof Presence)
+						{
+							if (handlePresence(onlineUser, userResource, routeMessage, (Presence) stanza))
+							{
+								return;
+							}
+						}
+						
+						if (!(stanza instanceof Packet))
+						{
+							return;
+						}
+						Packet packet = (Packet) stanza;
 						if (!packetHandlerServiceTracker.handleClientPacket(SmManagerImpl.this, onlineUser, userResource, packet))
 						{
 							
@@ -881,6 +780,20 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 					}
 					else
 					{
+						if (stanza instanceof Presence)
+						{
+							if (handleOtherPresence(onlineUser, userResource, routeMessage, (Presence) stanza))
+							{
+								return;
+							}
+						}
+						
+						if (!(stanza instanceof Packet))
+						{
+							return;
+						}
+						Packet packet = (Packet) stanza;
+						
 						if (!packetHandlerServiceTracker.handleOtherUserPacket(SmManagerImpl.this, onlineUser, userResource, packet))
 						{
 							JID to = packet.getTo();
@@ -902,6 +815,159 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			while((wrapper = getMessage(node)) != null);
 		}
 
+
+		private boolean handleOtherPresence(OnlineUserImpl onlineUser, UserResourceImpl userResource, 
+									RouteMessage routeMessage, Presence presence)
+		{
+			contactManager.handleOtherPresence(SmManagerImpl.this, onlineUser, userResource, presence);
+			return true;
+		}
+
+		private boolean handlePresence(OnlineUserImpl onlineUser, UserResourceImpl userResource, 
+									RouteMessage routeMessage, Presence presence)
+		{
+			contactManager.handlePresence(SmManagerImpl.this, onlineUser, userResource, presence);
+			return true;
+		}
+
+		private boolean handleIq(OnlineUserImpl onlineUser, UserResourceImpl userResource, RouteMessage routeMessage, Iq iq)
+		{
+			IqBind bind = 
+				(IqBind) iq.getExtension(IqBind.ELEMENTNAME, IqBind.NAMESPACE);
+			if (bind != null)
+			{
+				handleBindResource(onlineUser, userResource, routeMessage, iq, bind);
+				return true;
+			}
+			
+			IqSession iqSession = 
+				(IqSession) iq.getExtension(IqSession.ELEMENTNAME, IqSession.NAMESPACE);
+			
+			if (iqSession != null)
+			{
+				handleBindSession(onlineUser, userResource, routeMessage, iq, iqSession);
+				return true;
+			}
+			
+			IqRoster iqRoster = (IqRoster) iq.getExtension(IqRoster.ELEMENTNAME, IqRoster.NAMESPACE);
+			if (iqRoster != null)
+			{
+				contactManager.handleRoster(SmManagerImpl.this, onlineUser, userResource, iq);
+				return true;
+			}
+			
+			Privacy privacy = (Privacy) iq.getExtension(Privacy.ELEMENTNAME, Privacy.NAMESPACE);
+			if (privacy != null)
+			{
+				handlePrivacy(onlineUser, userResource, routeMessage, iq, privacy);
+				return true;
+			}
+			
+			return false;
+		}
+		
+
+
+		private void handlePrivacy(OnlineUserImpl onlineUser, UserResourceImpl userResource, RouteMessage routeMessage, Iq iq, Privacy privacy)
+		{
+			if (userResource == null)
+			{
+				return;
+			}
+			
+			SmManagerImpl.this.privacyManager.handlePrivacy(onlineUser, userResource, routeMessage, iq, privacy);
+			
+		}
+
+		private void handleBindSession(OnlineUserImpl onlineUser, UserResourceImpl userResource, RouteMessage routeMessage, Iq iqRequest, IqSession iqSession)
+		{
+			if (userResource != null)
+			{
+				userResource.setSessionBinded(true);
+				
+				Iq iqResult = new Iq(Iq.Type.result);
+				iqResult.setStanzaId(iqRequest.getStanzaId());
+				
+				userResource.sendToSelfClient(iqResult);
+			}
+		}
+		
+
+		/**
+		 * 
+		 * @param onlineUser maybe must be null
+		 * @param userResource2 must be null
+		 * @param routeMessage
+		 * @param iqRequest
+		 * @param bind
+		 */
+		private void handleBindResource(OnlineUser onlineUser, UserResource userResource, 
+									RouteMessage routeMessage, Iq iqRequest, IqBind bind)
+		{
+			String node = routeMessage.getToUserNode();
+			String c2sName = routeMessage.getFrom();
+			String streamId = routeMessage.getStreamId();
+			String resource = bind.getResource();
+			if (resource == null || resource.isEmpty())
+			{
+				XmppError error = new XmppError(XmppError.Condition.bad_request);
+				
+				Iq iqError = new Iq(Iq.Type.error);
+				iqError.setStanzaId(iqRequest.getStanzaId());
+				iqError.addExtension(bind);
+				iqError.setError(error);
+				
+				
+				RouteMessage responseMessage = 
+					new RouteMessage(getName(), 
+							routeMessage.getFrom(),
+							routeMessage.getStreamId());
+				responseMessage.setXmlStanza(iqError);
+				sendToRouter(responseMessage);
+				
+				RouteMessage closeRouteMessage = 
+					new RouteMessage(getName(), c2sName, streamId);
+				closeRouteMessage.setXmlStanza(CloseStream.getCloseStream());
+				sendToRouter(closeRouteMessage);
+				return;
+			}
+			
+			
+			UserResource userResource2 = getUserResource(node, resource);
+			if (userResource2 != null)
+			{
+				// remove old resource
+				StreamError streamError = 
+					new StreamError(StreamError.Condition.conflict);
+				
+				userResource2.sendToSelfClient(streamError);
+				userResource2.sendToSelfClient(CloseStream.getCloseStream());
+				removeUserResource(node, resource);
+			}
+			
+			
+			userResource2 = createUserResource(node, resource, c2sName, streamId);
+			
+			Iq iqResult = new Iq(Iq.Type.result);
+			iqResult.setStanzaId(iqRequest.getStanzaId());
+			IqBind resultBind = new IqBind();
+			resultBind.setJid(new JID(node, getDomain(), resource));
+			iqResult.addExtension(resultBind);
+			
+			userResource2.sendToSelfClient(iqResult);
+			
+		}
+		
+
+		private void handleCloseStream(UserResource userResource, RouteMessage routeMessage)
+		{
+			if (userResource != null)
+			{
+				userResource.logOut();
+			}
+		}
+
+		
 		private void returnUnsupportErrorToOtherUser(Packet packet)
 		{
 			if (packet instanceof Iq)
@@ -979,26 +1045,33 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	
 	private class MessageQueueWrapper
 	{
-		private Packet packet;
+		private RouteMessage routeMessage;
 		
 		private boolean fromClient;
 
-		public MessageQueueWrapper(Packet packet, boolean fromClient)
+		public MessageQueueWrapper(RouteMessage routeMessage, boolean fromClient)
 		{
 			super();
-			this.packet = packet;
+			this.routeMessage = routeMessage;
 			this.fromClient = fromClient;
 		}
 
-		public Packet getPacket()
+		/**
+		 * @return the routeMessage
+		 */
+		public RouteMessage getRouteMessage()
 		{
-			return packet;
+			return routeMessage;
 		}
 
+		/**
+		 * @return the fromClient
+		 */
 		public boolean isFromClient()
 		{
 			return fromClient;
 		}
+
 		
 	}
 }

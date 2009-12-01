@@ -11,10 +11,15 @@ import net.sf.christy.routemessage.RouteMessage;
 import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.UserResource;
 import net.sf.christy.sm.impl.OnlineUserImpl;
+import net.sf.christy.sm.impl.SmManagerImpl;
 import net.sf.christy.sm.impl.UserResourceImpl;
 import net.sf.christy.xmpp.Iq;
+import net.sf.christy.xmpp.IqRoster;
+import net.sf.christy.xmpp.JID;
+import net.sf.christy.xmpp.Message;
 import net.sf.christy.xmpp.Packet;
 import net.sf.christy.xmpp.PacketUtils;
+import net.sf.christy.xmpp.Presence;
 import net.sf.christy.xmpp.Privacy;
 import net.sf.christy.xmpp.PrivacyItem;
 import net.sf.christy.xmpp.PrivacyList;
@@ -29,10 +34,13 @@ public class PrivacyManager
 
 
 	private UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker;
+	private SmManagerImpl smManager;
 
-	public PrivacyManager(UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker)
+	public PrivacyManager(SmManagerImpl smManager, 
+						UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker)
 	{
 		super();
+		this.smManager = smManager;
 		this.userPrivacyListDbHelperTracker = userPrivacyListDbHelperTracker;
 	}
 	
@@ -410,16 +418,348 @@ public class PrivacyManager
 		}
 	}
 
-	public boolean shouldBlockReceivePacket(OnlineUser user, UserResource userResource, Packet packet)
+	public boolean shouldBlockReceivePacket(OnlineUser onlineUser, UserResource userResource, Packet packet)
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return shouldBlock(onlineUser, userResource, packet);
 	}
 
 	public boolean shouldBlockSend2OtherPacket(OnlineUser onlineUser, UserResource userResource, Packet packet)
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return shouldBlockSend2Other(onlineUser, userResource, packet);
 	}
 	
+
+	private boolean shouldBlockSend2Other(OnlineUser onlineUser, UserResource userResource, Packet packet)
+	{
+
+		String username = onlineUser.getNode().toLowerCase();
+		PrivacyList privacyList = userResource.getActivePrivacyList();
+		if (privacyList == null)
+		{
+			privacyList = onlineUser.getDefaultPrivacyList();
+			if (privacyList == null)
+			{
+				return false;
+			}
+		}
+		
+		
+		IqRoster iqRoster = null;
+		try
+		{
+			iqRoster = smManager.getContactManager().getIqRoster(username);
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+		
+		for (PrivacyItem item : privacyList.getItems())
+		{
+			if (matchSend2Other(onlineUser, userResource, iqRoster, item, packet))
+			{
+				return isFilterSend2Other(onlineUser, userResource, iqRoster, item, packet);
+			}
+		}
+
+		return false;
+	}
+
+	
+	private boolean isFilterSend2Other(OnlineUser onlineUser, UserResource userResource, 
+								IqRoster roster, PrivacyItem item, Packet packet)
+	{
+		boolean deny = !item.isAction();
+		if (item.isFilterEmpty())
+		{
+			return deny;
+		}
+		
+		if (packet instanceof Message)
+		{
+			if (item.isFilterMessage())
+			{
+				return deny;
+			}
+		}
+		else if (packet instanceof Iq)
+		{
+			if (item.isFilterIQ())
+			{
+				return deny;
+			}
+		}
+		else if (packet instanceof Presence)
+		{
+			//presence_out
+			if (item.isFilterPresence_out())
+			{
+				return deny;
+			}
+			
+//			//presence_in
+//			if (item.isFilterPresence_in())
+//			{
+//				return deny;
+//			}
+		}
+		return true;
+	}
+
+	private boolean matchSend2Other(OnlineUser onlineUser, UserResource userResource, 
+								IqRoster roster, PrivacyItem item, Packet packet)
+	{
+		boolean matchSender = false;
+		if (item.getType() == null)
+		{
+			return true;
+		}
+		switch (item.getType())
+		{
+			case jid:
+				matchSender =  handleMatchJIDSend2Other(onlineUser, userResource, roster, item, packet);
+				break;
+			case group:
+				matchSender =  handleMatchGroupSend2Other(onlineUser, userResource, roster, item, packet);
+				break;
+			case subscription:
+				matchSender =  handleMatchSubscriptionSend2Other(onlineUser, userResource, roster, item, packet);
+				break;
+		}
+		return matchSender;
+	}
+
+	private boolean handleMatchSubscriptionSend2Other(OnlineUser onlineUser, UserResource userResource, 
+										IqRoster roster, PrivacyItem item, Packet packet)
+	{
+		String subscription = item.getValue();
+		JID to = packet.getTo();
+		
+		for (IqRoster.Item rosterItem : roster.getRosterItems())
+		{
+			JID jid = rosterItem.getJid();
+			if (jid.equalsWithBareJid(to))
+			{
+				IqRoster.Subscription subs = rosterItem.getSubscription();
+				if (subs != null && subs.name().equals(subscription))
+				{
+					return true;
+				}
+				return false;
+			}
+			
+		}
+		return false;
+	}
+
+	private boolean handleMatchGroupSend2Other(OnlineUser onlineUser, UserResource userResource, 
+									IqRoster roster, PrivacyItem item, Packet packet)
+	{
+		String groupName = item.getValue();
+		JID to = packet.getTo();
+		
+		for (IqRoster.Item rosterItem : roster.getRosterItems())
+		{
+			JID jid = rosterItem.getJid();
+			if (jid.equalsWithBareJid(to))
+			{
+				if (rosterItem.getGroupNames().contains(groupName))
+				{
+					return true;
+				}
+				return false;
+			}
+		}
+		return false;
+	}
+
+	private boolean handleMatchJIDSend2Other(OnlineUser onlineUser, UserResource userResource, 
+								IqRoster roster, PrivacyItem item, Packet packet)
+	{
+		JID jid = new JID(item.getValue());
+		JID to = packet.getTo();
+
+		if (jid.equals(to))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	public boolean shouldBlock(OnlineUser onlineUser, UserResource userResource, Packet packet)
+	{
+		// TODO offline user privacy
+		if (onlineUser == null || userResource == null)
+		{
+			return false;
+		}
+		
+		String username = onlineUser.getNode().toLowerCase();
+		PrivacyList privacyList = userResource.getActivePrivacyList();
+		if (privacyList == null)
+		{
+			privacyList = onlineUser.getDefaultPrivacyList();
+			if (privacyList == null)
+			{
+				return false;
+			}
+		}
+		
+		if (privacyList.getItems().isEmpty())
+		{
+			return false;
+		}
+		
+		if (packet.getFrom() == null)
+		{
+			return false;
+		}
+		
+		IqRoster iqRoster = null;
+		try
+		{
+			iqRoster = smManager.getContactManager().getIqRoster(username);
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+		
+		for (PrivacyItem item : privacyList.getItems())
+		{
+			if (match(onlineUser, userResource, iqRoster, item, packet))
+			{
+				return isFilter(onlineUser, userResource, iqRoster, item, packet);
+			}
+		}
+		return false;
+	}
+
+	private boolean isFilter(OnlineUser onlineUser, UserResource userResource, 
+						IqRoster roster, PrivacyItem item, Packet packet)
+	{
+		boolean deny = !item.isAction();
+		if (item.isFilterEmpty())
+		{
+			return deny;
+		}
+		
+		if (packet instanceof Message)
+		{
+			if (item.isFilterMessage())
+			{
+				return deny;
+			}
+		}
+		else if (packet instanceof Iq)
+		{
+			if (item.isFilterIQ())
+			{
+				return deny;
+			}
+		}
+		else if (packet instanceof Presence)
+		{
+//			JID to = packet.getTo();
+//			JID myJid = new JID(onlineUser.getNode(), smManager.getDomain(), userResource.getResource());
+//			
+////			//presence_out
+////			if (!myJid.equals(to))
+////			{
+////				if (item.isFilterPresence_out())
+////				{
+////					return deny;
+////				}
+////			}
+			//presence_in
+			if (item.isFilterPresence_in())
+			{
+				return deny;
+			}
+		}
+		return true;
+	}
+
+	private boolean match(OnlineUser onlineUser, UserResource userResource, IqRoster roster, PrivacyItem item, Packet packet)
+	{
+		boolean matchSender = false;
+		if (item.getType() == null)
+		{
+			return true;
+		}
+		switch (item.getType())
+		{
+			case jid:
+				matchSender =  handleMatchJID(onlineUser, userResource, roster, item, packet);
+				break;
+			case group:
+				matchSender =  handleMatchGroup(onlineUser, userResource, roster, item, packet);
+				break;
+			case subscription:
+				matchSender =  handleMatchSubscription(onlineUser, userResource, roster, item, packet);
+				break;
+		}
+		return matchSender;
+	}
+
+	private boolean handleMatchSubscription(OnlineUser onlineUser, UserResource userResource, 
+										IqRoster roster, PrivacyItem item, Packet packet)
+	{
+		String subscription = item.getValue();
+		JID from = packet.getFrom();
+		
+		for (IqRoster.Item rosterItem : roster.getRosterItems())
+		{
+			JID jid = rosterItem.getJid();
+			if (jid.equalsWithBareJid(from))
+			{
+				IqRoster.Subscription subs = rosterItem.getSubscription();
+				if (subs != null && subs.name().equals(subscription))
+				{
+					return true;
+				}
+				return false;
+			}
+			
+		}
+		return false;
+	}
+
+	private boolean handleMatchGroup(OnlineUser onlineUser, UserResource userResource, 
+									IqRoster roster, PrivacyItem item, Packet packet)
+	{
+		String groupName = item.getValue();
+		JID from = packet.getFrom();
+		
+		for (IqRoster.Item rosterItem : roster.getRosterItems())
+		{
+			JID jid = rosterItem.getJid();
+			if (jid.equalsWithBareJid(from))
+			{
+				if (rosterItem.getGroupNames().contains(groupName))
+				{
+					return true;
+				}
+				return false;
+			}
+		}
+		return false;
+	}
+
+	private boolean handleMatchJID(OnlineUser onlineUser, UserResource userResource, 
+								IqRoster roster, PrivacyItem item, Packet packet)
+	{
+		JID jid = new JID(item.getValue());
+		JID from = packet.getFrom();
+
+		if (jid.equals(from))
+		{
+			return true;
+		}
+		return false;
+	}
 }
