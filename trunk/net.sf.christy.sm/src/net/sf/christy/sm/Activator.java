@@ -1,5 +1,6 @@
 package net.sf.christy.sm;
 
+import net.sf.christy.sm.contactmgr.RosterItemDbHelperTracker;
 import net.sf.christy.sm.impl.PacketHandlerServiceTracker;
 import net.sf.christy.sm.impl.RouteMessageParserServiceTracker;
 import net.sf.christy.sm.impl.SmManagerImpl;
@@ -16,6 +17,7 @@ public class Activator implements BundleActivator
 	private SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker;
 	private PacketHandlerServiceTracker packetHandlerServiceTracker;
 	private UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker;
+	private RosterItemDbHelperTracker rosterItemDbHelperTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -36,11 +38,15 @@ public class Activator implements BundleActivator
 		userPrivacyListDbHelperTracker = new UserPrivacyListDbHelperTracker(context);
 		userPrivacyListDbHelperTracker.open();
 		
+		rosterItemDbHelperTracker = new RosterItemDbHelperTracker(context);
+		rosterItemDbHelperTracker.open();
+		
 		SmManagerImpl smManager = 
 			new SmManagerImpl(routeMessageParserServiceTracker,
 					smToRouterInterceptorServiceTracker,
 					packetHandlerServiceTracker,
-					userPrivacyListDbHelperTracker);
+					userPrivacyListDbHelperTracker,
+					rosterItemDbHelperTracker);
 		
 		// TODO
 		smManager.setName("sm_1");
@@ -79,6 +85,12 @@ public class Activator implements BundleActivator
 		{
 			userPrivacyListDbHelperTracker.close();
 			userPrivacyListDbHelperTracker = null;
+		}
+		
+		if (rosterItemDbHelperTracker != null)
+		{
+			rosterItemDbHelperTracker.close();
+			rosterItemDbHelperTracker = null;
 		}
 	}
 
