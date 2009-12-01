@@ -34,6 +34,7 @@ public class Activator implements BundleActivator
 		packetHandlerServiceTracker.open();
 		
 		userPrivacyListDbHelperTracker = new UserPrivacyListDbHelperTracker(context);
+		userPrivacyListDbHelperTracker.open();
 		
 		SmManagerImpl smManager = 
 			new SmManagerImpl(routeMessageParserServiceTracker,

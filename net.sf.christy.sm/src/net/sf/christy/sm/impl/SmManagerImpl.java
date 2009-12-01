@@ -578,19 +578,22 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 					userResource = user.getUserResource(resource);
 				}
 				
+				//block
 				if (privacyManager.shouldBlockReceivePacket(user, userResource, packet))
 				{
 					return;
 				}
+				
+				if (userResource != null
+						&& !userResource.isAvailable())
+				{
+					return;
+				}
+				
 				wrapper = new MessageQueueWrapper(packet, false);
 			}
 			
-			if (userResource != null
-					&& !userResource.isAvailable())
-			{
-				return;
-			}
-			
+						
 			handlerManager.handleWrapper(user, userResource, wrapper);
 			
 		}

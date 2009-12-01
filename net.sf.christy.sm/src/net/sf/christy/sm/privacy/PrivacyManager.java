@@ -416,7 +416,7 @@ public class PrivacyManager
 		return false;
 	}
 
-	public boolean shouldBlockSend2ClientPacket(OnlineUserImpl onlineUser, UserResourceImpl userResourceImpl, Packet packet)
+	public boolean shouldBlockSend2OtherPacket(OnlineUser onlineUser, UserResource userResource, Packet packet)
 	{
 		// TODO Auto-generated method stub
 		return false;

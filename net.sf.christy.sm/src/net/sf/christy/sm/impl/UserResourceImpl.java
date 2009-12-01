@@ -102,14 +102,6 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	@Override
 	public void sendToSelfClient(XmlStanza stanza)
 	{
-		if (stanza instanceof Packet)
-		{
-			if (smManager.getPrivacyManager().shouldBlockSend2ClientPacket(onlineUser, this, (Packet) stanza))
-			{
-				return;
-			}
-		}
-		
 		
 		RouteMessage routeMessage = 
 			new RouteMessage(smManager.getName(), getRelatedC2s(), getStreamId());
@@ -122,7 +114,15 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	@Override
 	public void sendToOtherUser(XmlStanza stanza)
 	{
-		// TODO privacy
+		if (stanza instanceof Packet)
+		{
+			if (smManager.getPrivacyManager().shouldBlockSend2OtherPacket(onlineUser, this, (Packet) stanza))
+			{
+				return;
+			}
+		}
+		
+		
 		RouteMessage routeMessage = 
 			new RouteMessage(smManager.getName());
 		routeMessage.setXmlStanza(stanza);
