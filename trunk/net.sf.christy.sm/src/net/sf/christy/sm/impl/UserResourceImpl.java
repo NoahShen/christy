@@ -128,11 +128,18 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 		routeMessage.setXmlStanza(stanza);
 		if (stanza instanceof Packet)
 		{
-			JID jid = ((Packet) stanza).getTo();
+			Packet packet = (Packet) stanza;
+			JID jid = packet.getTo();
 			
 			if (jid.getDomain().equals(smManager.getDomain()))
 			{
 				routeMessage.setToUserNode(jid.getNode());
+			}
+			
+			JID from = packet.getFrom();
+			if (from == null)
+			{
+				packet.setFrom(new JID(onlineUser.getNode(), smManager.getDomain(), getResource()));
 			}
 		}
 		

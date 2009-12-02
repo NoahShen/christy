@@ -10,8 +10,10 @@ import net.sf.christy.util.collections.LRULinkedHashMap;
 import net.sf.christy.xmpp.Iq;
 import net.sf.christy.xmpp.IqRoster;
 import net.sf.christy.xmpp.JID;
+import net.sf.christy.xmpp.PacketUtils;
 import net.sf.christy.xmpp.Presence;
 import net.sf.christy.xmpp.XmppError;
+import net.sf.christy.xmpp.IqRoster.Item;
 
 /**
  * 
@@ -74,28 +76,65 @@ public class ContactManager
 			handleStateChanged(smManager, onlineUser, userResource, presence);
 		}
 		// TODO subscription
+		else if (type == Presence.Type.subscribe)
+		{
+			handleSubscribe(smManager, onlineUser, userResource, presence);
+		}
+	}
+
+	private void handleSubscribe(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
+	{
+		JID to = presence.getTo();
+		JID bareJID = new JID(to.getNode(), to.getDomain(), null);
+		String node = onlineUser.getNode();
+		try
+		{
+			IqRoster iqRoster = getIqRoster(node);
+			if (!iqRoster.containRosterItem(bareJID))
+			{
+				RosterItem rosterItem = new RosterItem();
+				rosterItem.setUsername(onlineUser.getNode());
+				rosterItem.setRosterJID(bareJID);
+				rosterItem.setSubscription(RosterItem.Subscription.none);
+				RosterItemDbHelper rosterItemDbHelper = rosterItemDbHelperTracker.getRosterItemDbHelper();
+				rosterItemDbHelper.addRosterItem(rosterItem);
+				
+				IqRoster.Item newItem = new IqRoster.Item(bareJID);
+				newItem.setSubscription(IqRoster.Subscription.none);
+				
+				notifyResource(onlineUser, userResource, newItem);
+				
+				lock.lock();
+				try
+				{
+					rosterCache.remove(node.toLowerCase());
+				}
+				finally
+				{
+					lock.unlock();
+				}
+			}
+			
+			presence.setFrom(new JID(onlineUser.getNode(), smManager.getDomain(), null));
+			userResource.sendToOtherUser(presence);
+			
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	private void handleStateChanged(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
 	{
 		if (presence.getTo() != null)
 		{
-			Presence presenceError;
-			try
-			{
-				presenceError = (Presence) presence.clone();
-				presenceError.setType(Presence.Type.error);
-				presenceError.setFrom(null);
-				presenceError.setTo(presence.getFrom());
-				XmppError error = new XmppError(XmppError.Condition.bad_request);
-				presenceError.setError(error);
-				userResource.sendToSelfClient(presenceError);
-			}
-			catch (CloneNotSupportedException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			Presence presenceError = PacketUtils.createErrorPresence(presence);
+			XmppError error = new XmppError(XmppError.Condition.bad_request);
+			presenceError.setError(error);
+			userResource.sendToSelfClient(presenceError);
 			
 			return;
 			
@@ -137,8 +176,7 @@ public class ContactManager
 		for (IqRoster.Item item : roster.getRosterItems())
 		{
 			IqRoster.Subscription subscription = item.getSubscription();
-			if (subscription == IqRoster.Subscription.both
-					|| subscription == IqRoster.Subscription.from)
+			if (subscription == IqRoster.Subscription.both)
 			{
 				toRosterPresence.setTo(item.getJid());
 				userResource.sendToOtherUser(toRosterPresence);
@@ -179,8 +217,7 @@ public class ContactManager
 		Iq.Type type = iq.getType();
 		if (type == Iq.Type.get)
 		{
-			
-			
+
 			String username =  onlineUser.getNode();
 			IqRoster iqRoster = null;
 			try
@@ -199,28 +236,115 @@ public class ContactManager
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				
-				Iq iqError = null;
-				try
-				{
-					iqError = (Iq) iq.clone();
-				}
-				catch (CloneNotSupportedException e1)
-				{
-					// TODO Auto-generated catch block
-//					e1.printStackTrace();
-					return;
-				}
-				iqError.setType(Iq.Type.error);
-				iqError.setFrom(new JID(null, smManager.getDomain(), null));
-				iqError.setTo(iq.getFrom());
-				
+				Iq iqError = PacketUtils.createErrorIq(iq);
+				iqError.setError(new XmppError(XmppError.Condition.internal_server_error));
 				userResource.sendToSelfClient(iqError);
 			}
 			
 			
 
 		}
-		// TODO add remove update roster
+		// add remove update roster
+		else if (type == Iq.Type.set)
+		{
+			IqRoster roster = (IqRoster) iq.getExtension(IqRoster.ELEMENTNAME, IqRoster.NAMESPACE);
+			int count = roster.getRosterItemCount();
+			if (count != 1)
+			{
+				Iq iqError = PacketUtils.createErrorIq(iq);
+				iqError.setError(new XmppError(XmppError.Condition.bad_request));
+				userResource.sendToSelfClient(iqError);
+				return;
+			}
+			
+			IqRoster.Item item = roster.getRosterItems().iterator().next();
+			RosterItemDbHelper rosterItemDbHelper = rosterItemDbHelperTracker.getRosterItemDbHelper();
+			if (item.getSubscription() == IqRoster.Subscription.remove)
+			{
+				
+				try
+				{
+					rosterItemDbHelper.removeRosterItem(onlineUser.getNode(), item.getJid());
+					IqRoster.Item newItem = new IqRoster.Item(item.getJid());
+					newItem.setSubscription(IqRoster.Subscription.remove);
+					notifyResource(onlineUser, userResource, newItem);
+					
+				}
+				catch (Exception e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return;
+				}
+				
+				
+			}
+			else
+			{
+				try
+				{
+					RosterItem rosterItem = rosterItemDbHelper.getRosterItem(onlineUser.getNode(), item.getJid());
+					if (rosterItem == null)
+					{
+						rosterItem = new RosterItem();
+						rosterItem.setUsername(onlineUser.getNode());
+						rosterItem.setRosterJID(item.getJid());
+						rosterItem.setSubscription(RosterItem.Subscription.none);
+					}
+					
+					rosterItem.setNickname(item.getName());
+					rosterItem.setGroups(item.getGroupNames().toArray(new String[]{}));
+					
+					rosterItemDbHelper.updateRosterItem(rosterItem);
+					IqRoster.Item newItem = new IqRoster.Item(item.getJid());
+					newItem.setName(rosterItem.getNickname());
+					newItem.setSubscription(IqRoster.Subscription.valueOf(rosterItem.getSubscription().name()));
+					if (rosterItem.getAsk() != null)
+					{
+						newItem.setAsk(IqRoster.Ask.fromString(rosterItem.getAsk().name()));
+					}
+					newItem.addGroups(rosterItem.getGroups());
+					notifyResource(onlineUser, userResource, newItem);
+					
+					
+				}
+				catch (Exception e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return;
+				}
+			}
+			Iq iqResult = PacketUtils.createResultIq(iq);
+			userResource.sendToSelfClient(iqResult);
+			
+			lock.lock();
+			try
+			{
+				rosterCache.remove(onlineUser.getNode().toLowerCase());
+			}
+			finally
+			{
+				lock.unlock();
+			}
+			
+			
+			
+		}
+		
+	}
+
+	private void notifyResource(OnlineUser onlineUser, UserResource userResource, Item newItem)
+	{
+		Iq iq = new Iq(Iq.Type.set);
+		IqRoster roster = new IqRoster();
+		roster.addRosterItem(newItem);
+		iq.addExtension(roster);
+		for (UserResource res : onlineUser.getAllUserResources())
+		{
+			iq.setStanzaId(null);
+			res.sendToSelfClient(iq);
+		}
 		
 	}
 
@@ -305,7 +429,6 @@ public class ContactManager
 	{
 		if (presence.getFrom() == null)
 		{
-			// TODO
 			return;
 		}
 		userResource.sendToSelfClient(presence);

@@ -37,4 +37,24 @@ public class PacketUtils
 		
 		return iqError;
 	}
+	
+	public static Presence createErrorPresence(Presence presence)
+	{
+		Presence presenceError = null;
+		try
+		{
+			presenceError = (Presence) presence.clone();
+			presenceError.setFrom(presence.getTo());
+			presenceError.setTo(presence.getFrom());
+			presenceError.setType(Presence.Type.error);
+			presenceError.setStanzaId(presence.getStanzaId());
+		}
+		catch (CloneNotSupportedException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return presenceError;
+	}
 }

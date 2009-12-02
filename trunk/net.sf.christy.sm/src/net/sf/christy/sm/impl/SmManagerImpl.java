@@ -620,7 +620,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			
 			logger.debug("open stream successful");
 			
-			// TODO  test code
+			// TODO test code
 			String smname = getName();
 			if (id.endsWith("1"))
 			{
@@ -863,6 +863,12 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				return true;
 			}
 			
+			Iq.Type type = iq.getType();
+			if (type == Iq.Type.result)
+			{
+				// TODO handle result-iq from client
+				return true;
+			}
 			return false;
 		}
 		

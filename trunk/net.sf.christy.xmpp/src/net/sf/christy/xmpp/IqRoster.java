@@ -76,7 +76,29 @@ public class IqRoster implements PacketExtension
 		}
 	}
 
-
+	public Item getRosterItem(JID jid)
+	{
+		for (Item entry : rosterItems)
+		{
+			if (entry.getJid().equalsWithBareJid(jid))
+			{
+				return entry;
+			}
+		}
+		return null;
+	}
+	
+	public boolean containRosterItem(JID jid)
+	{
+		for (Item entry : rosterItems)
+		{
+			if (entry.getJid().equalsWithBareJid(jid))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 	@Override
 	public String getElementName()
 	{
@@ -273,6 +295,23 @@ public class IqRoster implements PacketExtension
 			groupNames.remove(groupName);
 		}
 
+		public void addGroups(String... groups)
+		{
+			for (String group : groups)
+			{
+				groupNames.add(group);
+			}
+		}
+		
+		public void removeGroups(String... groups)
+		{
+			for (String group : groups)
+			{
+				groupNames.remove(group);
+			}
+		}
+		
+		
 		@Override
 		public String toXml()
 		{

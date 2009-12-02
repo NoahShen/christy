@@ -67,6 +67,7 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 	public void removeRosterItem(RosterItem rosterItem) throws Exception
 	{
 		objectContainer.delete(rosterItem);
+		objectContainer.commit();
 	}
 
 	@Override
@@ -81,7 +82,8 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 		
 	}
 
-	private RosterItem getRosterItem(final String username, final JID rosterJID) throws Exception
+	@Override
+	public RosterItem getRosterItem(final String username, final JID rosterJID) throws Exception
 	{
 		ObjectSet<RosterItem> objSet = objectContainer.query(new Predicate<RosterItem>(){
 
@@ -113,6 +115,11 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 	@Override
 	public void updateRosterItem(RosterItem rosterItem) throws Exception
 	{
+		RosterItem oldRosterItem = getRosterItem(rosterItem.getUsername(), rosterItem.getRosterJID());
+		if (oldRosterItem != null)
+		{
+			objectContainer.delete(oldRosterItem);
+		}
 		objectContainer.set(rosterItem);
 		objectContainer.commit();
 	}
@@ -167,5 +174,6 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 		}
 
 	}
+
 	
 }
