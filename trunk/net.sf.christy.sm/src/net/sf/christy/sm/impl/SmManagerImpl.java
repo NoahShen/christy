@@ -620,7 +620,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			
 			logger.debug("open stream successful");
 			
-			// TODO test code
+			// TODO  test code
 			String smname = getName();
 			if (id.endsWith("1"))
 			{
