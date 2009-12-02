@@ -41,6 +41,16 @@ public interface RosterItemDbHelper
 	 */
 	public RosterItem[] getRosterItems(String username) throws Exception;
 	
+	
+	/**
+	 * 
+	 * @param username
+	 * @param rosterJID
+	 * @return
+	 * @throws Exception
+	 */
+	public RosterItem getRosterItem(String username, JID rosterJID) throws Exception;
+	
 	/**
 	 * 
 	 * @param rosterItem

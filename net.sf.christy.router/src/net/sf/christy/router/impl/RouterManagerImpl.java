@@ -545,6 +545,15 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				String c2sname = parser.getAttributeValue("", "c2sname");
 				String password = parser.getAttributeValue("", "password");
 				
+				if (!c2sname.startsWith("c2s_"))
+				{
+					StreamError error = new StreamError(StreamError.Condition.undefined_condition);
+					session.write(error);
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return;
+				}
+				
 				if (c2sSessions.containsKey(c2sname))
 				{
 					StreamError error = new StreamError(StreamError.Condition.conflict);
@@ -826,6 +835,15 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			{
 				String smName = parser.getAttributeValue("", "smname");
 				String password = parser.getAttributeValue("", "password");
+				
+				if (!smName.startsWith("sm_"))
+				{
+					StreamError error = new StreamError(StreamError.Condition.undefined_condition);
+					session.write(error);
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return;
+				}
 				
 				if (smSessions.containsKey(smName))
 				{

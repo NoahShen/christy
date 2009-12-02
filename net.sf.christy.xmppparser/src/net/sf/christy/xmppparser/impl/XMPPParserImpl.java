@@ -875,7 +875,11 @@ public class XMPPParserImpl implements XmppParser
 					String ask = parser.getAttributeValue("", "ask");
 					
 					item = new IqRoster.Item(new JID(jid), name);
-					item.setSubscription(IqRoster.Subscription.valueOf(subscription));
+					if (subscription != null)
+					{
+						item.setSubscription(IqRoster.Subscription.valueOf(subscription));
+					}
+					
 					if (ask != null && !ask.isEmpty())
 					{
 						item.setAsk(IqRoster.Ask.fromString(ask));
