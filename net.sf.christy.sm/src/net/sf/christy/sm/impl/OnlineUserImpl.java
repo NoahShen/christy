@@ -1,6 +1,8 @@
 package net.sf.christy.sm.impl;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -34,6 +36,21 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 		return userResources.toArray(new UserResource[]{});
 	}
 
+
+	@Override
+	public UserResource[] getAllActiveUserResources()
+	{
+		List<UserResource> resources = new ArrayList<UserResource>();
+		for (UserResource res : userResources)
+		{
+			if (res.isAvailable())
+			{
+				resources.add(res);
+			}
+		}
+		return resources.toArray(new UserResource[]{});
+	}
+	
 	@Override
 	public String getNode()
 	{
@@ -171,6 +188,7 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 	{
 		return "OnlineUserImpl [node=" + node + ", userResources=" + userResources + "]";
 	}
+
 
 	
 	

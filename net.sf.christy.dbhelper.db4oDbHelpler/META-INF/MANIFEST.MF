@@ -9,6 +9,7 @@ Bundle-Activator: net.sf.christy.dbhelper.db4odbhelpler.Activator
 Bundle-Vendor: Noah
 Import-Package: net.sf.christy.sm.contactmgr,
  net.sf.christy.sm.privacy,
+ net.sf.christy.sm.user,
  net.sf.christy.xmpp,
  org.osgi.framework;version="1.3.0"
 Eclipse-LazyStart: true

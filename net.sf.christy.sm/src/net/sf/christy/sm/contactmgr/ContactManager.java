@@ -6,6 +6,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.SmManager;
 import net.sf.christy.sm.UserResource;
+import net.sf.christy.sm.impl.SmManagerImpl;
+import net.sf.christy.sm.user.User;
+import net.sf.christy.sm.user.UserDbHelper;
+import net.sf.christy.sm.user.UserDbHelperTracker;
 import net.sf.christy.util.collections.LRULinkedHashMap;
 import net.sf.christy.xmpp.Iq;
 import net.sf.christy.xmpp.IqRoster;
@@ -30,15 +34,23 @@ public class ContactManager
 	
 	private RosterItemDbHelperTracker rosterItemDbHelperTracker;
 
+	private OfflineSubscribeMsgDbHelperTracker offlineSubscribeMsgDbHelperTracker;
+	
+	private UserDbHelperTracker userDbHelperTracker;
+	
 	private final Lock lock = new ReentrantLock();
 	
-	public ContactManager(RosterItemDbHelperTracker rosterItemDbHelperTracker)
+	public ContactManager(RosterItemDbHelperTracker rosterItemDbHelperTracker,
+					OfflineSubscribeMsgDbHelperTracker offlineSubscribeMsgDbHelperTracker,
+					UserDbHelperTracker userDbHelperTracker)
 	{
 		cacheRoster = true;
 		cacheSize = 1000;
 		rosterCache = new LRULinkedHashMap<String, IqRoster>(cacheSize);
 		
 		this.rosterItemDbHelperTracker = rosterItemDbHelperTracker;
+		this.offlineSubscribeMsgDbHelperTracker = offlineSubscribeMsgDbHelperTracker;
+		this.userDbHelperTracker = userDbHelperTracker;
 	}
 
 	public boolean isCacheRoster()
@@ -90,10 +102,11 @@ public class ContactManager
 		try
 		{
 			IqRoster iqRoster = getIqRoster(node);
+			// roster not exist
 			if (!iqRoster.containRosterItem(bareJID))
 			{
 				RosterItem rosterItem = new RosterItem();
-				rosterItem.setUsername(onlineUser.getNode());
+				rosterItem.setUsername(node);
 				rosterItem.setRosterJID(bareJID);
 				rosterItem.setSubscription(RosterItem.Subscription.none);
 				RosterItemDbHelper rosterItemDbHelper = rosterItemDbHelperTracker.getRosterItemDbHelper();
@@ -115,8 +128,36 @@ public class ContactManager
 				}
 			}
 			
-			presence.setFrom(new JID(onlineUser.getNode(), smManager.getDomain(), null));
-			userResource.sendToOtherUser(presence);
+			//change to ask
+			iqRoster = getIqRoster(node);
+			IqRoster.Item oldItem = iqRoster.getRosterItem(bareJID);
+			IqRoster.Ask ask = oldItem.getAsk();
+			// check ask
+			if (ask == null)
+			{
+
+				RosterItemDbHelper rosterItemDbHelper = rosterItemDbHelperTracker.getRosterItemDbHelper();
+				rosterItemDbHelper.updateRosterItemAsk(node, bareJID, RosterItem.Ask.subscribe);
+				
+				lock.lock();
+				try
+				{
+					rosterCache.remove(node.toLowerCase());
+				}
+				finally
+				{
+					lock.unlock();
+				}
+				
+				IqRoster newRoster = getIqRoster(node);
+				IqRoster.Item newItem = newRoster.getRosterItem(bareJID);
+				notifyResource(onlineUser, userResource, newItem);
+				
+				
+				presence.setFrom(new JID(onlineUser.getNode(), smManager.getDomain(), null));
+				userResource.sendToOtherUser(presence);
+			}
+			
 			
 		}
 		catch (Exception e)
@@ -210,6 +251,36 @@ public class ContactManager
 			}
 		}
 		
+		if (firstPresence)
+		{
+			notifyOtherResourceState(smManager, onlineUser, userResource);
+			((SmManagerImpl) smManager).fireUserResourceAvailable(onlineUser, userResource);
+		}
+		
+	}
+
+	private void notifyOtherResourceState(SmManager smManager, OnlineUser onlineUser, UserResource userResource)
+	{
+		
+		for (UserResource res : onlineUser.getAllUserResources())
+		{
+			if (res != userResource && res.isAvailable())
+			{
+				Presence presence = res.getPresence();
+				try
+				{
+					Presence clonePresence = (Presence) presence.clone();
+					clonePresence.setFrom(new JID(onlineUser.getNode(), smManager.getDomain(), res.getResource()));
+					clonePresence.setTo(null);
+					userResource.sendToSelfClient(clonePresence);
+				}
+				catch (CloneNotSupportedException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	public void handleRoster(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Iq iq)
@@ -423,6 +494,50 @@ public class ContactManager
 			handleOtherStateChanged(smManager, onlineUser, userResource, presence);
 		}
 		// TODO subscription
+		else if (type == Presence.Type.subscribe)
+		{
+			handleOtherSubscribe(smManager, onlineUser, userResource, presence);
+		}
+	}
+
+	private void handleOtherSubscribe(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
+	{
+		// user offline
+		if (onlineUser == null || onlineUser.getResourceCount() == 0)
+		{
+			JID to = presence.getTo();
+			String username = to.getNode();
+			UserDbHelper helper = userDbHelperTracker.getUserDbHelper();
+			try
+			{
+				User user = helper.getUser(username);
+				// user not exist
+				if (user != null)
+				{
+					OfflineSubscribeMsgDbHelper msghelper = offlineSubscribeMsgDbHelperTracker.getOfflineSubscribeMsgDbHelper();
+					OfflineSubscribeMsg msg = new OfflineSubscribeMsg();
+					msg.setUsername(username);
+					msg.setFrom(presence.getFrom());
+					msg.setExtensions(presence.getExtensionsXML());
+					msghelper.addOfflineSubscribeMsg(msg);
+				}
+			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return;
+
+		}
+		
+		if (userResource != null)
+		{
+			userResource.sendToSelfClient(presence);
+		}
+		
+		
 	}
 
 	private void handleOtherStateChanged(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)

@@ -35,9 +35,11 @@ import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.SmManager;
 import net.sf.christy.sm.UserResource;
 import net.sf.christy.sm.contactmgr.ContactManager;
+import net.sf.christy.sm.contactmgr.OfflineSubscribeMsgDbHelperTracker;
 import net.sf.christy.sm.contactmgr.RosterItemDbHelperTracker;
 import net.sf.christy.sm.privacy.PrivacyManager;
 import net.sf.christy.sm.privacy.UserPrivacyListDbHelperTracker;
+import net.sf.christy.sm.user.UserDbHelperTracker;
 import net.sf.christy.util.AbstractPropertied;
 import net.sf.christy.xmpp.CloseStream;
 import net.sf.christy.xmpp.Iq;
@@ -105,13 +107,17 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 						SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker, 
 						PacketHandlerServiceTracker packetHandlerServiceTracker,
 						UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker, 
-						RosterItemDbHelperTracker rosterItemDbHelperTracker)
+						RosterItemDbHelperTracker rosterItemDbHelperTracker,
+						OfflineSubscribeMsgDbHelperTracker offlineSubscribeMsgDbHelperTracker,
+						UserDbHelperTracker userDbHelperTracker)
 	{
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 		this.smToRouterInterceptorServiceTracker = smToRouterInterceptorServiceTracker;
 		this.packetHandlerServiceTracker = packetHandlerServiceTracker;
 		this.handlerManager = new HandlerManager();
-		this.contactManager = new ContactManager(rosterItemDbHelperTracker);
+		this.contactManager = 
+			new ContactManager(rosterItemDbHelperTracker, 
+							offlineSubscribeMsgDbHelperTracker, userDbHelperTracker);
 		this.privacyManager = new PrivacyManager(this, userPrivacyListDbHelperTracker);
 	}
 	
@@ -375,6 +381,13 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		privacyManager.userResourceRemoved(onlineUser, userResource);
 	}
 
+
+	public void fireUserResourceAvailable(OnlineUser onlineUser, UserResource userResource)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	
 	@Override
 	public boolean containUserResource(String userNode, String resource)
 	{
@@ -543,21 +556,20 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			XmlStanza stanza = routeMessage.getXmlStanza();
 
 			String from = routeMessage.getFrom();
-			String node = null;
-			UserResource userResource = null;
-			MessageQueueWrapper wrapper = null;
 			// message from local user's client
 			if (from.startsWith("c2s_"))
 			{
 				String streamId = routeMessage.getStreamId();
-				node = routeMessage.getPrepedUserNode();
+				String node = routeMessage.getPrepedUserNode();
+				UserResource userResource = null;
 				// user == null when user is not online or to=example.com
 				if (onlineUser != null)
 				{
 					userResource = onlineUser.getUserResourceByStreamId(streamId);
 				}
 				
-				wrapper = new MessageQueueWrapper(routeMessage, true);
+				MessageQueueWrapper wrapper = new MessageQueueWrapper(routeMessage, true);
+				handlerManager.handleWrapper(node, onlineUser, (UserResourceImpl) userResource, wrapper);
 			}
 			// message from other user
 			else
@@ -569,31 +581,62 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				
 				Packet packet = (Packet) stanza;
 				JID to = packet.getTo();
-				node = to.getNode().toLowerCase();
+				String node = to.getNode().toLowerCase();
 				String resource = to.getResource();
 				if (onlineUser != null)
 				{
-					userResource = onlineUser.getUserResource(resource);
-				}
-				
-				//block
-				if (privacyManager.shouldBlockReceivePacket(onlineUser, userResource, packet))
-				{
-					return;
-				}
-				
-				if (userResource != null
-						&& !userResource.isAvailable())
-				{
+					UserResource[] resources = new UserResource[]{};
+					// to is fullJID
+					if (resource != null)
+					{
+						UserResource userResource = onlineUser.getUserResource(resource);
+						
+						if (userResource != null
+								&& !userResource.isAvailable())
+						{
+							return;
+						}
+						
+						resources = new UserResource[]{userResource};
+					}
+					//TODO to is bareJID send msg to all resource or to max priority resource
+					else
+					{
+						resources = onlineUser.getAllActiveUserResources();
+					}
+					
+					
+					for (UserResource res : resources)
+					{
+						
+						//block
+						if (privacyManager.shouldBlockReceivePacket(onlineUser, res, packet))
+						{
+							if (logger.isDebugEnabled())
+							{
+								logger.debug("block" + onlineUser.getNode() + "/" + 
+											res.getResource() + 
+											" receivePacket:" + packet.toXml());
+							}
+							
+							return;
+						}
+						
+						MessageQueueWrapper wrapper = new MessageQueueWrapper(routeMessage, false);
+						handlerManager.handleWrapper(node, onlineUser, (UserResourceImpl) res, wrapper);
+					}
+					
 					return;
 				}
 
-				wrapper = new MessageQueueWrapper(routeMessage, false);
+				// no resource online
+				MessageQueueWrapper wrapper = new MessageQueueWrapper(routeMessage, false);
+				handlerManager.handleWrapper(node, onlineUser, null, wrapper);
 				
 			}
 			
 						
-			handlerManager.handleWrapper(node, onlineUser, (UserResourceImpl) userResource, wrapper);
+			
 			
 		}
 		
@@ -1080,4 +1123,5 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 
 		
 	}
+
 }

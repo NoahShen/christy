@@ -1,8 +1,10 @@
 package net.sf.christy.dbhelper.db4odbhelpler;
 
+import net.sf.christy.sm.contactmgr.OfflineSubscribeMsgDbHelper;
 import net.sf.christy.sm.contactmgr.RosterItemDbHelper;
 import net.sf.christy.sm.privacy.UserPrivacyListDbHelper;
 import net.sf.christy.sm.privacy.UserPrivacyListItemDbHelper;
+import net.sf.christy.sm.user.UserDbHelper;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -14,6 +16,8 @@ public class Activator implements BundleActivator
 	private ServiceRegistration rosterItemDbHelperRegistration;
 	private ServiceRegistration userPrivacyListDbHelperRegistration;
 	private ServiceRegistration userPrivacyListItemDbHelperRegistration;
+	private ServiceRegistration offlineSubscribeMsgDbHelperRegistration;
+	private ServiceRegistration userDbHelperRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -32,7 +36,11 @@ public class Activator implements BundleActivator
 		UserPrivacyListItemDbHelperImpl userPrivacyListItemDbHelper = new UserPrivacyListItemDbHelperImpl();
 		userPrivacyListItemDbHelperRegistration = context.registerService(UserPrivacyListItemDbHelper.class.getName(), userPrivacyListItemDbHelper, null);
 	
+		OfflineSubscribeMsgDbHelperImpl offlineSubscribeMsgDbHelper = new OfflineSubscribeMsgDbHelperImpl();
+		offlineSubscribeMsgDbHelperRegistration = context.registerService(OfflineSubscribeMsgDbHelper.class.getName(), offlineSubscribeMsgDbHelper, null);
 		
+		UserDbHelperImpl userDbHelper = new UserDbHelperImpl();
+		userDbHelperRegistration = context.registerService(UserDbHelper.class.getName(), userDbHelper, null);
 	}
 
 	/*
@@ -59,6 +67,18 @@ public class Activator implements BundleActivator
 		{
 			userPrivacyListItemDbHelperRegistration.unregister();
 			userPrivacyListItemDbHelperRegistration = null;
+		}
+		
+		if (offlineSubscribeMsgDbHelperRegistration != null)
+		{
+			offlineSubscribeMsgDbHelperRegistration.unregister();
+			offlineSubscribeMsgDbHelperRegistration = null;
+		}
+		
+		if (userDbHelperRegistration != null)
+		{
+			userDbHelperRegistration.unregister();
+			userDbHelperRegistration = null;
 		}
 	}
 

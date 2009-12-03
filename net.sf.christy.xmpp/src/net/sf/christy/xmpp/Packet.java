@@ -187,7 +187,7 @@ public abstract class Packet extends AbstractXmlStanza
 	 * @return the extension sub-packets as XML or the Empty String if
 	 *         there are no packet extensions.
 	 */
-	protected synchronized String getExtensionsXML()
+	public synchronized String getExtensionsXML()
 	{
 		StringBuilder buf = new StringBuilder();
 		// Add in all standard extension sub-packets.
