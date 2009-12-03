@@ -32,6 +32,12 @@ public interface OnlineUser extends Propertied
 	
 	/**
 	 * 
+	 * @return
+	 */
+	public UserResource[] getAllActiveUserResources();
+	
+	/**
+	 * 
 	 * @param resource
 	 * @return
 	 */

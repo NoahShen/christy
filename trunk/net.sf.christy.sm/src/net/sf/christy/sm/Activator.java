@@ -1,11 +1,13 @@
 package net.sf.christy.sm;
 
+import net.sf.christy.sm.contactmgr.OfflineSubscribeMsgDbHelperTracker;
 import net.sf.christy.sm.contactmgr.RosterItemDbHelperTracker;
 import net.sf.christy.sm.impl.PacketHandlerServiceTracker;
 import net.sf.christy.sm.impl.RouteMessageParserServiceTracker;
 import net.sf.christy.sm.impl.SmManagerImpl;
 import net.sf.christy.sm.impl.SmToRouterInterceptorServiceTracker;
 import net.sf.christy.sm.privacy.UserPrivacyListDbHelperTracker;
+import net.sf.christy.sm.user.UserDbHelperTracker;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -18,6 +20,8 @@ public class Activator implements BundleActivator
 	private PacketHandlerServiceTracker packetHandlerServiceTracker;
 	private UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker;
 	private RosterItemDbHelperTracker rosterItemDbHelperTracker;
+	private OfflineSubscribeMsgDbHelperTracker offlineSubscribeMsgDbHelperTracker;
+	private UserDbHelperTracker userDbHelperTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -41,12 +45,20 @@ public class Activator implements BundleActivator
 		rosterItemDbHelperTracker = new RosterItemDbHelperTracker(context);
 		rosterItemDbHelperTracker.open();
 		
+		offlineSubscribeMsgDbHelperTracker = new OfflineSubscribeMsgDbHelperTracker(context);
+		offlineSubscribeMsgDbHelperTracker.open();
+		
+		userDbHelperTracker = new UserDbHelperTracker(context);
+		userDbHelperTracker.open();
+		
 		SmManagerImpl smManager = 
 			new SmManagerImpl(routeMessageParserServiceTracker,
 					smToRouterInterceptorServiceTracker,
 					packetHandlerServiceTracker,
 					userPrivacyListDbHelperTracker,
-					rosterItemDbHelperTracker);
+					rosterItemDbHelperTracker,
+					offlineSubscribeMsgDbHelperTracker,
+					userDbHelperTracker);
 		
 		// TODO
 		smManager.setName("sm_1");
@@ -91,6 +103,18 @@ public class Activator implements BundleActivator
 		{
 			rosterItemDbHelperTracker.close();
 			rosterItemDbHelperTracker = null;
+		}
+		
+		if (offlineSubscribeMsgDbHelperTracker != null)
+		{
+			offlineSubscribeMsgDbHelperTracker.close();
+			offlineSubscribeMsgDbHelperTracker = null;
+		}
+		
+		if (userDbHelperTracker != null)
+		{
+			userDbHelperTracker.close();
+			userDbHelperTracker = null;
 		}
 	}
 
