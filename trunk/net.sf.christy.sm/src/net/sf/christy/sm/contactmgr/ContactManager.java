@@ -92,6 +92,16 @@ public class ContactManager
 		{
 			handleSubscribe(smManager, onlineUser, userResource, presence);
 		}
+		else if (type == Presence.Type.subscribed)
+		{
+			handleSubscribed(smManager, onlineUser, userResource, presence);
+		}
+	}
+
+	private void handleSubscribed(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 
 	private void handleSubscribe(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
@@ -105,27 +115,16 @@ public class ContactManager
 			// roster not exist
 			if (!iqRoster.containRosterItem(bareJID))
 			{
-				RosterItem rosterItem = new RosterItem();
-				rosterItem.setUsername(node);
-				rosterItem.setRosterJID(bareJID);
-				rosterItem.setSubscription(RosterItem.Subscription.none);
-				RosterItemDbHelper rosterItemDbHelper = rosterItemDbHelperTracker.getRosterItemDbHelper();
-				rosterItemDbHelper.addRosterItem(rosterItem);
+				RosterItem item = new RosterItem();
+				item.setUsername(node);
+				item.setRosterJID(bareJID);
+				item.setSubscription(RosterItem.Subscription.none);
+				updateRosterItem(item);
 				
 				IqRoster.Item newItem = new IqRoster.Item(bareJID);
 				newItem.setSubscription(IqRoster.Subscription.none);
-				
 				notifyResource(onlineUser, userResource, newItem);
-				
-				lock.lock();
-				try
-				{
-					rosterCache.remove(node.toLowerCase());
-				}
-				finally
-				{
-					lock.unlock();
-				}
+
 			}
 			
 			//change to ask
@@ -167,6 +166,7 @@ public class ContactManager
 		}
 		
 	}
+
 
 	private void handleStateChanged(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
 	{
@@ -296,7 +296,6 @@ public class ContactManager
 				iqRoster = getIqRoster(username);
 				Iq iqResult = new Iq(Iq.Type.result);
 				iqResult.setStanzaId(iq.getStanzaId());
-				
 				iqResult.addExtension(iqRoster);
 				
 				userResource.sendToSelfClient(iqResult);
@@ -335,11 +334,10 @@ public class ContactManager
 				
 				try
 				{
-					rosterItemDbHelper.removeRosterItem(onlineUser.getNode(), item.getJid());
+					removeRosterItem(onlineUser.getNode(), item.getJid());
 					IqRoster.Item newItem = new IqRoster.Item(item.getJid());
 					newItem.setSubscription(IqRoster.Subscription.remove);
 					notifyResource(onlineUser, userResource, newItem);
-					
 				}
 				catch (Exception e)
 				{
@@ -352,21 +350,19 @@ public class ContactManager
 			}
 			else
 			{
+				String username = onlineUser.getNode();
+				RosterItem newrosterItem = new RosterItem();
+				newrosterItem.setUsername(username);
+				newrosterItem.setRosterJID(item.getJid());
+				newrosterItem.setNickname(item.getName());
+				newrosterItem.setGroups(item.getGroupNames().toArray(new String[]{}));
+				
 				try
 				{
-					RosterItem rosterItem = rosterItemDbHelper.getRosterItem(onlineUser.getNode(), item.getJid());
-					if (rosterItem == null)
-					{
-						rosterItem = new RosterItem();
-						rosterItem.setUsername(onlineUser.getNode());
-						rosterItem.setRosterJID(item.getJid());
-						rosterItem.setSubscription(RosterItem.Subscription.none);
-					}
+					updateRosterItem(newrosterItem);
 					
-					rosterItem.setNickname(item.getName());
-					rosterItem.setGroups(item.getGroupNames().toArray(new String[]{}));
+					RosterItem rosterItem = rosterItemDbHelper.getRosterItem(username, item.getJid());
 					
-					rosterItemDbHelper.updateRosterItem(rosterItem);
 					IqRoster.Item newItem = new IqRoster.Item(item.getJid());
 					newItem.setName(rosterItem.getNickname());
 					newItem.setSubscription(IqRoster.Subscription.valueOf(rosterItem.getSubscription().name()));
@@ -386,21 +382,11 @@ public class ContactManager
 					return;
 				}
 			}
+			
+			
 			Iq iqResult = PacketUtils.createResultIq(iq);
 			userResource.sendToSelfClient(iqResult);
-			
-			lock.lock();
-			try
-			{
-				rosterCache.remove(onlineUser.getNode().toLowerCase());
-			}
-			finally
-			{
-				lock.unlock();
-			}
-			
-			
-			
+
 		}
 		
 	}
@@ -549,5 +535,81 @@ public class ContactManager
 		userResource.sendToSelfClient(presence);
 	}
 
+	
+	private void updateRosterItem(RosterItem rosterItem)
+	{
+		String username = rosterItem.getUsername();
+		RosterItemDbHelper rosterItemDbHelper = rosterItemDbHelperTracker.getRosterItemDbHelper();
+		
+		
+		try
+		{
+			RosterItem oldRosterItem = rosterItemDbHelper.getRosterItem(username, rosterItem.getRosterJID());
+			// add roster
+			if (oldRosterItem == null)
+			{
+				if (rosterItem.getSubscription() == null)
+				{
+					rosterItem.setSubscription(RosterItem.Subscription.none);
+				}
+				rosterItemDbHelper.addRosterItem(rosterItem);
+			}
+			// update roster
+			else
+			{
+				oldRosterItem.setNickname(rosterItem.getNickname());
+				if (rosterItem.getSubscription() != null)
+				{
+					oldRosterItem.setSubscription(rosterItem.getSubscription());
+				}
+				if (rosterItem.getAsk() != null)
+				{
+					oldRosterItem.setAsk(rosterItem.getAsk());
+				}
+				
+				oldRosterItem.setGroups(rosterItem.getGroups());
+				rosterItemDbHelper.updateRosterItem(rosterItem);
+			}
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		lock.lock();
+		try
+		{
+			rosterCache.remove(username.toLowerCase());
+		}
+		finally
+		{
+			lock.unlock();
+		}
+	}
+	
+	private void removeRosterItem(String username, JID rosterJID)
+	{
+		RosterItemDbHelper rosterItemDbHelper = rosterItemDbHelperTracker.getRosterItemDbHelper();
+		try
+		{
+			rosterItemDbHelper.removeRosterItem(username, rosterJID);
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		lock.lock();
+		try
+		{
+			rosterCache.remove(username.toLowerCase());
+		}
+		finally
+		{
+			lock.unlock();
+		}
+	}
 
 }
