@@ -695,6 +695,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		public void sessionClosed(IoSession session) throws Exception
 		{
 			logger.debug("session" + session + ": sessionClosed");
+			exit();
 		}
 
 		@Override

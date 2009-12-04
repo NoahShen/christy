@@ -391,6 +391,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			c2sAcceptor.unbindAll();
 			c2sAcceptor = null;
 		}
+		clientSessions.clear();
 		started = false;
 	}
 
@@ -539,6 +540,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		public void sessionClosed(IoSession session) throws Exception
 		{
 			logger.debug("session" + session + ": sessionClosed");
+			exit();
 		}
 
 		@Override
@@ -757,7 +759,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				e.printStackTrace();
 				
 				Failure failure = new Failure();
-				failure.setNamespace("urn:ietf:params:xml:ns:xmpp-sasl");
+				failure.setNamespace(Failure.SASL_FAILURE_NS);
 				session.write(failure);
 				session.write(CloseStream.getCloseStream());
 				session.close();
@@ -770,7 +772,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				
 				Failure failure = new Failure();
 				failure.setError(Failure.Error.invalid_mechanism);
-				failure.setNamespace("urn:ietf:params:xml:ns:xmpp-sasl");
+				failure.setNamespace(Failure.SASL_FAILURE_NS);
 				session.write(failure);
 				session.write(CloseStream.getCloseStream());
 				session.close();

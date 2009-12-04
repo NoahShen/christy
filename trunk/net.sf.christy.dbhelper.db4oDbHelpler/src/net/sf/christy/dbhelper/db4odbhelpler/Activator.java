@@ -10,6 +10,8 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.db4o.ObjectContainer;
+
 public class Activator implements BundleActivator
 {
 
@@ -79,6 +81,11 @@ public class Activator implements BundleActivator
 		{
 			userDbHelperRegistration.unregister();
 			userDbHelperRegistration = null;
+		}
+		ObjectContainer oc = ObjectContainerInstance.getInstance();
+		if (oc != null)
+		{
+			oc.close();
 		}
 	}
 

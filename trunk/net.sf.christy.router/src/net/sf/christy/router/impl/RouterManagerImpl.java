@@ -533,7 +533,12 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		private void c2shandleRoute(RouteMessage routeMessage, IoSession session) throws XmlPullParserException, IOException
 		{
 			RouterToSmMessageDispatcher dispatcher = dispatcherServiceTracker.getDispatcher();
-			dispatcher.sendMessage(routeMessage);
+			String userNode = routeMessage.getToUserNode();
+			if (userNode != null)
+			{
+				dispatcher.sendMessage(routeMessage);
+			}
+			
 			
 		}
 
