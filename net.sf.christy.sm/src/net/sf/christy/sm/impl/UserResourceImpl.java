@@ -102,10 +102,6 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	@Override
 	public void sendToSelfClient(XmlStanza stanza)
 	{
-		if (!isAvailable())
-		{
-			return;
-		}
 		RouteMessage routeMessage = 
 			new RouteMessage(smManager.getName(), getRelatedC2s(), getStreamId());
 		routeMessage.setXmlStanza(stanza);

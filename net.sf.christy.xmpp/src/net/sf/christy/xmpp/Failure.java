@@ -12,6 +12,10 @@ public class Failure implements XmlStanza
 	 */
 	private static final long serialVersionUID = 1589020378658870995L;
 
+	public static final String SASL_FAILURE_NS = "urn:ietf:params:xml:ns:xmpp-sasl";
+	
+	public static final String TLS_FAILURE_NS = "urn:ietf:params:xml:ns:xmpp-tls";
+	
 	private String namespace;
 	
 	private Error error;
