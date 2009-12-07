@@ -565,7 +565,7 @@ public class PrivacyManager
 			JID jid = rosterItem.getJid();
 			if (jid.equalsWithBareJid(to))
 			{
-				if (rosterItem.getGroupNames().contains(groupName))
+				if (rosterItem.containGroup(groupName))
 				{
 					return true;
 				}
@@ -740,7 +740,7 @@ public class PrivacyManager
 			JID jid = rosterItem.getJid();
 			if (jid.equalsWithBareJid(from))
 			{
-				if (rosterItem.getGroupNames().contains(groupName))
+				if (rosterItem.containGroup(groupName))
 				{
 					return true;
 				}

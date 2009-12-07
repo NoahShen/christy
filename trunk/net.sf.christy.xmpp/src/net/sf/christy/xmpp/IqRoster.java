@@ -263,13 +263,23 @@ public class IqRoster implements PacketExtension
 		 * Returns an unmodifiable set of the group names that the
 		 * roster item belongs to.
 		 * 
-		 * @return an unmodifiable set of the group names.
+		 * @return group names.
 		 */
-		public Set<String> getGroupNames()
+		public String[] getGroupNames()
 		{
-			return Collections.unmodifiableSet(groupNames);
+			return groupNames.toArray(new String[]{});
 		}
 
+		/**
+		 * 
+		 * @param group
+		 * @return
+		 */
+		public boolean containGroup(String group)
+		{
+			return groupNames.contains(group);
+		}
+		
 		/**
 		 * Adds a group name.
 		 * 

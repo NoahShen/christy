@@ -38,6 +38,12 @@ public interface OnlineUser extends Propertied
 	
 	/**
 	 * 
+	 * @return
+	 */
+	public UserResource getMaxPriorityUserResource();
+	
+	/**
+	 * 
 	 * @param resource
 	 * @return
 	 */
