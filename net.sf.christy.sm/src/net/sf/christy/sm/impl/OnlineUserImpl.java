@@ -51,6 +51,31 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 		return resources.toArray(new UserResource[]{});
 	}
 	
+
+	@Override
+	public UserResource getMaxPriorityUserResource()
+	{
+		UserResource maxPriorityRes = null;
+		for (UserResource res : userResources)
+		{
+			if (res.isAvailable())
+			{
+				if (maxPriorityRes == null)
+				{
+					maxPriorityRes = res;
+					continue;
+				}
+				
+				if (res.getPriority() > maxPriorityRes.getPriority())
+				{
+					maxPriorityRes = res;
+				}
+			}
+		}
+		return maxPriorityRes;
+	}
+	
+	
 	@Override
 	public String getNode()
 	{
@@ -188,6 +213,7 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 	{
 		return "OnlineUserImpl [node=" + node + ", userResources=" + userResources + "]";
 	}
+
 
 
 	

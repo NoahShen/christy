@@ -100,7 +100,65 @@ public class ContactManager
 
 	private void handleSubscribed(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
 	{
-		// TODO Auto-generated method stub
+		JID to = presence.getTo();
+		if (to == null || to.getResource() != null)
+		{
+			Presence presenceError = PacketUtils.createErrorPresence(presence);
+			XmppError error = new XmppError(XmppError.Condition.bad_request);
+			presenceError.setError(error);
+			userResource.sendToSelfClient(presenceError);
+			return;
+		}
+		
+		String username = onlineUser.getNode();
+		
+		try
+		{
+			IqRoster iqRoster = getIqRoster(username);
+			IqRoster.Item iqRosterItem = iqRoster.getRosterItem(to);
+			if (iqRosterItem == null)
+			{
+				iqRosterItem = new IqRoster.Item(to);
+				iqRosterItem.setSubscription(IqRoster.Subscription.none);
+			}
+			RosterItem item = new RosterItem();
+			item.setUsername(username);
+			item.setRosterJID(to);
+			item.setNickname(iqRosterItem.getName());
+			item.setGroups(iqRosterItem.getGroupNames());
+			
+			IqRoster.Subscription subs = iqRosterItem.getSubscription();
+			IqRoster.Ask ask = iqRosterItem.getAsk();
+			item.setAsk(ask == null ? null : RosterItem.Ask.valueOf(ask.toString()));
+			
+			if (subs == IqRoster.Subscription.none || subs == IqRoster.Subscription.to)
+			{
+				if (subs == IqRoster.Subscription.none)
+				{
+					iqRosterItem.setSubscription(IqRoster.Subscription.from);
+					item.setSubscription(RosterItem.Subscription.from);
+				}
+				else
+				{
+					iqRosterItem.setSubscription(IqRoster.Subscription.both);
+					item.setSubscription(RosterItem.Subscription.both);
+				}
+				
+				
+				updateRosterItem(item);
+
+				notifyResourceRosterChanged(onlineUser, userResource, iqRosterItem);
+				
+				presence.setFrom(new JID(username, smManager.getDomain(), null));
+				userResource.sendToOtherUser(presence);
+			}
+			
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -123,7 +181,7 @@ public class ContactManager
 				
 				IqRoster.Item newItem = new IqRoster.Item(bareJID);
 				newItem.setSubscription(IqRoster.Subscription.none);
-				notifyResource(onlineUser, userResource, newItem);
+				notifyResourceRosterChanged(onlineUser, userResource, newItem);
 
 			}
 			
@@ -150,7 +208,7 @@ public class ContactManager
 				
 				IqRoster newRoster = getIqRoster(node);
 				IqRoster.Item newItem = newRoster.getRosterItem(bareJID);
-				notifyResource(onlineUser, userResource, newItem);
+				notifyResourceRosterChanged(onlineUser, userResource, newItem);
 				
 				
 				presence.setFrom(new JID(onlineUser.getNode(), smManager.getDomain(), null));
@@ -176,7 +234,6 @@ public class ContactManager
 			XmppError error = new XmppError(XmppError.Condition.bad_request);
 			presenceError.setError(error);
 			userResource.sendToSelfClient(presenceError);
-			
 			return;
 			
 		}
@@ -337,7 +394,7 @@ public class ContactManager
 					removeRosterItem(onlineUser.getNode(), item.getJid());
 					IqRoster.Item newItem = new IqRoster.Item(item.getJid());
 					newItem.setSubscription(IqRoster.Subscription.remove);
-					notifyResource(onlineUser, userResource, newItem);
+					notifyResourceRosterChanged(onlineUser, userResource, newItem);
 				}
 				catch (Exception e)
 				{
@@ -355,7 +412,12 @@ public class ContactManager
 				newrosterItem.setUsername(username);
 				newrosterItem.setRosterJID(item.getJid());
 				newrosterItem.setNickname(item.getName());
-				newrosterItem.setGroups(item.getGroupNames().toArray(new String[]{}));
+				newrosterItem.setGroups(item.getGroupNames());
+				newrosterItem.setSubscription(RosterItem.Subscription.valueOf(item.getSubscription().name()));
+				if (item.getAsk() != null)
+				{
+					newrosterItem.setAsk(RosterItem.Ask.valueOf(item.getAsk().toString()));
+				}
 				
 				try
 				{
@@ -371,7 +433,7 @@ public class ContactManager
 						newItem.setAsk(IqRoster.Ask.fromString(rosterItem.getAsk().name()));
 					}
 					newItem.addGroups(rosterItem.getGroups());
-					notifyResource(onlineUser, userResource, newItem);
+					notifyResourceRosterChanged(onlineUser, userResource, newItem);
 					
 					
 				}
@@ -391,7 +453,7 @@ public class ContactManager
 		
 	}
 
-	private void notifyResource(OnlineUser onlineUser, UserResource userResource, Item newItem)
+	private void notifyResourceRosterChanged(OnlineUser onlineUser, UserResource userResource, Item newItem)
 	{
 		Iq iq = new Iq(Iq.Type.set);
 		IqRoster roster = new IqRoster();
@@ -484,6 +546,64 @@ public class ContactManager
 		{
 			handleOtherSubscribe(smManager, onlineUser, userResource, presence);
 		}
+		else if (type == Presence.Type.subscribed)
+		{
+			handleOtherSubscribed(smManager, onlineUser, userResource, presence);
+		}
+	}
+
+	private void handleOtherSubscribed(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
+	{
+		JID to = presence.getTo();
+		JID from = presence.getFrom();
+		
+		String username = to.getNode();
+		
+		try
+		{
+			IqRoster iqRoster = getIqRoster(username);
+			IqRoster.Item item = iqRoster.getRosterItem(from);
+			if (item == null)
+			{
+				return;
+			}
+			
+			IqRoster.Subscription subs = item.getSubscription();
+			IqRoster.Ask ask = item.getAsk();
+			if ((subs == IqRoster.Subscription.none || subs == IqRoster.Subscription.from)
+					&& ask == IqRoster.Ask.SUBSCRIPTION_PENDING)
+			{
+				RosterItem rosterItem = new RosterItem();
+				rosterItem.setUsername(username);
+				rosterItem.setNickname(item.getName());
+				rosterItem.setRosterJID(item.getJid());
+				rosterItem.setAsk(null);
+				if (subs == IqRoster.Subscription.none)
+				{
+					item.setSubscription(IqRoster.Subscription.to);
+					rosterItem.setSubscription(RosterItem.Subscription.to);
+				}
+				else
+				{
+					item.setSubscription(IqRoster.Subscription.both);
+					rosterItem.setSubscription(RosterItem.Subscription.both);
+				}
+				rosterItem.setGroups(item.getGroupNames());
+				updateRosterItem(rosterItem);
+				
+				
+				if (onlineUser != null && onlineUser.getResourceCount() != 0)
+				{
+					notifyResourceRosterChanged(onlineUser, userResource, item);
+				}
+			}
+			
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void handleOtherSubscribe(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
@@ -558,17 +678,11 @@ public class ContactManager
 			else
 			{
 				oldRosterItem.setNickname(rosterItem.getNickname());
-				if (rosterItem.getSubscription() != null)
-				{
-					oldRosterItem.setSubscription(rosterItem.getSubscription());
-				}
-				if (rosterItem.getAsk() != null)
-				{
-					oldRosterItem.setAsk(rosterItem.getAsk());
-				}
+				oldRosterItem.setSubscription(rosterItem.getSubscription());
+				oldRosterItem.setAsk(rosterItem.getAsk());
 				
 				oldRosterItem.setGroups(rosterItem.getGroups());
-				rosterItemDbHelper.updateRosterItem(rosterItem);
+				rosterItemDbHelper.updateRosterItem(oldRosterItem);
 			}
 		}
 		catch (Exception e)
