@@ -344,6 +344,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				throw new IllegalStateException("reach onlineuser limit");
 			}
 		}
+		
 		OnlineUserImpl onlineUser = (OnlineUserImpl) getOnlineUser(userNode);
 		if (onlineUser == null)
 		{
