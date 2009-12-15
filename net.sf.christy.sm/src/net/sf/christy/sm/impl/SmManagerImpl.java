@@ -91,7 +91,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	
 	private SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker;
 	
-	private PacketHandlerServiceTracker packetHandlerServiceTracker;
+	private SmHandlerServiceTracker smHandlerServiceTracker;
 	
 	private int onlineUsersLimit = -1;
 	
@@ -105,7 +105,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	
 	public SmManagerImpl(RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
 						SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker, 
-						PacketHandlerServiceTracker packetHandlerServiceTracker,
+						SmHandlerServiceTracker packetHandlerServiceTracker,
 						UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker, 
 						RosterItemDbHelperTracker rosterItemDbHelperTracker,
 						OfflineSubscribeMsgDbHelperTracker offlineSubscribeMsgDbHelperTracker,
@@ -113,7 +113,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	{
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 		this.smToRouterInterceptorServiceTracker = smToRouterInterceptorServiceTracker;
-		this.packetHandlerServiceTracker = packetHandlerServiceTracker;
+		this.smHandlerServiceTracker = packetHandlerServiceTracker;
 		this.handlerManager = new HandlerManager();
 		this.contactManager = 
 			new ContactManager(rosterItemDbHelperTracker, 
@@ -372,21 +372,20 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	
 	private void fireUserResourceAdded(OnlineUserImpl onlineUser, UserResourceImpl userResource)
 	{
-		// TODO Auto-generated method stub
 		privacyManager.userResourceAdded(onlineUser, userResource);
+		smHandlerServiceTracker.userResourceAdded(this, onlineUser, userResource);
 	}
 	
 	void fireUserResourceRemoved(OnlineUserImpl onlineUser, UserResourceImpl userResource)
 	{
-		// TODO Auto-generated method stub
 		privacyManager.userResourceRemoved(onlineUser, userResource);
+		smHandlerServiceTracker.userResourceRemoved(this, onlineUser, userResource);
 	}
 
 
 	public void fireUserResourceAvailable(OnlineUser onlineUser, UserResource userResource)
 	{
-		// TODO Auto-generated method stub
-		
+		smHandlerServiceTracker.userResourceAvailable(this, onlineUser, userResource);
 	}
 	
 	@Override
@@ -808,7 +807,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 							return;
 						}
 						Packet packet = (Packet) stanza;
-						if (!packetHandlerServiceTracker.handleClientPacket(SmManagerImpl.this, onlineUser, userResource, packet))
+						if (!smHandlerServiceTracker.handleClientPacket(SmManagerImpl.this, onlineUser, userResource, packet))
 						{
 							
 							JID to = packet.getTo();
@@ -839,7 +838,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 						}
 						Packet packet = (Packet) stanza;
 						
-						if (!packetHandlerServiceTracker.handleOtherUserPacket(SmManagerImpl.this, onlineUser, userResource, packet))
+						if (!smHandlerServiceTracker.handleOtherUserPacket(SmManagerImpl.this, onlineUser, userResource, packet))
 						{
 							JID to = packet.getTo();
 							if (to != null && !to.getDomain().equals(getDomain()))

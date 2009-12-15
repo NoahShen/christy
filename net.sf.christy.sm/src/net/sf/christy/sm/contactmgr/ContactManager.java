@@ -992,7 +992,8 @@ public class ContactManager
 
 	private void handleOtherStateChanged(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
 	{
-		if (presence.getFrom() == null)
+		if (presence.getFrom() == null
+				&& userResource != null)
 		{
 			return;
 		}
