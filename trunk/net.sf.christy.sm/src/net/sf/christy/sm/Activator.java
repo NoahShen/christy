@@ -2,7 +2,7 @@ package net.sf.christy.sm;
 
 import net.sf.christy.sm.contactmgr.OfflineSubscribeMsgDbHelperTracker;
 import net.sf.christy.sm.contactmgr.RosterItemDbHelperTracker;
-import net.sf.christy.sm.impl.PacketHandlerServiceTracker;
+import net.sf.christy.sm.impl.SmHandlerServiceTracker;
 import net.sf.christy.sm.impl.RouteMessageParserServiceTracker;
 import net.sf.christy.sm.impl.SmManagerImpl;
 import net.sf.christy.sm.impl.SmToRouterInterceptorServiceTracker;
@@ -17,7 +17,7 @@ public class Activator implements BundleActivator
 
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	private SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker;
-	private PacketHandlerServiceTracker packetHandlerServiceTracker;
+	private SmHandlerServiceTracker smHandlerServiceTracker;
 	private UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker;
 	private RosterItemDbHelperTracker rosterItemDbHelperTracker;
 	private OfflineSubscribeMsgDbHelperTracker offlineSubscribeMsgDbHelperTracker;
@@ -36,8 +36,8 @@ public class Activator implements BundleActivator
 		smToRouterInterceptorServiceTracker = new SmToRouterInterceptorServiceTracker(context);
 		smToRouterInterceptorServiceTracker.open();
 		
-		packetHandlerServiceTracker = new PacketHandlerServiceTracker(context);
-		packetHandlerServiceTracker.open();
+		smHandlerServiceTracker = new SmHandlerServiceTracker(context);
+		smHandlerServiceTracker.open();
 		
 		userPrivacyListDbHelperTracker = new UserPrivacyListDbHelperTracker(context);
 		userPrivacyListDbHelperTracker.open();
@@ -54,7 +54,7 @@ public class Activator implements BundleActivator
 		SmManagerImpl smManager = 
 			new SmManagerImpl(routeMessageParserServiceTracker,
 					smToRouterInterceptorServiceTracker,
-					packetHandlerServiceTracker,
+					smHandlerServiceTracker,
 					userPrivacyListDbHelperTracker,
 					rosterItemDbHelperTracker,
 					offlineSubscribeMsgDbHelperTracker,
@@ -87,10 +87,10 @@ public class Activator implements BundleActivator
 			smToRouterInterceptorServiceTracker = null;
 		}
 		
-		if (packetHandlerServiceTracker != null)
+		if (smHandlerServiceTracker != null)
 		{
-			packetHandlerServiceTracker.close();
-			packetHandlerServiceTracker = null;
+			smHandlerServiceTracker.close();
+			smHandlerServiceTracker = null;
 		}
 		
 		if (userPrivacyListDbHelperTracker != null)

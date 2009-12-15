@@ -2,7 +2,7 @@ package net.sf.christy.sm;
 
 import net.sf.christy.xmpp.Packet;
 
-public interface PacketHandler
+public interface SmHandler
 {
 
         /**
@@ -34,4 +34,27 @@ public interface PacketHandler
          */
         public void handleOtherUserPacket(SmManager smManager,OnlineUser onlineUser, UserResource userResource, Packet packet);
 
+        /**
+         * 
+         * @param smManager
+         * @param onlineUser
+         * @param userResource
+         */
+        public void userResourceAdded(SmManager smManager,OnlineUser onlineUser, UserResource userResource);
+        
+        /**
+         * 
+         * @param smManager
+         * @param onlineUser
+         * @param userResource
+         */
+        public void userResourceRemoved(SmManager smManager,OnlineUser onlineUser, UserResource userResource);
+        
+        /**
+         * 
+         * @param smManager
+         * @param onlineUser
+         * @param userResource
+         */
+        public void userResourceAvailable(SmManager smManager,OnlineUser onlineUser, UserResource userResource);
 }
