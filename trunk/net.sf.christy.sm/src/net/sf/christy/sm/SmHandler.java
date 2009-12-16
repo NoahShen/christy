@@ -10,11 +10,10 @@ public interface SmHandler
          * 
          * @param smManager
          * @param onlineUser
-         * @param userResource
          * @param packet
          * @return true if and only if <tt>packet</tt> passes the filter.
          */
-        public boolean accept(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Packet packet);
+        public boolean accept(SmManager smManager, OnlineUser onlineUser, Packet packet);
         
         /**
          * handle packet from user sent
@@ -34,6 +33,13 @@ public interface SmHandler
          */
         public void handleOtherUserPacket(SmManager smManager,OnlineUser onlineUser, UserResource userResource, Packet packet);
 
+        /**
+         * to is bareJID send msg to all resource or to max priority resource
+         * @param smManager
+         * @param onlineUser
+         * @return
+         */
+        public UserResource[] checkResource(SmManager smManager,OnlineUser onlineUser);
         /**
          * 
          * @param smManager
