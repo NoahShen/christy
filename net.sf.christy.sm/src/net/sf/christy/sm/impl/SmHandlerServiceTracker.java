@@ -32,7 +32,7 @@ public class SmHandlerServiceTracker extends ServiceTracker
 		for (Object obj : services)
 		{
 			SmHandler smHandler = (SmHandler) obj;
-			if (smHandler.accept(smManager, onlineUser, userResource, packet))
+			if (smHandler.accept(smManager, onlineUser, packet))
 			{
 				smHandler.handleClientPacket(smManager, onlineUser, userResource, packet);
 				return true;
@@ -53,7 +53,7 @@ public class SmHandlerServiceTracker extends ServiceTracker
 		for (Object obj : services)
 		{
 			SmHandler smHandler = (SmHandler) obj;
-			if (smHandler.accept(smManager, onlineUser, userResource, packet))
+			if (smHandler.accept(smManager, onlineUser, packet))
 			{
 				smHandler.handleOtherUserPacket(smManager, onlineUser, userResource, packet);
 				return true;
@@ -61,6 +61,26 @@ public class SmHandlerServiceTracker extends ServiceTracker
 		}
 		
 		return false;
+	}
+	
+	public UserResource[] checkResource(SmManager smManager, OnlineUser onlineUser, Packet packet)
+	{
+		Object[] services = getServices();
+		if (services == null)
+		{
+			return new UserResource[]{};
+		}
+		
+		for (Object obj : services)
+		{
+			SmHandler smHandler = (SmHandler) obj;
+			if (smHandler.accept(smManager, onlineUser, packet))
+			{
+				return smHandler.checkResource(smManager, onlineUser);
+			}
+		}
+		
+		return new UserResource[]{};
 	}
 	
 	public void userResourceAdded(SmManager smManager, OnlineUser onlineUser, UserResource userResource)

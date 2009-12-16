@@ -599,10 +599,9 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 						
 						resources = new UserResource[]{userResource};
 					}
-					//TODO to is bareJID send msg to all resource or to max priority resource
 					else
 					{
-						resources = onlineUser.getAllActiveUserResources();
+						resources = smHandlerServiceTracker.checkResource(SmManagerImpl.this, onlineUser, packet);
 					}
 					
 					

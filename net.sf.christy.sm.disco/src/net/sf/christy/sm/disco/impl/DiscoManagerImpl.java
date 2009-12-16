@@ -138,7 +138,7 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 
 
 	@Override
-	public boolean accept(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Packet packet)
+	public boolean accept(SmManager smManager, OnlineUser onlineUser, Packet packet)
 	{
 		
 		return ((packet instanceof Iq)
@@ -246,6 +246,12 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 
 
 	@Override
+	public UserResource[] checkResource(SmManager smManager, OnlineUser onlineUser)
+	{
+		return onlineUser.getAllActiveUserResources();
+	}
+	
+	@Override
 	public void userResourceAdded(SmManager smManager, OnlineUser onlineUser, UserResource userResource)
 	{
 		
@@ -264,4 +270,6 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 	{
 		
 	}
+
+
 }
