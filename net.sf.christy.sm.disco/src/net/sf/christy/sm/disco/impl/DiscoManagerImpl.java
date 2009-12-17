@@ -31,7 +31,11 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 	
 	private DiscoItemServiceTracker discoItemServiceTracker;
 	
-	private DiscoInfoExtension discoInfoExtensionCache = new DiscoInfoExtension();
+	private Object discoInfoLockObj = new Object();
+	
+	private DiscoInfoExtension discoInfoExtensionCache;
+	
+	private Object discoItemLockObj = new Object();
 	
 	private DiscoItemsExtension discoItemsExtensionCache;
 	
@@ -48,7 +52,7 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 	@Override
 	public DiscoInfoExtension getDiscoInfo(String node)
 	{
-		synchronized (discoInfoExtensionCache)
+		synchronized (discoInfoLockObj)
 		{
 			if (discoInfoExtensionCache != null)
 			{
@@ -75,7 +79,7 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 			discoInfo.addFeature(feat);
 		}
 		
-		synchronized (discoInfoExtensionCache)
+		synchronized (discoInfoLockObj)
 		{
 			discoInfoExtensionCache = discoInfo;
 			return discoInfoExtensionCache;
@@ -87,7 +91,7 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 	@Override
 	public DiscoItemsExtension getDiscoItems(String node)
 	{
-		synchronized (discoItemsExtensionCache)
+		synchronized (discoItemLockObj)
 		{
 			if (discoItemsExtensionCache != null)
 			{
@@ -108,7 +112,7 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 			discoItem.addItem(itemEx);
 		}
 		
-		synchronized (discoItemsExtensionCache)
+		synchronized (discoItemLockObj)
 		{
 			discoItemsExtensionCache = discoItem;
 			return discoItemsExtensionCache;
@@ -120,7 +124,7 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 	
 	void discoInfoChanged()
 	{
-		synchronized (discoInfoExtensionCache)
+		synchronized (discoInfoLockObj)
 		{
 			discoInfoExtensionCache = null;
 		}
@@ -129,7 +133,7 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 	
 	void discoItemChanged()
 	{
-		synchronized (discoItemsExtensionCache)
+		synchronized (discoItemLockObj)
 		{
 			discoItemsExtensionCache = null;
 		}
