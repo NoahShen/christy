@@ -252,7 +252,11 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 	@Override
 	public UserResource[] checkResource(SmManager smManager, OnlineUser onlineUser)
 	{
-		return onlineUser.getAllActiveUserResources();
+		if (onlineUser != null)
+		{
+			return onlineUser.getAllActiveUserResources();
+		}
+		return new UserResource[]{null};
 	}
 	
 	@Override

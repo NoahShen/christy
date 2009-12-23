@@ -57,4 +57,24 @@ public class PacketUtils
 		
 		return presenceError;
 	}
+	
+	public static Message createErrorMessage(Message message)
+	{
+		Message messageError = null;
+		try
+		{
+			messageError = (Message) message.clone();
+			messageError.setFrom(message.getTo());
+			messageError.setTo(message.getFrom());
+			messageError.setType(Message.Type.error);
+			messageError.setStanzaId(message.getStanzaId());
+		}
+		catch (CloneNotSupportedException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return messageError;
+	}
 }

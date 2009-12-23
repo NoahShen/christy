@@ -457,6 +457,8 @@ public class ContactManager
 				}
 			}
 			
+			sendPresenceToOtherResource(smManager, onlineUser, userResource, toRosterPresence);
+			
 			if (firstPresence)
 			{
 				notifyOtherResourceState(smManager, onlineUser, userResource);
@@ -470,6 +472,28 @@ public class ContactManager
 			e1.printStackTrace();
 		}
 		
+	}
+
+	private void sendPresenceToOtherResource(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence toPresence)
+	{
+		for (UserResource res : onlineUser.getAllActiveUserResources())
+		{
+			if (res != userResource)
+			{
+				try
+				{
+					Presence clonePresence = (Presence) toPresence.clone();
+					clonePresence.setFrom(new JID(onlineUser.getNode(), smManager.getDomain(), res.getResource()));
+					clonePresence.setTo(new JID(onlineUser.getNode(), smManager.getDomain(), userResource.getResource()));
+					userResource.sendToOtherUser(clonePresence);
+				}
+				catch (CloneNotSupportedException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	private void notifyOtherResourceState(SmManager smManager, OnlineUser onlineUser, UserResource userResource)
@@ -992,6 +1016,11 @@ public class ContactManager
 
 	private void handleOtherStateChanged(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
 	{
+		if (onlineUser == null || userResource == null)
+		{
+			return;
+		}
+		
 		if (presence.getFrom() == null
 				&& userResource != null)
 		{

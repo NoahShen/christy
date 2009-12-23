@@ -27,6 +27,9 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	private PrivacyList activePrivacyList;
 	
 	private SmManagerImpl smManager;
+	
+	private JID fullJid;
+	
 	/**
 	 * @param node
 	 * @param resource
@@ -41,8 +44,15 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 		this.relatedC2s = relatedC2s;
 		this.streamId = streamId;
 		this.smManager = smManager;
+		this.fullJid = new JID(onlineUser.getNode(), smManager.getDomain(), resource);
 	}
 
+	@Override
+	public JID getFullJid()
+	{
+		return fullJid;
+	}
+	
 	@Override
 	public OnlineUser getOnlineUser()
 	{
@@ -221,6 +231,8 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	{
 		return "UserResourceImpl [node=" + onlineUser.getNode() + ", resource=" + resource + ", sessionBinded=" + sessionBinded + ", streamId=" + streamId + "]";
 	}
+
+
 
 	
 
