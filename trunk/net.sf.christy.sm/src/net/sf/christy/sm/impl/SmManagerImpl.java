@@ -602,6 +602,10 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 					else
 					{
 						resources = smHandlerServiceTracker.checkResource(SmManagerImpl.this, onlineUser, packet);
+						if (resources == null)
+						{
+							resources = new UserResource[]{null};
+						}
 					}
 					
 					

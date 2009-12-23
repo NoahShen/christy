@@ -4,6 +4,7 @@
 package net.sf.christy.sm;
 
 import net.sf.christy.util.Propertied;
+import net.sf.christy.xmpp.JID;
 import net.sf.christy.xmpp.PrivacyList;
 
 /**
@@ -17,6 +18,12 @@ public interface OnlineUser extends Propertied
 	 * @return
 	 */
 	public String getNode();
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public JID getBareJid();
 	
 	/**
 	 * 

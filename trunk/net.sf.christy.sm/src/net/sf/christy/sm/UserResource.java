@@ -4,6 +4,7 @@
 package net.sf.christy.sm;
 
 import net.sf.christy.util.Propertied;
+import net.sf.christy.xmpp.JID;
 import net.sf.christy.xmpp.Presence;
 import net.sf.christy.xmpp.PrivacyList;
 import net.sf.christy.xmpp.XmlStanza;
@@ -19,6 +20,12 @@ public interface UserResource extends Propertied
 	 * @return
 	 */
 	public OnlineUser getOnlineUser();
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public JID getFullJid();
 	
 	/**
 	 * 

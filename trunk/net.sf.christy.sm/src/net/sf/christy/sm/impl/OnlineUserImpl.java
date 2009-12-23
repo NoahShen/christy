@@ -9,6 +9,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import net.sf.christy.sm.OnlineUser;
 import net.sf.christy.sm.UserResource;
 import net.sf.christy.util.AbstractPropertied;
+import net.sf.christy.xmpp.JID;
 import net.sf.christy.xmpp.PrivacyList;
 
 public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
@@ -21,6 +22,8 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 
 	private SmManagerImpl smManagerImpl;
 	
+	private JID bareJid;
+	
 	/**
 	 * @param node
 	 */
@@ -28,8 +31,16 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 	{
 		this.node = node;
 		this.smManagerImpl = smManagerImpl;
+		this.bareJid = new JID(node, smManagerImpl.getDomain(), null);
 	}
 
+
+	@Override
+	public JID getBareJid()
+	{
+		return bareJid;
+	}
+	
 	@Override
 	public UserResource[] getAllUserResources()
 	{
@@ -213,6 +224,7 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 	{
 		return "OnlineUserImpl [node=" + node + ", userResources=" + userResources + "]";
 	}
+
 
 
 
