@@ -75,8 +75,6 @@ var PacketExtension = XmlStanza.extend({
 
 
 // start of XmppError
-
-
 var ErrorType = {
 	WAIT: 'wait',
 	CANCEL: 'cancel',
@@ -198,7 +196,6 @@ var XmppError = XmlStanza.extend({
 
 
 // start of Packet
-
 var Packet = AbstractXmlStanza.extend({
 	init: function() {
 		this._super();
@@ -279,7 +276,6 @@ var Packet = AbstractXmlStanza.extend({
 
 
 // start of Iq
-
 var IqType = {
 	GET: 'get',
 	SET: 'set',
@@ -487,7 +483,6 @@ var Presence = Packet.extend({
 // end of Presence
 
 //start of Message
-
 var MessageType = {
 	
 	NORMAL: "normal",
@@ -721,3 +716,338 @@ var Message = Packet.extend({
 	
 });
 // end of Message
+
+// start of Auth
+var Auth = XmlStanza.extend({
+	init: function(){
+		this._super();
+	},
+	
+	getMechanism: function(){
+		return this.mechanism;
+	},
+
+	setMechanism: function(mechanism){
+		this.mechanism = mechanism;
+	},
+	
+	getContent: function(){
+		return this.content;
+	},
+	
+	setContent: function(content){
+		this.content = content;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		
+		xml += "<auth";
+		if (this.getMechanism() != null){
+			xml += " mechanism=\"" + this.getMechanism() + "\"";
+		}
+		xml += " xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"";
+		if (this.getContent() != null){
+			xml += ">" + this.getContent() + "</auth>";
+		} else {
+			xml += "/>";
+		}
+		
+		
+		return xml;
+	}
+});
+// end of Auth
+
+// start of Challenge
+var Challenge = XmlStanza.extend({
+	init: function(content){
+		this._super();
+		this.content = content;
+	},
+	
+	getContent: function(){
+		return this.content;
+	},
+
+	setContent: function(content){
+		this.content = content;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		
+		xml += "<challenge xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\">";
+		if (this.getContent() != null){
+			xml += this.getContent();
+		}
+		xml += "</challenge>";
+		
+		
+		return xml;
+	}
+});
+// end of Challenge
+
+// start of Failure
+var FailureError = {
+	aborted: "aborted",
+	incorrect_encoding: "incorrect-encoding",
+	invalid_authzid: "invalid-authzid",
+	invalid_mechanism: "invalid-mechanism",
+	mechanism_too_weak: "mechanism-too-weak",
+	not_authorized: "not-authorized",
+	temporary_auth_failure: "temporary-auth-failure"
+}
+var Failure = XmlStanza.extend({
+	init: function(namespace){
+		this._super();
+		this.namespace = namespace;
+	},
+	
+	getNamespace: function(){
+		return this.namespace;
+	},
+
+	setNamespace: function(namespace){
+		this.namespace = namespace;
+	},
+
+	getError: function(){
+		return this.error;
+	},
+	
+	setError: function(error){
+		this.error = error;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<failure xmlns=\"" + this.getNamespace() + "\"";
+		if (this.getError() != null){
+			xml += ">" + this.getError() + "</failure>";
+		} else {
+			buf.append("/>");
+		}
+		
+		return xml;
+	}
+});
+
+Failure.SASL_FAILURE_NS = "urn:ietf:params:xml:ns:xmpp-sasl";
+Failure.TLS_FAILURE_NS = "urn:ietf:params:xml:ns:xmpp-tls";
+
+// end of Failure
+
+
+
+// start of IqBind
+var IqBind = PacketExtension.extend({
+	init: function(){
+		this._super();
+	},
+	
+	getElementName: function(){
+		return IqBind.ELEMENTNAME;
+	},
+	
+	getNamespace: function(){
+		return IqBind.NAMESPACE;
+	},
+	
+	getResource: function(){
+		return this.resource;
+	},
+
+	setResource: function(resource){
+		this.resource = resource;
+	},
+
+	getJid: function(){
+		return this.jid;
+	},
+	
+	setJid: function(jid){
+		this.jid = jid;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\">";
+		if (this.getResource() != null){
+			xml += "<resource>" + this.getResource() + "</resource>";
+		}
+		if (this.getJid() != null){
+			xml += "<jid>" + this.getJid().toFullJID() + "</jid>";
+		}
+		xml += "</" +  this.getElementName() + ">";
+		return xml;
+	}
+});
+IqBind.ELEMENTNAME = "bind";
+IqBind.NAMESPACE = "urn:ietf:params:xml:ns:xmpp-bind";
+
+// end of IqBind
+
+// start of IqRoster
+
+var IqRosterAsk = {
+	subscribe: "subscribe",
+	unsubscribe: "unsubscribe"
+}
+
+var IqRosterSubscription = {
+	none: "none",
+	to: "to",
+	from: "from",
+	both: "both",
+	remove: "remove"
+}
+
+var IqRosterItem = XmlStanza.extend({
+	init: function(jid, rosterName) {
+	    this._super();
+	    this.jid = jid;
+	    this.rosterName = rosterName;
+	    this.groups = new Array();
+	},
+	
+	getJid: function(){
+		return this.jid;
+	},
+	
+	getRosterName: function(){
+			return this.rosterName;
+	},
+	
+	setRosterName: function(rosterName){
+		this.rosterName = rosterName;
+	},
+	
+	getSubscription: function(){
+		return this.subscription;
+	},
+	
+	setSubscription: function(subscription){
+		this.subscription = subscription;
+	},
+	
+	getAsk: function(){
+		return this.ask;
+	},
+	
+	setAsk: function(ask){
+		this.ask = ask;
+	},
+	
+	getGroups: function(){
+		return this.groups;
+	},
+	
+	containGroup: function(group){
+		for (var i = 0; i < this.groups.length; ++i){
+			if (this.groups[i] == group){
+				return true;
+			}
+		}
+		return false;
+	},
+	
+	addGroup: function(group){
+		if (this.groups != null){
+			this.groups.push(group);
+		}
+	},
+	
+	removeGroupName: function(group){
+		for (var i = 0; i < this.groups.length; ++i){
+			if (this.groups[i] == group){
+				this.groups.splice(i,1);
+			}
+		}
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<item jid=\"" + this.jid.toBareJID() + "\"";
+		if (this.getRosterName() != null){
+			xml += " name=\"" + StringUtils.escapeXml(this.getRosterName()) + "\"";
+		}
+		
+		if (this.getSubscription() != null){
+			xml += " subscription=\"" + this.getSubscription() + "\"";
+		}
+		if (this.getAsk() != null){
+			xml += " ask=\"" + this.getAsk() + "\"";
+		}
+		xml += ">";
+		for (var i = 0; i < this.groups.length; ++i){
+			xml += "<group>" + StringUtils.escapeXml(this.groups[i]) + "</group>";
+		}
+		xml += "</item>";
+		return xml;
+	}
+});
+
+var IqRoster = PacketExtension.extend({
+	init: function(){
+		this._super();
+		this.rosterItems = new Array();
+	},
+	
+	getElementName: function(){
+		return IqRoster.ELEMENTNAME;
+	},
+	
+	getNamespace: function(){
+		return IqRoster.NAMESPACE;
+	},
+	
+	addRosterItem: function(rosterItem){
+		this.rosterItems.push(rosterItem);
+	},
+	
+	getRosterItemCount: function(){
+		return this.rosterItems.length;
+	},
+	
+	getRosterItems: function(){
+		return this.rosterItems;
+	},
+	
+	getRosterItem: function(jid){
+		for (var i = 0; i < this.rosterItems.length; ++i){
+				if (this.rosterItems[i].getJid().equalsWithBareJid(jid)){
+					return this.rosterItems[i];
+				}
+		}
+		return null;
+	},
+	
+	containRosterItem: function(jid)
+	{
+		for (var i = 0; i < this.rosterItems.length; ++i){
+				if (this.rosterItems[i].getJid().equalsWithBareJid(jid)){
+					return true;
+				}
+		}
+		return false;
+	},
+	
+	
+	toXml: function(){
+		var xml = "";
+		
+		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\">";
+		for (var i = 0; i < this.rosterItems.length; ++i){
+				xml += this.rosterItems[i].toXml();
+		}
+		
+		xml += "</" +  this.getElementName() + ">";
+		return xml;
+	}
+});
+IqRoster.ELEMENTNAME = "query";
+IqRoster.NAMESPACE = "jabber:iq:roster";
+
+// end of IqRoster

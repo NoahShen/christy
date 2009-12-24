@@ -170,3 +170,4 @@ JID.createJID = function(jid){
     return new JID(node, domain, resource);
 	
 };
+
