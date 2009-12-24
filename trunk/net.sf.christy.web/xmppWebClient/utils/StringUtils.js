@@ -1,9 +1,7 @@
 var StringUtils = jClass.extend({
 	init: function(){
 		
-	},
-	
-	
+	}
 });
 
 StringUtils.hash = function(data, algorithm){
@@ -376,3 +374,4 @@ StringUtils.unescapeXml = function(xml){
 
 	return xml;
 }
+
