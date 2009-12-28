@@ -75,15 +75,34 @@ $(document).ready(function() {
 //	iq.addPacketExtension(iqBind);
 //	innerHtml += iq.toXml() + "\n";
 	
-	var iqRosterItem = new IqRosterItem(jid3, "Noah");
-	iqRosterItem.setAsk(IqRosterAsk.subscribe);
-	iqRosterItem.setSubscription(IqRosterSubscription.both);
-	iqRosterItem.addGroup("group1");
+//	var iqRosterItem = new IqRosterItem(jid3, "Noah");
+//	iqRosterItem.setAsk(IqRosterAsk.subscribe);
+//	iqRosterItem.setSubscription(IqRosterSubscription.both);
+//	iqRosterItem.addGroup("group1");
+//	
+//	var iqRoster = new IqRoster();
+//	iqRoster.addRosterItem(iqRosterItem);
+//	iq.addPacketExtension(iqRoster);
+//	innerHtml += iq.toXml() + "\n";
+
+	var iqSession = new IqSession();
+//	iq.addPacketExtension(iqSession);
+//	innerHtml += iq.toXml() + "\n";
 	
-	var iqRoster = new IqRoster();
-	iqRoster.addRosterItem(iqRosterItem);
-	iq.addPacketExtension(iqRoster);
+	var privacyItem = new PrivacyItem(PrivacyItemType.jid, "Noah@example.com", true, 1);
+	privacyItem.setFilterIQ(true);
+	privacyItem.setFilterMessage(true);
+	privacyItem.setFilterPresence_in(true);
+	privacyItem.setFilterPresence_out(true);
+//	innerHtml += privacyItem.toXml() + "\n";
+	
+	var privacyList = new PrivacyList("listName");
+	privacyList.addItem(privacyItem);
+//	innerHtml += privacyList.toXml() + "\n";
+	
+	var privacy = new Privacy();
+	privacy.addPrivacyList(privacyList);
+	iq.addPacketExtension(privacy);
 	innerHtml += iq.toXml() + "\n";
-	
 	$("#testId1").text(innerHtml);
 });

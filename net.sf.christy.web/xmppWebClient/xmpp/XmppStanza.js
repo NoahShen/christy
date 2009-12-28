@@ -1051,3 +1051,368 @@ IqRoster.ELEMENTNAME = "query";
 IqRoster.NAMESPACE = "jabber:iq:roster";
 
 // end of IqRoster
+
+
+
+// start of IqSession
+var IqSession = PacketExtension.extend({
+	init: function(){
+		this._super();
+	},
+	
+	getElementName: function(){
+		return IqSession.ELEMENTNAME;
+	},
+	
+	getNamespace: function(){
+		return IqSession.NAMESPACE;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\"/>";
+		return xml;
+	}
+});
+IqSession.ELEMENTNAME = "session";
+IqSession.NAMESPACE = "urn:ietf:params:xml:ns:xmpp-session";
+
+// end of IqSession
+
+
+// start of PrivacyItem
+var PrivacyItemSubscription = {
+	both: "both",
+	
+	to: "to",
+	
+	from: "from",
+	
+	none: "none"
+}
+
+var PrivacyItemType = {
+			/**
+		 * JID being analyzed should belong to a roster group of the
+		 * list's owner.
+		 */
+		group: "group",
+		/**
+		 * JID being analyzed should have a resource match, domain
+		 * match or bare JID match.
+		 */
+		jid: "jid",
+		/**
+		 * JID being analyzed should belong to a contact present in
+		 * the owner's roster with the specified subscription
+		 * status.
+		 */
+		subscription: "subscription"
+}
+
+var PrivacyItem = PacketExtension.extend({
+	init: function(type, value, action, order){
+		this._super();
+		this.setType(type);
+		this.setValue(value);
+		this.setAction(action);
+		this.setOrder(order);
+	},
+	
+	getType: function(){
+		return this.type;
+	},
+	
+	setType: function(type){
+		this.type = type;
+	},
+	
+	getValue: function(){
+		return this.value;
+	},
+	
+	setValue: function(value){
+		this.value = value;
+	},
+	
+	isAction: function(){
+		return this.action == null ? false : this.action;
+	},
+
+	setAction: function(action){
+		this.action = action;
+	},
+	
+	getOrder: function(){
+		return this.order;
+	},
+
+	setOrder: function(order){
+		this.order = order;
+	},
+	
+	 isFilterIQ: function(){
+		return this.filterIQ;
+	},
+	
+	setFilterIQ: function(filterIQ){
+		this.filterIQ = filterIQ;
+	},
+
+	isFilterMessage: function(){
+		return this.filterMessage;
+	},
+	
+	setFilterMessage: function(filterMessage){
+		this.filterMessage = filterMessage;
+	},
+	
+	isFilterPresence_in: function(){
+		return this.filterPresence_in;
+	},
+	
+	setFilterPresence_in: function(filterPresence_in){
+		this.filterPresence_in = filterPresence_in;
+	},
+	
+	isFilterPresence_out: function(){
+		return this.filterPresence_out;
+	},
+	
+	setFilterPresence_out: function(filterPresence_out){
+		this.filterPresence_out = filterPresence_out;
+	},
+	
+	isFilterEverything: function(){
+		return !(this.isFilterIQ() || this.isFilterMessage() || this.isFilterPresence_in() || this.isFilterPresence_out());
+	},
+	
+	isFilterEmpty: function(){
+		return !this.isFilterIQ() && !this.isFilterMessage() && !this.isFilterPresence_in() && !this.isFilterPresence_out();
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<item";
+		if (this.isAction()){
+			xml += " action=\"allow\"";
+		} else {
+			xml += " action=\"deny\"";
+		}
+		xml += " order=\"" + this.getOrder() + "\"";
+		if (this.getType() != null){
+			xml += " type=\"" + this.getType() + "\"";
+		}
+		if (this.getValue() != null){
+			xml += " value=\"" + StringUtils.escapeXml(this.getValue()) + "\"";
+		}
+		if (this.isFilterEverything()){
+			xml += "/>";
+		} else {
+			xml += ">";
+			if (this.isFilterIQ()){
+				xml += "<iq/>";
+			}
+			if (this.isFilterMessage()){
+				xml += "<message/>";
+			}
+			if (this.isFilterPresence_in()){
+				xml += "<presence-in/>";
+			}
+			if (this.isFilterPresence_out()){
+				xml += "<presence-out/>";
+			}
+			xml += "</item>";
+		}
+		return xml;
+	}
+});
+
+// end of PrivacyItem
+
+// start of PrivacyList
+var PrivacyList = XmlStanza.extend({
+	init: function(listName){
+		this._super();
+		this.listName = listName;
+		this.items = new Array();
+	},
+	
+	isActiveList: function(){
+		return this.isActiveList;
+	},
+	
+	setActiveList: function(isActiveList){
+		this.isActiveList = isActiveList;
+	},
+	
+	isDefaultList: function(){
+		return this.isDefaultList;
+	},
+	
+	setDefaultList: function(isDefaultList){
+		this.isDefaultList = isDefaultList;
+	},
+	
+	getListName: function(){
+		return this.listName;
+	},
+	
+	setListName: function(listName){
+		this.listName = listName;
+	},
+	
+	addItem: function(item){
+		this.items.push(item);
+	},
+	
+	removeItem: function(item){
+		for (var i = 0; i < this.items.length; ++i){
+				if (this.items[i] == item){
+					this.items.splice(i,1);
+					break;
+				}
+		}
+	},
+	
+	getItem: function(order){
+		for (var i = 0; i < this.items.length; ++i){
+				if (this.items[i].getOrder() == order){
+					return this.items[i];
+				}
+		}
+		return null;
+	},
+	
+	getItems: function(){
+		return this.items;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<list";
+		if (this.getListName() != null){
+			xml += " name=\"" + this.getListName() + "\"";
+		}
+		if (this.items.length == 0){
+			xml += "/>";
+		} else {
+			xml += ">";
+			for (var i = 0; i < this.items.length; ++i){
+					xml += this.items[i].toXml();
+			}
+	
+			xml += "</list>";
+		}
+		
+		return xml;
+	}
+});
+
+// end of PrivacyList
+
+// start of Privacy
+var Privacy = PacketExtension.extend({
+	init: function(){
+		this._super();
+		this.privacyLists = new Array();
+	},
+	
+	getElementName: function(){
+		return Privacy.ELEMENTNAME;
+	},
+	
+	getNamespace: function(){
+		return Privacy.NAMESPACE;
+	},
+	
+	getActiveName: function(){
+		return this.activeName;
+	},
+	
+	setActiveName: function(activeName){
+		this.activeName = activeName;
+	},
+	
+	getDefaultName: function(){
+		return this.defaultName;
+	},
+	
+	setDefaultName: function(defaultName){
+		this.defaultName = defaultName;
+	},
+	
+	addPrivacyList: function(privacyList){
+		this.privacyLists.push(privacyList);
+	},
+	
+	removePrivacyList: function(listName){
+		for (var i = 0; i < this.privacyLists.length; ++i){
+				if (this.privacyLists[i].getListName() == listName){
+					this.privacyLists.splice(i,1);
+				}
+		}
+	},
+	
+	getPrivacyList: function(listName){
+		for (var i = 0; i < this.privacyLists.length; ++i){
+				if (this.privacyLists[i].getListName() == listName){
+					return this.privacyLists[i];
+				}
+		}
+		return null;
+	},
+	
+	getPrivacyLists: function(){
+		return this.privacyLists;
+	},
+	
+	isDeclineActiveList: function(){
+		return this.declineActiveList;
+	},
+	
+	setDeclineActiveList: function(declineActiveList){
+		this.declineActiveList = declineActiveList;
+	},
+	
+	isDeclineDefaultList: function(){
+		return this.declineDefaultList;
+	},
+	
+	setDeclineDefaultList: function(declineDefaultList){
+		this.declineDefaultList = declineDefaultList;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\">";
+
+		// Add the active tag
+		if (this.isDeclineActiveList()){
+			xml += "<active/>";
+		} else {
+			if (this.getActiveName() != null){
+				xml += "<active name=\"" + this.getActiveName() + "\"/>";
+			}
+		}
+		// Add the default tag
+		if (this.isDeclineDefaultList()){
+			xml += "<default/>";
+		} else {
+			if (this.getDefaultName() != null){
+				xml += "<default name=\"" + this.getDefaultName() + "\"/>";
+			}
+		}
+		
+		for (var i = 0; i < this.privacyLists.length; ++i){
+				xml += this.privacyLists[i].toXml();
+		}
+		
+		xml += "</" + this.getElementName() + ">";
+		return xml;
+	}
+});
+Privacy.ELEMENTNAME = "query";
+Privacy.NAMESPACE = "jabber:iq:privacy";
+
+// end of Privacy
