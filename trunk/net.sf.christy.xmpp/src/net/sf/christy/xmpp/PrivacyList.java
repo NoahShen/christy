@@ -103,14 +103,23 @@ public class PrivacyList implements XmlStanza
 		{
 			buf.append(" name=\"" + getListName() + "\"");
 		}
-		buf.append(">");
-		Iterator<PrivacyItem> it = getItems().iterator();
-		while (it.hasNext())
+		
+		if (getItems().isEmpty())
 		{
-			PrivacyItem item = it.next();
-			buf.append(item.toXml());
+			buf.append("/>");
 		}
-		buf.append("</list>");
+		else
+		{
+			buf.append(">");
+			Iterator<PrivacyItem> it = getItems().iterator();
+			while (it.hasNext())
+			{
+				PrivacyItem item = it.next();
+				buf.append(item.toXml());
+			}
+			buf.append("</list>");
+		}
+		
 		return buf.toString();
 	}
 
