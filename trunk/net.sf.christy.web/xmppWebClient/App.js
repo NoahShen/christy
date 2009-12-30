@@ -103,6 +103,34 @@ $(document).ready(function() {
 	var privacy = new Privacy();
 	privacy.addPrivacyList(privacyList);
 	iq.addPacketExtension(privacy);
-	innerHtml += iq.toXml() + "\n";
+//	innerHtml += iq.toXml() + "\n";
+
+	var proceed = new Proceed();
+//	innerHtml += proceed.toXml() + "\n";
+	
+	var response = new Response("content");
+//	innerHtml += response.toXml() + "\n";
+	
+	var startTls = new StartTls();
+//	innerHtml += startTls.toXml() + "\n";
+
+	var stream = new Stream();
+	stream.setFrom(jid1);
+	stream.setTo(jid2);
+//	innerHtml += stream.toXml() + "\n";
+	
+	var streamError = new StreamError(StreamErrorCondition.bad_format);
+	streamError.setText("text", "lang");
+	streamError.addApplicationCondition("e", "ns");
+//	innerHtml += streamError.toXml() + "\n";
+	
+	var streamFeature = new StreamFeature();
+	streamFeature.addFeature("e", "ns", true);
+	streamFeature.addMechanism("mechanism");
+	streamFeature.addCompressionMethod("compression");
+//	innerHtml += streamFeature.toXml() + "\n";
+	
+	var success = new Success("Success");
+	innerHtml += success.toXml() + "\n";
 	$("#testId1").text(innerHtml);
 });

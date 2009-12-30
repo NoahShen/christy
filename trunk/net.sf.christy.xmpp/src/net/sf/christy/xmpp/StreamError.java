@@ -587,9 +587,6 @@ public class StreamError implements XmlStanza
 			this.text = text;
 		}
 
-		/* (non-Javadoc)
-		 * @see net.sf.mxlosgi.mxlosgixmppbundle.XMLStanza#toXML()
-		 */
 		@Override
 		public String toXml()
 		{

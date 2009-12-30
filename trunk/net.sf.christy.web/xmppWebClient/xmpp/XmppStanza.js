@@ -1416,3 +1416,611 @@ Privacy.ELEMENTNAME = "query";
 Privacy.NAMESPACE = "jabber:iq:privacy";
 
 // end of Privacy
+
+
+// start of Proceed
+var Proceed = XmlStanza.extend({
+	init: function(){
+		this._super();
+	},
+	
+	toXml: function(){
+		return "<proceed xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/>";
+	}
+});
+// end of Proceed
+
+
+// start of Response
+var Response = XmlStanza.extend({
+	init: function(content){
+		this._super();
+		this.content = content;
+	},
+	
+	getContent: function(){
+		return this.content;
+	},
+	
+	setContent: function(content){
+		this.content = content;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<response xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"";
+		if (this.getContent() != null){
+			xml += ">" + this.getContent() + "</response>";
+		} else {
+			 xml += "/>";
+		}
+
+		return xml;
+	}
+});
+// end of Response
+
+// start of StartTls
+var StartTls = XmlStanza.extend({
+	init: function(){
+		this._super();
+	},
+	
+	toXml: function(){
+		return "<starttls xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/>";
+	}
+});
+// end of StartTls
+
+
+// start of Stream
+var Stream = AbstractXmlStanza.extend({
+	init: function(){
+		this._super();
+		this.version = "1.0";
+	},
+	
+	getTo: function(){
+		return this.to;
+	},
+	
+	setTo: function(to){
+		this.to = to;
+	},
+	
+	getFrom: function(){
+		return this.from;
+	},
+	
+	setFrom: function(from){
+		this.from = from;
+	},
+	
+	getVersion: function(){
+		return this.version;
+	},
+	
+	setVersion: function(version){
+		this.version = version;
+	},
+	
+	getLang: function(){
+		return this.lang;
+	},
+	
+	setLang: function(lang){
+		this.lang = lang;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<stream:stream";
+
+		if (this.getStanzaId() != null){
+			xml += " id=\"" + this.getStanzaId() + "\"";
+		}
+		if (this.getTo() != null){
+			xml += " to=\"" + this.getTo().toFullJID() + "\"";
+		}
+		if (this.getFrom() != null){
+			xml += " from=\"" + this.getFrom().toFullJID() + "\"";
+		}
+		if (this.getVersion() != null){
+			xml += " version=\"" + this.getVersion() + "\"";
+		}
+		if (this.getLang() != null){
+			xml += " xml:lang=\"" + this.getLang() + "\"";
+		}
+		xml += " xmlns:stream=\"" + Stream.STREAM_NAMESPACE + "\" xmlns=\"" + Stream.JABBER_CLIENT_NAMESPACE + "\"";
+		xml += ">";
+		return xml;
+	}
+});
+	
+Stream.JABBER_CLIENT_NAMESPACE = "jabber:client";
+Stream.STREAM_NAMESPACE = "http://etherx.jabber.org/streams";
+
+// end of Stream
+
+// start of StreamError
+var StreamErrorCondition = {
+		/**
+		 * The entity has sent XML that cannot be processed; this
+		 * error MAY be used instead of the more specific
+		 * XML-related errors, such as
+		 * &lt;bad-namespace-prefix/&gt;, &lt;invalid-xml/&gt;,
+		 * &lt;restricted-xml/&gt;, &lt;unsupported-encoding/&gt;,
+		 * and &lt;xml-not-well-formed/&gt;, although the more
+		 * specific errors are preferred.
+		 */
+		bad_format: "bad-format",
+
+		/**
+		 * The entity has sent a namespace prefix that is
+		 * unsupported, or has sent no namespace prefix on an
+		 * element that requires such a prefix.
+		 */
+		bad_namespace_prefix: "bad-namespace-prefix",
+
+		/**
+		 * The server is closing the active stream for this entity
+		 * because a new stream has been initiated that conflicts
+		 * with the existing stream.
+		 */
+		conflict: "conflict",
+
+		/**
+		 * The entity has not generated any traffic over the stream
+		 * for some period of time (configurable according to a
+		 * local service policy).
+		 */
+		connection_timeout: "connection-timeout",
+
+		/**
+		 * The value of the 'to' attribute provided by the
+		 * initiating entity in the stream header corresponds to a
+		 * hostname that is no longer hosted by the server.
+		 */
+		host_gone: "host-gone",
+
+		/**
+		 * The value of the 'to' attribute provided by the
+		 * initiating entity in the stream header does not
+		 * correspond to a hostname that is hosted by the server.
+		 */
+		host_unknown: "host-unknown",
+
+		/**
+		 * A stanza sent between two servers lacks a 'to' or 'from'
+		 * attribute (or the attribute has no value).
+		 */
+		improper_addressing: "improper-addressing",
+
+		/**
+		 * The server has experienced a misconfiguration or an
+		 * otherwise-undefined internal error that prevents it from
+		 * servicing the stream.
+		 */
+		internal_server_error: "internal-server-error",
+
+		/**
+		 * The JID or hostname provided in a 'from' address does not
+		 * match an authorized JID or validated domain negotiated
+		 * between servers via SASL or dialback, or between a client
+		 * and a server via authentication and resource binding.
+		 */
+		invalid_from: "invalid-from",
+
+		/**
+		 * The stream ID or dialback ID is invalid or does not match
+		 * an ID previously provided.
+		 */
+		invalid_id: "invalid-id",
+
+		/**
+		 * the streams namespace name is something other than
+		 * "http://etherx.jabber.org/streams" or the dialback
+		 * namespace name is something other than
+		 * "jabber:server:dialback".
+		 */
+		invalid_namespace: "invalid-namespace",
+
+		/**
+		 * The entity has sent invalid XML over the stream to a
+		 * server that performs validation.
+		 */
+		invalid_xml: "invalid-xml",
+
+		/**
+		 * The entity has attempted to send data before the stream
+		 * has been authenticated, or otherwise is not authorized to
+		 * perform an action related to stream negotiation; the
+		 * receiving entity MUST NOT process the offending stanza
+		 * before sending the stream error.
+		 */
+		not_authorized: "not-authorized",
+
+		/**
+		 * The entity has violated some local service policy; the
+		 * server MAY choose to specify the policy in the <text/>
+		 * element or an application-specific condition element.
+		 */
+		policy_violation: "policy-violation",
+
+		/**
+		 * The server is unable to properly connect to a remote
+		 * entity that is required for authentication or
+		 * authorization.
+		 */
+		remote_connection_failed: "remote-connection-failed",
+
+		/**
+		 * The server lacks the system resources necessary to
+		 * service the stream.
+		 */
+		resource_constraint: "resource-constraint",
+
+		/**
+		 * The entity has attempted to send restricted XML features
+		 * such as a comment, processing instruction, DTD, entity
+		 * reference, or unescaped character.
+		 */
+		restricted_xml: "restricted-xml",
+
+		/**
+		 * The server will not provide service to the initiating
+		 * entity but is redirecting traffic to another host; the
+		 * server SHOULD specify the alternate hostname or IP
+		 * address (which MUST be a valid domain identifier) as the
+		 * XML character data of the &lt;see-other-host/&gt;
+		 * element.
+		 */
+		see_other_host: "see-other-host",
+
+		/**
+		 * The server is being shut down and all active streams are
+		 * being closed.
+		 */
+		system_shutdown: "system-shutdown",
+
+		/**
+		 * The error condition is not one of those defined by the
+		 * other conditions in this list; this error condition
+		 * SHOULD be used only in conjunction with an
+		 * application-specific condition.
+		 */
+		undefined_condition: "undefined-condition",
+
+		/**
+		 * The initiating entity has encoded the stream in an
+		 * encoding that is not supported by the server.
+		 */
+		unsupported_encoding: "unsupported-encoding",
+
+		/**
+		 * The initiating entity has sent a first-level child of the
+		 * stream that is not supported by the server.
+		 */
+		unsupported_stanza_type: "unsupported-stanza-type",
+
+		/**
+		 * the value of the 'version' attribute provided by the
+		 * initiating entity in the stream header specifies a
+		 * version of XMPP that is not supported by the server; the
+		 * server MAY specify the version(s) it supports in the
+		 * &lt;text/&gt; element.
+		 */
+		unsupported_version: "unsupported-version",
+
+		/**
+		 * The initiating entity has sent XML that is not
+		 * well-formed.
+		 */
+		xml_not_well_formed: "xml-not-well-formed"
+
+}
+
+var StreamErrorAppCondition = XmlStanza.extend({
+	init: function(elementName, namespace){
+		this._super();
+		this.elementName = elementName;
+		this.namespace = namespace;
+	},
+	
+	getElementName: function(){
+		return this.elementName;
+	},
+	
+	getNamespace: function(){
+		return this.namespace;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\"/>";
+		return xml;
+	}
+});
+
+
+var StreamErrorAppErrorText = XmlStanza.extend({
+	init: function(text){
+		this._super();
+		this.text = text;
+	},
+	
+	getLang: function(){
+		return this.lang;
+	},
+	
+	setLang: function(lang){
+		this.lang = lang;
+	},
+	
+	getText: function(){
+		return this.text;
+	},
+	
+	setText: function(text){
+		this.text = text;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<text xmlns=\"urn:ietf:params:xml:ns:xmpp-streams\"";
+		if (this.getLang() != null){
+			xml += " xml:lang=\"" + this.getLang() + "\"";
+		}
+		xml += ">" + this.getText() + "</text>";
+		
+		return xml;
+	}
+});
+
+
+
+var StreamError = XmlStanza.extend({
+	init: function(condition){
+		this._super();
+		this.condition = condition;
+		this.applicationConditions = new Array();
+	},
+
+	getCondition: function(){
+		return this.condition;
+	},
+	
+	setCondition: function(condition){
+		this.condition = condition;
+	},
+	
+	getText: function(){
+		return this.text;
+	},
+	
+	setText: function(text){
+		this.text = text;
+	},
+	
+	setText: function(textStr, lang){
+		this.text = new StreamErrorAppErrorText(textStr);
+		if (lang != null){
+			this.text.setLang(lang);
+		}
+	},
+	
+	addApplicationCondition: function(elementName, namespace){
+		var appCondition = new StreamErrorAppCondition(elementName, namespace);
+		return this.applicationConditions.push(appCondition);
+	},
+	
+	removeAppCondition: function(elementName, namespace){
+		for (var i = 0; i < this.applicationConditions.length; ++i){
+				if (this.applicationConditions[i].getElementName() == elementName
+					&& this.applicationConditions[i].getNamespace() == namespace){
+					this.applicationConditions.splice(i,1);
+					break;
+				}
+		}
+	},
+	
+	getAppConditions: function(){
+		return this.applicationConditions;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<stream:error>";
+		if (this.getCondition() != null){
+			xml += "<" + this.getCondition() + " xmlns=\"urn:ietf:params:xml:ns:xmpp-streams\"/>";
+		}
+		var text = this.getText();
+		if (text != null){
+			xml += text.toXml();
+		}
+		if (this.applicationConditions.length != 0){
+			for (var i = 0; i < this.applicationConditions.length; ++i){			
+				xml += this.applicationConditions[i].toXml();
+			}
+		}
+		xml += "</stream:error>";
+		return xml;
+	}
+});
+
+// end of StreamError
+
+// end of StreamFeature
+var StreamFeatureFeature = XmlStanza.extend({
+	init: function(elementName, namespace){
+		this._super();
+		this.elementName = elementName;
+		this.namespace = namespace;
+	},
+	
+	getElementName: function(){
+		return this.elementName;
+	},
+	
+	getNamespace: function(){
+		return this.namespace;
+	},
+	
+	isRequired: function(){
+		return this.required;
+	},
+	
+	setRequired: function(required){
+		this.required = required;
+	},
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\"";
+		
+		if (this.isRequired()){
+			xml += "><required/></" + this.getElementName() + ">";
+		} else {
+			xml += "/>";
+		}
+		
+		return xml;
+	}
+});
+
+var StreamFeature = XmlStanza.extend({
+	init: function(){
+		this._super();
+		this.mechanisms = new Array();
+		this.compressionMethods = new Array();
+		this.features = new Array();
+	},
+	
+	addFeature: function(elementName, namespace, required){
+		var feature = new StreamFeatureFeature(elementName, namespace);
+		feature.setRequired(required);
+		this.addStreamFeatureFeature(feature);
+	},
+	
+	addStreamFeatureFeature: function(feature){
+		this.features.push(feature);
+	},
+	
+	removeFeature: function(elementName, namespace){
+		for (var i = 0; i < this.features.length; ++i){
+			if (this.features[i].getElementName() == elementName
+				&& this.features[i].getNamespace() == namespace){
+				this.features.splice(i,1);
+				break;
+			}
+		}
+	},
+	
+	removeFeature: function(feature){
+		this.removeFeature(feature.getElementName(), feature.getNamespace());
+	},
+	
+	getFeatures: function(){
+		return this.features;
+	},
+	
+	addMechanism: function(mechanism){
+		if (mechanism != null){
+			this.mechanisms.push(mechanism);
+		}
+	},
+	
+	addMechanismCollection: function(mechanisms){
+		this.mechanisms = this.mechanisms.concat(mechanisms);
+	},
+	
+	removeMechanism: function(mechanism){
+		for (var i = 0; i < this.mechanisms.length; ++i){
+			if (this.mechanisms[i] == mechanism){
+				this.mechanisms.splice(i,1);
+				break;
+			}
+		}
+	},
+	
+	removeAllMechanism: function(){
+		this.mechanisms = new Array();
+	},
+	
+	getMechanisms: function(){
+		return this.mechanisms;
+	},
+	
+	getCompressionMethod: function(){
+		return this.compressionMethods;
+	},
+	
+	addCompressionMethod: function(compressionMethod){
+		if (compressionMethod != null){
+			this.compressionMethods.push(compressionMethod);
+		}
+	},
+
+	
+	toXml: function(){
+		var xml = "";
+		xml += "<stream:features>";
+		
+		for (var i = 0; i < this.features.length; ++i){
+			xml += this.features[i].toXml();
+		}
+		
+		if (this.compressionMethods.length != 0)
+		{
+			xml += "<compression xmlns=\"http://jabber.org/features/compress\">";
+			for (var i = 0; i < this.compressionMethods.length; ++i){
+				xml += "<method>" + this.compressionMethods[i] + "</method>";
+			}
+			xml += "</compression>";
+		}
+		if (this.mechanisms.length != 0){
+			xml += "<mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>";
+			for (var i = 0; i < this.mechanisms.length; ++i){
+				xml += "<mechanism>" + this.mechanisms[i] + "</mechanism>";
+			}
+			xml += "</mechanisms>";
+		}
+		
+		xml += "</stream:features>";
+		return xml;
+	}
+});
+
+// end of StreamFeature
+
+
+// start of Success
+var Success = XmlStanza.extend({
+	init: function(successData){
+		this._super();
+		this.successData = successData;
+	},
+	
+	getSuccessData: function(){
+		return this.successData;
+	},
+	
+	setSuccessData: function(successData){
+		this.successData = successData;
+	},
+	
+	toXml: function(){
+		var xml = "";
+
+		xml += "<success xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"";
+		
+		if (this.getSuccessData() != null){
+			xml += ">" + this.getSuccessData() + "</success>";
+		} else {
+			xml += "/>";
+		}
+		
+		return xml;
+	}
+});
+// end of Success
