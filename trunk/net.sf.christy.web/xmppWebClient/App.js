@@ -133,4 +133,25 @@ $(document).ready(function() {
 	var success = new Success("Success");
 	innerHtml += success.toXml() + "\n";
 	$("#testId1").text(innerHtml);
+	
+	$.ajax({
+		contentType: "text/xml; charset=utf-8",
+		url: "webclient/JHB.do",
+		type: "POST",
+		cache: false,
+		processData: false,
+		dataType: "xml",
+		data: "<body content='text/xml; charset=utf-8' hold='1' rid='1573741820' to='jabbercn.org' ver='1.6' wait='60' xmlns='http://jabber.org/protocol/httpbind'/>",
+		success: function(data){
+			alert("success");
+			var oRoot = data.documentElement;
+			alert(oRoot.getAttribute("sid"));
+		},
+		error: function(XMLHttpRequest, textStatus, errorThrown){
+//			alert(XMLHttpRequest);
+//			alert(textStatus);
+//			alert(errorThrown);
+//			alert(this);
+		}
+	});
 });
