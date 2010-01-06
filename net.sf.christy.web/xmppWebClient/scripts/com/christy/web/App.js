@@ -1,13 +1,4 @@
-$(document).ready(function() {
-	
-	jingo.init({
-	  repos: {
-	    main: '/scripts'
-	  },
-	  verbosity: 'debug',
-	  timeout: 10000
-	});
-	
+$(document).ready(function() {	
 	jingo.anonymous({
 		require: [
 		  "com.christy.web.clazz.JClass",
