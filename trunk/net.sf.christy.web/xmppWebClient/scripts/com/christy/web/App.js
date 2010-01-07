@@ -180,14 +180,18 @@ $(document).ready(function() {
 			innerHtml += success.toXml() + "\n";
 
 			$.ajax({
-			  url: "index.html",
+			  url: "webclient/JHB.do",
 			  cache: false,
 			  async: false,
+			  type: "post",
+			  data: "<body content='text/xml; charset=utf-8' hold='1' rid='1573741820' to='jabbercn.org' ver='1.6' wait='60' ack='1' xml:lang='en' xmlns='http://jabber.org/protocol/httpbind'/>",
+			  processData: false,
 			  success: function(data){
 			    alert(data);
 			  }
 			});
 
+//			alert(StringUtils.hash("698c7b018ad87a6b169d5c375e4e261caff49a16", "SHA-1"));
 			$("#testId1").text(innerHtml);
 			
 			

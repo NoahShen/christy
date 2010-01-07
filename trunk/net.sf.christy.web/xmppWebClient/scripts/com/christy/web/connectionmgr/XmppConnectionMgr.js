@@ -13,7 +13,10 @@ jingo.declare({
 			},
 			
 			createConnection: function(options) {
-				// TODO
+				var XmppConnection = com.christy.web.connectionmgr.XmppConnectionMgr.XmppConnection;
+				var connection = new XmppConnection(options);
+				this.connections.push(connection);
+				return connection;
 			},
 			
 			getAllConnections: function() {
