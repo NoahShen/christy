@@ -11,7 +11,7 @@ jingo.declare({
 			}
 		});
 		
-		com.christy.web.utils.StringUtils.hash = function(data, algorithm){
+		com.christy.web.utils.StringUtils.hash = function(data, algorithm) {
 			if (algorithm.toLowerCase() == "md5"
 				|| algorithm.toLowerCase() == "md-5"){
 				return MD5(data);
@@ -26,8 +26,7 @@ jingo.declare({
 		
 		hex_chr = "0123456789abcdef";
 		
-		function rhex(num) 
-		{ 
+		function rhex(num) { 
 			str = ""; 
 			for(j = 0; j <= 3; j++) 
 			str += hex_chr.charAt((num >> (j * 8 + 4)) & 0x0F) + 
@@ -35,8 +34,7 @@ jingo.declare({
 			return str; 
 		}
 		
-		function str2blks_MD5(str) 
-		{ 
+		function str2blks_MD5(str) { 
 			nblk = ((str.length + 8) >> 6) + 1; 
 			blks = new Array(nblk * 16); 
 			for(i = 0; i < nblk * 16; i++) blks[i] = 0; 
@@ -47,42 +45,37 @@ jingo.declare({
 			return blks; 
 		}
 		
-		function add(x, y) 
-		{ 
+		function add(x, y) { 
 			var lsw = (x & 0xFFFF) + (y & 0xFFFF); 
 			var msw = (x >> 16) + (y >> 16) + (lsw >> 16); 
 			return (msw << 16) | (lsw & 0xFFFF); 
 		}
 		
-		function rol(num, cnt) 
-		{ 
+		function rol(num, cnt) { 
 			return (num << cnt) | (num >>> (32 - cnt)); 
 		}
 		
-		function cmn(q, a, b, x, s, t) 
-		{ 
+		function cmn(q, a, b, x, s, t) { 
 			return add(rol(add(add(a, q), add(x, t)), s), b); 
 		}
 		
-		function ff(a, b, c, d, x, s, t) 
-		{ 
+		function ff(a, b, c, d, x, s, t) { 
 			return cmn((b & c) | ((~b) & d), a, b, x, s, t); 
 		}
 		
-		function gg(a, b, c, d, x, s, t) 
-		{ 
+		function gg(a, b, c, d, x, s, t) { 
 			return cmn((b & d) | (c & (~d)), a, b, x, s, t); 
 		} 
-		function hh(a, b, c, d, x, s, t) 
-		{ 
+		
+		function hh(a, b, c, d, x, s, t) { 
 			return cmn(b ^ c ^ d, a, b, x, s, t); 
 		} 
-		function ii(a, b, c, d, x, s, t) 
-		{ 
+		
+		function ii(a, b, c, d, x, s, t) { 
 			return cmn(c ^ (b | (~d)), a, b, x, s, t); 
 		} 
-		function MD5(str) 
-		{ 
+		
+		function MD5(str) { 
 			x = str2blks_MD5(str); 
 			var a = 1732584193; 
 			var b = -271733879; 
@@ -359,7 +352,7 @@ jingo.declare({
 			return str;
 		};
 		
-		com.christy.web.utils.StringUtils.escapeXml = function(xml){
+		com.christy.web.utils.StringUtils.escapeXml = function(xml) {
 			
 			
 			var xml = xml.replace(/\&/g,'&amp;')
@@ -371,7 +364,7 @@ jingo.declare({
 			return xml;
 		}
 		
-		com.christy.web.utils.StringUtils.unescapeXml = function(xml){
+		com.christy.web.utils.StringUtils.unescapeXml = function(xml) {
 		
 			var xml = xml.replace(/\&amp;/g,'&')
 						.replace(/\&lt;/g,'<')

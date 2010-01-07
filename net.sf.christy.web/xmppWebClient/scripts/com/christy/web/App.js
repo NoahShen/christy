@@ -179,8 +179,18 @@ $(document).ready(function() {
 			var success = new Success("Success");
 			innerHtml += success.toXml() + "\n";
 
+			$.ajax({
+			  url: "index.html",
+			  cache: false,
+			  async: false,
+			  success: function(data){
+			    alert(data);
+			  }
+			});
 
 			$("#testId1").text(innerHtml);
+			
+			
 		}
 	});
 
