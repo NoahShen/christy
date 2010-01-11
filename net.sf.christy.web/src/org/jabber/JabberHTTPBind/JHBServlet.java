@@ -55,9 +55,9 @@ public final class JHBServlet extends HttpServlet {
 
 	public static final String APP_NAME = "Jabber HTTP Binding Servlet";
 
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
 
-	public static final int DEBUG_LEVEL = 2;
+	public static final int DEBUG_LEVEL = 1;
 
 	private DocumentBuilder db;
 
