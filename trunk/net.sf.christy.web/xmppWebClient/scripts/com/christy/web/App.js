@@ -199,7 +199,13 @@ $(document).ready(function() {
 			var XmppConnectionMgr = com.christy.web.connectionmgr.XmppConnectionMgr;
 			
 			var connectionMgr = XmppConnectionMgr.getInstance();
-			connectionMgr
+			connectionMgr.requestCreateConnection({
+				hold: 1,
+				to: "jabbercn.org",
+				ver: "1.6",
+				wait: "60"
+			});
+			
 			$("#testId1").text(innerHtml);
 			
 			

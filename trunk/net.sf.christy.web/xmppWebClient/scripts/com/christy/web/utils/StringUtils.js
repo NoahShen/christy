@@ -376,7 +376,8 @@ jingo.declare({
 		}
 		
 		com.christy.web.utils.StringUtils.randomNumber = function(start, end) {
-			return Math.random() * (start - end ) + end;
+			var r = Math.random() * (start - end ) + end;
+			return parseInt(r,10);
 		}
 
 	}
