@@ -1,10 +1,14 @@
 jingo.declare({
 	require: [
-	  "com.christy.web.clazz.JClass"
+	  "com.christy.web.clazz.JClass",
+	  "com.christy.web.xmpp.JID"
 	],
-	name: 'com.christy.web.connectionmgr.XmppConnectionMgr',
+	name: "com.christy.web.connectionmgr.XmppConnectionMgr",
 	as: function() {
 		var JClass = com.christy.web.clazz.JClass;
+		var StringUtils = com.christy.web.utils.StringUtils;
+		
+		var requestUrl = com.christy.web.Christy.requestUrl;
 		
 		com.christy.web.connectionmgr.XmppConnectionMgr = JClass.extend({
 			init: function() {
@@ -12,11 +16,37 @@ jingo.declare({
 				this.listeners = new Array();
 			},
 			
-			createConnection: function(options) {
-				var XmppConnection = com.christy.web.connectionmgr.XmppConnectionMgr.XmppConnection;
-				var connection = new XmppConnection(options);
-				this.connections.push(connection);
-				return connection;
+			getInstance: function() {
+				if (this.instance == null) {
+					this.instance = new XmppConnectionMgr();
+				}
+				return this.instance;
+			},
+			
+			/**
+			 * options = {
+			 * 		hold: hold
+			 * 		to: to
+			 * 		route： route
+			 * 		ver: ver
+			 * 		wait: wait
+			 * 		ack: ack
+			 * }
+			 */
+			requestCreateConnection: function(options) {
+				var Body = com.christy.web.connectionmgr.XmppConnectionMgr.Body;
+				var body = new Body()
+				
+				$.ajax({
+					url: requestUrl,
+					cache: false,
+					type: "post",
+					data: "<body content='text/xml; charset=utf-8' hold='1' rid='1573741820' to='jabbercn.org' ver='1.6' wait='60' ack='1' xml:lang='en' xmlns='http://jabber.org/protocol/httpbind'/>",
+					processData: false,
+					success: function(data){
+						alert(data);
+					}
+				});
 			},
 			
 			getAllConnections: function() {
@@ -87,12 +117,13 @@ jingo.declare({
 		}
 		
 		XmppConnectionMgr.ConnectonEvent = JClass.extend({
-			init: function(eventType, when, connection, stanza, errorThrown) {
+			init: function(eventType, when, connection, stanza, errorThrown, attachment) {
 				this.eventType = eventType;
 				this.when = when;
 				this.connection = connection;
 				this.stanza = stanza;
 				this.errorThrown = errorThrown;
+				this.attachment = attachment;
 			},
 			
 			getEventType: function() {
@@ -113,21 +144,132 @@ jingo.declare({
 			
 			getErrorThrown: function() {
 				return this.errorThrown;
+			},
+			
+			getAttachment: function() {
+				return this.attachment;
 			}
 		});
 		
+		XmppConnectionMgr.Body = XmlStanza.extend({
+			init: function() {
+			    this._super();
+			},
+			
+			setRequestId: function(requestId) {
+				this.requestId = requestId;
+			},
+			
+			getRequestId: function() {
+				return this.requestId;
+			},
+			
+			setHold: function(hold) {
+				this.hold = hold;
+			},
+			
+			getHold: function() {
+				return this.hold;
+			},
+			
+			setTo: function(to) {
+				this.to = to;
+			},
+			
+			getTo: function() {
+				return this.to;
+			},
+			
+			setRoute: function(route) {
+				this.route = route;
+			},
+			
+			getRoute: function() {
+				return this.route;
+			},
+			
+			setVer: function(ver) {
+				this.ver = ver;
+			},
+			
+			getVer: function() {
+				return this.ver;
+			},
+			
+			setWait: function(wait) {
+				this.wait = wait;
+			},
+			
+			getWait: function() {
+				return this.wait;
+			},
+			
+			setAck: function(ack) {
+				this.ack = ack;
+			},
+			
+			getAck: function() {
+				return this.ack;
+			},
+			
+			setStanza: function(stanza) {
+		        this.stanza = stanza;
+		    },
+		    
+		    getStanza: function() {
+		    	return this.stanzaId;
+		    },
+		    
+		    toXml: function() {
+		    	var xml = "";
+		    	
+		    	xml += "<body content=\"text/xml; charset=utf-8\"";
+		    	if (this.getRequestId() != null) {
+		    		xml += " rid=\"" + this.getRequestId() + "\"";
+		    	}
+		    	
+		    	if (this.getHold() != null) {
+		    		xml += " hold=\"" + this.getHold() + "\"";
+		    	}
+		    	
+		    	if (this.getTo() != null) {
+		    		xml += " to=\"" + this.getTo() + "\"";
+		    	}
+		    	
+		    	if (this.getRoute() != null) {
+		    		xml += " route=\"" + this.getRoute() + "\"";
+		    	}
+		    	
+		    	if (this.getVer() != null) {
+		    		xml += " ver=\"" + this.getVer() + "\"";
+		    	}
+		    	
+		    	if (this.getWait() != null) {
+		    		xml += " wait=\"" + this.getWait() + "\"";
+		    	}
+		    	
+		    	if (this.getAck() != null) {
+		    		xml += " ack=\"" + this.getAck() + "\"";
+		    	}
+		    	
+		    	if (this.getStanza() != null) {
+		    		xml += ">";
+		    		xml += this.getStanza().toXml();
+		    	} else {
+		    		xml += " />";
+		    	}
+		    	
+		    	return xml;
+		    }
+		    
+		
+		});
+		
 		XmppConnectionMgr.XmppConnection = JClass.extend({
-			/**
-			 * options = {
-			 * 	domain: domain,
-			 * 	route: route,
-			 * 	ack: ack,
-			 * 	wait: wait,
-			 * 	rid: rid
-			 * }
-			 */
-			init: function(options) {
-				this.options = options;
+
+			init: function(domain, route) {
+				this.domain = domain;
+				this.route = route;
 				this.handlers = new Array();
 			},
 			
@@ -135,13 +277,29 @@ jingo.declare({
 				return this.owner.getJid();
 			},
 			
+			setStreamName: function(streamName) {
+				this.streamName = streamName;
+			},
+			
+			getStreamName: function() {
+				return this.streamName;
+			},
+			
 			getDomain: function() {
-				return this.options.domain;
+				return this.domain;
+			},
+			
+			setDomain: function(domain) {
+				if (this.isConnected()) {
+					throw new Error("The connection has connected");
+				}
+				this.domain = domain;
 			},
 			
 			login: function(username, password, resource, initPresence) {
 				// TODO 
 			},
+			
 			
 			isConnected: function() {
 				return this.connected;
@@ -178,10 +336,6 @@ jingo.declare({
 			
 			isResourceBinded: function() {
 				return this.resourceBinded;
-			},
-			
-			connect: function() {
-				// TODO
 			},
 			
 			getConnectionId: function() {

@@ -4,7 +4,8 @@ $(document).ready(function() {
 		  "com.christy.web.clazz.JClass",
 		  "com.christy.web.utils.StringUtils",
 		  "com.christy.web.xmpp.JID",
-		  "com.christy.web.xmpp.XmppStanza"
+		  "com.christy.web.xmpp.XmppStanza",
+		  "com.christy.web.connectionmgr.XmppConnectionMgr"
 		],
 		exec: function() {
 			var JClass = com.christy.web.clazz.JClass;
@@ -179,6 +180,7 @@ $(document).ready(function() {
 			var success = new Success("Success");
 			innerHtml += success.toXml() + "\n";
 
+			
 //			$.ajax({
 //			  url: "webclient/JHB.do",
 //			  cache: false,
@@ -192,6 +194,12 @@ $(document).ready(function() {
 //			});
 
 //			alert(StringUtils.hash("bfb06a6f113cd6fd3838ab9d300fdb4fe3da2f7d", "SHA-1"));
+			
+			
+			var XmppConnectionMgr = com.christy.web.connectionmgr.XmppConnectionMgr;
+			
+			var connectionMgr = XmppConnectionMgr.getInstance();
+			connectionMgr
 			$("#testId1").text(innerHtml);
 			
 			
