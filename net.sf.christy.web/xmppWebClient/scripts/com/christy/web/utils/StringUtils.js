@@ -374,6 +374,10 @@ jingo.declare({
 		
 			return xml;
 		}
+		
+		com.christy.web.utils.StringUtils.randomNumber = function(start, end) {
+			return Math.random() * (start - end ) + end;
+		}
 
 	}
 });
