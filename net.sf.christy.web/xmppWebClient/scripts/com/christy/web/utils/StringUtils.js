@@ -380,5 +380,16 @@ jingo.declare({
 			return parseInt(r,10);
 		}
 
+
+		com.christy.web.utils.StringUtils.createXml = function(str) {
+			if(document.all){
+				var xmlDom=new ActiveXObject("Microsoft.XMLDOM");
+				xmlDom.loadXML(str);
+				return xmlDom;
+			} else {
+				return new DOMParser().parseFromString(str, "text/xml");
+			}
+		　　	
+		}
 	}
 });
