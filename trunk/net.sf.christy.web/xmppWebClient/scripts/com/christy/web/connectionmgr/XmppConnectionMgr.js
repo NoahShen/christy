@@ -3,14 +3,15 @@ jingo.declare({
 	  "com.christy.web.clazz.JClass",
 	  "com.christy.web.xmpp.JID",
 	  "com.christy.web.Christy",
-	  "com.christy.web.xmpp.XmppStanza"
+	  "com.christy.web.xmpp.XmppStanza",
+	  "com.christy.web.parser.XmppParser"
 	],
 	name: "com.christy.web.connectionmgr.XmppConnectionMgr",
 	as: function() {
 		var JClass = com.christy.web.clazz.JClass;
 		var StringUtils = com.christy.web.utils.StringUtils;
 		var XmppStanza = com.christy.web.xmpp.XmppStanza;
-		
+		var XmppParser = com.christy.web.parser.XmppParser;
 		var requestUrl = com.christy.web.Christy.requestUrl;
 		
 		com.christy.web.connectionmgr.XmppConnectionMgr = JClass.extend({
@@ -35,26 +36,30 @@ jingo.declare({
 				} else {
 					++this.requestId;
 				}
-				var Body = com.christy.web.connectionmgr.XmppConnectionMgr.Body;
-				var body = new Body();
-				body.setRequestId(this.requestId);
-				body.setHold(options.hold);
-				body.setTo(options.to);
-				body.setRoute(options.route);
-				body.setVer(options.ver);
-				body.setWait(options.wait);
-				body.setAck(options.ack);
-				
+
+				var body = new XmppStanza.Body();
+				body.setAttribute("rid", this.requestId);
+				body.setAttribute("hold", options.hold);
+				body.setAttribute("to", options.to);
+				body.setAttribute("route", options.route);
+				body.setAttribute("ver", options.ver);
+				body.setAttribute("wait", options.wait);
+				body.setAttribute("ack", options.ack);
+
 				$.ajax({
 					url: requestUrl,
 					dataType: "xml",
 					cache: false,
 					type: "post",
 					data: body.toXml(),
-//					data: "<body content='text/xml; charset=utf-8' hold='1' rid='1573741820' to='jabbercn.org' ver='1.6' wait='60' ack='1' xml:lang='en' xmlns='http://jabber.org/protocol/httpbind'/>",
+//					data: "<body content='text/xml;charset=utf-8' hold='1' rid='1573741820' to='jabbercn.org' ver='1.6' wait='60' ack='1' xml:lang='en' xmlns='http://jabber.org/protocol/httpbind'/>",
 					processData: false,
-					success: function(data){
-						alert(data);
+					success: function(xml){
+						var bodyElement = xml.documentElement;
+						var parser = XmppParser.getInstance();
+						var responseBody = parser.parseStanza(bodyElement);
+						// TODO
+						
 					}
 				});
 			},
@@ -114,11 +119,11 @@ jingo.declare({
 		
 		var XmppConnectionMgr = com.christy.web.connectionmgr.XmppConnectionMgr;
 		
-		XmppConnectionMgr.getInstance = function()	 {
+		XmppConnectionMgr.getInstance = function() {
 			if (XmppConnectionMgr.instance == null) {
-					XmppConnectionMgr.instance = new XmppConnectionMgr();
-				}
-				return XmppConnectionMgr.instance;
+				XmppConnectionMgr.instance = new XmppConnectionMgr();
+			}
+			return XmppConnectionMgr.instance;
 		}
 		
 		
@@ -178,195 +183,6 @@ jingo.declare({
 			}
 		});
 		
-		XmppConnectionMgr.Body = XmppStanza.XmlStanza.extend({
-			init: function() {
-			    this._super();
-			},
-			
-			setRequestId: function(requestId) {
-				this.requestId = requestId;
-			},
-			
-			getRequestId: function() {
-				return this.requestId;
-			},
-			
-			setSid: function(sid) {
-				this.sid = sid;
-			},
-			
-			getSid: function() {
-				return this.sid;
-			},
-			
-			setType: function(type) {
-				this.type = type;
-			},
-			
-			getType: function() {
-				return this.type;
-			},
-			
-			setCondition: function(condition) {
-				this.condition = condition;
-			},
-			
-			getCondition: function() {
-				return this.condition;
-			},
-			
-			setKey: function(key) {
-				this.key = key;
-			},
-			
-			getKey: function() {
-				return this.key;
-			},
-			
-			setNewKey: function(newKey) {
-				this.newKey = newKey;
-			},
-			
-			getNewKey: function() {
-				return this.newKey;
-			},
-			
-			setHold: function(hold) {
-				this.hold = hold;
-			},
-			
-			getHold: function() {
-				return this.hold;
-			},
-			
-			setTo: function(to) {
-				this.to = to;
-			},
-			
-			getTo: function() {
-				return this.to;
-			},
-			
-			setRoute: function(route) {
-				this.route = route;
-			},
-			
-			getRoute: function() {
-				return this.route;
-			},
-			
-			setVer: function(ver) {
-				this.ver = ver;
-			},
-			
-			getVer: function() {
-				return this.ver;
-			},
-			
-			setWait: function(wait) {
-				this.wait = wait;
-			},
-			
-			getWait: function() {
-				return this.wait;
-			},
-			
-			setAck: function(ack) {
-				this.ack = ack;
-			},
-			
-			getAck: function() {
-				return this.ack;
-			},
-			
-			setSecure: function(secure) {
-				this.secure = secure;	
-			},
-			
-			isSecure: function() {
-				return this.secure;
-			},
-			
-			setStanza: function(stanza) {
-		        this.stanza = stanza;
-		    },
-		    
-		    getStanza: function() {
-		    	return this.stanzaId;
-		    },
-		    
-		    toXml: function() {
-		    	var xml = "";
-		    	
-		    	xml += "<body content=\"text/xml; charset=utf-8\"";
-		    	if (this.getRequestId() != null) {
-		    		xml += " rid=\"" + this.getRequestId() + "\"";
-		    	}
-		    	
-		    	if (this.getSid() != null) {
-		    		xml += " sid=\"" + this.getSid() + "\"";
-		    	}
-		    	
-		    	if (this.getKey() != null) {
-		    		xml += " key=\"" + this.getKey() + "\"";
-		    	}
-		    	
-		    	if (this.getNewKey() != null) {
-		    		xml += " newkey=\"" + this.getNewKey() + "\"";
-		    	}
-		    	
-		    	if (this.getType() != null) {
-		    		xml += " type=\"" + this.getType() + "\"";
-		    	}
-		    	
-		    	if (this.getCondition() != null) {
-		    		xml += " condition=\"" + this.getCondition() + "\"";
-		    	}
-		    	
-		    	if (this.getHold() != null) {
-		    		xml += " hold=\"" + this.getHold() + "\"";
-		    	}
-		    	
-		    	if (this.getTo() != null) {
-		    		xml += " to=\"" + this.getTo() + "\"";
-		    	}
-		    	
-		    	if (this.getRoute() != null) {
-		    		xml += " route=\"" + this.getRoute() + "\"";
-		    	}
-		    	
-		    	if (this.getVer() != null) {
-		    		xml += " ver=\"" + this.getVer() + "\"";
-		    	}
-		    	
-		    	if (this.getWait() != null) {
-		    		xml += " wait=\"" + this.getWait() + "\"";
-		    	}
-		    	
-		    	if (this.getAck() != null) {
-		    		xml += " ack=\"" + this.getAck() + "\"";
-		    	}
-		    	
-		    	if (this.isSecure()) {
-		    		xml += " secure=\"" + this.isSecure() + "\"";
-		    	}
-		    	
-		    	
-		    	xml += " xmlns=\"http://jabber.org/protocol/httpbind\"";
-		    	
-		    	if (this.getStanza() != null) {
-		    		xml += ">";
-		    		xml += this.getStanza().toXml();
-		    		xml += "</body>";
-		    	} else {
-		    		xml += " />";
-		    	}
-		    	
-		    	return xml;
-		    }
-		    
-		
-		});
 		
 		XmppConnectionMgr.XmppConnection = JClass.extend({
 

@@ -2069,5 +2069,75 @@ jingo.declare({
 		}
 	});
 	// end of Success
+	
+	// start of Body
+	com.christy.web.xmpp.XmppStanza.Body = XmlStanza.extend({
+		init: function() {
+		    this._super();
+		    this.attributes = {};
+		},
+		
+		setAttribute: function(key, value) {
+			this.attributes[key] = value;
+		},
+		
+		getAttribute: function(key) {
+			return this.attributes[key];
+		},
+		
+		getAttributes: function() {
+			return this.attributes;
+		},
+		
+		removeAttribute: function(key) {
+			delete this.attributes[key];
+		},
+		
+		removeAllAttributes: function() {
+			this.attributes = {};
+		},
+		
+		setStanza: function(stanza) {
+	        this.stanza = stanza;
+	    },
+	    
+	    getStanza: function() {
+	    	return this.stanza;
+	    },
+	    
+	    toXml: function() {
+	    	var xml = "";
+	    	
+	    	xml += "<body content=\"text/xml;charset=utf-8\"";
+	    	
+	    	var containNamespace = false;
+	    	for ( var key in this.attributes ) {
+	    		if (key == "xmlns") {
+	    			containNamespace = true;
+	    		}
+	    		var value = this.attributes[key];
+	    		if (value != null) {
+	    			xml += " " + key + "=\"" + value + "\"";
+	    		}
+	    	}
+
+			if (!containNamespace) {
+				xml += " xmlns=\"http://jabber.org/protocol/httpbind\"";
+			}
+	    	
+	    	
+	    	if (this.getStanza() != null) {
+	    		xml += ">";
+	    		xml += this.getStanza().toXml();
+	    		xml += "</body>";
+	    	} else {
+	    		xml += " />";
+	    	}
+	    	
+	    	return xml;
+	    }
+	    
+	});
+	// end of Body
   }
 });
