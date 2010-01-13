@@ -203,6 +203,7 @@ $(document).ready(function() {
 				hold: 1,
 				to: "jabber.org",
 //				to: "gmail.com",
+				ack: "1",
 				ver: "1.6",
 				wait: "60"
 			});
