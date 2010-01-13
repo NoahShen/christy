@@ -11,7 +11,6 @@ jingo.declare({
 		
 		com.christy.web.parser.XmppParser = JClass.extend({
 			init: function() {
-				//this._super();
 				this.extensionParsers = new Array();
 			},
 			
@@ -28,10 +27,50 @@ jingo.declare({
 					body.setAttribute(attributes[i].nodeName, attributes[i].nodeValue);
 				}
 				
-				// TODO
-				alert(bodyElement.nodeName);
-				alert(bodyElement.getAttribute("sid"));
-				alert(body.toXml());
+				
+				var chileNodes = bodyElement.childNodes;
+				for (var i = 0; i < chileNodes.length; ++i) {
+					var packetElement = chileNodes[i];
+					var elementName = packetElement.nodeName;
+					if ("features" == elementName
+						|| "stream:features" == elementName) {
+						body.addStanza(this.parseStreamFeature(packetElement));
+					}
+					// TODO
+				}
+				
+//				alert(body.toXml());
+				return body;
+			},
+			
+			parseStreamFeature: function(streamFeatureElement) {
+				var streamFeature = new XmppStanza.StreamFeature();
+				var chileNodes = streamFeatureElement.childNodes;
+				for (var i = 0; i < chileNodes.length; ++i) {
+					var featureElement = chileNodes[i];
+					var elementName = featureElement.nodeName;
+					if ("mechanisms" == elementName) {
+						var mechanisms = featureElement.childNodes;
+						for (var j = 0; j < mechanisms.length; ++j) {
+							streamFeature.addMechanism(mechanisms[j].firstChild.nodeValue);
+						}
+					} else if ("compression" == elementName) {
+						var methods = featureElement.childNodes;
+						for (var j = 0; j < methods.length; ++j) {
+							streamFeature.addCompressionMethod(methods[j].firstChild.nodeValue);
+						}
+					} else {
+						var namespace = featureElement.getAttribute("xmlns");
+						var streamFeatureFeature = new XmppStanza.StreamFeatureFeature(elementName, namespace);
+						if (featureElement.firstChild != null 
+							&& "required" == featureElement.firstChild.nodeName) {
+							streamFeatureFeature.setRequired(true);
+						}
+						streamFeature.addStreamFeatureFeature(streamFeatureFeature);
+					}
+				}
+				
+				return streamFeature;
 			},
 			
 			addExtensionParser: function(extensionParser) {
@@ -59,14 +98,14 @@ jingo.declare({
 		
 		var XmppParser = com.christy.web.parser.XmppParser;
 		
-		com.christy.web.parser.XmppParser.getInstance = function() {
+		XmppParser.getInstance = function() {
 			if (XmppParser.instance == null) {
 				XmppParser.instance = new XmppParser();
 			}
 			return XmppParser.instance;
 		}
 		
-		com.christy.web.parser.XmppParser.ExtensionParser = JClass.extend({
+		XmppParser.ExtensionParser = JClass.extend({
 			init: function() {
 				this._super();
 			},

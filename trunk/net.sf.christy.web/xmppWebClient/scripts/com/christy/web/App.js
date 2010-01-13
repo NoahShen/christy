@@ -201,9 +201,16 @@ $(document).ready(function() {
 			var connectionMgr = XmppConnectionMgr.getInstance();
 			connectionMgr.requestCreateConnection({
 				hold: 1,
-				to: "jabbercn.org",
+				to: "jabber.org",
+//				to: "gmail.com",
 				ver: "1.6",
 				wait: "60"
+			});
+			
+			var created = XmppConnectionMgr.ConnectionEventType.Created;
+			connectionMgr.addConnectionListener(created, function(event){
+				alert("created");
+				alert(event.getConnection().getDomain());
 			});
 			
 			$("#testId1").text(innerHtml);
