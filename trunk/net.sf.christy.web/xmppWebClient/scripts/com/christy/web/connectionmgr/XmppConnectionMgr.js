@@ -20,9 +20,16 @@ jingo.declare({
 		com.christy.web.connectionmgr.XmppConnectionMgr = JClass.extend({
 			init: function() {
 				this.connections = new Array();
+				this.bodyHandlers = new Array();
 				this.listeners = new Array();
 			},
 			
+			getRequestId: function() {
+				if (this.requestId == null) {
+					this.requestId = StringUtils.randomNumber(10, 1000);
+				}
+				return this.requestId++;
+			},
 			/**
 			 * options = {
 			 * 		hold: hold
@@ -34,14 +41,10 @@ jingo.declare({
 			 * }
 			 */
 			requestCreateConnection: function(options) {
-				if (this.requestId == null) {
-					this.requestId = StringUtils.randomNumber(10, 1000);
-				} else {
-					++this.requestId;
-				}
+				var requestId = this.getRequestId();
 
 				var body = new XmppStanza.Body();
-				body.setAttribute("rid", this.requestId);
+				body.setAttribute("rid", requestId);
 				body.setAttribute("hold", options.hold);
 				body.setAttribute("to", options.to);
 				body.setAttribute("route", options.route);
@@ -49,6 +52,39 @@ jingo.declare({
 				body.setAttribute("wait", options.wait);
 				body.setAttribute("ack", options.ack);
 
+				var xmppConnectionMgrThis = this;
+				
+				this.handleBodyByRid({
+					rid: body.getAttribute("rid"),
+					handler: function(responsebody) {
+						var domain = responsebody.getAttribute("from");
+						if (domain == null || domain == "") {
+							domain = body.getAttribute("to");
+						}
+						var streamName = responsebody.getAttribute("stream");
+						var connection = new XmppConnectionMgr.XmppConnection(domain);
+						connection.setStreamName(streamName);
+						xmppConnectionMgrThis.connections.push(connection);
+						
+						var ConnectonEvent = XmppConnectionMgr.ConnectonEvent;
+						var created = XmppConnectionMgr.ConnectionEventType.Created;
+						var event = new ConnectonEvent(created,
+																					TimeUtils.currentTimeMillis(),
+																					connection,
+																					null,
+																					null,
+																					null);
+						xmppConnectionMgrThis.fireConnectionEvent(event);
+					}
+				});
+				this.sendBody(body);
+			},
+			
+			getStreamId: function() {
+				return this.streamId;	
+			},
+			
+			sendBody: function(body) {
 				var xmppConnectionMgrThis = this;
 				$.ajax({
 					url: requestUrl,
@@ -62,50 +98,34 @@ jingo.declare({
 						var bodyElement = xml.documentElement;
 						var parser = XmppParser.getInstance();
 						var responseBody = parser.parseStanza(bodyElement);
-						
 						xmppConnectionMgrThis.handleBody(responseBody);
 					}
 				});
 			},
 			
-			getStreamId: function() {
-				return this.streamId;	
+			/**
+			 * options = {
+			 * 	rid: rid
+			 * handler: handler function
+			 * }
+			 */
+			handleBodyByRid: function(options) {
+				this.bodyHandlers.push(options);
 			},
 			
 			handleBody: function(body) {
-				alert("handleBody" + body.toXml());
-				
-				// TODO check the connection
-				var sid = body.getAttribute("sid");
-				if (sid != null && sid != "") {
-					this.streamId = sid;
-				}
-				
-				this.checkConnection(body);
+				this.fireBodyHandler(body);
+				// TODO handler Packet
 			},
 			
-			checkConnection: function(body) {
-				if (this.connections.length == 0) {
-					this.createNewConnection(body);
+			fireBodyHandler: function(body) {
+				for (var i = this.bodyHandlers.length - 1; i >= 0; --i){
+					// TODO check rid
+//					if (this.bodyHandlers[i].rid == body.getAttribute("rid")){
+						this.bodyHandlers[i].handler(body);
+						this.bodyHandlers.splice(i,1);
+//					}
 				}
-			},
-			
-			createNewConnection: function(body) {
-				var domain = body.getAttribute("from");
-				var streamName = body.getAttribute("stream");
-				var connection = new XmppConnectionMgr.XmppConnection(domain);
-				connection.setStreamName(streamName);
-				this.connections.push(connection);
-				
-				var ConnectonEvent = XmppConnectionMgr.ConnectonEvent;
-				var created = XmppConnectionMgr.ConnectionEventType.Created;
-				var event = new ConnectonEvent(created,
-												TimeUtils.currentTimeMillis(),
-												connection,
-												null,
-												null,
-												null);
-				this.fireConnectionEvent(event);
 			},
 			
 			getAllConnections: function() {
@@ -279,7 +299,6 @@ jingo.declare({
 			/*
 			 * handler = {
 			 * 	filter： filter,
-			 * 	timeout: timeout,
 			 * 	handlerFunction： function(stanza) {
 			 * 	}
 			 * }
