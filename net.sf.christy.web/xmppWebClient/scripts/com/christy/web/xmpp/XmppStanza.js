@@ -2075,6 +2075,7 @@ jingo.declare({
 		init: function() {
 		    this._super();
 		    this.attributes = {};
+		    this.stanzas = new Array();
 		},
 		
 		setAttribute: function(key, value) {
@@ -2097,12 +2098,21 @@ jingo.declare({
 			this.attributes = {};
 		},
 		
-		setStanza: function(stanza) {
-	        this.stanza = stanza;
+		addStanza: function(stanza) {
+	        this.stanzas.push(stanza);
 	    },
 	    
-	    getStanza: function() {
-	    	return this.stanza;
+	    removeStanza: function(stanza) {
+	    	for (var i = 0; i < this.stanzas.length; ++i){
+				if (this.stanzas[i] == stanza){
+					this.stanzas.splice(i,1);
+					break;
+				}
+			}
+	    },
+	    
+	    getStanzas: function() {
+	    	return this.stanzas;
 	    },
 	    
 	    toXml: function() {
@@ -2125,11 +2135,13 @@ jingo.declare({
 				xml += " xmlns=\"http://jabber.org/protocol/httpbind\"";
 			}
 	    	
-	    	
-	    	if (this.getStanza() != null) {
-	    		xml += ">";
-	    		xml += this.getStanza().toXml();
-	    		xml += "</body>";
+	    	if (this.stanzas.length > 0) {
+				xml += ">";
+	    		for (var i = 0; i < this.stanzas.length; ++i){
+					xml += this.stanzas[i].toXml();
+				}
+				
+				xml += "</body>";
 	    	} else {
 	    		xml += " />";
 	    	}

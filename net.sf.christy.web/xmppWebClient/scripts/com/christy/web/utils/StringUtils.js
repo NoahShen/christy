@@ -2,7 +2,7 @@ jingo.declare({
 	require: [
 	  "com.christy.web.clazz.JClass"
 	],
-	name: 'com.christy.web.utils.StringUtils',
+	name: "com.christy.web.utils.StringUtils",
 	as: function() {
 		
 		com.christy.web.utils.StringUtils = com.christy.web.clazz.JClass.extend({

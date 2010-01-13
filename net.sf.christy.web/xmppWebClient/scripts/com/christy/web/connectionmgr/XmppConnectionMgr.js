@@ -1,10 +1,12 @@
 jingo.declare({
 	require: [
 	  "com.christy.web.clazz.JClass",
+	  "com.christy.web.utils.StringUtils",
 	  "com.christy.web.xmpp.JID",
 	  "com.christy.web.Christy",
 	  "com.christy.web.xmpp.XmppStanza",
-	  "com.christy.web.parser.XmppParser"
+	  "com.christy.web.parser.XmppParser",
+	  "com.christy.web.utils.TimeUtils"
 	],
 	name: "com.christy.web.connectionmgr.XmppConnectionMgr",
 	as: function() {
@@ -13,6 +15,7 @@ jingo.declare({
 		var XmppStanza = com.christy.web.xmpp.XmppStanza;
 		var XmppParser = com.christy.web.parser.XmppParser;
 		var requestUrl = com.christy.web.Christy.requestUrl;
+		var TimeUtils = com.christy.web.utils.TimeUtils;
 		
 		com.christy.web.connectionmgr.XmppConnectionMgr = JClass.extend({
 			init: function() {
@@ -46,6 +49,7 @@ jingo.declare({
 				body.setAttribute("wait", options.wait);
 				body.setAttribute("ack", options.ack);
 
+				var xmppConnectionMgrThis = this;
 				$.ajax({
 					url: requestUrl,
 					dataType: "xml",
@@ -58,10 +62,50 @@ jingo.declare({
 						var bodyElement = xml.documentElement;
 						var parser = XmppParser.getInstance();
 						var responseBody = parser.parseStanza(bodyElement);
-						// TODO
 						
+						xmppConnectionMgrThis.handleBody(responseBody);
 					}
 				});
+			},
+			
+			getStreamId: function() {
+				return this.streamId;	
+			},
+			
+			handleBody: function(body) {
+				alert("handleBody" + body.toXml());
+				
+				// TODO check the connection
+				var sid = body.getAttribute("sid");
+				if (sid != null && sid != "") {
+					this.streamId = sid;
+				}
+				
+				this.checkConnection(body);
+			},
+			
+			checkConnection: function(body) {
+				if (this.connections.length == 0) {
+					this.createNewConnection(body);
+				}
+			},
+			
+			createNewConnection: function(body) {
+				var domain = body.getAttribute("from");
+				var streamName = body.getAttribute("stream");
+				var connection = new XmppConnectionMgr.XmppConnection(domain);
+				connection.setStreamName(streamName);
+				this.connections.push(connection);
+				
+				var ConnectonEvent = XmppConnectionMgr.ConnectonEvent;
+				var created = XmppConnectionMgr.ConnectionEventType.Created;
+				var event = new ConnectonEvent(created,
+												TimeUtils.currentTimeMillis(),
+												connection,
+												null,
+												null,
+												null);
+				this.fireConnectionEvent(event);
 			},
 			
 			getAllConnections: function() {
@@ -110,7 +154,7 @@ jingo.declare({
         	fireConnectionEvent: function(event) {
         		for (var i = 0; i < this.listeners.length; ++i){
 					if (this.listeners[i].eventType == event.getEventType()){
-						this.listeners.handler(event);
+						this.listeners[i].handler(event);
 					}
 				}
         	}
@@ -126,14 +170,11 @@ jingo.declare({
 			return XmppConnectionMgr.instance;
 		}
 		
-		
 		XmppConnectionMgr.ConnectionEventType = {
 			
 			Closed: "Closed",
 			
 			Created: "Created",
-			
-			Connected: "Connected",
 			
 			StreamError: "StreamError",
 			
@@ -186,9 +227,8 @@ jingo.declare({
 		
 		XmppConnectionMgr.XmppConnection = JClass.extend({
 
-			init: function(domain, route) {
+			init: function(domain) {
 				this.domain = domain;
-				this.route = route;
 				this.handlers = new Array();
 			},
 			
