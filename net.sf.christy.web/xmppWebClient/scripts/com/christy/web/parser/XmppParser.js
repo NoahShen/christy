@@ -36,6 +36,9 @@ jingo.declare({
 						|| "stream:features" == elementName) {
 						body.addStanza(this.parseStreamFeature(packetElement));
 					}
+					else if ("success" == elementName) {
+						body.addStanza(new XmppStanza.Success());
+					}
 					// TODO
 				}
 				

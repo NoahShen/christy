@@ -22,6 +22,41 @@ jingo.declare({
 				this.connections = new Array();
 				this.bodyHandlers = new Array();
 				this.listeners = new Array();
+				this.bodyMessagQueue = new Array();
+				this.intervalId = setInterval(this.processQueue, 1000);
+			},
+			
+			processQueue: function() {
+				var aThis = XmppConnectionMgr.instance;
+				if (aThis == null) {
+					return;
+				}
+				
+				if (aThis.bodyMessagQueue.length > 0) {
+					var bodyMessage = aThis.bodyMessagQueue[0];
+					aThis.bodyMessagQueue.splice(0,1);
+					
+					// TODO
+					if (console != null) {
+						console.log(bodyMessage.toXml());
+					}
+					
+					$.ajax({
+						url: requestUrl,
+						dataType: "xml",
+						cache: false,
+						type: "post",
+						data: bodyMessage.toXml(),
+	//					data: "<body content='text/xml;charset=utf-8' hold='1' rid='1573741820' to='jabbercn.org' ver='1.6' wait='60' ack='1' xml:lang='en' xmlns='http://jabber.org/protocol/httpbind'/>",
+						processData: false,
+						success: function(xml){
+							var bodyElement = xml.documentElement;
+							var parser = XmppParser.getInstance();
+							var responseBody = parser.parseStanza(bodyElement);
+							aThis.handleBody(responseBody);
+						}
+					});
+				}
 			},
 			
 			getRequestId: function() {
@@ -44,6 +79,7 @@ jingo.declare({
 				var requestId = this.getRequestId();
 
 				var body = new XmppStanza.Body();
+				body.setAttribute("content", "text/xml;charset=utf-8");
 				body.setAttribute("rid", requestId);
 				body.setAttribute("hold", options.hold);
 				body.setAttribute("to", options.to);
@@ -61,14 +97,36 @@ jingo.declare({
 						if (domain == null || domain == "") {
 							domain = body.getAttribute("to");
 						}
+						
+						var streamId = responsebody.getAttribute("sid");
+						xmppConnectionMgrThis.streamId = streamId;
+						
 						var streamName = responsebody.getAttribute("stream");
+						if (streamName != null) {
+							var conn = xmppConnectionMgrThis.getConnectionByStreamName(streamName);
+							if (conn != null) {
+								return;
+							}
+						} else {
+							if (xmppConnectionMgrThis.connections.length > 0) {
+								return;
+							}
+						}
 						var connection = new XmppConnectionMgr.XmppConnection(domain);
 						connection.setStreamName(streamName);
+						
+						var stanzas = responsebody.getStanzas();
+						var stanza = stanzas[0];
+						if (stanza instanceof XmppStanza.StreamFeature) {
+							var streamFeature = stanza;
+							var mechanisms = streamFeature.getMechanisms();
+							connection.setAllowedMechanisms(mechanisms);
+						}
+						
 						xmppConnectionMgrThis.connections.push(connection);
 						
 						var ConnectonEvent = XmppConnectionMgr.ConnectonEvent;
-						var created = XmppConnectionMgr.ConnectionEventType.Created;
-						var event = new ConnectonEvent(created,
+						var event = new ConnectonEvent(XmppConnectionMgr.ConnectionEventType.Created,
 																					TimeUtils.currentTimeMillis(),
 																					connection,
 																					null,
@@ -85,22 +143,17 @@ jingo.declare({
 			},
 			
 			sendBody: function(body) {
-				var xmppConnectionMgrThis = this;
-				$.ajax({
-					url: requestUrl,
-					dataType: "xml",
-					cache: false,
-					type: "post",
-					data: body.toXml(),
-//					data: "<body content='text/xml;charset=utf-8' hold='1' rid='1573741820' to='jabbercn.org' ver='1.6' wait='60' ack='1' xml:lang='en' xmlns='http://jabber.org/protocol/httpbind'/>",
-					processData: false,
-					success: function(xml){
-						var bodyElement = xml.documentElement;
-						var parser = XmppParser.getInstance();
-						var responseBody = parser.parseStanza(bodyElement);
-						xmppConnectionMgrThis.handleBody(responseBody);
-					}
-				});
+				var streamId = body.getAttribute("sid");
+				if (streamId == null) {
+					body.setAttribute("sid", this.streamId);
+				}
+				
+				var rid = body.getAttribute("rid");
+				if (rid == null) {
+					body.setAttribute("rid", this.getRequestId());
+				}
+				
+				this.bodyMessagQueue.push(body);
 			},
 			
 			/**
@@ -115,13 +168,49 @@ jingo.declare({
 			
 			handleBody: function(body) {
 				this.fireBodyHandler(body);
-				// TODO handler Packet
+				this.handlePacket(body);
+			},
+			
+			handlePacket: function(body) {
+				var streamName = body.getAttribute("stream");
+				var connection = this.getConnectionByStreamName(streamName);
+				if (connection == null) {
+					if (this.connections.length == 1) {
+						connection = this.connections[0];
+					} else {
+						var error = XmppConnectionMgr.ConnectionEventType.Error;
+						var event = new XmppConnectionMgr.ConnectonEvent(error,
+																					TimeUtils.currentTimeMillis(),
+																					null,
+																					null,
+																					new Error("unknow connection"),
+																					null);
+						this.fireConnectionEvent(event);
+						return;
+					}
+				}
+				
+				var stanzas = body.getStanzas();
+				var stanzaReceived = XmppConnectionMgr.ConnectionEventType.StanzaReceived;
+				for (var i = 0; i < stanzas.length; ++i){
+					var stanza = stanzas[i];
+					if (stanza instanceof XmppStanza.Packet) {
+						var event = new XmppConnectionMgr.ConnectonEvent(stanzaReceived,
+																				TimeUtils.currentTimeMillis(),
+																				connection,
+																				stanza,
+																				null,
+																				null);
+						this.fireConnectionEvent(event);
+					}
+	
+				}
 			},
 			
 			fireBodyHandler: function(body) {
 				for (var i = this.bodyHandlers.length - 1; i >= 0; --i){
 					// TODO check rid
-//					if (this.bodyHandlers[i].rid == body.getAttribute("rid")){
+//					if (this.bodyHandlers[i].rid == body.getAttribute("ack")){
 						this.bodyHandlers[i].handler(body);
 						this.bodyHandlers.splice(i,1);
 //					}
@@ -198,7 +287,7 @@ jingo.declare({
 			
 			StreamError: "StreamError",
 			
-			Exception: "Exception",
+			Error: "Error",
 			
 			SaslSuccessful: "SaslSuccessful",
 			
@@ -206,7 +295,11 @@ jingo.declare({
 			
 			SessionBinded: "SessionBinded",
 			
-			ResourceBinded: "ResourceBinded"
+			ResourceBinded: "ResourceBinded",
+			
+			StanzaReceived: "StanzaReceived",
+			
+			StanzaSended: "StanzaSended"
 		}
 		
 		XmppConnectionMgr.ConnectonEvent = JClass.extend({
@@ -249,7 +342,16 @@ jingo.declare({
 
 			init: function(domain) {
 				this.domain = domain;
+				this.allowedMechanisms = new Array();
 				this.handlers = new Array();
+			},
+			
+			setAllowedMechanisms: function(allowedMechanisms) {
+				this.allowedMechanisms = allowedMechanisms;
+			},
+			
+			getAllowedMechanisms: function() {
+				return this.allowedMechanisms;
 			},
 			
 			getJid: function() {
@@ -276,7 +378,44 @@ jingo.declare({
 			},
 			
 			login: function(username, password, resource, initPresence) {
-				// TODO 
+				if (username == null || password == null) {
+					throw new Error("username or password is null");
+				}
+				this.username = username;
+				this.password = password;
+				this.resource = resource;
+				this.initPresence = initPresence;
+
+				var body = new XmppStanza.Body();
+				var auth = new XmppStanza.Auth();
+				auth.setMechanism("PLAIN");
+				var content = StringUtils.base64encode((String.fromCharCode(0) + this.username + String.fromCharCode(0) + this.password));
+				auth.setContent(content);
+				body.addStanza(auth);
+				
+				var connectionMgr = XmppConnectionMgr.getInstance();
+				var requestId = connectionMgr.getRequestId();
+				body.setAttribute("rid", requestId);
+				
+				var connectionThis = this;
+				connectionMgr.handleBodyByRid({
+					rid: requestId,
+					handler: function(responsebody) {
+						var stanzas = responsebody.getStanzas();
+						if (stanzas.length > 0 
+							&& stanzas[0] instanceof XmppStanza.Success) {
+							var saslSuccessful = XmppConnectionMgr.ConnectionEventType.SaslSuccessful;
+							var event = new XmppConnectionMgr.ConnectonEvent(saslSuccessful,
+																						TimeUtils.currentTimeMillis(),
+																						connectionThis,
+																						null,
+																						null,
+																						null);
+							connectionMgr.fireConnectionEvent(event);
+						}
+					}
+				});
+				connectionMgr.sendBody(body);
 			},
 			
 			
