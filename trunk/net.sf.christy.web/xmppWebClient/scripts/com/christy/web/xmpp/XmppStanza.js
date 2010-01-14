@@ -2118,7 +2118,7 @@ jingo.declare({
 	    toXml: function() {
 	    	var xml = "";
 	    	
-	    	xml += "<body content=\"text/xml;charset=utf-8\"";
+	    	xml += "<body";
 	    	
 	    	var containNamespace = false;
 	    	for ( var key in this.attributes ) {

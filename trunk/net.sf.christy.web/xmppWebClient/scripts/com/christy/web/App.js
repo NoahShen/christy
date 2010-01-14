@@ -194,8 +194,6 @@ $(document).ready(function() {
 //			});
 
 //			alert(StringUtils.hash("bfb06a6f113cd6fd3838ab9d300fdb4fe3da2f7d", "SHA-1"));
-			
-			
 			var XmppConnectionMgr = com.christy.web.connectionmgr.XmppConnectionMgr;
 			
 			var connectionMgr = XmppConnectionMgr.getInstance();
@@ -208,12 +206,22 @@ $(document).ready(function() {
 				wait: "60"
 			});
 			
-			var created = XmppConnectionMgr.ConnectionEventType.Created;
-			connectionMgr.addConnectionListener(created, function(event){
-				alert("created");
-				alert(event.getConnection().getDomain());
+			var ConnectionEventType = XmppConnectionMgr.ConnectionEventType;
+			connectionMgr.addConnectionListener(ConnectionEventType.Created, function(event){
+//				alert("created");
+//				alert(event.getConnection().getDomain());
+//				alert(event.getWhen());
+//				alert(event.getConnection().getAllowedMechanisms());
+				var conn = event.getConnection();
+				conn.login("NoahShen", "159357");
 			});
 			
+			connectionMgr.addConnectionListener(ConnectionEventType.StanzaReceived, function(event){
+				alert(event.getStanza().toXml());
+			});
+			connectionMgr.addConnectionListener(ConnectionEventType.SaslSuccessful, function(event){
+				alert("SaslSuccessful");
+			});
 			$("#testId1").text(innerHtml);
 			
 			
