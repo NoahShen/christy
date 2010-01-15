@@ -1,12 +1,14 @@
 jingo.declare({
 	require: [
 	  "com.christy.web.clazz.JClass",
-	  "com.christy.web.xmpp.XmppStanza"
+	  "com.christy.web.xmpp.XmppStanza",
+	  "com.christy.web.xmpp.JID"
 	],
 	name: "com.christy.web.parser.XmppParser",
 	as: function() {
 		var JClass = com.christy.web.clazz.JClass;
 		var XmppStanza = com.christy.web.xmpp.XmppStanza;
+		var JID = com.christy.web.xmpp.JID;
 		
 		
 		com.christy.web.parser.XmppParser = JClass.extend({
@@ -28,9 +30,9 @@ jingo.declare({
 				}
 				
 				
-				var chileNodes = bodyElement.childNodes;
-				for (var i = 0; i < chileNodes.length; ++i) {
-					var packetElement = chileNodes[i];
+				var childNodes = bodyElement.childNodes;
+				for (var i = 0; i < childNodes.length; ++i) {
+					var packetElement = childNodes[i];
 					var elementName = packetElement.nodeName;
 					if ("features" == elementName
 						|| "stream:features" == elementName) {
@@ -39,6 +41,9 @@ jingo.declare({
 					else if ("success" == elementName) {
 						body.addStanza(new XmppStanza.Success());
 					}
+					else if ("iq" == elementName) {
+						body.addStanza(this.parseIq(packetElement));
+					}
 					// TODO
 				}
 				
@@ -46,11 +51,50 @@ jingo.declare({
 				return body;
 			},
 			
+			parseIq: function(iqElement)  {
+				var to = iqElement.getAttribute("to");
+				var from = iqElement.getAttribute("from");
+				var lang = iqElement.getAttribute("xml:lang");
+				var id = iqElement.getAttribute("id");
+				var type = iqElement.getAttribute("type");
+				
+				var iq = new XmppStanza.Iq(type);
+				iq.setTo(to == null ? null : JID.createJID(to));
+				iq.setFrom(from == null ? null : JID.createJID(from));
+				iq.setLanguage(lang);
+				iq.setStanzaId(id);
+				
+				var childNodes = iqElement.childNodes;
+				for (var i = 0; i < childNodes.length; ++i) {
+					var iqExtensionElem = childNodes[i];
+					var elementName = iqExtensionElem.nodeName;
+					if ("bind" == elementName) {
+						iq.addPacketExtension(this.parseIqBind(iqExtensionElem));
+					}
+				}
+				return iq;
+			},
+			
+			parseIqBind: function(iqBindElement) {
+				var iqBind = new XmppStanza.IqBind();
+				var childNodes = iqBindElement.childNodes;
+				for (var i = 0; i < childNodes.length; ++i) {
+					var bindChild = childNodes[i];
+					var elementName = bindChild.nodeName;
+					if ("resource" == elementName) {
+						iqBind.setResource(bindChild.firstChild.nodeValue);
+					} else if ("jid" == elementName) {
+						iqBind.setJid(JID.createJID(bindChild.firstChild.nodeValue));
+					}
+				}
+				return iqBind;
+			},
+			
 			parseStreamFeature: function(streamFeatureElement) {
 				var streamFeature = new XmppStanza.StreamFeature();
-				var chileNodes = streamFeatureElement.childNodes;
-				for (var i = 0; i < chileNodes.length; ++i) {
-					var featureElement = chileNodes[i];
+				var childNodes = streamFeatureElement.childNodes;
+				for (var i = 0; i < childNodes.length; ++i) {
+					var featureElement = childNodes[i];
 					var elementName = featureElement.nodeName;
 					if ("mechanisms" == elementName) {
 						var mechanisms = featureElement.childNodes;

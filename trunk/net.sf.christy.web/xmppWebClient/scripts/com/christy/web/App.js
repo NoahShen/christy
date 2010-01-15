@@ -217,10 +217,13 @@ $(document).ready(function() {
 			});
 			
 			connectionMgr.addConnectionListener(ConnectionEventType.StanzaReceived, function(event){
-				alert(event.getStanza().toXml());
+//				alert(event.getStanza().toXml());
 			});
 			connectionMgr.addConnectionListener(ConnectionEventType.SaslSuccessful, function(event){
-				alert("SaslSuccessful");
+//				alert("SaslSuccessful");
+			});
+			connectionMgr.addConnectionListener(ConnectionEventType.ResourceBinded, function(event){
+				alert("ResourceBinded");
 			});
 			$("#testId1").text(innerHtml);
 			

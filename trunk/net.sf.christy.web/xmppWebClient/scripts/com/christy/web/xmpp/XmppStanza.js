@@ -267,11 +267,12 @@ jingo.declare({
 		getPacketExtension: function(elementName, namespace){
 			for (var i = 0; i < this.packetExtensions.length; ++i){
 				var extension = this.packetExtensions[i];
-				if (extension.getElementName == elementName
-					 && extension.getElementName == namespace){
+				if (extension.getElementName() == elementName
+					 && extension.getNamespace() == namespace){
 					return extension;
 				}
 			}
+			return null;
 		},
 		
 		getExtensionsXml: function(){
@@ -1967,6 +1968,16 @@ jingo.declare({
 		
 		getFeatures: function(){
 			return this.features;
+		},
+		
+		containFeature: function(elementName, namespace) {
+			for (var i = 0; i < this.features.length; ++i){
+				if (this.features[i].getElementName() == elementName
+					&& this.features[i].getNamespace() == namespace){
+					return true;
+				}
+			}
+			return false;
 		},
 		
 		addMechanism: function(mechanism){

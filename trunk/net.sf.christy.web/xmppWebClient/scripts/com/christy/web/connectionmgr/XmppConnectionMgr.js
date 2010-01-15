@@ -6,16 +6,19 @@ jingo.declare({
 	  "com.christy.web.Christy",
 	  "com.christy.web.xmpp.XmppStanza",
 	  "com.christy.web.parser.XmppParser",
-	  "com.christy.web.utils.TimeUtils"
+	  "com.christy.web.utils.TimeUtils",
+	  "com.christy.web.connectionmgr.filter.StanzaFilter"
 	],
 	name: "com.christy.web.connectionmgr.XmppConnectionMgr",
 	as: function() {
 		var JClass = com.christy.web.clazz.JClass;
+		var JID = com.christy.web.xmpp.JID;
 		var StringUtils = com.christy.web.utils.StringUtils;
 		var XmppStanza = com.christy.web.xmpp.XmppStanza;
 		var XmppParser = com.christy.web.parser.XmppParser;
 		var requestUrl = com.christy.web.Christy.requestUrl;
 		var TimeUtils = com.christy.web.utils.TimeUtils;
+		var StanzaFilter = com.christy.web.connectionmgr.filter.StanzaFilter;
 		
 		com.christy.web.connectionmgr.XmppConnectionMgr = JClass.extend({
 			init: function() {
@@ -23,40 +26,62 @@ jingo.declare({
 				this.bodyHandlers = new Array();
 				this.listeners = new Array();
 				this.bodyMessagQueue = new Array();
-				this.intervalId = setInterval(this.processQueue, 1000);
+				this.intervalId = setInterval(this.processRequest, 1000);
+				this.requestingCount = 0;
+				this.keyGenerater = new XmppConnectionMgr.KeyGenerater();
 			},
 			
-			processQueue: function() {
+			processRequest: function() {
 				var aThis = XmppConnectionMgr.instance;
 				if (aThis == null) {
 					return;
 				}
 				
+				// TODO
+//				if (console != null) {
+//					console.log("bodyMessagQueue.length:" + aThis.bodyMessagQueue.length);
+//					console.log("aThis.requestingCount:" + aThis.requestingCount);
+//					console.log("aThis.hold:" + aThis.hold);
+//				}
+				
 				if (aThis.bodyMessagQueue.length > 0) {
-					var bodyMessage = aThis.bodyMessagQueue[0];
-					aThis.bodyMessagQueue.splice(0,1);
-					
-					// TODO
-					if (console != null) {
-						console.log(bodyMessage.toXml());
+					var bodyMessage = aThis.bodyMessagQueue.shift();
+					aThis.execAjaxRequest(bodyMessage);
+				} else {
+					if (aThis.requestingCount < aThis.hold) {
+						aThis.sendBody(new XmppStanza.Body());
 					}
-					
-					$.ajax({
-						url: requestUrl,
-						dataType: "xml",
-						cache: false,
-						type: "post",
-						data: bodyMessage.toXml(),
-	//					data: "<body content='text/xml;charset=utf-8' hold='1' rid='1573741820' to='jabbercn.org' ver='1.6' wait='60' ack='1' xml:lang='en' xmlns='http://jabber.org/protocol/httpbind'/>",
-						processData: false,
-						success: function(xml){
-							var bodyElement = xml.documentElement;
-							var parser = XmppParser.getInstance();
-							var responseBody = parser.parseStanza(bodyElement);
-							aThis.handleBody(responseBody);
-						}
-					});
 				}
+			},
+			
+			execAjaxRequest: function(bodyMessage) {
+				var aThis = XmppConnectionMgr.instance;
+				// TODO
+				if (console != null) {
+					console.log("sending:" + bodyMessage.toXml());
+				}
+				
+				++aThis.requestingCount;
+				$.ajax({
+					url: requestUrl,
+					dataType: "xml",
+					cache: false,
+					type: "post",
+					data: bodyMessage.toXml(),
+//					data: "<body content='text/xml;charset=utf-8' hold='1' rid='1573741820' to='jabbercn.org' ver='1.6' wait='60' ack='1' xml:lang='en' xmlns='http://jabber.org/protocol/httpbind'/>",
+					processData: false,
+					success: function(xml){
+						var bodyElement = xml.documentElement;
+						var parser = XmppParser.getInstance();
+						var responseBody = parser.parseStanza(bodyElement);
+						aThis.handleBody(responseBody);
+					},
+					
+					complete: function(XMLHttpRequest, textStatus) {
+						--aThis.requestingCount;
+					}
+				});
+				
 			},
 			
 			getRequestId: function() {
@@ -78,15 +103,22 @@ jingo.declare({
 			requestCreateConnection: function(options) {
 				var requestId = this.getRequestId();
 
+				var firstConn = (this.connections.length == 0);
 				var body = new XmppStanza.Body();
-				body.setAttribute("content", "text/xml;charset=utf-8");
+				if (firstConn) {
+					body.setAttribute("content", "text/xml;charset=utf-8");
+					body.setAttribute("hold", options.hold);
+					this.hold = options.hold;
+					body.setAttribute("ver", options.ver);
+					body.setAttribute("wait", options.wait);
+					body.setAttribute("ack", options.ack);
+				}
+				
 				body.setAttribute("rid", requestId);
-				body.setAttribute("hold", options.hold);
+				
 				body.setAttribute("to", options.to);
 				body.setAttribute("route", options.route);
-				body.setAttribute("ver", options.ver);
-				body.setAttribute("wait", options.wait);
-				body.setAttribute("ack", options.ack);
+				
 
 				var xmppConnectionMgrThis = this;
 				
@@ -96,6 +128,11 @@ jingo.declare({
 						var domain = responsebody.getAttribute("from");
 						if (domain == null || domain == "") {
 							domain = body.getAttribute("to");
+						}
+						
+						var hold = responsebody.getAttribute("hold");
+						if (hold != null) {
+							this.hold = hold;
 						}
 						
 						var streamId = responsebody.getAttribute("sid");
@@ -115,6 +152,10 @@ jingo.declare({
 						var connection = new XmppConnectionMgr.XmppConnection(domain);
 						connection.setStreamName(streamName);
 						
+						
+						
+						xmppConnectionMgrThis.connections.push(connection);
+						
 						var stanzas = responsebody.getStanzas();
 						var stanza = stanzas[0];
 						if (stanza instanceof XmppStanza.StreamFeature) {
@@ -122,8 +163,6 @@ jingo.declare({
 							var mechanisms = streamFeature.getMechanisms();
 							connection.setAllowedMechanisms(mechanisms);
 						}
-						
-						xmppConnectionMgrThis.connections.push(connection);
 						
 						var ConnectonEvent = XmppConnectionMgr.ConnectonEvent;
 						var event = new ConnectonEvent(XmppConnectionMgr.ConnectionEventType.Created,
@@ -152,6 +191,13 @@ jingo.declare({
 				if (rid == null) {
 					body.setAttribute("rid", this.getRequestId());
 				}
+				var key = this.keyGenerater.getKey();
+				if (key != null) {
+					body.setAttribute("key", key);
+				}
+				if (this.keyGenerater.isKeyEmpty()) {
+					body.setAttribute("newkey", this.keyGenerater.getNewKey());
+				}
 				
 				this.bodyMessagQueue.push(body);
 			},
@@ -168,10 +214,10 @@ jingo.declare({
 			
 			handleBody: function(body) {
 				this.fireBodyHandler(body);
-				this.handlePacket(body);
+				this.handleStanza(body);
 			},
 			
-			handlePacket: function(body) {
+			handleStanza: function(body) {
 				var streamName = body.getAttribute("stream");
 				var connection = this.getConnectionByStreamName(streamName);
 				if (connection == null) {
@@ -202,8 +248,14 @@ jingo.declare({
 																				null,
 																				null);
 						this.fireConnectionEvent(event);
+						connection.fireHandler(stanza);
 					}
-	
+					// TODO Do need it in new Protocal
+//					else if (stanza instanceof XmppStanza.StreamFeature) {
+//						if (stanza.containFeature(XmppStanza.IqBind.ELEMENTNAME, XmppStanza.IqBind.NAMESPACE)) {
+//							connection.bindResource();
+//						}
+//					}
 				}
 			},
 			
@@ -295,7 +347,11 @@ jingo.declare({
 			
 			SessionBinded: "SessionBinded",
 			
+			BindSessionFailed: "BindSessionFailed",
+			
 			ResourceBinded: "ResourceBinded",
+			
+			BindResourceFailed: "BindResourceFailed",
 			
 			StanzaReceived: "StanzaReceived",
 			
@@ -412,6 +468,9 @@ jingo.declare({
 																						null,
 																						null);
 							connectionMgr.fireConnectionEvent(event);
+							
+							// TODO Do not need it in new Protocal
+							connectionThis.bindResource();
 						}
 					}
 				});
@@ -419,8 +478,65 @@ jingo.declare({
 			},
 			
 			
-			isConnected: function() {
-				return this.connected;
+			bindResource: function() {
+				var body = new XmppStanza.Body();
+				
+				// TODO Do not need it in new Protocal
+				body.setAttribute("xmpp:restart", "true");
+				
+				var iq = new XmppStanza.Iq(XmppStanza.IqType.SET);
+				iq.setTo(new JID(null, this.getDomain(), null));
+				var iqBind = new XmppStanza.IqBind();
+				if (this.resource == null) {
+					this.resource = "Christy";
+				}
+				iqBind.setResource(this.resource)
+				iq.addPacketExtension(iqBind);
+				
+				body.addStanza(iq);
+				
+				var id = iq.getStanzaId();
+				
+				var connectionMgr = XmppConnectionMgr.getInstance();
+				var connectionThis = this;
+				this.handleStanza({
+					filter: new StanzaFilter.PacketIdFilter(id),
+					handler: function(iqResponse) {
+						
+						var eventType = XmppConnectionMgr.ConnectionEventType.BindResourceFailed;
+						if (iqResponse.getType() == XmppStanza.IqType.RESULT) {
+							eventType = XmppConnectionMgr.ConnectionEventType.ResourceBinded;
+							var iqBindResponse = iqResponse.getPacketExtension(XmppStanza.IqBind.ELEMENTNAME, XmppStanza.IqBind.NAMESPACE);
+							var jid = iqBindResponse.getJid();
+							connectionThis.resource = jid.getResource();
+						}
+						var event = new XmppConnectionMgr.ConnectonEvent(eventType,
+																					TimeUtils.currentTimeMillis(),
+																					connectionThis,
+																					iqResponse,
+																					null,
+																					null);
+//						alert(eventType);
+						connectionMgr.fireConnectionEvent(event);
+						if (eventType == XmppConnectionMgr.ConnectionEventType.ResourceBinded) {
+							connectionThis.bindSession();
+						}
+					}
+				});
+				connectionMgr.sendBody(body);
+			},
+			
+			bindSession: function() {
+				// TODO
+			},
+			
+			fireHandler: function(packet) {
+				for (var i =  0; i < this.handlers.length; ++i){
+					if (this.handlers[i].filter.accept(this, packet)){
+						this.handlers[i].handler(packet);
+						this.handlers.splice(i,1);
+					}
+				}
 			},
 			
 			isAuthenticated: function() {
@@ -438,7 +554,7 @@ jingo.declare({
 			/*
 			 * handler = {
 			 * 	filter： filter,
-			 * 	handlerFunction： function(stanza) {
+			 * 	handler： function(stanza) {
 			 * 	}
 			 * }
 			 * handler will be invoked only once
@@ -481,6 +597,33 @@ jingo.declare({
 			
 			getPrivacyManager: function() {
 				return this.privacyManager;
+			}
+		});
+		
+		XmppConnectionMgr.KeyGenerater = JClass.extend({
+			init: function(){
+				this.keyLength = 10;
+				this.keySequence = new Array();
+			},
+			
+			getKey: function() {
+				return this.keySequence.pop();
+			},
+			
+			isKeyEmpty: function() {
+				return this.keySequence.length == 0;
+			},
+			
+			getNewKey: function() {
+				this.keySequence = new Array();
+				var seed = StringUtils.randomNumber(1000, 10000);
+				for (var i = 0; i < this.keyLength; ++i) {
+					var key = StringUtils.hash(
+										(i == 0) ? seed.toString() : this.keySequence[i - 1], 
+										"SHA1");
+					this.keySequence.push(key);
+				}
+				return this.getKey();
 			}
 		});
 		

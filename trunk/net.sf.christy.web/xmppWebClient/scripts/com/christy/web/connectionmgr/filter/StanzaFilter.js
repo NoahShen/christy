@@ -3,7 +3,7 @@ jingo.declare({
 	  "com.christy.web.clazz.JClass",
 	  "com.christy.web.xmpp.XmppStanza"
 	],
-	name: 'com.christy.web.connectionmgr.filter.StanzaFilter',
+	name: "com.christy.web.connectionmgr.filter.StanzaFilter",
 	as: function() {
 		var JClass = com.christy.web.clazz.JClass;
 		var XmppStanza = com.christy.web.xmpp.XmppStanza;
