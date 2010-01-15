@@ -111,7 +111,7 @@ public class XMPPParserImpl implements XmppParser
 		}
 		else if ("iq".equals(elementName))
 		{
-			return parseIQ(parser);
+			return parseIq(parser);
 		}
 		else if ("presence".equals(elementName))
 		{
@@ -565,7 +565,7 @@ public class XMPPParserImpl implements XmppParser
 		return presence;
 	}
 
-	private Iq parseIQ(XmlPullParser parser) throws Exception
+	private Iq parseIq(XmlPullParser parser) throws Exception
 	{
 		String to = parser.getAttributeValue("", "to");
 		String from = parser.getAttributeValue("", "from");
@@ -599,7 +599,7 @@ public class XMPPParserImpl implements XmppParser
 				
 				if ("bind".equals(elementName))
 				{
-					IqBind bind = parseIQBind(parser);
+					IqBind bind = parseIqBind(parser);
 					iq.addExtension(bind);
 				}
 				else if ("session".equals(elementName))
@@ -609,7 +609,7 @@ public class XMPPParserImpl implements XmppParser
 				}
 				else if ("query".equals(elementName) && "jabber:iq:roster".equals(namespace))
 				{
-					IqRoster iqRoster = parseIQRoster(parser);
+					IqRoster iqRoster = parseIqRoster(parser);
 					iq.addExtension(iqRoster);
 				}
 				else if ("query".equals(elementName) && "jabber:iq:privacy".equals(namespace))
@@ -855,7 +855,7 @@ public class XMPPParserImpl implements XmppParser
 		return packetX;
 	}
 
-	private IqRoster parseIQRoster(XmlPullParser parser) throws XmlPullParserException, IOException
+	private IqRoster parseIqRoster(XmlPullParser parser) throws XmlPullParserException, IOException
 	{
 		IqRoster iqRoster = new IqRoster();
 		IqRoster.Item item = null;
@@ -909,7 +909,7 @@ public class XMPPParserImpl implements XmppParser
 		return iqRoster;
 	}
 
-	private IqBind parseIQBind(XmlPullParser parser) throws XmlPullParserException, IOException
+	private IqBind parseIqBind(XmlPullParser parser) throws XmlPullParserException, IOException
 	{
 		IqBind bind = new IqBind();
 		boolean done = false;
