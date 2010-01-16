@@ -225,6 +225,10 @@ $(document).ready(function() {
 			connectionMgr.addConnectionListener(ConnectionEventType.ResourceBinded, function(event){
 				alert("ResourceBinded");
 			});
+			
+			connectionMgr.addConnectionListener(ConnectionEventType.SessionBinded, function(event){
+				alert("SessionBinded");
+			});
 			$("#testId1").text(innerHtml);
 			
 			

@@ -38,10 +38,10 @@ jingo.declare({
 				}
 				
 				// TODO
-//				if (console != null) {
-//					console.log("bodyMessagQueue.length:" + aThis.bodyMessagQueue.length);
-//					console.log("aThis.requestingCount:" + aThis.requestingCount);
-//					console.log("aThis.hold:" + aThis.hold);
+//				if (window.console) {
+//					window.console.log("bodyMessagQueue.length:" + aThis.bodyMessagQueue.length);
+//					window.console.log("aThis.requestingCount:" + aThis.requestingCount);
+//					window.console.log("aThis.hold:" + aThis.hold);
 //				}
 				
 				if (aThis.bodyMessagQueue.length > 0) {
@@ -57,8 +57,8 @@ jingo.declare({
 			execAjaxRequest: function(bodyMessage) {
 				var aThis = XmppConnectionMgr.instance;
 				// TODO
-				if (console != null) {
-					console.log("sending:" + bodyMessage.toXml());
+				if (window.console) {
+					window.console.log("sending:" + bodyMessage.toXml());
 				}
 				
 				++aThis.requestingCount;
@@ -458,19 +458,29 @@ jingo.declare({
 					rid: requestId,
 					handler: function(responsebody) {
 						var stanzas = responsebody.getStanzas();
-						if (stanzas.length > 0 
-							&& stanzas[0] instanceof XmppStanza.Success) {
-							var saslSuccessful = XmppConnectionMgr.ConnectionEventType.SaslSuccessful;
-							var event = new XmppConnectionMgr.ConnectonEvent(saslSuccessful,
-																						TimeUtils.currentTimeMillis(),
-																						connectionThis,
-																						null,
-																						null,
-																						null);
-							connectionMgr.fireConnectionEvent(event);
+						if (stanzas.length > 0 ){
+							if (stanzas[0] instanceof XmppStanza.Success) {
+								var saslSuccessful = XmppConnectionMgr.ConnectionEventType.SaslSuccessful;
+								connectionThis.authenticated = true;
+								var event = new XmppConnectionMgr.ConnectonEvent(saslSuccessful,
+																							TimeUtils.currentTimeMillis(),
+																							connectionThis,
+																							stanzas[0],
+																							null,
+																							null);
+								// TODO Do not need it in new Protocal
+								connectionThis.bindResource();
+							} else {
+								var saslFailed = XmppConnectionMgr.ConnectionEventType.SaslFailed;
+								var event = new XmppConnectionMgr.ConnectonEvent(saslFailed,
+																							TimeUtils.currentTimeMillis(),
+																							connectionThis,
+																							stanzas[0],
+																							null,
+																							null);
+							}
 							
-							// TODO Do not need it in new Protocal
-							connectionThis.bindResource();
+							connectionMgr.fireConnectionEvent(event);
 						}
 					}
 				});
@@ -490,7 +500,7 @@ jingo.declare({
 				if (this.resource == null) {
 					this.resource = "Christy";
 				}
-				iqBind.setResource(this.resource)
+				iqBind.setResource(this.resource);
 				iq.addPacketExtension(iqBind);
 				
 				body.addStanza(iq);
@@ -509,6 +519,7 @@ jingo.declare({
 							var iqBindResponse = iqResponse.getPacketExtension(XmppStanza.IqBind.ELEMENTNAME, XmppStanza.IqBind.NAMESPACE);
 							var jid = iqBindResponse.getJid();
 							connectionThis.resource = jid.getResource();
+							this.resourceBinded = true;
 						}
 						var event = new XmppConnectionMgr.ConnectonEvent(eventType,
 																					TimeUtils.currentTimeMillis(),
@@ -527,7 +538,38 @@ jingo.declare({
 			},
 			
 			bindSession: function() {
-				// TODO
+				var body = new XmppStanza.Body();
+				
+				var iq = new XmppStanza.Iq(XmppStanza.IqType.SET);
+				iq.setTo(new JID(null, this.getDomain(), null));
+				var iqSession = new XmppStanza.IqSession();
+				iq.addPacketExtension(iqSession);
+				
+				body.addStanza(iq);
+				
+				var id = iq.getStanzaId();
+				
+				var connectionMgr = XmppConnectionMgr.getInstance();
+				var connectionThis = this;
+				this.handleStanza({
+					filter: new StanzaFilter.PacketIdFilter(id),
+					handler: function(iqResponse) {
+						
+						var eventType = XmppConnectionMgr.ConnectionEventType.BindSessionFailed;
+						if (iqResponse.getType() == XmppStanza.IqType.RESULT) {
+							eventType = XmppConnectionMgr.ConnectionEventType.SessionBinded;
+							this.sessionBinded = true;
+						}
+						var event = new XmppConnectionMgr.ConnectonEvent(eventType,
+																					TimeUtils.currentTimeMillis(),
+																					connectionThis,
+																					iqResponse,
+																					null,
+																					null);
+						connectionMgr.fireConnectionEvent(event);
+					}
+				});
+				connectionMgr.sendBody(body);
 			},
 			
 			fireHandler: function(packet) {
@@ -573,18 +615,6 @@ jingo.declare({
 			
 			getConnectionId: function() {
 				return this.connectionId;
-			},
-			
-			getLastActiveTime: function() {
-				return this.lastActiveTime;
-			},
-			
-			getLastReceiveTime: function() {
-				return this.lastReceiveTime;
-			},
-			
-			getLastSendTime: function() {
-				return this.lastSendTime;
 			},
 			
 			getOwner: function() {
