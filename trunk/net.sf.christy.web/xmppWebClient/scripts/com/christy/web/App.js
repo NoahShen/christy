@@ -212,7 +212,7 @@ $(document).ready(function() {
 //				alert(event.getConnection().getDomain());
 //				alert(event.getWhen());
 //				alert(event.getConnection().getAllowedMechanisms());
-				var conn = event.getConnection();
+				var conn = event.connection;
 				conn.login("NoahShen", "159357");
 			});
 			
