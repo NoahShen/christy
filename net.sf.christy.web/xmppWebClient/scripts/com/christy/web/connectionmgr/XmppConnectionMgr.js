@@ -163,14 +163,12 @@ jingo.declare({
 							var mechanisms = streamFeature.getMechanisms();
 							connection.setAllowedMechanisms(mechanisms);
 						}
-						
-						var ConnectonEvent = XmppConnectionMgr.ConnectonEvent;
-						var event = new ConnectonEvent(XmppConnectionMgr.ConnectionEventType.Created,
-																					TimeUtils.currentTimeMillis(),
-																					connection,
-																					null,
-																					null,
-																					null);
+
+						var event = {
+							eventType: XmppConnectionMgr.ConnectionEventType.Created,
+							when: TimeUtils.currentTimeMillis(),
+							connection: connection
+						}
 						xmppConnectionMgrThis.fireConnectionEvent(event);
 					}
 				});
@@ -224,13 +222,11 @@ jingo.declare({
 					if (this.connections.length == 1) {
 						connection = this.connections[0];
 					} else {
-						var error = XmppConnectionMgr.ConnectionEventType.Error;
-						var event = new XmppConnectionMgr.ConnectonEvent(error,
-																					TimeUtils.currentTimeMillis(),
-																					null,
-																					null,
-																					new Error("unknow connection"),
-																					null);
+						var event = {
+							eventType: XmppConnectionMgr.ConnectionEventType.Error,
+							when: TimeUtils.currentTimeMillis(),
+							error: new Error("unknow connection")
+						}
 						this.fireConnectionEvent(event);
 						return;
 					}
@@ -241,12 +237,12 @@ jingo.declare({
 				for (var i = 0; i < stanzas.length; ++i){
 					var stanza = stanzas[i];
 					if (stanza instanceof XmppStanza.Packet) {
-						var event = new XmppConnectionMgr.ConnectonEvent(stanzaReceived,
-																				TimeUtils.currentTimeMillis(),
-																				connection,
-																				stanza,
-																				null,
-																				null);
+						var event = {
+							eventType: stanzaReceived,
+							when: TimeUtils.currentTimeMillis(),
+							connection: connection,
+							stanza: stanza
+						}
 						this.fireConnectionEvent(event);
 						connection.fireHandler(stanza);
 					}
@@ -314,7 +310,7 @@ jingo.declare({
         	
         	fireConnectionEvent: function(event) {
         		for (var i = 0; i < this.listeners.length; ++i){
-					if (this.listeners[i].eventType == event.getEventType()){
+					if (this.listeners[i].eventType == event.eventType){
 						this.listeners[i].handler(event);
 					}
 				}
@@ -356,43 +352,7 @@ jingo.declare({
 			StanzaReceived: "StanzaReceived",
 			
 			StanzaSended: "StanzaSended"
-		}
-		
-		XmppConnectionMgr.ConnectonEvent = JClass.extend({
-			init: function(eventType, when, connection, stanza, errorThrown, attachment) {
-				this.eventType = eventType;
-				this.when = when;
-				this.connection = connection;
-				this.stanza = stanza;
-				this.errorThrown = errorThrown;
-				this.attachment = attachment;
-			},
-			
-			getEventType: function() {
-				return this.eventType;
-			},
-			
-			getWhen: function() {
-				return this.when;
-			},
-			
-			getConnection: function() {
-				return this.connection;
-			},
-			
-			getStanza: function() {
-				return this.stanza;
-			},
-			
-			getErrorThrown: function() {
-				return this.errorThrown;
-			},
-			
-			getAttachment: function() {
-				return this.attachment;
-			}
-		});
-		
+		}		
 		
 		XmppConnectionMgr.XmppConnection = JClass.extend({
 
@@ -459,27 +419,20 @@ jingo.declare({
 					handler: function(responsebody) {
 						var stanzas = responsebody.getStanzas();
 						if (stanzas.length > 0 ){
+							var eventType = XmppConnectionMgr.ConnectionEventType.SaslFailed;
 							if (stanzas[0] instanceof XmppStanza.Success) {
-								var saslSuccessful = XmppConnectionMgr.ConnectionEventType.SaslSuccessful;
+								eventType = XmppConnectionMgr.ConnectionEventType.SaslSuccessful;
 								connectionThis.authenticated = true;
-								var event = new XmppConnectionMgr.ConnectonEvent(saslSuccessful,
-																							TimeUtils.currentTimeMillis(),
-																							connectionThis,
-																							stanzas[0],
-																							null,
-																							null);
+								
 								// TODO Do not need it in new Protocal
 								connectionThis.bindResource();
-							} else {
-								var saslFailed = XmppConnectionMgr.ConnectionEventType.SaslFailed;
-								var event = new XmppConnectionMgr.ConnectonEvent(saslFailed,
-																							TimeUtils.currentTimeMillis(),
-																							connectionThis,
-																							stanzas[0],
-																							null,
-																							null);
 							}
-							
+							var event = {
+									eventType: eventType,
+									when: TimeUtils.currentTimeMillis(),
+									connection: connectionThis,
+									stanza: stanzas[0]
+							}
 							connectionMgr.fireConnectionEvent(event);
 						}
 					}
@@ -521,12 +474,13 @@ jingo.declare({
 							connectionThis.resource = jid.getResource();
 							this.resourceBinded = true;
 						}
-						var event = new XmppConnectionMgr.ConnectonEvent(eventType,
-																					TimeUtils.currentTimeMillis(),
-																					connectionThis,
-																					iqResponse,
-																					null,
-																					null);
+																					
+						var event = {
+								eventType: eventType,
+								when: TimeUtils.currentTimeMillis(),
+								connection: connectionThis,
+								stanza: iqResponse
+						}
 //						alert(eventType);
 						connectionMgr.fireConnectionEvent(event);
 						if (eventType == XmppConnectionMgr.ConnectionEventType.ResourceBinded) {
@@ -560,12 +514,12 @@ jingo.declare({
 							eventType = XmppConnectionMgr.ConnectionEventType.SessionBinded;
 							this.sessionBinded = true;
 						}
-						var event = new XmppConnectionMgr.ConnectonEvent(eventType,
-																					TimeUtils.currentTimeMillis(),
-																					connectionThis,
-																					iqResponse,
-																					null,
-																					null);
+						var event = {
+								eventType: eventType,
+								when: TimeUtils.currentTimeMillis(),
+								connection: connectionThis,
+								stanza: iqResponse
+						}
 						connectionMgr.fireConnectionEvent(event);
 					}
 				});
