@@ -28,6 +28,7 @@ jingo.declare({
 				this.bodyMessagQueue = new Array();
 				this.intervalId = setInterval(this.processRequest, 1000);
 				this.requestingCount = 0;
+				this.connectionErrorCount = 0;
 				this.keyGenerater = new XmppConnectionMgr.KeyGenerater();
 			},
 			
@@ -71,13 +72,32 @@ jingo.declare({
 //					data: "<body content='text/xml;charset=utf-8' hold='1' rid='1573741820' to='jabbercn.org' ver='1.6' wait='60' ack='1' xml:lang='en' xmlns='http://jabber.org/protocol/httpbind'/>",
 					processData: false,
 					success: function(xml){
+						aThis.connectionErrorCount == 0;
 						var bodyElement = xml.documentElement;
 						var parser = XmppParser.getInstance();
 						var responseBody = parser.parseStanza(bodyElement);
 						aThis.handleBody(responseBody);
 					},
-					
-					complete: function(XMLHttpRequest, textStatus) {
+					error: function (xmlHttpRequest, textStatus, errorThrown) {
+						++aThis.connectionErrorCount;
+						// TODO
+						if (window.console) {
+							window.console.log("connection error, count:" + connectionErrorCount);
+						}
+						
+						if (aThis.connectionErrorCount > 5) {
+							clearInterval(aThis.intervalId);
+							var event = {
+								eventType: XmppConnectionMgr.ConnectionEventType.Error,
+								when: TimeUtils.currentTimeMillis(),
+								error: errorThrown
+							}
+							aThis.fireConnectionEvent(event);
+							return;
+						}
+					    aThis.bodyMessagQueue.unshift(bodyMessage);
+					},
+					complete: function(xmlHttpRequest, textStatus) {
 						--aThis.requestingCount;
 					}
 				});
@@ -203,7 +223,7 @@ jingo.declare({
 			/**
 			 * options = {
 			 * 	rid: rid
-			 * handler: handler function
+			 * 	handler: handler function
 			 * }
 			 */
 			handleBodyByRid: function(options) {
@@ -243,8 +263,9 @@ jingo.declare({
 							connection: connection,
 							stanza: stanza
 						}
+						connection.packetHandler(stanza);
 						this.fireConnectionEvent(event);
-						connection.fireHandler(stanza);
+						
 					}
 					// TODO Do need it in new Protocal
 //					else if (stanza instanceof XmppStanza.StreamFeature) {
@@ -327,6 +348,34 @@ jingo.declare({
 			return XmppConnectionMgr.instance;
 		}
 		
+		
+		XmppConnectionMgr.KeyGenerater = JClass.extend({
+			init: function(){
+				this.keyLength = 10;
+				this.keySequence = new Array();
+			},
+			
+			getKey: function() {
+				return this.keySequence.pop();
+			},
+			
+			isKeyEmpty: function() {
+				return this.keySequence.length == 0;
+			},
+			
+			getNewKey: function() {
+				this.keySequence = new Array();
+				var seed = StringUtils.randomNumber(1000, 10000);
+				for (var i = 0; i < this.keyLength; ++i) {
+					var key = StringUtils.hash(
+										(i == 0) ? seed.toString() : this.keySequence[i - 1], 
+										"SHA1");
+					this.keySequence.push(key);
+				}
+				return this.getKey();
+			}
+		});
+		
 		XmppConnectionMgr.ConnectionEventType = {
 			
 			Closed: "Closed",
@@ -351,7 +400,13 @@ jingo.declare({
 			
 			StanzaReceived: "StanzaReceived",
 			
-			StanzaSended: "StanzaSended"
+			StanzaSended: "StanzaSended",
+			
+			ContactRemoved: "ContactRemoved",
+			
+			ContactUpdated: "ContactUpdated",
+			
+			OtherResourceStatusChanged: "OtherResourceStatusChanged"
 		}		
 		
 		XmppConnectionMgr.XmppConnection = JClass.extend({
@@ -360,6 +415,8 @@ jingo.declare({
 				this.domain = domain;
 				this.allowedMechanisms = new Array();
 				this.handlers = new Array();
+				this.contacts = new Array();
+				this.otherResources = new Array();
 			},
 			
 			setAllowedMechanisms: function(allowedMechanisms) {
@@ -371,7 +428,7 @@ jingo.declare({
 			},
 			
 			getJid: function() {
-				return this.owner.getJid();
+				return this.jid;
 			},
 			
 			setStreamName: function(streamName) {
@@ -442,11 +499,6 @@ jingo.declare({
 			
 			
 			bindResource: function() {
-				var body = new XmppStanza.Body();
-				
-				// TODO Do not need it in new Protocal
-				body.setAttribute("xmpp:restart", "true");
-				
 				var iq = new XmppStanza.Iq(XmppStanza.IqType.SET);
 				iq.setTo(new JID(null, this.getDomain(), null));
 				var iqBind = new XmppStanza.IqBind();
@@ -456,8 +508,6 @@ jingo.declare({
 				iqBind.setResource(this.resource);
 				iq.addPacketExtension(iqBind);
 				
-				body.addStanza(iq);
-				
 				var id = iq.getStanzaId();
 				
 				var connectionMgr = XmppConnectionMgr.getInstance();
@@ -465,41 +515,38 @@ jingo.declare({
 				this.handleStanza({
 					filter: new StanzaFilter.PacketIdFilter(id),
 					handler: function(iqResponse) {
-						
 						var eventType = XmppConnectionMgr.ConnectionEventType.BindResourceFailed;
 						if (iqResponse.getType() == XmppStanza.IqType.RESULT) {
 							eventType = XmppConnectionMgr.ConnectionEventType.ResourceBinded;
 							var iqBindResponse = iqResponse.getPacketExtension(XmppStanza.IqBind.ELEMENTNAME, XmppStanza.IqBind.NAMESPACE);
 							var jid = iqBindResponse.getJid();
+							connectionThis.jid = jid;
 							connectionThis.resource = jid.getResource();
 							this.resourceBinded = true;
-						}
-																					
+						}												
 						var event = {
 								eventType: eventType,
 								when: TimeUtils.currentTimeMillis(),
 								connection: connectionThis,
 								stanza: iqResponse
 						}
-//						alert(eventType);
+		
 						connectionMgr.fireConnectionEvent(event);
 						if (eventType == XmppConnectionMgr.ConnectionEventType.ResourceBinded) {
 							connectionThis.bindSession();
 						}
 					}
 				});
-				connectionMgr.sendBody(body);
+				// TODO Do not need second arg in new Protocal
+				this.sendStanza(iq, true);
 			},
 			
 			bindSession: function() {
-				var body = new XmppStanza.Body();
 				
 				var iq = new XmppStanza.Iq(XmppStanza.IqType.SET);
 				iq.setTo(new JID(null, this.getDomain(), null));
 				var iqSession = new XmppStanza.IqSession();
 				iq.addPacketExtension(iqSession);
-				
-				body.addStanza(iq);
 				
 				var id = iq.getStanzaId();
 				
@@ -513,6 +560,10 @@ jingo.declare({
 						if (iqResponse.getType() == XmppStanza.IqType.RESULT) {
 							eventType = XmppConnectionMgr.ConnectionEventType.SessionBinded;
 							this.sessionBinded = true;
+							connectionThis.queryRoster();
+							if (connectionThis.initPresence) {
+								connectionThis.sendStanza(connectionThis.initPresence);
+							}
 						}
 						var event = {
 								eventType: eventType,
@@ -523,14 +574,155 @@ jingo.declare({
 						connectionMgr.fireConnectionEvent(event);
 					}
 				});
-				connectionMgr.sendBody(body);
+				this.sendStanza(iq);
 			},
 			
-			fireHandler: function(packet) {
-				for (var i =  0; i < this.handlers.length; ++i){
-					if (this.handlers[i].filter.accept(this, packet)){
+			queryRoster: function() {
+				var IqRoster = XmppStanza.IqRoster;
+				var iq = new XmppStanza.Iq(XmppStanza.IqType.GET);
+				iq.addPacketExtension(new XmppStanza.IqRoster());
+				
+				this.sendStanza(iq);
+			},
+			
+			packetHandler: function(packet) {
+				var IqRoster = XmppStanza.IqRoster;
+				if (packet instanceof XmppStanza.Iq) {
+					if (packet.getPacketExtension(IqRoster.ELEMENTNAME, IqRoster.NAMESPACE) != null) {
+						this.handleRoster(packet);
+					}
+				}
+				else if (packet instanceof XmppStanza.Presence) {
+					var presence = packet;
+					var type = presence.getType();
+					var from = presence.getFrom();
+					if (type == XmppStanza.PresenceType.AVAILABLE
+						|| type == XmppStanza.PresenceType.UNAVAILABLE) {
+						if (from.equalsWithBareJid(this.jid)) {
+							if (from.getResource() != this.jid.getResource()) {
+								this.handleOtherResource(from.getResource(), presence);
+							}
+						}
+					} 
+				}
+				
+				for (var i =  0; i < this.handlers.length; ++i) {
+					if (this.handlers[i].filter.accept(this, packet)) {
 						this.handlers[i].handler(packet);
 						this.handlers.splice(i,1);
+					}
+				}
+			},
+			
+			handleOtherResource: function(resource, presence) {
+				var otherResource = this.getOtherResource(resource);
+				if (otherResource == null) {
+					otherResource = {
+						resource: resource
+					}
+					this.otherResources.push(otherResource);
+				}
+				otherResource.oldPresence = otherResource.currentPresence;
+				otherResource.currentPresence = presence;
+				
+				if (XmppStanza.PresenceType.UNAVAILABLE == presence.getType()) {
+					for (var i =  0; i < this.otherResources.length; ++i) {
+						if (this.otherResources[i].resource == resource) {
+							this.otherResources.splice(i,1);
+						}
+					}
+				}
+				
+				//TODO 
+				if (window.console) {
+					window.console.log("other resouce(" + resource + ") changed");
+				}
+				
+				var otherResourceStatusChanged = XmppConnectionMgr.ConnectionEventType.OtherResourceStatusChanged;
+				var event = {
+						eventType: otherResourceStatusChanged,
+						when: TimeUtils.currentTimeMillis(),
+						connection: this,
+						stanza: presence,
+						otherResource: otherResource
+				}
+				connectionMgr.fireConnectionEvent(event);
+			},
+			
+			getOtherResource: function(resource) {
+				for (var i =  0; i < this.otherResources.length; ++i) {
+					if (this.otherResources[i].resource == resource) {
+						return this.otherResources[i];
+					}
+				}
+				return null;
+			},
+			
+			handleRoster: function(iq) {
+				var IqRoster = XmppStanza.IqRoster;
+				var iqRoster = iq.getPacketExtension(IqRoster.ELEMENTNAME, IqRoster.NAMESPACE);
+				var items = iqRoster.getRosterItems();
+				for (var i = 0; i < items.length; ++i) {
+					var rosterItem = items[i];
+					var subscription = rosterItem.getSubscription();
+					var jid = rosterItem.getJid();
+					if (subscription == XmppStanza.IqRosterSubscription.remove) {
+						this.removeContact(jid);
+					} else {
+						var contact = this.getContact(jid);
+						if (contact == null) {
+							contact = new XmppConnectionMgr.XmppContact(rosterItem);
+							this.contacts.push(contact);
+						}
+						contact.setRosterItem(rosterItem);
+						
+						//TODO 
+						if (window.console) {
+							window.console.log(jid.toFullJID() + " has been updated");
+						}
+						
+						var event = {
+							eventType: XmppConnectionMgr.ConnectionEventType.ContactUpdated,
+							when: TimeUtils.currentTimeMillis(),
+							connection: this,
+							contact: contact
+						}
+						var connectionMgr = XmppConnectionMgr.getInstance();
+						connectionMgr.fireConnectionEvent(event);
+					}
+				}
+			},
+			
+			getContact: function(jid) {
+				for (var i =  0; i < this.contacts.length; ++i){
+					var contact = this.contacts[i];
+					if (contact.getBareJid().equalsWithBareJid(jid)){
+						return contact;
+					}
+				}
+				return null; 
+			},
+			
+			removeContact: function(jid) {
+				for (var i =  0; i < this.contacts.length; ++i){
+					var contact = this.contacts[i];
+					if (contact.getBareJid().equalsWithBareJid(jid)){
+						this.contacts.splice(i,1);
+						
+						//TODO 
+						if (window.console) {
+							window.console.log(jid.toFullJID() + " has been removed");
+						}
+						
+						var event = {
+							eventType: XmppConnectionMgr.ConnectionEventType.ContactRemoved,
+							when: TimeUtils.currentTimeMillis(),
+							connection: this,
+							contact: contact
+						}
+						var connectionMgr = XmppConnectionMgr.getInstance();
+						connectionMgr.fireConnectionEvent(event);
+						break;
 					}
 				}
 			},
@@ -544,7 +736,20 @@ jingo.declare({
 			},
 			
 			sendStanza: function(stanza) {
-				// TODO
+				var body = new XmppStanza.Body();
+								
+				// TODO Do not need it in new Protocal
+				if (arguments[1]) {
+					body.setAttribute("xmpp:restart", "true");
+				}
+				
+				
+				if (this.streamName != null) {
+					body.setAttribute("stream", streamName);
+				}
+				body.addStanza(stanza);
+				var connectionMgr = XmppConnectionMgr.getInstance();
+				connectionMgr.sendBody(body);
 			},
 			
 			/*
@@ -565,51 +770,75 @@ jingo.declare({
 			
 			isResourceBinded: function() {
 				return this.resourceBinded;
-			},
-			
-			getConnectionId: function() {
-				return this.connectionId;
-			},
-			
-			getOwner: function() {
-				return this.owner;
-			},
-			
-			getContactManager: function() {
-				return this.contactManager;
-			},
-			
-			getPrivacyManager: function() {
-				return this.privacyManager;
 			}
 		});
 		
-		XmppConnectionMgr.KeyGenerater = JClass.extend({
-			init: function(){
-				this.keyLength = 10;
-				this.keySequence = new Array();
+		XmppConnectionMgr.XmppContact = JClass.extend({
+
+			init: function(rosterItem) {
+				this.rosterItem = rosterItem;
+				this.userResources = {};
 			},
 			
-			getKey: function() {
-				return this.keySequence.pop();
+			getBareJid: function() {
+				return this.rosterItem.getJid();
 			},
 			
-			isKeyEmpty: function() {
-				return this.keySequence.length == 0;
+			getNickname: function() {
+				return this.rosterItem.setRosterName();
 			},
 			
-			getNewKey: function() {
-				this.keySequence = new Array();
-				var seed = StringUtils.randomNumber(1000, 10000);
-				for (var i = 0; i < this.keyLength; ++i) {
-					var key = StringUtils.hash(
-										(i == 0) ? seed.toString() : this.keySequence[i - 1], 
-										"SHA1");
-					this.keySequence.push(key);
+			getGroups: function() {
+				return this.rosterItem.getGroups();
+			},
+			
+			addResource: function(userResource) {
+				this.userResources[userResource.resource] = userResource;
+			},
+			
+			removeResource: function(resource) {
+				delete this.userResources[resource];
+			},
+			
+			getResource: function(resource) {
+				return this.userResources[resource];
+			},
+			
+			getResources: function() {
+				var res = new Array();
+				for (var resource in this.userResources ) {
+					res.push(this.userResources[resource]);
 				}
-				return this.getKey();
+				return res;
+			},
+			
+			isResourceAvailable: function() {
+				return this.getResources().length != 0;
+			},
+			
+			setRosterItem: function(rosterItem) {
+				this.rosterItem = rosterItem;
+			},
+			
+			getRosterItem: function() {
+				return this.rosterItem;
+			},
+			
+			getMaxPriorityResource: function() {
+				var maxRes = null;
+				var currentPriority = Number.MIN_VALUE;
+				
+				for (var resource in this.userResources) {
+					var userResource = this.userResources[resource];
+					var presence = userResource.currentPresence;
+					var resPriority = presence.getPriority();
+					if (resPriority >= currentPriority) {
+						maxRes = userResource;
+						currentPriority = resPriority;
+					}
+				}
+				return maxRes;
 			}
-		});
-		
-	}
+			
+		});	}
 });

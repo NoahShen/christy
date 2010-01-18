@@ -105,7 +105,7 @@ jingo.declare({
 		    this.packetExtensions = new Array();
 		},
 		
-		setCode: function(code){
+		setCode: function(code) {
 	    	this.code = code;
 		},
 		
@@ -113,89 +113,81 @@ jingo.declare({
 			return this.code;
 		},
 		
-		setType: function(type){
+		setType: function(type) {
 	    	this.type = type;
 		},
 		
-		getType: function(){
+		getType: function() {
 			return this.type;
 		},
 		
-		setCondition: function(condition){
-			this.condition = condition;
+		addCondition: function(element, namespace) {
+			this.conditions.push({
+				element: element,
+				namespace: namespace
+			});
 		},
 		
-		getCondition: function(){
-			return this.condition;
+		removeCondition: function(element, namespace) {
+			for (var i = 0; i < this.conditions.length; ++i) {
+				if (this.conditions[i].element == element
+					&& this.conditions[i].namespace == namespace) {
+					this.conditions.splice(i,1);
+				}
+			}
 		},
 		
-		addCondition: function(element, namespace){
-			this.conditions[element] = namespace;
-		},
-		
-		removeCondition: function(element, namespace){
-			delete this.conditions[element];
-		},
-		
-		getConditions: function(){
+		getConditions: function() {
 			return this.conditions;
 		},
 		
-		setMessage: function(message){
+		setMessage: function(message) {
 			this.message = message;
 		},
 		
-		getMessage: function(){
+		getMessage: function() {
 			return this.message;
 		},
 		
-		addPacketExtension: function(extension){
+		addPacketExtension: function(extension) {
 			this.packetExtensions.push(extension);
 		},
 		
-		removePacketExtension: function(extension){
-			for (var i = 0; i < this.packetExtensions.length; ++i){
-				if (this.packetExtensions[i] == exten){
+		removePacketExtension: function(extension) {
+			for (var i = 0; i < this.packetExtensions.length; ++i) {
+				if (this.packetExtensions[i] == exten) {
 					this.packetExtensions.splice(i,1);
 				}
 			}
 		},
 		
-		getPacketExtensions: function(){
+		getPacketExtensions: function() {
 			return this.packetExtensions;
 		},
 		
-		toXml: function(){
+		toXml: function() {
 		    var xml = "";
 		    xml += "<error code=\"" + this.code + "\"";
 		    
-		    if (this.type != null)
-		    {
+		    if (this.type != null) {
 		    	xml += " type=\"";
 		    	xml += this.type;
 		    	xml += "\"";
 		    }
 		    xml += ">";
 		    
+		    for (var i = 0; i < this.conditions.length; ++i) {
+				xml += "<" + this.conditions[i].element + 
+					" xmlns=\"" + this.conditions[i].namespace + "\"/>";
+			}
 		    
-		    if (this.condition != null)
-		    {
-		    	xml += "<" + this.condition + 
-		    			" xmlns=\"urn:ietf:params:xml:ns:xmpp-stanzas\"/>";
-		        for(key in this.conditions){
-		        	xml += "<" + key + " xmlns=\"" + this.conditions[key] + "\"/>";
-		        }
-	
-		    }
-		    
-		    if (this.message != null)
-		    {
+		    if (this.message != null) {
 		    	xml += "<text xmlns=\"urn:ietf:params:xml:ns:xmpp-stanzas\">";
 				xml += StringUtils.escapeXml(this.message);
 				xml += "</text>";
 		    }
 		    
-		    for (var j = 0; j < this.packetExtensions.length; ++j){
+		    for (var j = 0; j < this.packetExtensions.length; ++j) {
 		            xml += this.packetExtensions[j].toXml();
 		    }
 		    
@@ -215,70 +207,70 @@ jingo.declare({
 			this.packetExtensions = new Array();
 		},
 		
-		setTo: function(to){
+		setTo: function(to) {
 			this.to = to;
 		},
 		
-		getTo: function(){
+		getTo: function() {
 			return this.to
 		},
 		
-	    setFrom: function(from){
+	    setFrom: function(from) {
 	    	this.from = from;
 	    },
 	    
-		getFrom: function(){
+		getFrom: function() {
 	    	return this.from;
 	    },
 	    
-	    setLanguage: function(language){
+	    setLanguage: function(language) {
 	    	this.language = language;
 	    },
 	    
-		getLanguage: function(){
+		getLanguage: function() {
 	    	return this.language;
 	    },
 	    
-	    setXmppError: function(xmppError){
+	    setXmppError: function(xmppError) {
 			this.xmppError = xmppError;
 		},
 		
-		getXmppError: function(){
+		getXmppError: function() {
 			return this.xmppError
 		},
 		
-		addPacketExtension: function(extension){
+		addPacketExtension: function(extension) {
 			this.packetExtensions.push(extension);
 		},
 		
-		removePacketExtension: function(extension){
-			for (var i = 0; i < this.packetExtensions.length; ++i){
-				if (this.packetExtensions[i] == exten){
+		removePacketExtension: function(extension) {
+			for (var i = 0; i < this.packetExtensions.length; ++i) {
+				if (this.packetExtensions[i] == exten) {
 					this.packetExtensions.splice(i,1);
 					break;
 				}
 			}
 		},
 		
-		getPacketExtensions: function(){
+		getPacketExtensions: function() {
 			return this.packetExtensions;
 		},
 		
-		getPacketExtension: function(elementName, namespace){
-			for (var i = 0; i < this.packetExtensions.length; ++i){
+		getPacketExtension: function(elementName, namespace) {
+			for (var i = 0; i < this.packetExtensions.length; ++i) {
 				var extension = this.packetExtensions[i];
 				if (extension.getElementName() == elementName
-					 && extension.getNamespace() == namespace){
+					 && extension.getNamespace() == namespace) {
 					return extension;
 				}
 			}
 			return null;
 		},
 		
-		getExtensionsXml: function(){
+		getExtensionsXml: function() {
 			var xml = "";
 			
-			for (var i = 0; i < this.packetExtensions.length; ++i){
+			for (var i = 0; i < this.packetExtensions.length; ++i) {
 				xml += this.packetExtensions[i].toXml();
 			}
 			return xml;

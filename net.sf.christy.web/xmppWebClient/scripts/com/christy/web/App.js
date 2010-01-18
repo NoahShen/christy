@@ -45,7 +45,7 @@ $(document).ready(function() {
 			var XmppError = XmppStanza.XmppError;
 			var ErrorType = XmppStanza.ErrorType;
 			var error = new XmppError(500, ErrorType.CANCEL);
-			error.setCondition("bad-request");
+//			error.setCondition("bad-request");
 			error.setMessage("messag");
 			error.addCondition("e", "ns");
 //			innerHtml += error.toXml() + "\n";
@@ -213,7 +213,11 @@ $(document).ready(function() {
 //				alert(event.getWhen());
 //				alert(event.getConnection().getAllowedMechanisms());
 				var conn = event.connection;
-				conn.login("NoahShen", "159357");
+				conn.login("NoahShen", "159357", "resource", new XmppStanza.Presence(XmppStanza.PresenceShow.AVAILABLE));
+			});
+			
+			connectionMgr.addConnectionListener(ConnectionEventType.Error, function(event){
+				alert("Error");
 			});
 			
 			connectionMgr.addConnectionListener(ConnectionEventType.StanzaReceived, function(event){
@@ -230,8 +234,6 @@ $(document).ready(function() {
 				alert("SessionBinded");
 			});
 			$("#testId1").text(innerHtml);
-			
-			
 		}
 	});
 
