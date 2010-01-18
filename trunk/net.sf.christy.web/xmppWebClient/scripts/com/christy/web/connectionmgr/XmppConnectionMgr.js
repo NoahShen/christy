@@ -263,6 +263,7 @@ jingo.declare({
 							connection: connection,
 							stanza: stanza
 						}
+
 						connection.packetHandler(stanza);
 						this.fireConnectionEvent(event);
 						
@@ -587,6 +588,7 @@ jingo.declare({
 			
 			packetHandler: function(packet) {
 				var IqRoster = XmppStanza.IqRoster;
+
 				if (packet instanceof XmppStanza.Iq) {
 					if (packet.getPacketExtension(IqRoster.ELEMENTNAME, IqRoster.NAMESPACE) != null) {
 						this.handleRoster(packet);
@@ -646,6 +648,7 @@ jingo.declare({
 						stanza: presence,
 						otherResource: otherResource
 				}
+				var connectionMgr = XmppConnectionMgr.getInstance();
 				connectionMgr.fireConnectionEvent(event);
 			},
 			

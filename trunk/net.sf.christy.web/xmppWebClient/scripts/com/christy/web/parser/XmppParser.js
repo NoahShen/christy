@@ -64,6 +64,7 @@ jingo.declare({
 				var lang = presenceElement.getAttribute("xml:lang");
 				var id = presenceElement.getAttribute("id");
 				var type = presenceElement.getAttribute("type");
+				type = (type == null) ? XmppStanza.PresenceType.AVAILABLE : type;
 				
 				var presence = new XmppStanza.Presence(type);
 				presence.setTo(to == null ? null : JID.createJID(to));
@@ -89,6 +90,8 @@ jingo.declare({
 						presence.setXmppError(this.parseError(presenceExtensionElem));
 					}
 				}
+				
+				return presence;
 			},
 			
 			parseIq: function(iqElement)  {
