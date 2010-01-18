@@ -82,7 +82,7 @@ jingo.declare({
 						++aThis.connectionErrorCount;
 						// TODO
 						if (window.console) {
-							window.console.log("connection error, count:" + connectionErrorCount);
+							window.console.log("connection error, count:" + aThis.connectionErrorCount);
 						}
 						
 						if (aThis.connectionErrorCount > 5) {
