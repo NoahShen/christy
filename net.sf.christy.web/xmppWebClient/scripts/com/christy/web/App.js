@@ -233,6 +233,11 @@ $(document).ready(function() {
 			connectionMgr.addConnectionListener(ConnectionEventType.SessionBinded, function(event){
 				alert("SessionBinded");
 			});
+			
+			connectionMgr.addConnectionListener(ConnectionEventType.OtherResourceStatusChanged, function(event){
+				alert("OtherResourceStatusChanged");
+			});
+			
 			$("#testId1").text(innerHtml);
 		}
 	});
