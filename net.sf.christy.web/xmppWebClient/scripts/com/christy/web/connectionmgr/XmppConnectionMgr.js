@@ -407,7 +407,23 @@ jingo.declare({
 			
 			ContactUpdated: "ContactUpdated",
 			
-			OtherResourceStatusChanged: "OtherResourceStatusChanged"
+			OtherResourceStatusChanged: "OtherResourceStatusChanged",
+			
+			ContactStatusChanged: "ContactStatusChanged",
+			
+			ContactSubscribeMe: "ContactSubscribeMe",
+			
+			ContactSubscribed: "ContactSubscribed",
+			
+			ContactUnsubscribeMe: "ContactUnsubscribeMe",
+			
+			ContactUnsubscribed: "ContactUnsubscribed",
+			
+			ChatCreated: "ChatCreated",
+			
+			MessageReceived: "MessageReceived",
+			
+			ChatResourceChanged: "ChatResourceChanged"
 		}		
 		
 		XmppConnectionMgr.XmppConnection = JClass.extend({
@@ -418,6 +434,7 @@ jingo.declare({
 				this.handlers = new Array();
 				this.contacts = new Array();
 				this.otherResources = new Array();
+				this.chats = new Array();
 			},
 			
 			setAllowedMechanisms: function(allowedMechanisms) {
@@ -604,8 +621,43 @@ jingo.declare({
 							if (from.getResource() != this.jid.getResource()) {
 								this.handleOtherResource(from.getResource(), presence);
 							}
+						} else {
+							this.handleStatusChanged(presence);
 						}
-					} 
+
+					} else {
+						var eventType = null;
+						if (type == XmppStanza.PresenceType.SUBSCRIBE) {
+							eventType = XmppConnectionMgr.ConnectionEventType.ContactSubscribeMe;
+						}
+						else if (type == XmppStanza.PresenceType.SUBSCRIBED) {
+							eventType = XmppConnectionMgr.ConnectionEventType.ContactSubscribed;
+						}
+						else if (type == XmppStanza.PresenceType.UNSUBSCRIBE) {
+							eventType = XmppConnectionMgr.ConnectionEventType.ContactUnsubscribeMe;
+						}
+						else if (type == XmppStanza.PresenceType.UNSUBSCRIBED) {
+							eventType = XmppConnectionMgr.ConnectionEventType.ContactUnsubscribed;
+						}
+						
+						if (eventType != null) {
+							var event = {
+									eventType: eventType,
+									when: TimeUtils.currentTimeMillis(),
+									connection: this,
+									stanza: presence
+							}
+							var connectionMgr = XmppConnectionMgr.getInstance();
+							connectionMgr.fireConnectionEvent(event);
+						}
+					}
+				} else if (packet instanceof XmppStanza.Message) {
+					
+					var message = packet;
+					var type = message.getType();
+					if (type == XmppStanza.MessageType.CHAT) {
+						this.handleChatMessage(packet);
+					}
 				}
 				
 				for (var i =  0; i < this.handlers.length; ++i) {
@@ -614,6 +666,124 @@ jingo.declare({
 						this.handlers.splice(i,1);
 					}
 				}
+			},
+			
+			handleChatMessage: function(message) {
+				var from = message.getFrom();
+				var bareJID = new JID(from.getNode(), from.getDomain(), null);
+				var resource = from.getResource();
+
+				var chat = this.getChat(bareJID);
+				if (chat == null) {
+					chat = this.createChat(bareJID, resource);
+				}
+
+				
+				var messageReceived = XmppConnectionMgr.ConnectionEventType.MessageReceived;
+				var event = {
+						eventType: messageReceived,
+						when: TimeUtils.currentTimeMillis(),
+						connection: this,
+						stanza: message,
+						chat: chat
+				}
+				var connectionMgr = XmppConnectionMgr.getInstance();
+				connectionMgr.fireConnectionEvent(event);
+
+				if (chat.chatResource != resource) {
+					chat.chatResource = resource;
+					var chatResourceChanged = XmppConnectionMgr.ConnectionEventType.ChatResourceChanged;
+					var event = {
+							eventType: chatResourceChanged,
+							when: TimeUtils.currentTimeMillis(),
+							connection: this,
+							stanza: message,
+							chat: chat
+					}
+					connectionMgr.fireConnectionEvent(event);
+				}
+			},
+			
+			sendChatText: function(chat, text) {
+				var message = new XmppStanza.Message(XmppStanza.MessageType.CHAT);
+				message.setTo(new JID(chat.bareJID.getNode(), chat.bareJID.getDomain(), chat.chatResource));
+				message.setBody(text);
+				this.sendStanza(message);
+			},
+			
+			createChat: function(bareJID, chatResource) {
+				var chat = this.getChat(bareJID);
+				if (chat == null) {
+					chat = {
+						bareJID: bareJID,
+						chatResource: chatResource
+					}
+					this.chats.push(chat);
+					
+					var chatCreated = XmppConnectionMgr.ConnectionEventType.ChatCreated;
+					var event = {
+							eventType: chatCreated,
+							when: TimeUtils.currentTimeMillis(),
+							connection: this,
+							chat: chat
+					}
+					var connectionMgr = XmppConnectionMgr.getInstance();
+					connectionMgr.fireConnectionEvent(event);
+				}
+				return chat;
+			},
+			
+			getChat: function(jid) {
+				for (var i =  0; i < this.chats.length; ++i) {
+					if (this.chats[i].bareJID.equalsWithBareJid(jid)) {
+						return this.chats[i];
+					}
+				}
+				return null;
+			},
+			
+			handleStatusChanged: function(presence) {
+				var jid = presence.getFrom();
+				var bareJID = JID.createJID(jid.toBareJID());
+				var resource = jid.getResource();
+				
+				var contact = this.getContact(bareJID);
+				
+				if (contact == null) {
+					return;
+				}
+
+				var userResource = contact.getResource(resource);
+				if (userResource == null) {
+					userResource = {
+						resource: resource
+					}
+					contact.addResource(userResource);
+				}
+
+				userResource.oldPresence = userResource.currentPresence;
+				userResource.currentPresence = presence;
+				
+				if (presence.getType() == XmppStanza.PresenceType.UNAVAILABLE) {
+					contact.removeResource(resource);
+				}
+				
+				//TOO 
+				if (window.console) {
+					window.console.log(jid.toFullJID() + " status changed");
+				}
+				
+				var contactStatusChanged = XmppConnectionMgr.ConnectionEventType.ContactStatusChanged;
+				var event = {
+						eventType: contactStatusChanged,
+						when: TimeUtils.currentTimeMillis(),
+						connection: this,
+						stanza: presence,
+						contact: contact,
+						resource: userResource
+				}
+				var connectionMgr = XmppConnectionMgr.getInstance();
+				connectionMgr.fireConnectionEvent(event);
 			},
 			
 			handleOtherResource: function(resource, presence) {

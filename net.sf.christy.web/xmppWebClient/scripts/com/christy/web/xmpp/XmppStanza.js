@@ -86,6 +86,55 @@ jingo.declare({
 	
 	var PacketExtension = com.christy.web.xmpp.XmppStanza.PacketExtension;
 	
+	// start of UnknownExtension
+	com.christy.web.xmpp.XmppStanza.UnknownExtension = PacketExtension.extend({
+		init: function(xmlElement) {
+		    this._super();
+		    this.xmlElement = xmlElement;
+		},
+		
+		getElementName: function(){
+			return xmlElement.nodeName;
+		},
+		
+		getNamespace: function(){
+			return xmlElement.getAttribute("xmlns");
+		},
+		
+		generateXml: function(element) {
+			var xml = "";
+			if (element.nodeType == 1) {
+				xml += "<" + element.nodeName;
+				var attributes = element.attributes;
+				for (var i = 0; i < attributes.length; ++i) {
+					var attribute = attributes[i];
+					xml += " " + attribute.nodeName + "=\"" + attribute.nodeValue + "\"";
+					
+				}
+				xml += ">";
+				var childNodes = element.childNodes;
+				for (var i = 0; i < childNodes.length; ++i) {
+					var childNode = childNodes[i];
+					if (childNode.nodeType == 1) {
+						xml += this.generateXml(childNode);
+					} else if (childNode.nodeType == 3) {
+						xml += childNode.nodeValue;
+					}
+				}
+				
+				xml += "</" + element.nodeName + ">";
+			}
+			return xml;
+		},
+		
+		toXml: function() {
+			return this.generateXml(this.xmlElement);
+		}
+	});
+	// end of UnknownExtension
+	
+	var PacketExtension = com.christy.web.xmpp.XmppStanza.PacketExtension;
+	
 	
 	// start of XmppError
 	com.christy.web.xmpp.XmppStanza.ErrorType = {
@@ -544,6 +593,8 @@ jingo.declare({
 	});
 	
 	var MessageBody = com.christy.web.xmpp.XmppStanza.MessageBody
+	
+	
 	com.christy.web.xmpp.XmppStanza.MessageSubject = XmlStanza.extend({
 		init: function(language, subject) {
 		    this._super();
