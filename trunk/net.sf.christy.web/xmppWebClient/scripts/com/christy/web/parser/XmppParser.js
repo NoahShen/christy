@@ -41,21 +41,70 @@ jingo.declare({
 					if ("features" == elementName
 						|| "stream:features" == elementName) {
 						body.addStanza(this.parseStreamFeature(packetElement));
-					}
-					else if ("success" == elementName) {
+					} else if ("success" == elementName) {
 						body.addStanza(new XmppStanza.Success());
-					}
-					else if ("iq" == elementName) {
+					} else if ("iq" == elementName) {
 						body.addStanza(this.parseIq(packetElement));
-					}
-					else if ("presence" == elementName) {
+					} else if ("presence" == elementName) {
 						body.addStanza(this.parsePresence(packetElement));
+					} else if ("message" == elementName) {
+						body.addStanza(this.parseMessage(packetElement));
 					}
+					
 					// TODO
 				}
 				
 //				alert(body.toXml());
 				return body;
+			},
+			
+			parseMessage: function(messageElement) {
+				var to = messageElement.getAttribute("to");
+				var from = messageElement.getAttribute("from");
+				var lang = messageElement.getAttribute("xml:lang");
+				var id = messageElement.getAttribute("id");
+				var type = messageElement.getAttribute("type");
+				type = (type == null) ? XmppStanza.MessageType.NORMAL : type;
+				
+				var message = new XmppStanza.Message(type);
+				message.setTo(to == null ? null : JID.createJID(to));
+				message.setFrom(from == null ? null : JID.createJID(from));
+				message.setLanguage(lang);
+				message.setStanzaId(id);
+				
+				var childNodes = messageElement.childNodes;
+				for (var i = 0; i < childNodes.length; ++i) {
+					var messageExtensionElem = childNodes[i];
+					if (messageExtensionElem.nodeType != 1) {
+						continue;
+					}
+					var elementName = messageExtensionElem.nodeName;
+					var namespace = messageExtensionElem.getAttribute("xmlns");
+					if ("body" == elementName) {
+						var lang = messageExtensionElem.getAttribute("xml:lang");
+						if (lang != null) {
+							message.addBody(new XmppStanza.MessageBody(lang, messageExtensionElem.firstChild.nodeValue));
+						} else {
+							message.setBody(messageExtensionElem.firstChild.nodeValue);
+						}
+						
+					} else if ("subject" == elementName) {
+						var lang = messageExtensionElem.getAttribute("xml:lang");
+						if (lang != null) {
+							message.addSubject(new XmppStanza.MessageSubject(lang, messageExtensionElem.firstChild.nodeValue));
+						} else {
+							message.setSubject(messageExtensionElem.firstChild.nodeValue);
+						}
+					} else if ("thread" == elementName) {
+						message.setThread(messageExtensionElem.firstChild == null ? null : messageExtensionElem.firstChild.nodeValue);
+					} else if ("error" == elementName) {
+						message.setXmppError(this.parseError(messageExtensionElem));
+					} else {
+						message.addPacketExtension(this.parseExtension(messageExtensionElem));
+					}
+				}
+				
+				return message;
 			},
 			
 			parsePresence: function(presenceElement) {
@@ -81,17 +130,54 @@ jingo.declare({
 					var elementName = presenceExtensionElem.nodeName;
 					var namespace = presenceExtensionElem.getAttribute("xmlns");
 					if ("status" == elementName) {
-						presence.setStatus(presenceExtensionElem.firstChild.nodeValue);
+						presence.setUserStatus(presenceExtensionElem.firstChild == null ? null : presenceExtensionElem.firstChild.nodeValue);
 					} else if ("show" == elementName) {
-						presence.setShow(presenceExtensionElem.firstChild.nodeValue);
+						presence.setShow(presenceExtensionElem.firstChild == null ? null : presenceExtensionElem.firstChild.nodeValue);
 					} else if ("priority" == elementName) {
-						presence.setPriority(presenceExtensionElem.firstChild.nodeValue);
+						presence.setPriority(presenceExtensionElem.firstChild == null ? null : presenceExtensionElem.firstChild.nodeValue);
 					} else if ("error" == elementName) {
 						presence.setXmppError(this.parseError(presenceExtensionElem));
+					} else {
+						presence.addPacketExtension(this.parseExtension(presenceExtensionElem));
 					}
 				}
 				
 				return presence;
+			},
+			
+			parseExtension: function(extensionElem) {
+				var elementName = extensionElem.nodeName;
+				var namespace = extensionElem.getAttribute("xmlns");
+				var extensionParser = this.getExtensionParser(elementName, namespace);
+				if (extensionParser != null) {
+					//TOO 
+					if (window.console) {
+						window.console.log("get [" + elementName + " " + namespace + "]ExtensionParser");
+					}
+					
+					var packetExtension = extensionParser.parseExtension(this, extensionElem);
+					
+					//TOO 
+					if (window.console) {
+						window.console.log("ExtensionParser parse extension complete:" + packetExtension.toXml());
+					}
+					return packetExtension;
+					
+				} else {
+					//TOO 
+					if (window.console) {
+						window.console.log("can not get [" + elementName + " " + namespace + "]ExtensionParser");
+					}
+					
+					var unknownExtension = new XmppStanza.UnknownExtension(extensionElem);
+					
+					//TOO 
+					if (window.console) {
+						window.console.log("parseUnknownExtension complete:" + unknownExtension.toXml());
+					}
+
+					return unknownExtension;
+				}
 			},
 			
 			parseIq: function(iqElement)  {
@@ -124,6 +210,8 @@ jingo.declare({
 						iq.addPacketExtension(this.parseIqRoster(iqExtensionElem));
 					} else if ("error" == elementName) {
 						iq.setXmppError(this.parseError(iqExtensionElem));
+					} else {
+						iq.addPacketExtension(this.parseExtension(iqExtensionElem));
 					}
 				}
 				return iq;
@@ -156,7 +244,7 @@ jingo.declare({
 					var childElem = childNodes[i];
 					var elementName = childElem.nodeName;
 					if ("group" == elementName) {
-						iqRosterItem.addGroup(childElem.firstChild.nodeValue);
+						iqRosterItem.addGroup(childElem.firstChild == null ? null : childElem.firstChild.nodeValue);
 					}
 				}
 
@@ -170,9 +258,9 @@ jingo.declare({
 					var bindChild = childNodes[i];
 					var elementName = bindChild.nodeName;
 					if ("resource" == elementName) {
-						iqBind.setResource(bindChild.firstChild.nodeValue);
+						iqBind.setResource(bindChild.firstChild == null ? null : bindChild.firstChild.nodeValue);
 					} else if ("jid" == elementName) {
-						iqBind.setJid(JID.createJID(bindChild.firstChild.nodeValue));
+						iqBind.setJid(JID.createJID(bindChild.firstChild == null ? null : bindChild.firstChild.nodeValue));
 					}
 				}
 				return iqBind;

@@ -226,18 +226,34 @@ $(document).ready(function() {
 			connectionMgr.addConnectionListener(ConnectionEventType.SaslSuccessful, function(event){
 //				alert("SaslSuccessful");
 			});
-			connectionMgr.addConnectionListener(ConnectionEventType.ResourceBinded, function(event){
-				alert("ResourceBinded");
-			});
+//			connectionMgr.addConnectionListener(ConnectionEventType.ResourceBinded, function(event){
+//				alert("ResourceBinded");
+//			});
 			
 			connectionMgr.addConnectionListener(ConnectionEventType.SessionBinded, function(event){
 				alert("SessionBinded");
 			});
 			
-			connectionMgr.addConnectionListener(ConnectionEventType.OtherResourceStatusChanged, function(event){
-				alert("OtherResourceStatusChanged");
+//			connectionMgr.addConnectionListener(ConnectionEventType.OtherResourceStatusChanged, function(event){
+//				alert("OtherResourceStatusChanged");
+//			});
+//			
+//			connectionMgr.addConnectionListener(ConnectionEventType.ContactStatusChanged, function(event){
+//				alert("ContactStatusChanged");
+//			});
+			
+			connectionMgr.addConnectionListener(ConnectionEventType.ChatCreated, function(event){
+				alert("ChatCreated");
 			});
 			
+			connectionMgr.addConnectionListener(ConnectionEventType.MessageReceived, function(event){
+				alert("MessageReceived");
+				event.connection.sendChatText(event.chat, "echo:" + event.stanza.getBody());
+			});
+			
+			connectionMgr.addConnectionListener(ConnectionEventType.ChatResourceChanged, function(event){
+				alert("ChatResourceChanged");
+			});
 			$("#testId1").text(innerHtml);
 		}
 	});
