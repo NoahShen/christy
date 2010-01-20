@@ -218,6 +218,7 @@ $(document).ready(function() {
 			
 			connectionMgr.addConnectionListener(ConnectionEventType.Error, function(event){
 				alert("Error");
+				alert(event.error.toString());
 			});
 			
 			connectionMgr.addConnectionListener(ConnectionEventType.StanzaReceived, function(event){
@@ -232,6 +233,7 @@ $(document).ready(function() {
 			
 			connectionMgr.addConnectionListener(ConnectionEventType.SessionBinded, function(event){
 				alert("SessionBinded");
+				event.connection.close();
 			});
 			
 //			connectionMgr.addConnectionListener(ConnectionEventType.OtherResourceStatusChanged, function(event){
@@ -253,6 +255,9 @@ $(document).ready(function() {
 			
 			connectionMgr.addConnectionListener(ConnectionEventType.ChatResourceChanged, function(event){
 				alert("ChatResourceChanged");
+			});
+			connectionMgr.addConnectionListener(ConnectionEventType.ConnectionClosed, function(event){
+				alert("ConnectionClosed");
 			});
 			$("#testId1").text(innerHtml);
 		}
