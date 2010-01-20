@@ -26,13 +26,12 @@ jingo.declare({
 				this.bodyHandlers = new Array();
 				this.listeners = new Array();
 				this.bodyMessagQueue = new Array();
-				this.intervalId = setInterval(this.processRequest, 1000);
 				this.requestingCount = 0;
 				this.connectionErrorCount = 0;
 				this.keyGenerater = new XmppConnectionMgr.KeyGenerater();
 			},
 			
-			processRequest: function() {
+			processRequest: function(clearBody) {
 				var aThis = XmppConnectionMgr.instance;
 				if (aThis == null) {
 					return;
@@ -45,6 +44,13 @@ jingo.declare({
 //					window.console.log("aThis.hold:" + aThis.hold);
 //				}
 				
+				if (clearBody) {
+					while (aThis.bodyMessagQueue.length != 0) {
+						var bodyMessage = aThis.bodyMessagQueue.shift();
+						aThis.execAjaxRequest(bodyMessage);
+					}
+					return;
+				}
 				if (aThis.bodyMessagQueue.length > 0) {
 					var bodyMessage = aThis.bodyMessagQueue.shift();
 					aThis.execAjaxRequest(bodyMessage);
@@ -171,9 +177,7 @@ jingo.declare({
 						}
 						var connection = new XmppConnectionMgr.XmppConnection(domain);
 						connection.setStreamName(streamName);
-						
-						
-						
+
 						xmppConnectionMgrThis.connections.push(connection);
 						
 						var stanzas = responsebody.getStanzas();
@@ -193,6 +197,9 @@ jingo.declare({
 					}
 				});
 				this.sendBody(body);
+				if (this.intervalId == null) {
+					this.intervalId = setInterval(this.processRequest, 1000);
+				}
 			},
 			
 			getStreamId: function() {
@@ -231,6 +238,10 @@ jingo.declare({
 			},
 			
 			handleBody: function(body) {
+				if (body.getAttribute("type") == "terminate") {
+					var streamName = body.getAttribute("stream");
+					this.removeConnectionByStreamName(streamName, body);
+				}
 				this.fireBodyHandler(body);
 				this.handleStanza(body);
 			},
@@ -241,7 +252,10 @@ jingo.declare({
 				if (connection == null) {
 					if (this.connections.length == 1) {
 						connection = this.connections[0];
-					} else {
+					} else if (this.connections.length == 0)  {
+						// no connection exist
+						return;
+					}else {
 						var event = {
 							eventType: XmppConnectionMgr.ConnectionEventType.Error,
 							when: TimeUtils.currentTimeMillis(),
@@ -291,13 +305,37 @@ jingo.declare({
                 return this.connections;
         	},
 
-			getConnection: function(jid){
+			getConnectionByJid: function(jid){
                 for (var i = 0; i < this.connections.length; ++i){
 					if (jid.equals(this.connections[i].getJid())) {
 						return this.connections[i];
 					}
 				}
                 return null;
+        	},
+        	
+        	removeConnectionByStreamName: function(streamName, body) {
+        		for (var i = 0; i < this.connections.length; ++i){
+        			var conn = this.connections[i];
+					if (streamName == null
+						|| streamName == conn.getStreamName()) {
+						this.connections.splice(i,1);
+						var event = {
+							eventType: XmppConnectionMgr.ConnectionEventType.ConnectionClosed,
+							when: TimeUtils.currentTimeMillis(),
+							connection: conn,
+							body: body
+						}
+						this.fireConnectionEvent(event);
+						break;
+					}
+				}
+				
+				if (this.connections.length == 0) {
+					clearInterval(this.intervalId);
+					this.processRequest(true);
+					this.intervalId = null;
+				}
         	},
         	
         	getConnectionByStreamName: function(streamName) {
@@ -423,7 +461,9 @@ jingo.declare({
 			
 			MessageReceived: "MessageReceived",
 			
-			ChatResourceChanged: "ChatResourceChanged"
+			ChatResourceChanged: "ChatResourceChanged",
+			
+			ConnectionClosed: "ConnectionClosed"
 		}		
 		
 		XmppConnectionMgr.XmppConnection = JClass.extend({
@@ -905,7 +945,19 @@ jingo.declare({
 			},
 			
 			close: function(unavailablePresence) {
-				// TODO
+				var body = new XmppStanza.Body();
+				body.setAttribute("type", "terminate");
+				
+				if (this.streamName != null) {
+					body.setAttribute("stream", this.streamName);
+				}
+				
+				if (unavailablePresence != null) {
+					body.addStanza(unavailablePresence);
+				}
+				var connectionMgr = XmppConnectionMgr.getInstance();
+				connectionMgr.sendBody(body);
+				connectionMgr.removeConnectionByStreamName(this.streamName);
 			},
 			
 			sendStanza: function(stanza) {
