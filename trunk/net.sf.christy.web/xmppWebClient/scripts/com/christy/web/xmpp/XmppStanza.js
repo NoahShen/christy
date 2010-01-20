@@ -31,13 +31,11 @@ jingo.declare({
 		
 		getStanzaId: function(){
 	        if (this.stanzaId != null
-	        	&& AbstractXmlStanza.ID_NOT_AVAILABLE == this.stanzaId)
-	        {
+	        	&& AbstractXmlStanza.ID_NOT_AVAILABLE == this.stanzaId) {
 	                return null;
 	        }
 	
-	        if (this.stanzaId == null)
-	        {
+	        if (this.stanzaId == null) {
 	                this.stanzaId = AbstractXmlStanza.nextID();
 	        }
 	        return this.stanzaId;
@@ -93,11 +91,11 @@ jingo.declare({
 		    this.xmlElement = xmlElement;
 		},
 		
-		getElementName: function(){
+		getElementName: function() {
 			return xmlElement.nodeName;
 		},
 		
-		getNamespace: function(){
+		getNamespace: function() {
 			return xmlElement.getAttribute("xmlns");
 		},
 		
