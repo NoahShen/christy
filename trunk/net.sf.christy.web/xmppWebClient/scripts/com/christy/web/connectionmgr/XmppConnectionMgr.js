@@ -319,6 +319,11 @@ jingo.declare({
         			var conn = this.connections[i];
 					if (streamName == null
 						|| streamName == conn.getStreamName()) {
+						conn.closed = true;
+						conn.authenticated = false;
+						conn.sessionBinded = false;
+						conn.resourceBinded = false;
+						
 						this.connections.splice(i,1);
 						var event = {
 							eventType: XmppConnectionMgr.ConnectionEventType.ConnectionClosed,
@@ -944,6 +949,10 @@ jingo.declare({
 				return this.authenticated;
 			},
 			
+			isClosed: function() {
+				return this.closed;
+			},
+			
 			close: function(unavailablePresence) {
 				var body = new XmppStanza.Body();
 				body.setAttribute("type", "terminate");
@@ -961,6 +970,10 @@ jingo.declare({
 			},
 			
 			sendStanza: function(stanza) {
+				if (this.isClosed()) {
+					throw new Error("connection has been closed");
+				}
+				
 				var body = new XmppStanza.Body();
 								
 				// TODO Do not need it in new Protocal
