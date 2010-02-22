@@ -66,19 +66,6 @@ public class RouteMessage implements XmlStanza
 	{
 		return toUserNode;
 	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	public String getPrepedUserNode()
-	{
-		if (toUserNode == null)
-		{
-			return null;
-		}
-		return toUserNode.toLowerCase();
-	}
 	
 	/**
 	 * @param toUserNode the toUserNode to set

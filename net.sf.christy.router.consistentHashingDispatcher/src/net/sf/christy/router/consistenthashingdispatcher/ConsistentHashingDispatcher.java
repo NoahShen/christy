@@ -85,7 +85,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 	public void sendMessage(RouteMessage routeMessage)
 	{
 		
-		String toUserNode = routeMessage.getPrepedUserNode();
+		String toUserNode = routeMessage.getToUserNode();
 		SmSession selectedSmSession = get(toUserNode);
 		
 		selectedSmSession.write(routeMessage);
@@ -193,7 +193,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 		if (routeMessage.containExtension(SearchCompletedExtension.ELEMENTNAME, 
 									SearchCompletedExtension.NAMESPACE))
 		{
-			String node = routeMessage.getPrepedUserNode();
+			String node = routeMessage.getToUserNode();
 			List<RouteMessage> messages = blockedMessages.removeAll(node);
 			for (RouteMessage mess : messages)
 			{
@@ -221,7 +221,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 					blockedMessage.addRouteExtension(extension);
 				}
 				
-				blockedMessages.put(routeMessage.getPrepedUserNode(), blockedMessage);
+				blockedMessages.put(routeMessage.getToUserNode(), blockedMessage);
 			}
 			
 			
@@ -250,7 +250,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 				}
 				else
 				{
-					smSession2 = getNextSmSession(routeMessage.getPrepedUserNode(), searchExtension);
+					smSession2 = getNextSmSession(routeMessage.getToUserNode(), searchExtension);
 				}
 				
 				
@@ -309,7 +309,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 							SearchRouteExtension.NAMESPACE))
 			{
 				//should not intercept search messsage
-				String node = routeMessage.getPrepedUserNode();
+				String node = routeMessage.getToUserNode();
 				if (blockedMessages.containsKey(node))
 				{
 					blockedMessages.put(node, routeMessage);

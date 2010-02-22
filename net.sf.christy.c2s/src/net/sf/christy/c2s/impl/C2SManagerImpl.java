@@ -44,6 +44,7 @@ import net.sf.christy.xmpp.CloseStream;
 import net.sf.christy.xmpp.Failure;
 import net.sf.christy.xmpp.Iq;
 import net.sf.christy.xmpp.JID;
+import net.sf.christy.xmpp.Packet;
 import net.sf.christy.xmpp.Proceed;
 import net.sf.christy.xmpp.StartTls;
 import net.sf.christy.xmpp.Stream;
@@ -462,7 +463,6 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			}
 			else if ("route".equals(elementName))
 			{
-				// TODO
 				RouteMessage routeMessage = 
 					routeMessageParserServiceTracker.getRouteMessageParser().parseXml(xml);
 				handleRoute(routeMessage, session);
@@ -657,7 +657,23 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 
 		private void handleStanza(XmlStanza stanza, IoSession session)
 		{
-
+			// TODO check case sentity
+			if (stanza instanceof Packet)
+			{
+				Packet packet = (Packet) stanza;
+				if (packet.getFrom() != null)
+				{
+					JID from = packet.getFrom();
+					packet.setFrom(new JID(from.getNodePreped(), from.getDomainPreped(), from.getResourcePreped()));
+				}
+				
+				if (packet.getTo() != null) 
+				{
+					JID to = packet.getTo();
+					packet.setTo(new JID(to.getNodePreped(), to.getDomainPreped(), to.getResourcePreped()));
+				}
+			}
+			
 			ClientSession clientSession = (ClientSession) session.getAttachment();
 			
 			RouteMessage routeMessage = new RouteMessage(getName(), clientSession.getStreamId());

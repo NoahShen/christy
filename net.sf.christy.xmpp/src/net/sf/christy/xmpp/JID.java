@@ -524,6 +524,21 @@ public class JID
 		return resource;
 	}
 
+	public String getNodePreped()
+	{
+		return nodePreped;
+	}
+
+	public String getDomainPreped()
+	{
+		return domainPreped;
+	}
+
+	public String getResourcePreped()
+	{
+		return resourcePreped;
+	}
+
 	/**
 	 * Returns the String representation of the bare JID, which is the JID
 	 * with resource information removed.
