@@ -42,7 +42,14 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 	public ClientSessionImpl(IoSession iosession, String streamId, C2SManagerImpl c2sManager) throws OpenStreamException
 	{
 		this.iosession = iosession;
-		this.username = (String) iosession.getAttribute("username");
+		
+		String username = (String) iosession.getAttribute("username");
+		if (username != null)
+		{
+			// TODO check case sentity
+			this.username = username.toLowerCase();
+		}
+		
 		this.streamId = streamId;
 		this.c2sManager = c2sManager;
 		c2sManager.addClientSession(this);

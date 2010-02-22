@@ -307,7 +307,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	@Override
 	public OnlineUser getOnlineUser(String node)
 	{
-		return onlineUsers.get(node.toLowerCase());
+		return onlineUsers.get(node);
 	}
 
 	@Override
@@ -324,13 +324,13 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	@Override
 	public void removeOnlineUser(OnlineUser onlineUser)
 	{
-		onlineUsers.remove(onlineUser.getNode().toLowerCase());
+		onlineUsers.remove(onlineUser.getNode());
 	}
 	
 	@Override
 	public void removeOnlineUser(String node)
 	{
-		onlineUsers.remove(node.toLowerCase());
+		onlineUsers.remove(node);
 	}
 	
 
@@ -349,7 +349,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		if (onlineUser == null)
 		{
 			onlineUser = new OnlineUserImpl(userNode, this);
-			onlineUsers.put(userNode.toLowerCase(), onlineUser);
+			onlineUsers.put(userNode, onlineUser);
 		}
 		
 		if (getResourceLimitPerUser() > 0)
@@ -391,7 +391,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	@Override
 	public boolean containUserResource(String userNode, String resource)
 	{
-		OnlineUserImpl onlineUser = onlineUsers.get(userNode.toLowerCase());
+		OnlineUserImpl onlineUser = onlineUsers.get(userNode);
 		if (onlineUser != null)
 		{
 			return onlineUser.containUserResource(resource);
@@ -402,7 +402,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	@Override
 	public void removeUserResource(String node, String resource)
 	{
-		OnlineUserImpl onlineUser = onlineUsers.get(node.toLowerCase());
+		OnlineUserImpl onlineUser = onlineUsers.get(node);
 		if (onlineUser != null)
 		{
 			onlineUser.removeUserResource(resource);
@@ -453,7 +453,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	@Override
 	public void sendToRouter(RouteMessage routeMessage)
 	{
-		String userNode = routeMessage.getPrepedUserNode();
+		String userNode = routeMessage.getToUserNode();
 		OnlineUser user = null;
 		if (userNode != null)
 		{
@@ -537,7 +537,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 
 		private void handleRoute(RouteMessage routeMessage, IoSession session)
 		{
-			String userNode = routeMessage.getPrepedUserNode();
+			String userNode = routeMessage.getToUserNode();
 			OnlineUserImpl onlineUser = onlineUsers.get(userNode);
 			
 			if (smToRouterInterceptorServiceTracker.fireSmMessageReceived(routeMessage, SmManagerImpl.this, onlineUser))
@@ -560,7 +560,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			if (from.startsWith("c2s_"))
 			{
 				String streamId = routeMessage.getStreamId();
-				String node = routeMessage.getPrepedUserNode();
+				String node = routeMessage.getToUserNode();
 				UserResource userResource = null;
 				// user == null when user is not online or to=example.com
 				if (onlineUser != null)
@@ -581,7 +581,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				
 				Packet packet = (Packet) stanza;
 				JID to = packet.getTo();
-				String node = to.getNode().toLowerCase();
+				String node = to.getNode();
 				String resource = to.getResource();
 				if (onlineUser != null)
 				{

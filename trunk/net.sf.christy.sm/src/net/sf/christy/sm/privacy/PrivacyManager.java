@@ -432,7 +432,7 @@ public class PrivacyManager
 	private boolean shouldBlockSend2Other(OnlineUser onlineUser, UserResource userResource, Packet packet)
 	{
 
-		String username = onlineUser.getNode().toLowerCase();
+		String username = onlineUser.getNode();
 		PrivacyList privacyList = userResource.getActivePrivacyList();
 		if (privacyList == null)
 		{
@@ -596,7 +596,7 @@ public class PrivacyManager
 			return false;
 		}
 		
-		String username = onlineUser.getNode().toLowerCase();
+		String username = onlineUser.getNode();
 		PrivacyList privacyList = userResource.getActivePrivacyList();
 		if (privacyList == null)
 		{
