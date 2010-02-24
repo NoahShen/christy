@@ -74,6 +74,9 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 	 */
 	public void setUsername(String username)
 	{
+		// TODO check case sentity
+		username = username.toLowerCase();
+		
 		this.username = username;
 		iosession.setAttribute("username", username);
 	}
