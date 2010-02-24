@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Db4oDbHelpler Plug-in
+Bundle-SymbolicName: com.google.code.christy.dbhelper.db4oDbHelpler
+Bundle-Version: 1.0.0
+Bundle-ClassPath: bin/,
+ lib/db4o-6.4.14.8131-java5.jar
+Bundle-Activator: com.google.code.christy.dbhelper.db4odbhelpler.Activator
+Bundle-Vendor: Noah
+Import-Package: com.google.code.christy.sm.contactmgr,
+ com.google.code.christy.sm.privacy,
+ com.google.code.christy.sm.user,
+ com.google.code.christy.xmpp,
+ org.osgi.framework;version="1.3.0"
+Eclipse-LazyStart: true
