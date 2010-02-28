@@ -1,12 +1,13 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: C2s Plug-in
-Bundle-SymbolicName: com.google.code.christy.c2s
+Bundle-Name: DefaultC2s Plug-in
+Bundle-SymbolicName: com.google.code.christy.c2s.defaultC2s
 Bundle-Version: 1.0.0
 Bundle-ClassPath: bin/
-Bundle-Activator: com.google.code.christy.c2s.Activator
+Bundle-Activator: com.google.code.christy.c2s.defaultc2s.Activator
 Bundle-Vendor: Noah
-Import-Package: com.google.code.christy.mina,
+Import-Package: com.google.code.christy.c2s,
+ com.google.code.christy.mina,
  com.google.code.christy.routemessage,
  com.google.code.christy.routemessageparser,
  com.google.code.christy.util,
@@ -49,4 +50,3 @@ Import-Package: com.google.code.christy.mina,
  org.xmlpull.v1.wrapper,
  org.xmlpull.v1.wrapper.classic
 Eclipse-LazyStart: true
-Export-Package: com.google.code.christy.c2s
