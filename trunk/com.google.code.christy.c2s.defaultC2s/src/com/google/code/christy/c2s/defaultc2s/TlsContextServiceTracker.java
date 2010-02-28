@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.google.code.christy.c2s.impl;
+package com.google.code.christy.c2s.defaultc2s;
 
 import javax.net.ssl.SSLContext;
 

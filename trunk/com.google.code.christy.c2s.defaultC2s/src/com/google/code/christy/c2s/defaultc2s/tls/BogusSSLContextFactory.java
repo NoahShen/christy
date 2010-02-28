@@ -17,7 +17,7 @@
  *  under the License. 
  *  
  */
-package com.google.code.christy.c2s.impl.tls;
+package com.google.code.christy.c2s.defaultc2s.tls;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package com.google.code.christy.c2s.impl;
+package com.google.code.christy.c2s.defaultc2s;
 
 
 import org.osgi.framework.BundleContext;
