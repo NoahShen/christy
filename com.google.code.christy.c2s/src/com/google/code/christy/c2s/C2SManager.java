@@ -11,6 +11,10 @@ import com.google.code.christy.util.Propertied;
  */
 public interface C2SManager extends Propertied
 {
+	public static final String C2SROUTER_NAMESPACE = "christy:internal:c2s2router";
+	
+	public static final String C2SROUTER_AUTH_NAMESPACE = "christy:internal:c2s2router:auth";
+	
 	/**
 	 * 
 	 * @return
