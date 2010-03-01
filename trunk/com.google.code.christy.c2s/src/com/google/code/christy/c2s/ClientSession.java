@@ -1,7 +1,5 @@
 package com.google.code.christy.c2s;
 
-import java.net.SocketAddress;
-
 import com.google.code.christy.util.Propertied;
 import com.google.code.christy.xmpp.XmlStanza;
 
@@ -32,12 +30,6 @@ public interface ClientSession extends Propertied
 	
 	/**
 	 * 
-	 * @return
-	 */
-	public SocketAddress getClientAddress();
-	
-	/**
-	 * 
 	 * @param stanza
 	 */
 	public void write(String stanza);
@@ -47,18 +39,6 @@ public interface ClientSession extends Propertied
 	 * @param stanza
 	 */
 	public void write(XmlStanza stanza);
-	/**
-	 * 
-	 * @return
-	 */
-	public boolean isUsingTLS();
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public boolean isUsingCompression();
-	
 	/**
 	 * 
 	 */

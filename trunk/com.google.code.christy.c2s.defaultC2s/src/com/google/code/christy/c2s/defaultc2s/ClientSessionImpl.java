@@ -101,7 +101,6 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 
 	}
 
-	@Override
 	public SocketAddress getClientAddress()
 	{
 		if (iosession != null)
@@ -117,13 +116,11 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 		return streamId;
 	}
 
-	@Override
 	public boolean isUsingCompression()
 	{
 		return usingCompression;
 	}
 
-	@Override
 	public boolean isUsingTLS()
 	{
 		return usingTLS;

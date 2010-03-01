@@ -66,10 +66,6 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		return prefix + Long.toString(id++);
 	}
 	
-	public static final String C2SROUTER_NAMESPACE = "christy:internal:c2s2router";
-	
-	public static final String C2SROUTER_AUTH_NAMESPACE = "christy:internal:c2s2router:auth";
-	
 	private final Logger logger = LoggerFactory.getLogger(C2SManagerImpl.class);
 	
 	private Map<String, ClientSessionImpl> clientSessions = new ConcurrentHashMap<String, ClientSessionImpl>();
