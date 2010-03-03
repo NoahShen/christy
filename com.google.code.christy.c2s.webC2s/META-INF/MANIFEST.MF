@@ -3,7 +3,15 @@ Bundle-ManifestVersion: 2
 Bundle-Name: WebC2s Plug-in
 Bundle-SymbolicName: com.google.code.christy.c2s.webC2s
 Bundle-Version: 1.0.0
-Bundle-ClassPath: bin/
+Bundle-ClassPath: bin/,
+ lib/jetty-continuation-7.0.1.v20091125.jar,
+ lib/jetty-http-7.0.1.v20091125.jar,
+ lib/jetty-io-7.0.1.v20091125.jar,
+ lib/jetty-security-7.0.1.v20091125.jar,
+ lib/jetty-server-7.0.1.v20091125.jar,
+ lib/jetty-servlet-7.0.1.v20091125.jar,
+ lib/jetty-util-7.0.1.v20091125.jar,
+ lib/servlet-api-2.5.jar
 Bundle-Activator: com.google.code.christy.c2s.webc2s.Activator
 Bundle-Vendor: Noah
 Import-Package: com.google.code.christy.c2s,
