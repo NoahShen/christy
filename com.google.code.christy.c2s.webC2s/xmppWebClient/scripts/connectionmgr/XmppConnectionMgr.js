@@ -128,6 +128,18 @@ XmppConnectionMgr = jClass.extend({
 		this.handleBodyByRid({
 			rid: body.getAttribute("rid"),
 			handler: function(responsebody) {
+				var type = responsebody.getAttribute("type");
+				if (type == "terminate") {
+					var event = {
+						eventType: ConnectionEventType.Error,
+						when: TimeUtils.currentTimeMillis(),
+						connection: connection,
+						condition: responsebody.getAttribute("condition")
+					}
+					aThis.fireConnectionEvent(event);
+					return;
+				}
+				
 				var domain = responsebody.getAttribute("from");
 				if (domain == null || domain == "") {
 					domain = body.getAttribute("to");
@@ -135,7 +147,7 @@ XmppConnectionMgr = jClass.extend({
 				
 				var hold = responsebody.getAttribute("hold");
 				if (hold != null) {
-					this.hold = hold;
+					aThis.hold = hold;
 				}
 				
 				var streamId = responsebody.getAttribute("sid");
