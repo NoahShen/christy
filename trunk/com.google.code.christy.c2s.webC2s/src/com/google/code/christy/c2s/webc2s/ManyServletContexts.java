@@ -14,16 +14,15 @@
 
 package com.google.code.christy.c2s.webc2s;
 
-
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.jabber.JabberHTTPBind.JHBServlet;
-import org.mortbay.jetty.Handler;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.handler.ContextHandlerCollection;
-import org.mortbay.jetty.handler.DefaultHandler;
-import org.mortbay.jetty.handler.HandlerList;
-import org.mortbay.jetty.handler.ResourceHandler;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHolder;
 
 public class ManyServletContexts
 {
@@ -33,21 +32,20 @@ public class ManyServletContexts
 
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
 		server.setHandler(contexts);
-		
-		ResourceHandler resource_handler=new ResourceHandler();
-		resource_handler.setWelcomeFiles(new String[]{"index.html"});
-        resource_handler.setResourceBase("xmppWebClient/");
-        
 
-		Context root = new Context(contexts, "/webclient", Context.SESSIONS);
+		ResourceHandler resource_handler = new ResourceHandler();
+		resource_handler.setWelcomeFiles(new String[] { "index.html" });
+		resource_handler.setResourceBase("xmppWebClient/");
+
+		ServletContextHandler root = new ServletContextHandler(contexts, "/webclient", ServletContextHandler.SESSIONS);
 		root.addServlet(new ServletHolder(new JHBServlet()), "/JHB.do");
-		
+
 		HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[]{root, resource_handler,new DefaultHandler()});
-        server.setHandler(handlers);
-        
+		handlers.setHandlers(new Handler[] { root, resource_handler, new DefaultHandler() });
+		server.setHandler(handlers);
+
 		server.start();
 		server.join();
 	}
-	
+
 }
