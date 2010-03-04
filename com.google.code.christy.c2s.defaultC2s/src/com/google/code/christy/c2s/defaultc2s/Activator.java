@@ -87,7 +87,7 @@ public class Activator implements BundleActivator
 												xmppParserServiceTracker,
 												routeMessageParserServiceTracker);
 		
-		c2sManagerRegistration = context.registerService(C2SManager.class.getName(), c2sManager, prop);
+		c2sManagerRegistration = context.registerService(C2SManager.class.getName(), c2sManager, null);
 		
 		// TODO
 		c2sManager.setName("c2s_1");
@@ -164,7 +164,8 @@ public class Activator implements BundleActivator
 			xmppParserServiceTracker = null;
 		}
 		
-		if (c2sManagerRegistration != null) {
+		if (c2sManagerRegistration != null)
+		{
 			c2sManagerRegistration.unregister();
 			c2sManagerRegistration = null;
 		}

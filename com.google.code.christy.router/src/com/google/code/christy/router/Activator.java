@@ -43,6 +43,7 @@ public class Activator implements BundleActivator
 		rm.registerSmModule("sm_1", "md5password");
 		rm.registerSmModule("sm_1_1", "md5password");
 		rm.registerC2sModule("c2s_1", "md5password");
+		rm.registerC2sModule("c2s_web1", "md5password");
 		rm.start();
 	}
 

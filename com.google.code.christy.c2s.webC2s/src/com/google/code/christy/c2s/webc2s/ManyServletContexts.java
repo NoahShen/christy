@@ -45,7 +45,9 @@ public class ManyServletContexts
 		server.setHandler(handlers);
 
 		server.start();
-		server.join();
+//		server.join();
+		
+		System.out.println("D");
 	}
 
 }
