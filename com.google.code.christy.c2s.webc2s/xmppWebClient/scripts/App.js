@@ -155,7 +155,8 @@ $(document).ready(function() {
 	var connectionMgr = XmppConnectionMgr.getInstance();
 	connectionMgr.requestCreateConnection({
 		hold: 1,
-		to: "jabber.org",
+		to: "example.com",
+//		to: "jabber.org",
 //				to: "gmail.com",
 		ack: "1",
 		ver: "1.6",
