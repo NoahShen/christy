@@ -53,8 +53,7 @@ public class WebClientSession extends AbstractPropertied implements ClientSessio
 	@Override
 	public void close()
 	{
-		// TODO Auto-generated method stub
-
+		c2sManager.removeWebClientSession(this);
 	}
 
 	@Override
