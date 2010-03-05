@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
-import javax.net.ssl.SSLContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +44,7 @@ import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.util.AbstractPropertied;
 import com.google.code.christy.util.StringUtils;
+import com.google.code.christy.xmpp.Auth;
 import com.google.code.christy.xmpp.StreamFeature;
 import com.google.code.christy.xmpp.XmlStanza;
 
@@ -297,7 +297,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		
 		ServletContextHandler root = new ServletContextHandler(contexts, getContextPath(), ServletContextHandler.SESSIONS);
 		root.addServlet(new ServletHolder(new XmppServlet()), getPathSpec());
-
+		
 		HandlerList handlers = new HandlerList();
 		handlers.setHandlers(new Handler[] { root, resource_handler, new DefaultHandler() });
 		server.setHandler(handlers);
@@ -582,6 +582,11 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	private class XmppServlet extends HttpServlet
 	{
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -7805269515985886024L;
+
 		@Override
 		protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 		{
@@ -649,6 +654,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 				e.printStackTrace();
 				response.setContentType("text/html;charset=UTF-8");
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, " parsing message error");
+				return;
 			}
 			
 			if (!body.containsProperty("sid"))
@@ -657,8 +663,67 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 				return;
 			}
 			
-			// TODO
-			System.out.println("old sessioin");
+			String sid = (String) body.getProperty("sid");
+			
+			WebClientSession webClientSession = webClientSessions.get(sid);
+			if (webClientSession == null)
+			{
+				response.setContentType("text/html;charset=UTF-8");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "session not exist");
+				return;
+			}
+			
+			if (!checkKey(webClientSession, body))
+			{
+				response.setContentType("text/html;charset=UTF-8");
+				Body responsebody = new Body();
+				responsebody.setProperty("type", "terminate");
+				responsebody.setProperty("condition", "bad-request");
+				webClientSession.write(responsebody, response, (String) body.getProperty("rid"));
+				webClientSession.close();
+				return;
+			}
+			
+			for (XmlStanza stanza : body.getStanzas())
+			{
+				handleStanza(webClientSession, body, stanza, response);
+			}
+			
+		}
+
+		private boolean checkKey(WebClientSession webClientSession, Body body)
+		{
+			if (webClientSession.getLastKey() == null)
+			{
+				return true;
+			}
+			
+			String key = (String) body.getProperty("key");
+			if (key == null)
+			{
+				return false;
+			}
+			
+			String hashedKey = StringUtils.hash(key);
+			if (!hashedKey.equals(webClientSession.getLastKey()))
+			{
+				return false;
+			}
+			
+			String newKey = (String) body.getProperty("newkey");
+			if (newKey != null)
+			{
+				webClientSession.setLastKey(newKey);
+			}
+			return true;
+		}
+
+		private void handleStanza(WebClientSession webClientSession, Body body, XmlStanza stanza, HttpServletResponse response)
+		{
+			if (stanza instanceof Auth)
+			{
+				//handleAuth(webClientSession, stanza);
+			}
 		}
 
 		private void createNewSession(HttpServletRequest request, HttpServletResponse response, Body body) throws IOException
@@ -714,6 +779,10 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			WebClientSession webClientSession = new WebClientSession(streamId, WebC2SManager.this, wait);
 			webClientSession.setStatus(WebClientSession.Status.connected);
 			webClientSession.setAck("1".equals(body.getProperty("ack")));
+			if (body.containsProperty("newkey"))
+			{
+				webClientSession.setLastKey((String) body.getProperty("newkey"));
+			}
 			sendFeature(request, response, webClientSession, (String) body.getProperty("rid"), SupportedType.afterConnected);
 		}
 
