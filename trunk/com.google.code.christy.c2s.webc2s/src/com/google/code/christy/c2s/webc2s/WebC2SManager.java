@@ -4,18 +4,24 @@
 package com.google.code.christy.c2s.webc2s;
 
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.mina.common.ConnectFuture;
 import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoHandler;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.common.ThreadModel;
-import org.apache.mina.filter.SSLFilter;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
@@ -27,17 +33,19 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.jabber.JabberHTTPBind.JHBServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
 import com.google.code.christy.c2s.C2SManager;
+import com.google.code.christy.c2s.ChristyStreamFeature;
+import com.google.code.christy.c2s.ChristyStreamFeature.SupportedType;
 import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.util.AbstractPropertied;
 import com.google.code.christy.util.StringUtils;
+import com.google.code.christy.xmpp.StreamFeature;
 import com.google.code.christy.xmpp.XmlStanza;
 
 /**
@@ -58,6 +66,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	
 	private final Logger logger = LoggerFactory.getLogger(WebC2SManager.class);
 	
+	private Map<String, WebClientSession> webClientSessions = new ConcurrentHashMap<String, WebClientSession>();
 	
 	private int clientLimit = 0;
 	
@@ -85,6 +94,12 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 
 	private int webclientPort = 8080;
 	
+	private int maxWait = 60;
+	
+	private int minWait = 10;
+	
+	private int inactivity = 60;
+	
 	private Server server;
 
 	private SocketConnector routerConnector;
@@ -95,13 +110,20 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	
 	private XmppParserServiceTracker xmppParserServiceTracker;
 	
+	private ChristyStreamFeatureServiceTracker streamFeatureStracker;
+	
+	private UserAuthenticatorTracker userAuthenticatorTracker;
 	
 	public WebC2SManager(RouteMessageParserServiceTracker routeMessageParserServiceTracker,
-				XmppParserServiceTracker xmppParserServiceTracker)
+				XmppParserServiceTracker xmppParserServiceTracker,
+				ChristyStreamFeatureServiceTracker streamFeatureStracker,
+				UserAuthenticatorTracker userAuthenticatorTracker)
 	{
 		super();
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 		this.xmppParserServiceTracker = xmppParserServiceTracker;
+		this.streamFeatureStracker = streamFeatureStracker;
+		this.userAuthenticatorTracker = userAuthenticatorTracker;
 	}
 
 	@Override
@@ -272,9 +294,9 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		ResourceHandler resource_handler = new ResourceHandler();
 		resource_handler.setWelcomeFiles(new String[] { "index.html" });
 		resource_handler.setResourceBase(getResourceBase());
-
+		
 		ServletContextHandler root = new ServletContextHandler(contexts, getContextPath(), ServletContextHandler.SESSIONS);
-		root.addServlet(new ServletHolder(new JHBServlet()), getPathSpec());
+		root.addServlet(new ServletHolder(new XmppServlet()), getPathSpec());
 
 		HandlerList handlers = new HandlerList();
 		handlers.setHandlers(new Handler[] { root, resource_handler, new DefaultHandler() });
@@ -354,6 +376,50 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	}
 
 
+	public int getMaxWait()
+	{
+		return maxWait;
+	}
+
+	public void setMaxWait(int maxWait)
+	{
+		this.maxWait = maxWait;
+	}
+
+	public int getMinWait()
+	{
+		return minWait;
+	}
+
+	public void setMinWait(int minWait)
+	{
+		this.minWait = minWait;
+	}
+
+	public int getInactivity()
+	{
+		return inactivity;
+	}
+
+	public void setInactivity(int inactivity)
+	{
+		this.inactivity = inactivity;
+	}
+	
+	void addWebClientSession(WebClientSession webClientSession)
+	{
+		if (webClientSessions.containsKey(webClientSession.getStreamId()))
+		{
+			throw new RuntimeException("stream id duplication");
+		}
+		webClientSessions.put(webClientSession.getStreamId(), webClientSession);
+	}
+	
+	void removeWebClientSession(WebClientSession webClientSession)
+	{
+		webClientSessions.remove(webClientSession.getStreamId());
+	}
+	
 	private class RouterHandler implements IoHandler
 	{
 		
@@ -513,4 +579,190 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		
 	}
 	
+	private class XmppServlet extends HttpServlet
+	{
+
+		@Override
+		protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
+		{
+			// TODO Auto-generated method stub
+			super.doGet(req, resp);
+		}
+
+		@Override
+		protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+		{
+			response.setContentType("text/xml;charset=UTF-8");
+			response.setCharacterEncoding("UTF-8");
+			
+			XmlPullParser parser = new MXParser();
+			Body body = null;
+			try
+			{
+				parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
+				parser.setInput(request.getReader());
+				parser.next();
+				
+				String elementName = parser.getName();
+				if (!"body".equals(elementName))
+				{
+					response.setContentType("text/html;charset=UTF-8");
+					response.sendError(HttpServletResponse.SC_NOT_FOUND, "root element must be body");
+					return;
+				}
+				
+				body = new Body();
+				for (int i = 0; i < parser.getAttributeCount(); i++)
+				{
+					String attributeName = parser.getAttributeName(i);
+					if (!"xmlns".equals(attributeName))
+					{
+						body.setProperty(attributeName, parser.getAttributeValue(i));
+					}
+				}
+				
+				
+				boolean done = false;
+				while (!done)
+				{
+					int eventType = parser.next();
+					elementName = parser.getName();
+					if (eventType == XmlPullParser.START_TAG)
+					{
+						if (!"body".equals(elementName))
+						{
+							body.addStanza(xmppParserServiceTracker.getParser().parseParser(parser));
+						}
+					}
+					else if (eventType == XmlPullParser.END_TAG)
+					{
+						if ("body".equals(elementName))
+						{
+							done = true;
+						}
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				response.setContentType("text/html;charset=UTF-8");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, " parsing message error");
+			}
+			
+			if (!body.containsProperty("sid"))
+			{
+				createNewSession(request, response, body);
+				return;
+			}
+			
+			// TODO
+			System.out.println("old sessioin");
+		}
+
+		private void createNewSession(HttpServletRequest request, HttpServletResponse response, Body body) throws IOException
+		{
+			if (!body.containsProperty("rid"))
+			{
+				response.setContentType("text/html;charset=UTF-8");
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "need rid attribute");
+				return;
+			}
+			
+			String domain = (String) body.getProperty("to");
+			if (domain == null || !domain.equals(getDomain()))
+			{
+				response.setContentType("text/html;charset=UTF-8");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "domain error");
+				return;
+			}
+			
+			String ver = (String) body.getProperty("ver");
+			if (ver == null || !"1.6".equals(ver))
+			{
+				response.setContentType("text/html;charset=UTF-8");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ver must be 1.6");
+				return;
+			}
+			
+			String hold = (String) body.getProperty("hold");
+			if (hold == null || !"1".equals(hold))
+			{
+				response.setContentType("text/html;charset=UTF-8");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "hold must be 1");
+				return;
+			}
+			
+			String waitStr = (String) body.getProperty("wait");
+			if (waitStr == null)
+			{
+				response.setContentType("text/html;charset=UTF-8");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "wait can not be null");
+				return;
+			}
+			
+			int wait = Integer.valueOf(waitStr);
+			if (wait < getMinWait() || wait > getMaxWait())
+			{
+				response.setContentType("text/html;charset=UTF-8");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "wait must be between " + getMinWait() + " to " + getMaxWait());
+				return;
+			}
+			
+			String streamId = nextStreamId();
+			WebClientSession webClientSession = new WebClientSession(streamId, WebC2SManager.this, wait);
+			webClientSession.setStatus(WebClientSession.Status.connected);
+			webClientSession.setAck("1".equals(body.getProperty("ack")));
+			sendFeature(request, response, webClientSession, (String) body.getProperty("rid"), SupportedType.afterConnected);
+		}
+
+		private void sendFeature(HttpServletRequest request, HttpServletResponse response, 
+				WebClientSession webClientSession, String rid, SupportedType type) throws IOException
+		{
+			ChristyStreamFeature[] features = streamFeatureStracker.getStreamFeatures(type);
+			StreamFeature streamFeature = new StreamFeature();
+			for (ChristyStreamFeature feature : features)
+			{
+				streamFeature.addFeature(feature.getElementName(), feature.getNamespace(), feature.isRequired());
+			}
+			
+			if (type != SupportedType.afterAuth)
+			{
+				String[] mechanisms = userAuthenticatorTracker.getAllMechanisms();
+				for (String mech : mechanisms)
+				{
+					streamFeature.addMechanism(mech);
+				}
+			}
+			
+			Body body = new Body();
+			body.setProperty("inactivity", getInactivity());
+			body.setProperty("requests", "2");
+			body.setProperty("sid", webClientSession.getStreamId());
+			body.setProperty("wait", webClientSession.getWait());
+			body.setProperty("xmlns:stream", "http://etherx.jabber.org/streams");
+			
+			body.addStanza(streamFeature);
+			webClientSession.write(body, response, rid);
+		}
+
+		
+		@Override
+		public void destroy()
+		{
+			// TODO Auto-generated method stub
+			super.destroy();
+		}
+
+		@Override
+		public void init() throws ServletException
+		{
+			// TODO Auto-generated method stub
+			super.init();
+		}
+		
+	}
+
+
 }
