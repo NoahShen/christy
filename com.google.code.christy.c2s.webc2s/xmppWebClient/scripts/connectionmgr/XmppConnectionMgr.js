@@ -78,6 +78,15 @@ XmppConnectionMgr = jClass.extend({
 					aThis.fireConnectionEvent(event);
 					return;
 				}
+				var requestId = aThis.getRequestId();
+				bodyMessage.setAttribute("rid", requestId);
+				var key = aThis.keyGenerater.getKey();
+				if (key != null) {
+					bodyMessage.setAttribute("key", key);
+				}
+				if (aThis.keyGenerater.isKeyEmpty()) {
+					bodyMessage.setAttribute("newkey", aThis.keyGenerater.getNewKey());
+				}
 			    aThis.bodyMessagQueue.unshift(bodyMessage);
 			},
 			complete: function(xmlHttpRequest, textStatus) {
@@ -137,6 +146,7 @@ XmppConnectionMgr = jClass.extend({
 						condition: responsebody.getAttribute("condition")
 					}
 					aThis.fireConnectionEvent(event);
+					aThis.removeConnectionByStreamName(null, responsebody);
 					return;
 				}
 				
@@ -230,6 +240,7 @@ XmppConnectionMgr = jClass.extend({
 		if (body.getAttribute("type") == "terminate") {
 			var streamName = body.getAttribute("stream");
 			this.removeConnectionByStreamName(streamName, body);
+			return;
 		}
 		this.fireBodyHandler(body);
 		this.handleStanza(body);
@@ -960,9 +971,9 @@ XmppConnection = jClass.extend({
 		var body = new Body();
 						
 		// TODO Do not need it in new Protocal
-		if (arguments[1]) {
-			body.setAttribute("xmpp:restart", "true");
-		}
+//		if (arguments[1]) {
+//			body.setAttribute("xmpp:restart", "true");
+//		}
 		
 		
 		if (this.streamName != null) {

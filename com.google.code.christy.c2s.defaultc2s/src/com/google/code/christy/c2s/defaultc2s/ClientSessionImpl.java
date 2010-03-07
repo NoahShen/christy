@@ -126,7 +126,6 @@ public class ClientSessionImpl extends AbstractPropertied implements ClientSessi
 		return usingTLS;
 	}
 
-	@Override
 	public void write(String stanza)
 	{
 		iosession.write(stanza);

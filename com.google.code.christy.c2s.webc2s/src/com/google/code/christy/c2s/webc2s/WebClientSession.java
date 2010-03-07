@@ -21,13 +21,13 @@ public class WebClientSession extends AbstractPropertied implements ClientSessio
 	
 	private long lastActive;
 	
-	private int wait;
+	private int wait = 60;
 	
 	private String lastKey;
 	
 	private boolean ack;
 	
-	private ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<String>();
+	private ConcurrentLinkedQueue<XmlStanza> messageQueue = new ConcurrentLinkedQueue<XmlStanza>();
 	
 	/**
 	 * @param streamId
@@ -77,24 +77,20 @@ public class WebClientSession extends AbstractPropertied implements ClientSessio
 	@Override
 	public void setUsername(String username)
 	{
+		// TODO check case sentity
+		username = username.toLowerCase();
 		this.username = username;
-	}
-
-	@Override
-	public void write(String stanza)
-	{
-		messageQueue.add(stanza);
 	}
 
 	@Override
 	public void write(XmlStanza stanza)
 	{
-		messageQueue.add(stanza.toXml());
+		messageQueue.add(stanza);
 	}
 
-	public String[] getAllMessage()
+	public XmlStanza[] getAllMessage()
 	{
-		return messageQueue.toArray(new String[]{});
+		return messageQueue.toArray(new XmlStanza[]{});
 	}
 	
 	public boolean hasMessage()
@@ -106,10 +102,10 @@ public class WebClientSession extends AbstractPropertied implements ClientSessio
 	public void write(XmlStanza stanza, HttpServletResponse response, String rid) throws IOException
 	{
 		Body body = new Body();
-		body.setProperty("inactivity", c2sManager.getInactivity());
-		body.setProperty("requests", "2");
+//		body.setProperty("inactivity", c2sManager.getInactivity());
+//		body.setProperty("requests", "2");
 		body.setProperty("sid", getStreamId());
-		body.setProperty("wait", getWait());
+//		body.setProperty("wait", getWait());
 		
 		body.addStanza(stanza);
 		

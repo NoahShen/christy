@@ -32,12 +32,6 @@ public interface ClientSession extends Propertied
 	 * 
 	 * @param stanza
 	 */
-	public void write(String stanza);
-	
-	/**
-	 * 
-	 * @param stanza
-	 */
 	public void write(XmlStanza stanza);
 	/**
 	 * 

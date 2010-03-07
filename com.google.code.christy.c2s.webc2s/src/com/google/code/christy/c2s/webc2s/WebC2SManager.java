@@ -24,6 +24,8 @@ import org.apache.mina.common.ThreadModel;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
+import org.eclipse.jetty.continuation.Continuation;
+import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -39,13 +41,20 @@ import org.xmlpull.v1.XmlPullParser;
 
 import com.google.code.christy.c2s.C2SManager;
 import com.google.code.christy.c2s.ChristyStreamFeature;
+import com.google.code.christy.c2s.ClientSession;
+import com.google.code.christy.c2s.UnauthorizedException;
+import com.google.code.christy.c2s.UnsupportedMechanismException;
 import com.google.code.christy.c2s.ChristyStreamFeature.SupportedType;
 import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.util.AbstractPropertied;
 import com.google.code.christy.util.StringUtils;
 import com.google.code.christy.xmpp.Auth;
+import com.google.code.christy.xmpp.Failure;
+import com.google.code.christy.xmpp.JID;
+import com.google.code.christy.xmpp.Packet;
 import com.google.code.christy.xmpp.StreamFeature;
+import com.google.code.christy.xmpp.Success;
 import com.google.code.christy.xmpp.XmlStanza;
 
 /**
@@ -227,7 +236,6 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	public void setRouterPort(int routerPort)
 	{
 		this.routerPort = routerPort;
-		int i = ~routerPort;
 	}
 
 	@Override
@@ -597,96 +605,132 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		@Override
 		protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 		{
-			response.setContentType("text/xml;charset=UTF-8");
-			response.setCharacterEncoding("UTF-8");
-			
-			XmlPullParser parser = new MXParser();
-			Body body = null;
-			try
-			{
-				parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
-				parser.setInput(request.getReader());
-				parser.next();
+			Continuation continuation = ContinuationSupport.getContinuation(request);
+			if (continuation.isInitial())
+			{			
+				response.setContentType("text/xml;charset=UTF-8");
+				response.setCharacterEncoding("UTF-8");
 				
-				String elementName = parser.getName();
-				if (!"body".equals(elementName))
+				XmlPullParser parser = new MXParser();
+				Body body = null;
+				try
 				{
+					parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
+					parser.setInput(request.getReader());
+					parser.next();
+					
+					String elementName = parser.getName();
+					if (!"body".equals(elementName))
+					{
+						response.setContentType("text/html;charset=UTF-8");
+						response.sendError(HttpServletResponse.SC_NOT_FOUND, "root element must be body");
+						return;
+					}
+					
+					body = new Body();
+					for (int i = 0; i < parser.getAttributeCount(); i++)
+					{
+						String attributeName = parser.getAttributeName(i);
+						if (!"xmlns".equals(attributeName))
+						{
+							body.setProperty(attributeName, parser.getAttributeValue(i));
+						}
+					}
+					
+					
+					boolean done = false;
+					while (!done)
+					{
+						int eventType = parser.next();
+						elementName = parser.getName();
+						if (eventType == XmlPullParser.START_TAG)
+						{
+							if (!"body".equals(elementName))
+							{
+								body.addStanza(xmppParserServiceTracker.getParser().parseParser(parser));
+							}
+						}
+						else if (eventType == XmlPullParser.END_TAG)
+						{
+							if ("body".equals(elementName))
+							{
+								done = true;
+							}
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 					response.setContentType("text/html;charset=UTF-8");
-					response.sendError(HttpServletResponse.SC_NOT_FOUND, "root element must be body");
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, " parsing message error");
 					return;
 				}
 				
-				body = new Body();
-				for (int i = 0; i < parser.getAttributeCount(); i++)
+				if (!body.containsProperty("sid"))
 				{
-					String attributeName = parser.getAttributeName(i);
-					if (!"xmlns".equals(attributeName))
-					{
-						body.setProperty(attributeName, parser.getAttributeValue(i));
-					}
+					createNewSession(request, response, body);
+					return;
 				}
 				
+				String sid = (String) body.getProperty("sid");
 				
-				boolean done = false;
-				while (!done)
+				WebClientSession webClientSession = webClientSessions.get(sid);
+				if (webClientSession == null)
 				{
-					int eventType = parser.next();
-					elementName = parser.getName();
-					if (eventType == XmlPullParser.START_TAG)
+					response.setContentType("text/html;charset=UTF-8");
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "session not exist");
+					return;
+				}
+				
+				if (!checkKey(webClientSession, body))
+				{
+					Body responsebody = new Body();
+					responsebody.setProperty("type", "terminate");
+					responsebody.setProperty("condition", "bad-request");
+					webClientSession.write(responsebody, response, (String) body.getProperty("rid"));
+					webClientSession.close();
+					return;
+				}
+				
+				// TODO handle close connection
+				
+				
+				boolean handled = false;
+				for (XmlStanza stanza : body.getStanzas())
+				{
+					if (handleStanza(webClientSession, body, stanza, response))
 					{
-						if (!"body".equals(elementName))
-						{
-							body.addStanza(xmppParserServiceTracker.getParser().parseParser(parser));
-						}
-					}
-					else if (eventType == XmlPullParser.END_TAG)
-					{
-						if ("body".equals(elementName))
-						{
-							done = true;
-						}
+						handled = true;
 					}
 				}
+				if (!handled)
+				{
+					continuation.setTimeout(webClientSession.getWait() * 1000);
+					webClientSession.setProperty("continuation", continuation);
+					continuation.setAttribute("webClientSession", webClientSession);
+					continuation.setAttribute("rid", body.getProperty("rid"));
+					continuation.suspend();
+					
+				}
 			}
-			catch (Exception e)
+			else
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				response.setContentType("text/html;charset=UTF-8");
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, " parsing message error");
-				return;
-			}
-			
-			if (!body.containsProperty("sid"))
-			{
-				createNewSession(request, response, body);
-				return;
-			}
-			
-			String sid = (String) body.getProperty("sid");
-			
-			WebClientSession webClientSession = webClientSessions.get(sid);
-			if (webClientSession == null)
-			{
-				response.setContentType("text/html;charset=UTF-8");
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "session not exist");
-				return;
-			}
-			
-			if (!checkKey(webClientSession, body))
-			{
-				response.setContentType("text/html;charset=UTF-8");
-				Body responsebody = new Body();
-				responsebody.setProperty("type", "terminate");
-				responsebody.setProperty("condition", "bad-request");
-				webClientSession.write(responsebody, response, (String) body.getProperty("rid"));
-				webClientSession.close();
-				return;
-			}
-			
-			for (XmlStanza stanza : body.getStanzas())
-			{
-				handleStanza(webClientSession, body, stanza, response);
+				WebClientSession webClientSession = (WebClientSession) continuation.getAttribute("webClientSession");
+				if (webClientSession != null)
+				{
+					Body responsebody = new Body();
+					responsebody.setProperty("sid", webClientSession.getStreamId());
+					if (webClientSession.hasMessage())
+					{
+						for (XmlStanza stanza : webClientSession.getAllMessage())
+						{
+							responsebody.addStanza(stanza);
+						}
+					}
+					webClientSession.write(responsebody, response, (String) continuation.getAttribute("rid"));
+				}
 			}
 			
 		}
@@ -695,6 +739,11 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		{
 			if (webClientSession.getLastKey() == null)
 			{
+				String newKey = (String) body.getProperty("newkey");
+				if (newKey != null)
+				{
+					webClientSession.setLastKey(newKey);
+				}
 				return true;
 			}
 			
@@ -705,25 +754,113 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			}
 			
 			String hashedKey = StringUtils.hash(key);
-			if (!hashedKey.equals(webClientSession.getLastKey()))
+			if (hashedKey.equals(webClientSession.getLastKey()))
+			{
+				
+				String newKey = (String) body.getProperty("newkey");
+				if (newKey != null)
+				{
+					webClientSession.setLastKey(newKey);
+				}
+				else
+				{
+					webClientSession.setLastKey(key);
+				}
+			}
+			else
 			{
 				return false;
 			}
 			
-			String newKey = (String) body.getProperty("newkey");
-			if (newKey != null)
-			{
-				webClientSession.setLastKey(newKey);
-			}
 			return true;
 		}
 
-		private void handleStanza(WebClientSession webClientSession, Body body, XmlStanza stanza, HttpServletResponse response)
+		private boolean handleStanza(WebClientSession webClientSession, Body body, XmlStanza stanza, HttpServletResponse response) throws IOException
 		{
 			if (stanza instanceof Auth)
 			{
-				//handleAuth(webClientSession, stanza);
+				return handleAuth(webClientSession, body, (Auth) stanza, response);
 			}
+			else if (stanza instanceof Packet)
+			{
+				return handlePacket(webClientSession, body, (Packet) stanza, response);
+			}
+			return false;
+		}
+
+		private boolean handlePacket(WebClientSession webClientSession, Body body, Packet packet, HttpServletResponse response)
+		{
+			// TODO check case sentity
+			if (packet.getFrom() != null)
+			{
+				JID from = packet.getFrom();
+				packet.setFrom(new JID(from.getNodePreped(), from.getDomainPreped(), from.getResourcePreped()));
+			}
+			
+			if (packet.getTo() != null) 
+			{
+				JID to = packet.getTo();
+				packet.setTo(new JID(to.getNodePreped(), to.getDomainPreped(), to.getResourcePreped()));
+			}
+			
+			
+			RouteMessage routeMessage = new RouteMessage(getName(), webClientSession.getStreamId());
+			routeMessage.setToUserNode(webClientSession.getUsername());
+			routeMessage.setXmlStanza(packet);
+
+			routerSession.write(routeMessage.toXml());
+			return false;
+		}
+
+		private boolean handleAuth(WebClientSession webClientSession, Body body, Auth auth, HttpServletResponse response) throws IOException
+		{
+			String mechanism = auth.getMechanism();
+			String content = auth.getContent();
+			String rid = (String) body.getProperty("rid");
+			try
+			{
+				userAuthenticatorTracker.authenticate(webClientSession, content, mechanism);
+				webClientSession.setStatus(ClientSession.Status.authenticated);
+				
+				Success success = new Success();
+				webClientSession.write(success, response, rid);
+			}
+			catch (UnauthorizedException e)
+			{
+				e.printStackTrace();
+				
+				Failure failure = new Failure();
+				failure.setNamespace(Failure.SASL_FAILURE_NS);
+				webClientSession.write(failure, response, rid);
+				
+				Body responsebody = new Body();
+				responsebody.setProperty("type", "terminate");
+				webClientSession.write(responsebody, response, (String) body.getProperty("rid"));
+				
+				webClientSession.write(responsebody, response, rid);
+				webClientSession.close();
+				
+				return true;
+			}
+			catch (UnsupportedMechanismException e)
+			{
+				e.printStackTrace();
+				Failure failure = new Failure();
+				failure.setError(Failure.Error.invalid_mechanism);
+				failure.setNamespace(Failure.SASL_FAILURE_NS);
+				webClientSession.write(failure, response, rid);
+				
+				Body responsebody = new Body();
+				responsebody.setProperty("type", "terminate");
+				webClientSession.write(responsebody, response, (String) body.getProperty("rid"));
+				
+				webClientSession.write(responsebody, response, rid);
+				webClientSession.close();
+				
+				return true;
+			}
+			
+			return true;
 		}
 
 		private void createNewSession(HttpServletRequest request, HttpServletResponse response, Body body) throws IOException
