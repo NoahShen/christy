@@ -831,15 +831,6 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
 			if (clientSession != null)
 			{
-				if (clientSession.getStatus() == ClientSessionImpl.Status.sessionBinded
-						|| clientSession.getStatus() == ClientSessionImpl.Status.resourceBinded)
-				{
-					StreamError error = new StreamError(StreamError.Condition.restricted_xml);
-					clientSession.write(error);
-					clientSession.write(CloseStream.getCloseStream());
-					clientSession.close();
-					return;
-				}
 				clientSessions.remove(clientSession.getStreamId());
 				session.setAttachment(null);
 			}

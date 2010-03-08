@@ -5,6 +5,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jetty.continuation.Continuation;
+
 import com.google.code.christy.c2s.ClientSession;
 import com.google.code.christy.util.AbstractPropertied;
 import com.google.code.christy.xmpp.XmlStanza;
@@ -26,6 +28,8 @@ public class WebClientSession extends AbstractPropertied implements ClientSessio
 	private String lastKey;
 	
 	private boolean ack;
+	
+	private Continuation continuation;
 	
 	private ConcurrentLinkedQueue<XmlStanza> messageQueue = new ConcurrentLinkedQueue<XmlStanza>();
 	
@@ -53,6 +57,7 @@ public class WebClientSession extends AbstractPropertied implements ClientSessio
 	@Override
 	public void close()
 	{
+		status = Status.disconnected;
 		c2sManager.removeWebClientSession(this);
 	}
 
@@ -88,33 +93,27 @@ public class WebClientSession extends AbstractPropertied implements ClientSessio
 		messageQueue.add(stanza);
 	}
 
-	public XmlStanza[] getAllMessage()
+	public  XmlStanza[] getAllMessage()
 	{
-		return messageQueue.toArray(new XmlStanza[]{});
+		XmlStanza[] stanzas = messageQueue.toArray(new XmlStanza[]{});
+		messageQueue.clear();
+		return stanzas;
 	}
 	
 	public boolean hasMessage()
 	{
-		return messageQueue.isEmpty();
+		return !messageQueue.isEmpty();
 	}
 
 
 	public void write(XmlStanza stanza, HttpServletResponse response, String rid) throws IOException
 	{
 		Body body = new Body();
-//		body.setProperty("inactivity", c2sManager.getInactivity());
-//		body.setProperty("requests", "2");
 		body.setProperty("sid", getStreamId());
-//		body.setProperty("wait", getWait());
 		
 		body.addStanza(stanza);
 		
-		if (isAck() && !body.containsProperty("ack"))
-		{
-			body.setProperty("ack", rid);
-		}
-		
-		response.getWriter().write(body.toXml());
+		write(body, response, rid);
 	}
 
 	public void write(Body body, HttpServletResponse response, String rid) throws IOException
@@ -124,6 +123,7 @@ public class WebClientSession extends AbstractPropertied implements ClientSessio
 			body.setProperty("ack", rid);
 		}
 		response.getWriter().write(body.toXml());
+		lastActive = System.currentTimeMillis();
 	}
 	
 	public String getLastKey()
@@ -159,6 +159,25 @@ public class WebClientSession extends AbstractPropertied implements ClientSessio
 	public void setAck(boolean ack)
 	{
 		this.ack = ack;
+	}
+
+	public Continuation getContinuation()
+	{
+		return continuation;
+	}
+
+	public void setContinuation(Continuation continuation)
+	{
+		this.continuation = continuation;
+	}
+	
+	public boolean isSuspended()
+	{
+		if (continuation != null)
+		{
+			return continuation.isSuspended();
+		}
+		return false;
 	}
 
 }

@@ -107,13 +107,15 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	
 	private int minWait = 10;
 	
-	private int inactivity = 60;
+	private int inactivity = 10;
 	
 	private Server server;
 
 	private SocketConnector routerConnector;
 	
 	private IoSession routerSession;
+	
+	private SessionMonitor sessionMonitor;
 	
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	
@@ -129,6 +131,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 				UserAuthenticatorTracker userAuthenticatorTracker)
 	{
 		super();
+		sessionMonitor = new SessionMonitor();
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 		this.xmppParserServiceTracker = xmppParserServiceTracker;
 		this.streamFeatureStracker = streamFeatureStracker;
@@ -239,7 +242,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	}
 
 	@Override
-	public void start()
+	public synchronized void start()
 	{
 		if (isStarted())
 		{
@@ -286,7 +289,8 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			exit();
 			return;
 		}
-		
+		started = true;
+		logger.info("webc2s started");
 		
 	}
 
@@ -311,6 +315,8 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		server.setHandler(handlers);
 		server.start();
 		
+		sessionMonitor.setStop(false);
+		sessionMonitor.start();
 		
 		logger.info("server start successful");
 	}
@@ -337,10 +343,21 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	}
 
 	@Override
-	public void stop()
+	public synchronized void stop()
 	{
-		// TODO Auto-generated method stub
-
+		if (!isStarted())
+		{
+			return;
+		}
+		if (routerSession != null)
+		{
+			routerSession.close();
+		}
+		routerConnector = null;
+		
+		webClientSessions.clear();
+		sessionMonitor.setStop(true);
+		started = false;
 	}
 
 	public String getContextPath()
@@ -491,25 +508,28 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 
 		private void handleRoute(RouteMessage routeMessage, IoSession session)
 		{
-//			String streamId = routeMessage.getStreamId();
-//			if (streamId != null)
-//			{
-//				ClientSessionImpl clientSession = clientSessions.get(streamId);
-//				if (clientSession != null)
-//				{
-//					if (routeMessage.isCloseStream())
-//					{
-//						clientSession.write(CloseStream.getCloseStream());
-//						clientSession.setProperty("sessionCleared");
-//						clientSession.close();
-//					}
-//					else
-//					{
-//						clientSession.write(routeMessage.getXmlStanza());
-//					}
-//					
-//				}
-//			}
+			String streamId = routeMessage.getStreamId();
+			if (streamId != null)
+			{
+				WebClientSession webClientSession = webClientSessions.get(streamId);
+				if (webClientSession != null)
+				{
+					if (routeMessage.isCloseStream())
+					{
+						webClientSession.setProperty("closed");
+					}
+					else
+					{
+						webClientSession.write(routeMessage.getXmlStanza());
+					}
+					Continuation continuation = webClientSession.getContinuation();
+					if (continuation != null)
+					{
+						continuation.resume();
+					}
+					
+				}
+			}
 		}
 
 		private void handleStream(XmlPullParser parser, IoSession session)
@@ -607,7 +627,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		{
 			Continuation continuation = ContinuationSupport.getContinuation(request);
 			if (continuation.isInitial())
-			{			
+			{
 				response.setContentType("text/xml;charset=UTF-8");
 				response.setCharacterEncoding("UTF-8");
 				
@@ -679,8 +699,10 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 				WebClientSession webClientSession = webClientSessions.get(sid);
 				if (webClientSession == null)
 				{
-					response.setContentType("text/html;charset=UTF-8");
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "session not exist");
+					Body responseBody = new Body();
+					responseBody.setProperty("type", "terminate");
+					responseBody.setProperty("condition", "item-not-found");
+					response.getWriter().write(responseBody.toXml());
 					return;
 				}
 				
@@ -694,9 +716,6 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 					return;
 				}
 				
-				// TODO handle close connection
-				
-				
 				boolean handled = false;
 				for (XmlStanza stanza : body.getStanzas())
 				{
@@ -705,10 +724,53 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 						handled = true;
 					}
 				}
+				String type = (String) body.getProperty("type");
+				if ("terminate".equals(type))
+				{
+					RouteMessage routeMessage = new RouteMessage(getName(), webClientSession.getStreamId());
+					routeMessage.setToUserNode(webClientSession.getUsername());
+					routeMessage.setCloseStream(true);
+					routerSession.write(routeMessage.toXml());
+					
+					Body responseBody = new Body();
+					responseBody.setProperty("type", "terminate");
+					webClientSession.write(responseBody, response, (String) body.getProperty("rid"));
+					webClientSession.close();
+					return;
+				}
+					
 				if (!handled)
 				{
+					
+					if (webClientSession.hasMessage())
+					{
+						Body responsebody = new Body();
+						responsebody.setProperty("sid", webClientSession.getStreamId());
+						for (XmlStanza stanza : webClientSession.getAllMessage())
+						{
+							if (stanza instanceof StreamFeature)
+							{
+								responsebody.setProperty("xmlns:stream", "http://etherx.jabber.org/streams");
+							}
+							responsebody.addStanza(stanza);
+						}
+						boolean closed = webClientSession.containsProperty("closed");
+						if (closed)
+						{
+							responsebody.setProperty("type", "terminate");
+						}
+						
+						webClientSession.write(responsebody, response, (String) body.getProperty("rid"));
+						if (closed)
+						{
+							webClientSession.close();
+						}
+						
+						return;
+					}
+					
 					continuation.setTimeout(webClientSession.getWait() * 1000);
-					webClientSession.setProperty("continuation", continuation);
+					webClientSession.setContinuation(continuation);
 					continuation.setAttribute("webClientSession", webClientSession);
 					continuation.setAttribute("rid", body.getProperty("rid"));
 					continuation.suspend();
@@ -726,10 +788,24 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 					{
 						for (XmlStanza stanza : webClientSession.getAllMessage())
 						{
+							if (stanza instanceof StreamFeature)
+							{
+								responsebody.setProperty("xmlns:stream", "http://etherx.jabber.org/streams");
+							}
 							responsebody.addStanza(stanza);
 						}
 					}
+					boolean closed = webClientSession.containsProperty("closed");
+					if (closed)
+					{
+						responsebody.setProperty("type", "terminate");
+					}
 					webClientSession.write(responsebody, response, (String) continuation.getAttribute("rid"));
+					if (closed)
+					{
+						webClientSession.close();
+					}
+					webClientSession.setContinuation(null);
 				}
 			}
 			
@@ -824,6 +900,16 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 				
 				Success success = new Success();
 				webClientSession.write(success, response, rid);
+				
+				ChristyStreamFeature[] features = streamFeatureStracker.getStreamFeatures(SupportedType.afterAuth);
+				StreamFeature streamFeature = new StreamFeature();
+				for (ChristyStreamFeature feature : features)
+				{
+					streamFeature.addFeature(feature.getElementName(), feature.getNamespace(), feature.isRequired());
+				}
+				
+				webClientSession.write(streamFeature);
+				
 			}
 			catch (UnauthorizedException e)
 			{
@@ -970,5 +1056,49 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		
 	}
 
+	private class SessionMonitor extends Thread
+	{
+		public static final int SLEEP = 1000;
+		
+		private boolean stop = true;
+		
+		public boolean isStop()
+		{
+			return stop;
+		}
+
+		public void setStop(boolean stop)
+		{
+			this.stop = stop;
+		}
+
+		@Override
+		public void run()
+		{
+			while (!isStop())
+			{
+				WebClientSession[] sessions = webClientSessions.values().toArray(new WebClientSession[]{});
+				for (WebClientSession webClientSession : sessions)
+				{
+					if (!webClientSession.isSuspended()
+							&& System.currentTimeMillis() - webClientSession.getLastActive() > inactivity * 1000)
+					{
+						webClientSession.close();
+					}
+				}
+				
+				try
+				{
+					Thread.sleep(SLEEP);
+				}
+				catch (InterruptedException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
 
 }
