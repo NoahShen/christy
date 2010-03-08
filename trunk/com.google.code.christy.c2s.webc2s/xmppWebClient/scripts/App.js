@@ -160,7 +160,7 @@ $(document).ready(function() {
 //				to: "gmail.com",
 		ack: "1",
 		ver: "1.6",
-		wait: "60"
+		wait: "10"
 	});
 	
 	connectionMgr.addConnectionListener(ConnectionEventType.Created, function(event){
@@ -174,7 +174,7 @@ $(document).ready(function() {
 	
 	connectionMgr.addConnectionListener(ConnectionEventType.Error, function(event){
 		alert("Error");
-		alert(event.error);
+//		alert(event.error);
 	});
 	
 	connectionMgr.addConnectionListener(ConnectionEventType.StanzaReceived, function(event){
@@ -182,6 +182,7 @@ $(document).ready(function() {
 	});
 	connectionMgr.addConnectionListener(ConnectionEventType.SaslSuccessful, function(event){
 //				alert("SaslSuccessful");
+				event.connection.close();
 	});
 //			connectionMgr.addConnectionListener(ConnectionEventType.ResourceBinded, function(event){
 //				alert("ResourceBinded");

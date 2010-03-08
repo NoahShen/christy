@@ -50,11 +50,7 @@ public interface ClientSession extends Propertied
 		
 		connected,
 		
-		authenticated,
-		
-		resourceBinded,
-		
-		sessionBinded
+		authenticated
 	}
 	
 }

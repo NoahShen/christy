@@ -283,11 +283,11 @@ XmppConnectionMgr = jClass.extend({
 				
 			}
 			// TODO Do need it in new Protocal
-//					else if (stanza instanceof StreamFeature) {
-//						if (stanza.containFeature(IqBind.ELEMENTNAME, IqBind.NAMESPACE)) {
-//							connection.bindResource();
-//						}
-//					}
+			else if (stanza instanceof StreamFeature) {
+				if (stanza.containFeature(IqBind.ELEMENTNAME, IqBind.NAMESPACE)) {
+					connection.bindResource();
+				}
+			}
 		}
 	},
 	
@@ -543,7 +543,7 @@ XmppConnection = jClass.extend({
 						connectionThis.authenticated = true;
 						
 						// TODO Do not need it in new Protocal
-						connectionThis.bindResource();
+//						connectionThis.bindResource();
 					}
 					var event = {
 							eventType: eventType,
