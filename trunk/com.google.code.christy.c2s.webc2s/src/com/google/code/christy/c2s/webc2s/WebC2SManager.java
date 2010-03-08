@@ -109,6 +109,8 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	
 	private int inactivity = 10;
 	
+	private int maxHolded = 1;
+	
 	private Server server;
 
 	private SocketConnector routerConnector;
@@ -445,6 +447,23 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		webClientSessions.remove(webClientSession.getStreamId());
 	}
 	
+
+	/**
+	 * @return the maxHolded
+	 */
+	public int getMaxHolded()
+	{
+		return maxHolded;
+	}
+
+	/**
+	 * @param maxHolded the maxHolded to set
+	 */
+	public void setMaxHolded(int maxHolded)
+	{
+		this.maxHolded = maxHolded;
+	}
+	
 	private class RouterHandler implements IoHandler
 	{
 		
@@ -706,6 +725,15 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 					return;
 				}
 				
+				if (webClientSession.getHolded() >= maxHolded)
+				{
+					response.setContentType("text/html;charset=UTF-8");
+					response.sendError(HttpServletResponse.SC_FORBIDDEN, "too many simultaneous requests");
+					webClientSession.close();
+					return;
+				}
+				
+				webClientSession.increaseHolded();
 				if (!checkKey(webClientSession, body))
 				{
 					Body responsebody = new Body();
@@ -738,7 +766,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 					webClientSession.close();
 					return;
 				}
-					
+				
 				if (!handled)
 				{
 					
@@ -765,7 +793,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 						{
 							webClientSession.close();
 						}
-						
+						webClientSession.decreaseHolded();
 						return;
 					}
 					
@@ -774,8 +802,10 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 					continuation.setAttribute("webClientSession", webClientSession);
 					continuation.setAttribute("rid", body.getProperty("rid"));
 					continuation.suspend();
-					
+					return;
 				}
+				
+				webClientSession.decreaseHolded();
 			}
 			else
 			{
@@ -806,6 +836,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 						webClientSession.close();
 					}
 					webClientSession.setContinuation(null);
+					webClientSession.decreaseHolded();
 				}
 			}
 			
@@ -1100,5 +1131,6 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		}
 		
 	}
+
 
 }

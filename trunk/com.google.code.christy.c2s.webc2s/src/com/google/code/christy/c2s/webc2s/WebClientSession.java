@@ -29,6 +29,8 @@ public class WebClientSession extends AbstractPropertied implements ClientSessio
 	
 	private boolean ack;
 	
+	private int holded;
+	
 	private Continuation continuation;
 	
 	private ConcurrentLinkedQueue<XmlStanza> messageQueue = new ConcurrentLinkedQueue<XmlStanza>();
@@ -180,4 +182,29 @@ public class WebClientSession extends AbstractPropertied implements ClientSessio
 		return false;
 	}
 
+	/**
+	 * @return the holded
+	 */
+	public int getHolded()
+	{
+		return holded;
+	}
+
+	/**
+	 * @param holded the holded to set
+	 */
+	public void setHolded(int holded)
+	{
+		this.holded = holded;
+	}
+
+	public void increaseHolded()
+	{
+		++this.holded;
+	}
+	
+	public void decreaseHolded()
+	{
+		--this.holded;
+	}
 }

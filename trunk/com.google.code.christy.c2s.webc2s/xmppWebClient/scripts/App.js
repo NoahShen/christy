@@ -182,7 +182,7 @@ $(document).ready(function() {
 	});
 	connectionMgr.addConnectionListener(ConnectionEventType.SaslSuccessful, function(event){
 //				alert("SaslSuccessful");
-				event.connection.close();
+//				event.connection.close();
 	});
 //			connectionMgr.addConnectionListener(ConnectionEventType.ResourceBinded, function(event){
 //				alert("ResourceBinded");
