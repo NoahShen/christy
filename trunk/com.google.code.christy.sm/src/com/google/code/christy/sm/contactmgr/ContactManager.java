@@ -358,7 +358,7 @@ public class ContactManager
 				lock.lock();
 				try
 				{
-					rosterCache.remove(node.toLowerCase());
+					rosterCache.remove(node);
 				}
 				finally
 				{
@@ -394,7 +394,7 @@ public class ContactManager
 			
 		}
 		
-		String username = userResource.getOnlineUser().getNode().toLowerCase();
+		String username = userResource.getOnlineUser().getNode();
 		
 		try
 		{
@@ -680,9 +680,9 @@ public class ContactManager
 			lock.lock();
 			try
 			{
-				if (rosterCache.containsKey(username.toLowerCase()))
+				if (rosterCache.containsKey(username))
 				{
-					return rosterCache.get(username.toLowerCase());
+					return rosterCache.get(username);
 				}
 			}
 			finally
@@ -729,7 +729,7 @@ public class ContactManager
 		lock.lock();
 		try
 		{
-			rosterCache.put(username.toLowerCase(), iqRoster);
+			rosterCache.put(username, iqRoster);
 		}
 		finally
 		{
@@ -1069,7 +1069,7 @@ public class ContactManager
 		lock.lock();
 		try
 		{
-			rosterCache.remove(username.toLowerCase());
+			rosterCache.remove(username);
 		}
 		finally
 		{
@@ -1093,7 +1093,7 @@ public class ContactManager
 		lock.lock();
 		try
 		{
-			rosterCache.remove(username.toLowerCase());
+			rosterCache.remove(username);
 		}
 		finally
 		{
