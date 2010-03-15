@@ -34,8 +34,6 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -45,6 +43,7 @@ import com.google.code.christy.c2s.ClientSession;
 import com.google.code.christy.c2s.UnauthorizedException;
 import com.google.code.christy.c2s.UnsupportedMechanismException;
 import com.google.code.christy.c2s.ChristyStreamFeature.SupportedType;
+import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.util.AbstractPropertied;
@@ -72,8 +71,6 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	{
 		return prefix + Long.toString(id++);
 	}
-	
-	private final Logger logger = LoggerFactory.getLogger(WebC2SManager.class);
 	
 	private Map<String, WebClientSession> webClientSessions = new ConcurrentHashMap<String, WebClientSession>();
 	
@@ -127,10 +124,13 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	
 	private UserAuthenticatorTracker userAuthenticatorTracker;
 	
+	private LoggerServiceTracker loggerServiceTracker;
+	
 	public WebC2SManager(RouteMessageParserServiceTracker routeMessageParserServiceTracker,
 				XmppParserServiceTracker xmppParserServiceTracker,
 				ChristyStreamFeatureServiceTracker streamFeatureStracker,
-				UserAuthenticatorTracker userAuthenticatorTracker)
+				UserAuthenticatorTracker userAuthenticatorTracker,
+				LoggerServiceTracker loggerServiceTracker)
 	{
 		super();
 		sessionMonitor = new SessionMonitor();
@@ -138,6 +138,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		this.xmppParserServiceTracker = xmppParserServiceTracker;
 		this.streamFeatureStracker = streamFeatureStracker;
 		this.userAuthenticatorTracker = userAuthenticatorTracker;
+		this.loggerServiceTracker = loggerServiceTracker;
 	}
 
 	@Override
@@ -251,29 +252,29 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			throw new IllegalStateException("c2s has started");
 		}
 		
-		logger.info("webc2s starting...");
+		loggerServiceTracker.info("webc2s starting...");
 		
 		if (getName() == null || getName().isEmpty())
 		{
-			logger.error("name has not been set");
+			loggerServiceTracker.error("name has not been set");
 			throw new IllegalStateException("name has not been set");
 		}
 		
 		if (getDomain() == null || getDomain().isEmpty())
 		{
-			logger.error("domain has not been set");
+			loggerServiceTracker.error("domain has not been set");
 			throw new IllegalStateException("domain has not been set");
 		}
 		
 		if (getRouterIp() == null || getRouterIp().isEmpty())
 		{
-			logger.error("routerIp has not been set");
+			loggerServiceTracker.error("routerIp has not been set");
 			throw new IllegalStateException("routerIp has not been set");
 		}
 		
 		if (getRouterPassword() == null || getRouterPassword().isEmpty())
 		{
-			logger.error("routerPassword has not been set");
+			loggerServiceTracker.error("routerPassword has not been set");
 			throw new IllegalStateException("routerPassword has not been set");
 		}
 		
@@ -287,18 +288,18 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			started = false;
-			logger.error("webc2s starting failure:" + e.getMessage());
+			loggerServiceTracker.error("webc2s starting failure:" + e.getMessage());
 			exit();
 			return;
 		}
 		started = true;
-		logger.info("webc2s started");
+		loggerServiceTracker.info("webc2s started");
 		
 	}
 
 	private void startService() throws Exception
 	{
-		logger.info("starting http server");
+		loggerServiceTracker.info("starting http server");
 		
 		server = new Server(getWebclientPort());
 
@@ -320,12 +321,12 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		sessionMonitor.setStop(false);
 		sessionMonitor.start();
 		
-		logger.info("server start successful");
+		loggerServiceTracker.info("server start successful");
 	}
 
 	private void connect2Router() throws Exception
 	{
-		logger.info("connecting to router");
+		loggerServiceTracker.info("connecting to router");
 		
 		SocketConnectorConfig socketConnectorConfig = new SocketConnectorConfig();
 		socketConnectorConfig.setConnectTimeout(30);
@@ -341,7 +342,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			throw new Exception("connecting to router failure");
 		}
 		
-		logger.info("connecting to router successful");
+		loggerServiceTracker.info("connecting to router successful");
 	}
 
 	@Override
@@ -471,14 +472,14 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		@Override
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
-			logger.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
+			loggerServiceTracker.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
 			cause.printStackTrace();
 		}
 
 		@Override
 		public void messageReceived(IoSession session, Object message) throws Exception
 		{
-			logger.debug("session" + session + ": messageReceived:\n" + message);
+			loggerServiceTracker.debug("session" + session + ": messageReceived:\n" + message);
 			
 			String xml = message.toString();
 			if (xml.equals("</stream:stream>"))
@@ -510,11 +511,11 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			{
 				routerSession = session;
 				routerConnected = true;
-				logger.info("router auth successful");
+				loggerServiceTracker.info("router auth successful");
 			}
 			else if ("failed".equals(elementName))
 			{
-				logger.error("password error");
+				loggerServiceTracker.error("password error");
 				session.close();
 			}
 			else if ("route".equals(elementName))
@@ -559,19 +560,19 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			
 			if (!C2SROUTER_NAMESPACE.equals(xmlns))
 			{
-				logger.error("namespace error:" + xmlns);
+				loggerServiceTracker.error("namespace error:" + xmlns);
 				session.close();
 				return;
 			}
 			if (!"router".equals(from))
 			{
-				logger.error("from error:" + from);
+				loggerServiceTracker.error("from error:" + from);
 				session.close();
 				return;
 			}
 			session.setAttribute("streamId", id);
 			
-			logger.debug("open stream successful");
+			loggerServiceTracker.debug("open stream successful");
 			
 			session.write("<internal xmlns='" + C2SROUTER_AUTH_NAMESPACE + "'" +
 						" c2sname='" + getName() + "' password='" + getRouterPassword() + "'/>");
@@ -580,7 +581,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		@Override
 		public void messageSent(IoSession session, Object message) throws Exception
 		{
-			if (logger.isDebugEnabled())
+			if (loggerServiceTracker.isDebugEnabled())
 			{
 				String s = null;
 				if (message instanceof String)
@@ -591,21 +592,21 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 				{
 					s = ((XmlStanza)message).toXml();
 				}
-				logger.debug("session" + session + ": messageSent:\n" + s);
+				loggerServiceTracker.debug("session" + session + ": messageSent:\n" + s);
 			}
 		}
 
 		@Override
 		public void sessionClosed(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionClosed");
+			loggerServiceTracker.debug("session" + session + ": sessionClosed");
 			exit();
 		}
 
 		@Override
 		public void sessionCreated(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionCreated");
+			loggerServiceTracker.debug("session" + session + ": sessionCreated");
 		}
 
 		@Override
@@ -616,7 +617,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		@Override
 		public void sessionOpened(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionOpened");
+			loggerServiceTracker.debug("session" + session + ": sessionOpened");
 			
 			session.write("<stream:stream xmlns='" + C2SROUTER_NAMESPACE + "'" +
 						" xmlns:stream='http://etherx.jabber.org/streams'" +

@@ -15,12 +15,11 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.SocketAcceptor;
 import org.apache.mina.transport.socket.nio.SocketAcceptorConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.router.RouterManager;
@@ -56,8 +55,6 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	public static final String SMROUTER_NAMESPACE = "christy:internal:sm2router";
 	
 	public static final String SMROUTER_AUTH_NAMESPACE = "christy:internal:sm2router:auth";
-	
-	private final Logger logger = LoggerFactory.getLogger(RouterManagerImpl.class);
 
 	private IoAcceptor c2sAcceptor;
 	
@@ -97,6 +94,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 
+	private LoggerServiceTracker loggerServiceTracker;
+	
 	/**
 	 * @param resourceBinderServiceTracker
 	 * @param routerToSmInterceptorServiceTracker 
@@ -104,11 +103,13 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	 */
 	public RouterManagerImpl(RouterToSmMessageDispatcherTracker resourceBinderServiceTracker, 
 						RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker, 
-						RouteMessageParserServiceTracker routeMessageParserServiceTracker)
+						RouteMessageParserServiceTracker routeMessageParserServiceTracker,
+						LoggerServiceTracker loggerServiceTracker)
 	{
 		this.dispatcherServiceTracker = resourceBinderServiceTracker;
 		this.routerToSmInterceptorServiceTracker = routerToSmInterceptorServiceTracker;
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
+		this.loggerServiceTracker = loggerServiceTracker;
 	}
 
 	@Override
@@ -264,29 +265,29 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		
 		if (getDomain() == null || getDomain().isEmpty())
 		{
-			logger.error("domain has not been set");
+			loggerServiceTracker.error("domain has not been set");
 			throw new IllegalStateException("domain has not been set");
 		}
 		
 		if (registeredC2sModules.isEmpty())
 		{
-			logger.error("c2s has not been registered");
+			loggerServiceTracker.error("c2s has not been registered");
 			throw new IllegalStateException("c2s has not been registered");
 		}
 		
 		if (registeredSmModules.isEmpty())
 		{
-			logger.error("sm has not been registered");
+			loggerServiceTracker.error("sm has not been registered");
 			throw new IllegalStateException("sm has not been registered");
 		}
 		
 //		if (resourceBinderServiceTracker.size() <= 0)
 //		{
-//			logger.error("no resourceBinder service");
+//			loggerServiceTracker.error("no resourceBinder service");
 //			throw new IllegalStateException("no resourceBinder service");
 //		}
 		
-		logger.info("router starting...");
+		loggerServiceTracker.info("router starting...");
 		
 		try
 		{
@@ -295,7 +296,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		catch (IOException e)
 		{
 			e.printStackTrace();
-			logger.error("c2s acceptor start failure:" + e.getMessage());
+			loggerServiceTracker.error("c2s acceptor start failure:" + e.getMessage());
 			return;
 		}
 		try
@@ -305,12 +306,12 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		catch (IOException e)
 		{
 			e.printStackTrace();
-			logger.error("sm acceptor start failure:" + e.getMessage());
+			loggerServiceTracker.error("sm acceptor start failure:" + e.getMessage());
 			return;
 		}
 		
 		started = true;
-		logger.info("router successful start");
+		loggerServiceTracker.info("router successful start");
 	}
 
 	private void startSmAcceptor() throws IOException
@@ -445,25 +446,25 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	void addC2sSession(String c2sname, C2sSessionImpl c2sSession)
 	{
 		c2sSessions.put(c2sname, c2sSession);
-		logger.debug("add new c2sSession:" + c2sname);
+		loggerServiceTracker.debug("add new c2sSession:" + c2sname);
 	}
 	
 	void removeC2sSession(String c2sname)
 	{
 		c2sSessions.remove(c2sname);
-		logger.debug("remove c2sSession:" + c2sname);
+		loggerServiceTracker.debug("remove c2sSession:" + c2sname);
 	}
 	
 	void addSmSession(String smname, SmSessionImpl smSession)
 	{
 		smSessions.put(smname, smSession);
-		logger.debug("add new smSession:" + smname);
+		loggerServiceTracker.debug("add new smSession:" + smname);
 	}
 	
 	void removeSmSession(String smname)
 	{
 		smSessions.remove(smname);
-		logger.debug("remove smSession:" + smname);
+		loggerServiceTracker.debug("remove smSession:" + smname);
 	}
 	
 	private class C2sHandler implements IoHandler
@@ -472,14 +473,14 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
-			logger.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
+			loggerServiceTracker.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
 			cause.printStackTrace();
 		}
 
 		@Override
 		public void messageReceived(IoSession session, Object message) throws Exception
 		{
-			logger.debug("session" + session + ": messageReceived:\n" + message);
+			loggerServiceTracker.debug("session" + session + ": messageReceived:\n" + message);
 			
 			String xml = message.toString();
 			if (xml.equals("</stream:stream>"))
@@ -657,7 +658,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void messageSent(IoSession session, Object message) throws Exception
 		{
-			if (logger.isDebugEnabled())
+			if (loggerServiceTracker.isDebugEnabled())
 			{
 				String s = null;
 				if (message instanceof String)
@@ -668,20 +669,20 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				{
 					s = ((XmlStanza)message).toXml();
 				}
-				logger.debug("session" + session + ": messageSent:\n" + s);
+				loggerServiceTracker.debug("session" + session + ": messageSent:\n" + s);
 			}
 		}
 
 		@Override
 		public void sessionClosed(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionClosed");
+			loggerServiceTracker.debug("session" + session + ": sessionClosed");
 		}
 
 		@Override
 		public void sessionCreated(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionCreated");
+			loggerServiceTracker.debug("session" + session + ": sessionCreated");
 			if (getC2sLimit() != 0 && c2sSessions.size() == getC2sLimit())
 			{
 				StreamError error = new StreamError(StreamError.Condition.internal_server_error);
@@ -689,7 +690,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				session.write(error);
 				session.write(CloseStream.getCloseStream());
 				session.close();
-				logger.info("closing session" + session + ": c2sSession limit reached");
+				loggerServiceTracker.info("closing session" + session + ": c2sSession limit reached");
 			}
 		}
 
@@ -701,7 +702,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void sessionOpened(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionOpened");
+			loggerServiceTracker.debug("session" + session + ": sessionOpened");
 			
 		}
 		
@@ -713,14 +714,14 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
-			logger.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
+			loggerServiceTracker.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
 			cause.printStackTrace();
 		}
 
 		@Override
 		public void messageReceived(IoSession session, Object message) throws Exception
 		{
-			logger.debug("session" + session + ": messageReceived:\n" + message);
+			loggerServiceTracker.debug("session" + session + ": messageReceived:\n" + message);
 			String xml = message.toString();
 			if (xml.equals("</stream:stream>"))
 			{
@@ -779,7 +780,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			if (routerToSmInterceptorServiceTracker.fireRouteMessageReceived(routeMessage, 
 															(SmSession) session.getAttachment()))
 			{
-				logger.debug("Message which recieved from "
+				loggerServiceTracker.debug("Message which recieved from "
 							+ session + "has been intercepted.Message:"
 							+ routeMessage.toXml());
 				return;
@@ -890,7 +891,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 						
-						logger.error("resourceBinder add smsession error");
+						loggerServiceTracker.error("resourceBinder add smsession error");
 						session.write("<error>" +
 									"<internal-error xmlns=\"christy:internal:sm2router:auth\"/>" +
 									"</error> ");
@@ -966,7 +967,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void messageSent(IoSession session, Object message) throws Exception
 		{
-			if (logger.isDebugEnabled())
+			if (loggerServiceTracker.isDebugEnabled())
 			{
 				String s = null;
 				if (message instanceof String)
@@ -977,14 +978,14 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				{
 					s = ((XmlStanza)message).toXml();
 				}
-				logger.debug("session" + session + ": messageSent:\n" + s);
+				loggerServiceTracker.debug("session" + session + ": messageSent:\n" + s);
 			}
 		}
 
 		@Override
 		public void sessionClosed(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionClosed");
+			loggerServiceTracker.debug("session" + session + ": sessionClosed");
 			Object atta = session.getAttachment();
 			if (atta != null || atta instanceof SmSession)
 			{
@@ -995,7 +996,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void sessionCreated(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionCreated");
+			loggerServiceTracker.debug("session" + session + ": sessionCreated");
 
 			if (getSmLimit() != 0 && smSessions.size() == getSmLimit())
 			{
@@ -1004,7 +1005,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				session.write(error);
 				session.write(CloseStream.getCloseStream());
 				session.close();
-				logger.info("closing session" + session + ": smSession limit reached");
+				loggerServiceTracker.info("closing session" + session + ": smSession limit reached");
 			}
 		}
 
@@ -1018,7 +1019,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void sessionOpened(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionOpened");
+			loggerServiceTracker.debug("session" + session + ": sessionOpened");
 			
 		}
 		

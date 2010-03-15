@@ -4,6 +4,7 @@ package com.google.code.christy.router;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
+import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.router.impl.RouteMessageParserServiceTracker;
 import com.google.code.christy.router.impl.RouterManagerImpl;
 import com.google.code.christy.router.impl.RouterToSmInterceptorServiceTracker;
@@ -16,6 +17,7 @@ public class Activator implements BundleActivator
 	private RouterToSmMessageDispatcherTracker routerToSmMessageDispatcherTracker;
 	private RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker;
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
+	private LoggerServiceTracker loggerServiceTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -34,9 +36,13 @@ public class Activator implements BundleActivator
 		routeMessageParserServiceTracker = new RouteMessageParserServiceTracker(context);
 		routeMessageParserServiceTracker.open();
 		
+		loggerServiceTracker = new LoggerServiceTracker(context);
+		loggerServiceTracker.open();
+		
 		RouterManager rm = new RouterManagerImpl(routerToSmMessageDispatcherTracker, 
 											routerToSmInterceptorServiceTracker,
-											routeMessageParserServiceTracker);
+											routeMessageParserServiceTracker,
+											loggerServiceTracker);
 
 		// TODO test code
 		rm.setDomain("example.com");
@@ -70,6 +76,12 @@ public class Activator implements BundleActivator
 		{
 			routeMessageParserServiceTracker.close();
 			routeMessageParserServiceTracker = null;
+		}
+		
+		if (loggerServiceTracker != null)
+		{
+			loggerServiceTracker.close();
+			loggerServiceTracker = null;
 		}
 	}
 

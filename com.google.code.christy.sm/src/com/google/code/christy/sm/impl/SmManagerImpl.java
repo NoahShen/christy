@@ -20,11 +20,10 @@ import org.apache.mina.common.ThreadModel;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
+import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.sm.OnlineUser;
@@ -64,8 +63,6 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	public static final String SMROUTER_NAMESPACE = "christy:internal:sm2router";
 	
 	public static final String SMROUTER_AUTH_NAMESPACE = "christy:internal:sm2router:auth";
-
-	private final Logger logger = LoggerFactory.getLogger(SmManagerImpl.class);
 	
 	private String domain;
 	
@@ -103,13 +100,16 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 
 	private ContactManager contactManager;
 	
+	private LoggerServiceTracker loggerServiceTracker;
+	
 	public SmManagerImpl(RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
 						SmToRouterInterceptorServiceTracker smToRouterInterceptorServiceTracker, 
 						SmHandlerServiceTracker packetHandlerServiceTracker,
 						UserPrivacyListDbHelperTracker userPrivacyListDbHelperTracker, 
 						RosterItemDbHelperTracker rosterItemDbHelperTracker,
 						OfflineSubscribeMsgDbHelperTracker offlineSubscribeMsgDbHelperTracker,
-						UserDbHelperTracker userDbHelperTracker)
+						UserDbHelperTracker userDbHelperTracker,
+						LoggerServiceTracker loggerServiceTracker)
 	{
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 		this.smToRouterInterceptorServiceTracker = smToRouterInterceptorServiceTracker;
@@ -119,6 +119,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			new ContactManager(rosterItemDbHelperTracker, 
 							offlineSubscribeMsgDbHelperTracker, userDbHelperTracker);
 		this.privacyManager = new PrivacyManager(this, userPrivacyListDbHelperTracker);
+		this.loggerServiceTracker = loggerServiceTracker;
 	}
 	
 	/**
@@ -229,33 +230,33 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		{
 			throw new IllegalStateException("sm has started");
 		}
-		logger.info("sm starting...");
+		loggerServiceTracker.info("sm starting...");
 		
 		if (getName() == null || getName().isEmpty())
 		{
-			logger.error("name has not been set");
+			loggerServiceTracker.error("name has not been set");
 			throw new IllegalStateException("name has not been set");
 		}
 		
 		if (getDomain() == null || getDomain().isEmpty())
 		{
-			logger.error("domain has not been set");
+			loggerServiceTracker.error("domain has not been set");
 			throw new IllegalStateException("domain has not been set");
 		}
 		
 		if (getRouterIp() == null || getRouterIp().isEmpty())
 		{
-			logger.error("routerIp has not been set");
+			loggerServiceTracker.error("routerIp has not been set");
 			throw new IllegalStateException("routerIp has not been set");
 		}
 		
 		if (getRouterPassword() == null || getRouterPassword().isEmpty())
 		{
-			logger.error("routerPassword has not been set");
+			loggerServiceTracker.error("routerPassword has not been set");
 			throw new IllegalStateException("routerPassword has not been set");
 		}
 		
-		logger.info("connecting to router");
+		loggerServiceTracker.info("connecting to router");
 		
 		SocketConnectorConfig socketConnectorConfig = new SocketConnectorConfig();
 		socketConnectorConfig.setConnectTimeout(30);
@@ -269,13 +270,13 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		if (!future.join(30 * 1000) || !future.isConnected())
 		{
 			started = false;
-			logger.error("c2s starting failure: connecting to router failure");
+			loggerServiceTracker.error("c2s starting failure: connecting to router failure");
 			exit();
 			return;
 		}
 		
 		started = true;
-		logger.info("connecting to router successful");
+		loggerServiceTracker.info("connecting to router successful");
 		
 	}
 
@@ -463,7 +464,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		
 		if (smToRouterInterceptorServiceTracker.fireSmMessageSent(routeMessage, SmManagerImpl.this, user))
 		{
-			logger.debug("Message which will send to router"
+			loggerServiceTracker.debug("Message which will send to router"
 						+ "has been intercepted.Message:"
 						+ routeMessage.toXml());
 			return;
@@ -479,14 +480,14 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		@Override
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
-			logger.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
+			loggerServiceTracker.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
 			cause.printStackTrace();
 		}
 
 		@Override
 		public void messageReceived(IoSession session, Object message) throws Exception
 		{
-			logger.debug("session" + session + ": messageReceived:\n" + message);
+			loggerServiceTracker.debug("session" + session + ": messageReceived:\n" + message);
 
 			String xml = message.toString();
 			if (xml.equals("</stream:stream>"))
@@ -519,11 +520,11 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			{
 				routerSession = session;
 				routerConnected = true;
-				logger.info("router auth successful");
+				loggerServiceTracker.info("router auth successful");
 			}
 			else if ("failed".equals(elementName))
 			{
-				logger.error("password error");
+				loggerServiceTracker.error("password error");
 				session.close();
 			}
 			else if ("route".equals(elementName))
@@ -542,7 +543,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			
 			if (smToRouterInterceptorServiceTracker.fireSmMessageReceived(routeMessage, SmManagerImpl.this, onlineUser))
 			{
-				logger.debug("Message which recieved from "
+				loggerServiceTracker.debug("Message which recieved from "
 							+ session + "has been intercepted.Message:"
 							+ routeMessage.toXml());
 				return;
@@ -615,9 +616,9 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 						//block
 						if (privacyManager.shouldBlockReceivePacket(onlineUser, res, packet))
 						{
-							if (logger.isDebugEnabled())
+							if (loggerServiceTracker.isDebugEnabled())
 							{
-								logger.debug("block" + onlineUser.getNode() + "/" + 
+								loggerServiceTracker.debug("block" + onlineUser.getNode() + "/" + 
 											res.getResource() + 
 											" receivePacket:" + packet.toXml());
 							}
@@ -652,19 +653,19 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			
 			if (!SMROUTER_NAMESPACE.equals(xmlns))
 			{
-				logger.error("namespace error:" + xmlns);
+				loggerServiceTracker.error("namespace error:" + xmlns);
 				session.close();
 				return;
 			}
 			if (!"router".equals(from))
 			{
-				logger.error("from error:" + from);
+				loggerServiceTracker.error("from error:" + from);
 				session.close();
 				return;
 			}
 			session.setAttribute("streamId", id);
 			
-			logger.debug("open stream successful");
+			loggerServiceTracker.debug("open stream successful");
 			
 			// TODO test code
 			String smname = getName();
@@ -679,7 +680,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		@Override
 		public void messageSent(IoSession session, Object message) throws Exception
 		{
-			if (logger.isDebugEnabled())
+			if (loggerServiceTracker.isDebugEnabled())
 			{
 				String s = null;
 				if (message instanceof String)
@@ -690,21 +691,21 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				{
 					s = ((XmlStanza)message).toXml();
 				}
-				logger.debug("session" + session + ": messageSent:\n" + s);
+				loggerServiceTracker.debug("session" + session + ": messageSent:\n" + s);
 			}
 		}
 
 		@Override
 		public void sessionClosed(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionClosed");
+			loggerServiceTracker.debug("session" + session + ": sessionClosed");
 			exit();
 		}
 
 		@Override
 		public void sessionCreated(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionCreated");
+			loggerServiceTracker.debug("session" + session + ": sessionCreated");
 		}
 
 		@Override
@@ -717,7 +718,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		@Override
 		public void sessionOpened(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionOpened");
+			loggerServiceTracker.debug("session" + session + ": sessionOpened");
 			
 			session.write("<stream:stream xmlns='" + SMROUTER_NAMESPACE + "'" +
 						" xmlns:stream='http://etherx.jabber.org/streams'" +

@@ -3,15 +3,10 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Util Plug-in
 Bundle-SymbolicName: com.google.code.christy.util
 Bundle-Version: 1.0.0
-Bundle-ClassPath: bin/,
- lib/google-collect-1.0-rc3.jar
+Bundle-ClassPath: bin/
 Bundle-Activator: com.google.code.christy.util.Activator
 Bundle-Vendor: Noah
 Import-Package: org.osgi.framework;version="1.3.0"
 Eclipse-LazyStart: true
 Export-Package: com.google.code.christy.util,
- com.google.code.christy.util.collections,
- com.google.common.annotations,
- com.google.common.base,
- com.google.common.base.internal,
- com.google.common.collect
+ com.google.code.christy.util.collections

@@ -4,6 +4,7 @@ package com.google.code.christy.sm;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
+import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.sm.contactmgr.OfflineSubscribeMsgDbHelperTracker;
 import com.google.code.christy.sm.contactmgr.RosterItemDbHelperTracker;
 import com.google.code.christy.sm.impl.RouteMessageParserServiceTracker;
@@ -23,6 +24,7 @@ public class Activator implements BundleActivator
 	private RosterItemDbHelperTracker rosterItemDbHelperTracker;
 	private OfflineSubscribeMsgDbHelperTracker offlineSubscribeMsgDbHelperTracker;
 	private UserDbHelperTracker userDbHelperTracker;
+	private LoggerServiceTracker loggerServiceTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -52,6 +54,9 @@ public class Activator implements BundleActivator
 		userDbHelperTracker = new UserDbHelperTracker(context);
 		userDbHelperTracker.open();
 		
+		loggerServiceTracker = new LoggerServiceTracker(context);
+		loggerServiceTracker.open();
+		
 		SmManagerImpl smManager = 
 			new SmManagerImpl(routeMessageParserServiceTracker,
 					smToRouterInterceptorServiceTracker,
@@ -59,7 +64,8 @@ public class Activator implements BundleActivator
 					userPrivacyListDbHelperTracker,
 					rosterItemDbHelperTracker,
 					offlineSubscribeMsgDbHelperTracker,
-					userDbHelperTracker);
+					userDbHelperTracker,
+					loggerServiceTracker);
 		
 		// TODO
 		smManager.setName("sm_1");
@@ -116,6 +122,12 @@ public class Activator implements BundleActivator
 		{
 			userDbHelperTracker.close();
 			userDbHelperTracker = null;
+		}
+		
+		if (loggerServiceTracker != null)
+		{
+			loggerServiceTracker.close();
+			loggerServiceTracker = null;
 		}
 	}
 

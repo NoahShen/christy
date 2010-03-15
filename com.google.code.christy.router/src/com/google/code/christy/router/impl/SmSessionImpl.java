@@ -6,8 +6,6 @@ package com.google.code.christy.router.impl;
 import java.net.SocketAddress;
 
 import org.apache.mina.common.IoSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.router.SmSession;
@@ -20,9 +18,7 @@ import com.google.code.christy.xmpp.CloseStream;
  *
  */
 public class SmSessionImpl extends AbstractPropertied implements SmSession
-{
-	private final Logger logger = LoggerFactory.getLogger(SmSessionImpl.class);
-	
+{	
 	private String internalStreamId;
 	
 	private String smName;
@@ -91,7 +87,6 @@ public class SmSessionImpl extends AbstractPropertied implements SmSession
 	{
 		if (routerToSmInterceptorServiceTracker.fireRouteMessageSent(routeMessage, this))
 		{
-			logger.debug("Message which will send to " + iosession + "has been intercepted.Message:" + routeMessage.toXml());
 			return;
 		}
 		
