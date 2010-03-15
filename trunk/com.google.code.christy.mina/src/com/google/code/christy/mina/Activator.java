@@ -1,5 +1,4 @@
 package com.google.code.christy.mina;
-
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 

@@ -5,9 +5,6 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -49,7 +46,6 @@ import com.google.code.christy.xmppparser.XmppParser;
  */
 public class XMPPParserImpl implements XmppParser
 {
-	private final Logger logger = LoggerFactory.getLogger(XMPPParserImpl.class);
 	
 	private ExtensionParserServiceTracker extensionParserServiceTracker;
 	/**
@@ -149,12 +145,6 @@ public class XMPPParserImpl implements XmppParser
 			}
 			catch (Exception e)
 			{
-				if (logger.isDebugEnabled())
-				{
-					e.printStackTrace();
-					logger.debug("parse exception:" + e.getMessage());
-				}
-				
 				return null;
 			}
 		}
@@ -170,13 +160,7 @@ public class XMPPParserImpl implements XmppParser
 			parser.next();
 		}
 		catch (Exception e)
-		{
-			if (logger.isDebugEnabled())
-			{
-				e.printStackTrace();
-				logger.debug("parse exception:" + e.getMessage());
-			}
-			
+		{			
 			return null;
 		}
 
@@ -477,21 +461,12 @@ public class XMPPParserImpl implements XmppParser
 		ExtensionParser xparser = extensionParserServiceTracker.getExtensionParser(elementName, namespace);
 		if (xparser != null)
 		{
-			logger.debug("get [" + elementName + " " + namespace + "]ExtensionParser: " + xparser);
-			
 			PacketExtension packetX = xparser.parseExtension(parser, this);
-			
-			logger.debug("ExtensionParser parse extension complete:" + packetX);
-			
 			packet.addExtension(packetX);
 		}
 		else
 		{
-			logger.debug("can not get [" + elementName + " " + namespace + "]ExtensionParser");
-			
 			PacketExtension packetX = parseUnknownExtension(parser, elementName, namespace);
-			
-			logger.debug("parseUnknownExtension complete:" + packetX);
 			packet.addExtension(packetX);
 		}
 	}

@@ -7,6 +7,7 @@ import org.osgi.framework.ServiceRegistration;
 import com.google.code.christy.c2s.C2SManager;
 import com.google.code.christy.c2s.ChristyStreamFeature;
 import com.google.code.christy.c2s.UserAuthenticator;
+import com.google.code.christy.log.LoggerServiceTracker;
 
 public class Activator implements BundleActivator
 {
@@ -26,6 +27,8 @@ public class Activator implements BundleActivator
 	private ServiceRegistration sessionFeatureRegistration;
 
 	private ServiceRegistration plainUserAuthenticatorRegistration;
+
+	private LoggerServiceTracker loggerServiceTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -68,10 +71,14 @@ public class Activator implements BundleActivator
 		userAuthenticatorTracker.open();
 		//authenticator
 		
+		loggerServiceTracker = new LoggerServiceTracker(context);
+		loggerServiceTracker.open();
+		
 		WebC2SManager c2sManager = new WebC2SManager(routeMessageParserServiceTracker, 
 								xmppParserServiceTracker,
 								streamFeatureStracker,
-								userAuthenticatorTracker);
+								userAuthenticatorTracker,
+								loggerServiceTracker);
 
 		c2sManagerRegistration = context.registerService(C2SManager.class.getName(), c2sManager, null);
 
@@ -144,6 +151,12 @@ public class Activator implements BundleActivator
 		{
 			plainUserAuthenticatorRegistration.unregister();
 			plainUserAuthenticatorRegistration = null;
+		}
+		
+		if (loggerServiceTracker != null)
+		{
+			loggerServiceTracker.close();
+			loggerServiceTracker = null;
 		}
 	}
 

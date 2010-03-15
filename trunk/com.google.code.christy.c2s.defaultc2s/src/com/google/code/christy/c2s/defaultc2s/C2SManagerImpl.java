@@ -22,8 +22,6 @@ import org.apache.mina.transport.socket.nio.SocketAcceptor;
 import org.apache.mina.transport.socket.nio.SocketAcceptorConfig;
 import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -34,6 +32,7 @@ import com.google.code.christy.c2s.OpenStreamException;
 import com.google.code.christy.c2s.UnauthorizedException;
 import com.google.code.christy.c2s.UnsupportedMechanismException;
 import com.google.code.christy.c2s.ChristyStreamFeature.SupportedType;
+import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.util.AbstractPropertied;
@@ -65,8 +64,6 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 	{
 		return prefix + Long.toString(id++);
 	}
-	
-	private final Logger logger = LoggerFactory.getLogger(C2SManagerImpl.class);
 	
 	private Map<String, ClientSessionImpl> clientSessions = new ConcurrentHashMap<String, ClientSessionImpl>();
 	
@@ -106,6 +103,8 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 	
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	
+	private LoggerServiceTracker loggerServiceTracker;
+	
 	/**
 	 * @param streamFeatureStracker
 	 */
@@ -113,13 +112,15 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 						TlsContextServiceTracker tlsContextServiceTracker,
 						UserAuthenticatorTracker userAuthenticatorTracker,
 						XmppParserServiceTracker xmppParserServiceTracker,
-						RouteMessageParserServiceTracker routeMessageParserServiceTracker)
+						RouteMessageParserServiceTracker routeMessageParserServiceTracker,
+						LoggerServiceTracker loggerServiceTracker)
 	{
 		this.streamFeatureStracker = streamFeatureStracker;
 		this.tlsContextServiceTracker = tlsContextServiceTracker;
 		this.userAuthenticatorTracker = userAuthenticatorTracker;
 		this.xmppParserServiceTracker = xmppParserServiceTracker;
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
+		this.loggerServiceTracker = loggerServiceTracker;
 	}
 
 	@Override
@@ -285,29 +286,29 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			throw new IllegalStateException("c2s has started");
 		}
 		
-		logger.info("c2s starting...");
+		loggerServiceTracker.info("c2s starting...");
 		
 		if (getName() == null || getName().isEmpty())
 		{
-			logger.error("name has not been set");
+			loggerServiceTracker.error("name has not been set");
 			throw new IllegalStateException("name has not been set");
 		}
 		
 		if (getDomain() == null || getDomain().isEmpty())
 		{
-			logger.error("domain has not been set");
+			loggerServiceTracker.error("domain has not been set");
 			throw new IllegalStateException("domain has not been set");
 		}
 		
 		if (getRouterIp() == null || getRouterIp().isEmpty())
 		{
-			logger.error("routerIp has not been set");
+			loggerServiceTracker.error("routerIp has not been set");
 			throw new IllegalStateException("routerIp has not been set");
 		}
 		
 		if (getRouterPassword() == null || getRouterPassword().isEmpty())
 		{
-			logger.error("routerPassword has not been set");
+			loggerServiceTracker.error("routerPassword has not been set");
 			throw new IllegalStateException("routerPassword has not been set");
 		}
 		
@@ -321,18 +322,18 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			started = false;
-			logger.error("c2s starting failure:" + e.getMessage());
+			loggerServiceTracker.error("c2s starting failure:" + e.getMessage());
 			exit();
 			return;
 		}
 		
 		started = true;
-		logger.info("c2s started");
+		loggerServiceTracker.info("c2s started");
 	}
 
 	private void startService() throws IOException
 	{
-		logger.info("starting c2sAcceptor");
+		loggerServiceTracker.info("starting c2sAcceptor");
 		
 		c2sAcceptor = new SocketAcceptor();
 		IoAcceptorConfig config = new SocketAcceptorConfig();
@@ -345,12 +346,12 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		
 		c2sAcceptor.bind(new InetSocketAddress(xmppClientPort), new C2sHandler(), config);
 		
-		logger.info("c2sAcceptor start successful");
+		loggerServiceTracker.info("c2sAcceptor start successful");
 	}
 
 	private void connect2Router() throws Exception
 	{
-		logger.info("connecting to router");
+		loggerServiceTracker.info("connecting to router");
 		
 		SocketConnectorConfig socketConnectorConfig = new SocketConnectorConfig();
 		socketConnectorConfig.setConnectTimeout(30);
@@ -366,7 +367,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			throw new Exception("connecting to router failure");
 		}
 		
-		logger.info("connecting to router successful");
+		loggerServiceTracker.info("connecting to router successful");
 	}
 
 	@Override
@@ -412,14 +413,14 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		@Override
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
-			logger.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
+			loggerServiceTracker.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
 			cause.printStackTrace();
 		}
 
 		@Override
 		public void messageReceived(IoSession session, Object message) throws Exception
 		{
-			logger.debug("session" + session + ": messageReceived:\n" + message);
+			loggerServiceTracker.debug("session" + session + ": messageReceived:\n" + message);
 			
 			String xml = message.toString();
 			if (xml.equals("</stream:stream>"))
@@ -451,11 +452,11 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			{
 				routerSession = session;
 				routerConnected = true;
-				logger.info("router auth successful");
+				loggerServiceTracker.info("router auth successful");
 			}
 			else if ("failed".equals(elementName))
 			{
-				logger.error("password error");
+				loggerServiceTracker.error("password error");
 				session.close();
 			}
 			else if ("route".equals(elementName))
@@ -497,19 +498,19 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			
 			if (!C2SROUTER_NAMESPACE.equals(xmlns))
 			{
-				logger.error("namespace error:" + xmlns);
+				loggerServiceTracker.error("namespace error:" + xmlns);
 				session.close();
 				return;
 			}
 			if (!"router".equals(from))
 			{
-				logger.error("from error:" + from);
+				loggerServiceTracker.error("from error:" + from);
 				session.close();
 				return;
 			}
 			session.setAttribute("streamId", id);
 			
-			logger.debug("open stream successful");
+			loggerServiceTracker.debug("open stream successful");
 			
 			session.write("<internal xmlns='" + C2SROUTER_AUTH_NAMESPACE + "'" +
 						" c2sname='" + getName() + "' password='" + getRouterPassword() + "'/>");
@@ -518,7 +519,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		@Override
 		public void messageSent(IoSession session, Object message) throws Exception
 		{
-			if (logger.isDebugEnabled())
+			if (loggerServiceTracker.isDebugEnabled())
 			{
 				String s = null;
 				if (message instanceof String)
@@ -529,21 +530,21 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 				{
 					s = ((XmlStanza)message).toXml();
 				}
-				logger.debug("session" + session + ": messageSent:\n" + s);
+				loggerServiceTracker.debug("session" + session + ": messageSent:\n" + s);
 			}
 		}
 
 		@Override
 		public void sessionClosed(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionClosed");
+			loggerServiceTracker.debug("session" + session + ": sessionClosed");
 			exit();
 		}
 
 		@Override
 		public void sessionCreated(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionCreated");
+			loggerServiceTracker.debug("session" + session + ": sessionCreated");
 		}
 
 		@Override
@@ -554,7 +555,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		@Override
 		public void sessionOpened(IoSession session) throws Exception
 		{
-			logger.debug("session" + session + ": sessionOpened");
+			loggerServiceTracker.debug("session" + session + ": sessionOpened");
 			
 			session.write("<stream:stream xmlns='" + C2SROUTER_NAMESPACE + "'" +
 						" xmlns:stream='http://etherx.jabber.org/streams'" +
@@ -569,7 +570,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		@Override
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
-			logger.error("session" + session + ": messageReceived:\n" + cause.getMessage());
+			loggerServiceTracker.error("session" + session + ": messageReceived:\n" + cause.getMessage());
 			
 			// TODO remove it in release
 			cause.printStackTrace();
@@ -587,7 +588,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		@Override
 		public void messageReceived(IoSession session, Object message) throws Exception
 		{
-			logger.debug("session" + session + ": messageReceived:\n" + message);
+			loggerServiceTracker.debug("session" + session + ": messageReceived:\n" + message);
 			String xml = message.toString();
 			if (xml.startsWith("<?xml"))
 			{
@@ -887,7 +888,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			{
 				messageStr = ((XmlStanza) message).toXml();
 			}
-			logger.debug("session" + session + ": messageSent:\n" + messageStr);
+			loggerServiceTracker.debug("session" + session + ": messageSent:\n" + messageStr);
 			
 		}
 
@@ -909,7 +910,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			{
 				clientSession.close();
 			}
-			logger.debug("session" + session + ": sessionClosed:\n");
+			loggerServiceTracker.debug("session" + session + ": sessionClosed:\n");
 		}
 
 		@Override

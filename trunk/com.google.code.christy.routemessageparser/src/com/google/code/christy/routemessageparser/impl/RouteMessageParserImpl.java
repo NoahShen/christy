@@ -2,8 +2,6 @@ package com.google.code.christy.routemessageparser.impl;
 
 import java.io.StringReader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -15,8 +13,6 @@ import com.google.code.christy.routemessageparser.RouteMessageParser;
 
 public class RouteMessageParserImpl implements RouteMessageParser
 {
-	private final Logger logger = LoggerFactory.getLogger(RouteMessageParserImpl.class);
-	
 	private RouteExtensionParserServiceTracker routeExtensionParserServiceTracker;
 	
 	private XmppParserServiceTracker xmppParserServiceTracker;
@@ -99,17 +95,8 @@ public class RouteMessageParserImpl implements RouteMessageParser
 		RouteExtensionParser xparser = routeExtensionParserServiceTracker.getRouteExtensionParser(elementName, namespace);
 		if (xparser != null)
 		{
-			logger.debug("get [" + elementName + " " + namespace + "]ExtensionParser: " + xparser);
-			
-			RouteExtension routeExtension = xparser.parseExtension(parser, this);
-			
-			logger.debug("ExtensionParser parse extension complete:" + routeExtension);
-			
+			RouteExtension routeExtension = xparser.parseExtension(parser, this);			
 			routeMessage.addRouteExtension(routeExtension);
-		}
-		else
-		{
-			logger.debug("can not get [" + elementName + " " + namespace + "]ExtensionParser");
 		}
 	}
 
@@ -128,13 +115,7 @@ public class RouteMessageParserImpl implements RouteMessageParser
 			parser.next();
 		}
 		catch (Exception e)
-		{
-			if (logger.isDebugEnabled())
-			{
-				e.printStackTrace();
-				logger.debug("parse exception:" + e.getMessage());
-			}
-			
+		{			
 			return null;
 		}
 

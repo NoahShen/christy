@@ -12,6 +12,7 @@ import com.google.code.christy.c2s.C2SManager;
 import com.google.code.christy.c2s.ChristyStreamFeature;
 import com.google.code.christy.c2s.UserAuthenticator;
 import com.google.code.christy.c2s.defaultc2s.tls.BogusSSLContextFactory;
+import com.google.code.christy.log.LoggerServiceTracker;
 
 public class Activator implements BundleActivator
 {
@@ -27,6 +28,7 @@ public class Activator implements BundleActivator
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	private XmppParserServiceTracker xmppParserServiceTracker;
 	private ServiceRegistration c2sManagerRegistration;
+	private LoggerServiceTracker loggerServiceTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -78,14 +80,22 @@ public class Activator implements BundleActivator
 		routeMessageParserServiceTracker = new RouteMessageParserServiceTracker(context);
 		routeMessageParserServiceTracker.open();
 
+		
 		xmppParserServiceTracker = new XmppParserServiceTracker(context);
 		xmppParserServiceTracker.open();
+		
+		
+		
+		loggerServiceTracker = new LoggerServiceTracker(context);
+		loggerServiceTracker.open();
+		
 		
 		C2SManagerImpl c2sManager = new C2SManagerImpl(streamFeatureStracker, 
 												tlsContextServiceTracker,
 												userAuthenticatorTracker,
 												xmppParserServiceTracker,
-												routeMessageParserServiceTracker);
+												routeMessageParserServiceTracker,
+												loggerServiceTracker);
 		
 		c2sManagerRegistration = context.registerService(C2SManager.class.getName(), c2sManager, null);
 		
@@ -170,7 +180,11 @@ public class Activator implements BundleActivator
 			c2sManagerRegistration = null;
 		}
 		
-		
+		if (loggerServiceTracker != null)
+		{
+			loggerServiceTracker.close();
+			loggerServiceTracker = null;
+		}
 		
 	}
 
