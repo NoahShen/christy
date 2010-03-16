@@ -408,6 +408,13 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		clientSessions.remove(clientSession.getStreamId());
 	}
 	
+
+	@Override
+	public int getSessionCount()
+	{
+		return clientSessions.size();
+	}
+	
 	private class RouterHandler implements IoHandler
 	{
 		@Override
@@ -934,4 +941,5 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			
 		}
 	}
+
 }

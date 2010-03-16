@@ -11,6 +11,7 @@ import org.osgi.framework.ServiceRegistration;
 import com.google.code.christy.c2s.C2SManager;
 import com.google.code.christy.c2s.ChristyStreamFeature;
 import com.google.code.christy.c2s.UserAuthenticator;
+import com.google.code.christy.c2s.defaultc2s.controller.DefaultC2sController;
 import com.google.code.christy.c2s.defaultc2s.tls.BogusSSLContextFactory;
 import com.google.code.christy.log.LoggerServiceTracker;
 
@@ -29,6 +30,7 @@ public class Activator implements BundleActivator
 	private XmppParserServiceTracker xmppParserServiceTracker;
 	private ServiceRegistration c2sManagerRegistration;
 	private LoggerServiceTracker loggerServiceTracker;
+	private DefaultC2sController defaultC2sController;
 
 	/*
 	 * (non-Javadoc)
@@ -97,6 +99,8 @@ public class Activator implements BundleActivator
 												routeMessageParserServiceTracker,
 												loggerServiceTracker);
 		
+		defaultC2sController = new DefaultC2sController(c2sManager);
+		defaultC2sController.start();
 		c2sManagerRegistration = context.registerService(C2SManager.class.getName(), c2sManager, null);
 		
 		// TODO
@@ -184,6 +188,12 @@ public class Activator implements BundleActivator
 		{
 			loggerServiceTracker.close();
 			loggerServiceTracker = null;
+		}
+		
+		if (defaultC2sController != null)
+		{
+			defaultC2sController.stop();
+			defaultC2sController = null;
 		}
 		
 	}
