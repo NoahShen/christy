@@ -15,8 +15,19 @@ $(document).ready(function() {
 //	  }
 //	});
 
-	alert("ds");
-	$.getJSON("http://127.0.0.1:7777/webc2scontroller.do?format=json&jsoncallback=?", {"name": "John", "time": "2pm" }, function(data){
-		  alert(data.name);
+//	$.getJSON("http://127.0.0.1:7777/webc2scontroller.do?format=json&jsoncallback=?", {"type": "get", "requestFields": "started;domain;webClientPort;" }, function(data){
+//		var html = "";
+//		for ( var key in data ) {
+//			html += key + ":" + data[key] + "<br/>";
+//		}
+//		$("#testId1").html(html);
+//	}); 
+	
+	$.getJSON("http://127.0.0.1:7878/defaultc2scontroller.do?format=json&jsoncallback=?", {"type": "get", "requestFields": "started;domain;clientLimit;" }, function(data){
+		var html = "";
+		for ( var key in data ) {
+			html += key + ":" + data[key] + "<br/>";
+		}
+		$("#testId1").html(html);
 	}); 
 });

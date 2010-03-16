@@ -1,4 +1,4 @@
-package com.google.code.christy.c2s.webc2s.controller;
+package com.google.code.christy.c2s.defaultc2s.controller;
 
 import java.io.IOException;
 
@@ -18,20 +18,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import com.google.code.christy.c2s.webc2s.WebC2SManager;
+import com.google.code.christy.c2s.defaultc2s.C2SManagerImpl;
 
-public class WebC2sController
+public class DefaultC2sController
 {
-	private WebC2SManager webc2sManager;
+	private C2SManagerImpl c2sManager;
 	
 	private Server server;
 
-	private int port = 7777;
+	private int port = 7878;
 	
-	public WebC2sController(WebC2SManager webc2sManager)
+	public DefaultC2sController(C2SManagerImpl c2sManager)
 	{
 		super();
-		this.webc2sManager = webc2sManager;
+		this.c2sManager = c2sManager;
 	}
 	
 	public int getPort()
@@ -52,7 +52,7 @@ public class WebC2sController
 		server.setHandler(contexts);
 		
 		ServletContextHandler root = new ServletContextHandler(contexts, "/", ServletContextHandler.SESSIONS);
-		root.addServlet(new ServletHolder(new WebC2sControllerServlet()), "/webc2scontroller.do");
+		root.addServlet(new ServletHolder(new WebC2sControllerServlet()), "/defaultc2scontroller.do");
 		
 		HandlerList handlers = new HandlerList();
 		handlers.setHandlers(new Handler[] { root, new DefaultHandler() });
@@ -129,39 +129,19 @@ public class WebC2sController
 					{
 						if ("started".equals(field))
 						{
-							jsonObj.put("started", webc2sManager.isStarted());
+							jsonObj.put("started", c2sManager.isStarted());
 						}
 						else if ("domain".equals(field))
 						{
-							jsonObj.put("domain", webc2sManager.getDomain());
+							jsonObj.put("domain", c2sManager.getDomain());
 						}
 						else if ("clientLimit".equals(field))
 						{
-							jsonObj.put("clientLimit", webc2sManager.getClientLimit());
-						}
-						else if ("webClientPort".equals(field))
-						{
-							jsonObj.put("webClientPort", webc2sManager.getWebclientPort());
-						}
-						else if ("maxWait".equals(field))
-						{
-							jsonObj.put("maxWait", webc2sManager.getMaxWait());
-						}
-						else if ("minWait".equals(field))
-						{
-							jsonObj.put("minWait", webc2sManager.getMinWait());
-						}
-						else if ("maxHolded".equals(field))
-						{
-							jsonObj.put("maxHolded", webc2sManager.getMaxHolded());
-						}
-						else if ("inactivity".equals(field))
-						{
-							jsonObj.put("inactivity", webc2sManager.getInactivity());
+							jsonObj.put("clientLimit", c2sManager.getClientLimit());
 						}
 						else if ("sessionCount".equals(field))
 						{
-							jsonObj.put("sessionCount", webc2sManager.getSessionCount());
+							jsonObj.put("sessionCount", c2sManager.getSessionCount());
 						}
 					}
 					catch (Exception e)

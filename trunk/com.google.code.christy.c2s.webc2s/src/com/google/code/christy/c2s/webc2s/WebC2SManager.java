@@ -465,6 +465,12 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		this.maxHolded = maxHolded;
 	}
 	
+	@Override
+	public int getSessionCount()
+	{
+		return webClientSessions.size();
+	}
+	
 	private class RouterHandler implements IoHandler
 	{
 		

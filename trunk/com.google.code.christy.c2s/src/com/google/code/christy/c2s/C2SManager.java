@@ -124,4 +124,10 @@ public interface C2SManager extends Propertied
 	 * @return
 	 */
 	public boolean isRouterConnected();
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getSessionCount();
 }
