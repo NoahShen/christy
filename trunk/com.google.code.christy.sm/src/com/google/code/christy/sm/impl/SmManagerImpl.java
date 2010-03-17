@@ -672,9 +672,10 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			if (id.endsWith("1"))
 			{
 				smname += "_1";
+				setName(smname);
 			}
 			session.write("<internal xmlns='" + SMROUTER_AUTH_NAMESPACE + "'" +
-						" smname='" + smname + "' password='" + getRouterPassword() + "'/>");
+						" smname='" + getName() + "' password='" + getRouterPassword() + "'/>");
 		}
 		
 		@Override
