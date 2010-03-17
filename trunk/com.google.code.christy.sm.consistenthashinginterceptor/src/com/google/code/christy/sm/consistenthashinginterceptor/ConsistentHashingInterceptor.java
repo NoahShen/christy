@@ -84,6 +84,7 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 			}
 			searchExtension.addCheckedNode(node);
 			RouteMessage searchResponse = new RouteMessage(smManager.getName(),routeMessage.getStreamId());
+			searchResponse.setToUserNode(routeMessage.getToUserNode());
 			searchResponse.setFrom(smManager.getName());
 			searchResponse.addRouteExtension(searchExtension);
 			searchResponse.setXmlStanza(routeMessage.getXmlStanza());
