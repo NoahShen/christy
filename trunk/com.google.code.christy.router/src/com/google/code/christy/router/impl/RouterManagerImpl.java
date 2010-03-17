@@ -506,6 +506,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			
 			StringReader strReader = new StringReader(xml);
 			XmlPullParser parser = new MXParser();
+			parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
 			parser.setInput(strReader);
 
 			try
@@ -746,9 +747,12 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			
 			
 			StringReader strReader = new StringReader(xml);
+			
 			XmlPullParser parser = new MXParser();
+			parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
 			parser.setInput(strReader);
-
+			
+			
 			try
 			{
 				parser.nextTag();
