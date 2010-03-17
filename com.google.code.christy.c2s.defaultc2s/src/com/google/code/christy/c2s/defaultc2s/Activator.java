@@ -100,7 +100,8 @@ public class Activator implements BundleActivator
 												loggerServiceTracker);
 		
 		defaultC2sController = new DefaultC2sController(c2sManager);
-		defaultC2sController.start();
+		// TODO
+//		defaultC2sController.start();
 		c2sManagerRegistration = context.registerService(C2SManager.class.getName(), c2sManager, null);
 		
 		// TODO

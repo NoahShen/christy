@@ -41,11 +41,18 @@ import com.google.code.christy.xmpp.XmlStanza;
 public class RouterManagerImpl extends AbstractPropertied implements RouterManager
 {
 
-	private static int id = 0;
-
-	public static synchronized int nextId()
+	private static int c2sId = 0;
+	
+	private static int smId = 0;
+	
+	public static synchronized int nextc2sId()
 	{
-		return id++;
+		return c2sId++;
+	}
+	
+	public static synchronized int nextsmId()
+	{
+		return smId++;
 	}
 	
 	public static final String C2SROUTER_NAMESPACE = "christy:internal:c2s2router";
@@ -645,7 +652,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				return;
 			}
 			
-			String streamId =  "c2s_internalstream_" + nextId();
+			String streamId =  "c2s_internalstream_" + nextc2sId();
 			session.setAttribute("streamId", streamId);
 			String responseStream = "<stream:stream" +
 								" xmlns='"+ C2SROUTER_NAMESPACE + "'" +
@@ -954,7 +961,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				return;
 			}
 			
-			String streamId =  "sm_internalstream_" + nextId();
+			String streamId =  "sm_internalstream_" + nextsmId();
 			session.setAttribute("streamId", streamId);
 			String responseStream = "<stream:stream" +
 								" xmlns='"+ SMROUTER_NAMESPACE + "'" +
@@ -978,7 +985,14 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				{
 					s = ((XmlStanza)message).toXml();
 				}
-				loggerServiceTracker.debug("session" + session + ": messageSent:\n" + s);
+				SmSessionImpl smSession = (SmSessionImpl) session.getAttachment();
+				String smName = null;
+				if (smSession != null)
+				{
+					smName = smSession.getSmName();
+				}
+				loggerServiceTracker.debug("session" + session + "[" + smName + "]: messageSent:\n" + s);
+				
 			}
 		}
 

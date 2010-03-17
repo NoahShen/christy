@@ -136,7 +136,7 @@ public class SearchRouteExtension implements RouteExtension
 			.append(getTimes()).append("\"")
 			.append(" total=\"").append(getTotal()).append("\"")
 			.append(" startNode=\"").append(getStartNode()).append("\"")
-			.append("xmlns=\"" + NAMESPACE + "\"");
+			.append(" xmlns=\"" + NAMESPACE + "\"");
 		
 		if (checkedNodes.isEmpty())
 		{

@@ -62,7 +62,7 @@ public class SearchRouteExtensionParser implements RouteExtensionParser
 			}
 			else if (eventType == XmlPullParser.END_TAG)
 			{
-				if ("search".equals(elementName))
+				if (ELEMENTNAME.equals(elementName))
 				{
 					done = true;
 				}
@@ -92,7 +92,7 @@ public class SearchRouteExtensionParser implements RouteExtensionParser
 			}
 			else if (eventType == XmlPullParser.END_TAG)
 			{
-				if ("search".equals(elementName))
+				if ("checkedNode".equals(elementName))
 				{
 					done = true;
 				}

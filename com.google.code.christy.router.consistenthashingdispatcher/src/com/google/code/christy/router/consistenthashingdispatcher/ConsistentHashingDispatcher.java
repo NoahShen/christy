@@ -204,7 +204,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 		
 		SearchRouteExtension searchExtension = 
 			(SearchRouteExtension) routeMessage.getRouteExtension(SearchRouteExtension.ELEMENTNAME, 
-						SearchRouteExtension.NAMESPACE);
+										SearchRouteExtension.NAMESPACE);
 		if (searchExtension != null)
 		{
 			// put message to blockMessages

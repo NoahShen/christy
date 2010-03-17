@@ -80,13 +80,15 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 					bindedResource.setPresence(res.getPresence());
 					node.addBindedResouce(bindedResource);
 				}
+				smManager.removeOnlineUser(onlineUser);
 			}
 			searchExtension.addCheckedNode(node);
-			routeMessage.setFrom(smManager.getName());
-			smManager.sendToRouter(routeMessage);
-			
-			smManager.removeOnlineUser(onlineUser);
-			
+			RouteMessage searchResponse = new RouteMessage(smManager.getName(),routeMessage.getStreamId());
+			searchResponse.setFrom(smManager.getName());
+			searchResponse.addRouteExtension(searchExtension);
+			searchResponse.setXmlStanza(routeMessage.getXmlStanza());
+			smManager.sendToRouter(searchResponse);
+
 			return true;
 		}
 	}
