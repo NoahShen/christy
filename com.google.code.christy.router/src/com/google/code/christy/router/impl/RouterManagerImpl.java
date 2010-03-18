@@ -474,6 +474,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		loggerServiceTracker.debug("remove smSession:" + smname);
 	}
 	
+	
 	private class C2sHandler implements IoHandler
 	{
 
@@ -788,7 +789,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		private void smhandleRoute(RouteMessage routeMessage, IoSession session)
 		{
 			
-			if (routerToSmInterceptorServiceTracker.fireRouteMessageReceived(routeMessage, 
+			if (routerToSmInterceptorServiceTracker.fireRouteMessageReceived(RouterManagerImpl.this,
+															routeMessage, 
 															(SmSession) session.getAttachment()))
 			{
 //				loggerServiceTracker.debug("Message which recieved from "

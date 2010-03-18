@@ -570,6 +570,29 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				{
 					userResource = onlineUser.getUserResourceByStreamId(streamId);
 				}
+				// the user's session lost
+				if (userResource == null)
+				{
+					if (!(stanza instanceof Iq))
+					{
+						RouteMessage mess = new RouteMessage(SmManagerImpl.this.getName(), routeMessage.getFrom(), routeMessage.getStreamId());
+						mess.setCloseStream(true);
+						sendToRouter(mess);
+						return;
+					}
+					
+					Iq iq = (Iq) stanza;
+					IqBind bind = 
+						(IqBind) iq.getExtension(IqBind.ELEMENTNAME, IqBind.NAMESPACE);
+					if (bind == null)
+					{
+						RouteMessage mess = new RouteMessage(SmManagerImpl.this.getName(), routeMessage.getFrom(), routeMessage.getStreamId());
+						mess.setCloseStream(true);
+						sendToRouter(mess);
+						return;
+					}
+					
+				}
 				
 				MessageQueueWrapper wrapper = new MessageQueueWrapper(routeMessage, true);
 				handlerManager.handleWrapper(node, onlineUser, (UserResourceImpl) userResource, wrapper);

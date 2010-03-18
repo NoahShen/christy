@@ -12,14 +12,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-import com.google.code.christy.routemessage.RouteExtension;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.routemessage.searchextension.SearchCompletedExtension;
 import com.google.code.christy.routemessage.searchextension.SearchRouteExtension;
+import com.google.code.christy.router.RouterManager;
 import com.google.code.christy.router.RouterToSmInterceptor;
 import com.google.code.christy.router.RouterToSmMessageDispatcher;
 import com.google.code.christy.router.SmSession;
-import com.google.code.christy.xmpp.XmlStanza;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
@@ -46,7 +45,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 
 	private Map<String, SmSession> smSessions = new ConcurrentHashMap<String, SmSession>();
 	
-	private ListMultimap<String, RouteMessage> blockedMessages;
+	private ListMultimap<String, Object> blockedMessages;
 		
 	
 	/**
@@ -188,16 +187,20 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 
 
 	@Override
-	public boolean routeMessageReceived(RouteMessage routeMessage, SmSession smSession)
+	public boolean routeMessageReceived(RouterManager routerManager, RouteMessage routeMessage, SmSession smSession)
 	{
 		if (routeMessage.containExtension(SearchCompletedExtension.ELEMENTNAME, 
 									SearchCompletedExtension.NAMESPACE))
 		{
 			String node = routeMessage.getToUserNode();
-			List<RouteMessage> messages = blockedMessages.removeAll(node);
-			for (RouteMessage mess : messages)
+			List<Object> messages = blockedMessages.removeAll(node);
+			for (Object obj : messages)
 			{
-				smSession.write(mess);
+				if (obj instanceof RouteMessage)
+				{
+					smSession.write((RouteMessage) obj);
+				}
+				
 			}
 			return true;
 		}
@@ -208,24 +211,13 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 		if (searchExtension != null)
 		{
 			// put message to blockMessages
-			routeMessage.removeRouteExtension(searchExtension);
-			XmlStanza stanza = routeMessage.getXmlStanza();
-			if (!routeMessage.isExtensionEmpty()
-					|| stanza != null)
+			if (!blockedMessages.containsKey(routeMessage.getToUserNode()))
 			{
-				RouteMessage blockedMessage = new RouteMessage(searchExtension.getFromc2s(), routeMessage.getStreamId());
-				blockedMessage.setToUserNode(routeMessage.getToUserNode());
-				blockedMessage.setXmlStanza(stanza);
-				for (RouteExtension extension : routeMessage.getAllRouteExtension())
-				{
-					blockedMessage.addRouteExtension(extension);
-				}
-				
-				blockedMessages.put(routeMessage.getToUserNode(), blockedMessage);
+				blockedMessages.put(routeMessage.getToUserNode(), System.currentTimeMillis());
 			}
 			
-			
 			int total = searchExtension.getTotal();
+			// hash ring changed
 			if (total != newAddedSmSessionCount.get())
 			{
 				routeMessage.removeRouteExtension(searchExtension);
@@ -236,6 +228,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 				RouteMessage searchMessage = new RouteMessage(routeMessage.getTo(), routeMessage.getStreamId());
 				searchExtension.incrementTimes();
 				searchMessage.setToUserNode(routeMessage.getToUserNode());
+				searchMessage.setXmlStanza(routeMessage.getXmlStanza());
 				searchMessage.addRouteExtension(searchExtension);
 				
 				SmSession smSession2 = null;
@@ -292,7 +285,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 
 
 	@Override
-	public boolean routeMessageSent(RouteMessage routeMessage, SmSession smSession)
+	public boolean routeMessageSent(RouterManager routerManager, RouteMessage routeMessage, SmSession smSession)
 	{
 		if (newAddedSmSessionCount.get() > 0)
 		{
@@ -303,7 +296,15 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 				String node = routeMessage.getToUserNode();
 				if (blockedMessages.containsKey(node))
 				{
-					// TODO MayBe ,sm crash , never remove the user's blockedMessages
+					// MayBe ,sm crash , never remove the user's blockedMessages
+					List<Object> values = blockedMessages.get(node);
+					Long time = (Long) values.get(0);
+					if (time == null || System.currentTimeMillis() - time > 20 * 1000)
+					{
+						blockedMessages.removeAll(node);
+						return true;
+					}
+					
 					blockedMessages.put(node, routeMessage);
 					return true;
 				}

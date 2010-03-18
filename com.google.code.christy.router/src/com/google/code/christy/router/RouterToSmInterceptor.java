@@ -13,17 +13,19 @@ public interface RouterToSmInterceptor
 {
 	/**
 	 * 
+	 * @param routerManager
 	 * @param routeMessage
 	 * @param smSession
 	 * @return
 	 */
-	public boolean routeMessageReceived(RouteMessage routeMessage, SmSession smSession);
+	public boolean routeMessageReceived(RouterManager routerManager, RouteMessage routeMessage, SmSession smSession);
 	
 	/**
 	 * 
+	 * @param routerManager
 	 * @param routeMessagel
 	 * @param smSession
 	 * @return
 	 */
-	public boolean routeMessageSent(RouteMessage routeMessagel, SmSession smSession);
+	public boolean routeMessageSent(RouterManager routerManager, RouteMessage routeMessagel, SmSession smSession);
 }
