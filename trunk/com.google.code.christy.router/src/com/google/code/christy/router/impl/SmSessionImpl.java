@@ -85,7 +85,7 @@ public class SmSessionImpl extends AbstractPropertied implements SmSession
 	@Override
 	public void write(RouteMessage routeMessage)
 	{
-		if (routerToSmInterceptorServiceTracker.fireRouteMessageSent(routeMessage, this))
+		if (routerToSmInterceptorServiceTracker.fireRouteMessageSent(routerManager, routeMessage, this))
 		{
 			return;
 		}

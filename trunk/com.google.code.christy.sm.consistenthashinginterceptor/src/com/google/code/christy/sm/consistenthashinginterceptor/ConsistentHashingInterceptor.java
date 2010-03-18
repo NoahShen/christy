@@ -8,6 +8,9 @@ import com.google.code.christy.sm.OnlineUser;
 import com.google.code.christy.sm.SmManager;
 import com.google.code.christy.sm.SmToRouterInterceptor;
 import com.google.code.christy.sm.UserResource;
+import com.google.code.christy.xmpp.Iq;
+import com.google.code.christy.xmpp.IqBind;
+import com.google.code.christy.xmpp.XmlStanza;
 
 
 public class ConsistentHashingInterceptor implements SmToRouterInterceptor
@@ -55,7 +58,40 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 				}
 			}
 			
-
+			// check the resource's session exist, if not exist and this request is not binding resource request, the session has lost
+			OnlineUser newOnlineUser = smManager.getOnlineUser(userNode);
+			if (newOnlineUser == null
+					|| newOnlineUser.getUserResourceByStreamId(routeMessage.getStreamId()) == null)
+			{
+				String from = routeMessage.getFrom();
+				if (from.startsWith("c2s_"))
+				{
+					XmlStanza stanza = routeMessage.getXmlStanza();
+					if (!(stanza instanceof Iq))
+					{
+						RouteMessage mess = new RouteMessage(smManager.getName(), routeMessage.getFrom(), routeMessage.getStreamId());
+						mess.setCloseStream(true);
+						smManager.sendToRouter(mess);
+						return true;
+					}
+					
+					Iq iq = (Iq) stanza;
+					IqBind bind = 
+						(IqBind) iq.getExtension(IqBind.ELEMENTNAME, IqBind.NAMESPACE);
+					if (bind == null)
+					{
+						RouteMessage mess = new RouteMessage(smManager.getName(), routeMessage.getFrom(), routeMessage.getStreamId());
+						mess.setCloseStream(true);
+						smManager.sendToRouter(mess);
+						return true;
+					}
+				}
+				
+			}
+			
+			
+			
+			
 			RouteMessage searchCompleted = new RouteMessage(smManager.getName(),routeMessage.getStreamId());
 			searchCompleted.setTo(routeMessage.getFrom());
 			searchCompleted.setToUserNode(userNode);

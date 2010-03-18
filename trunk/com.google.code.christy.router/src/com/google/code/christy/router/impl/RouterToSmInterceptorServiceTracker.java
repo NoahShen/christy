@@ -8,6 +8,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
 
 import com.google.code.christy.routemessage.RouteMessage;
+import com.google.code.christy.router.RouterManager;
 import com.google.code.christy.router.RouterToSmInterceptor;
 import com.google.code.christy.router.SmSession;
 
@@ -23,7 +24,7 @@ public class RouterToSmInterceptorServiceTracker extends ServiceTracker
 		super(context, RouterToSmInterceptor.class.getName(), null);
 	}
 
-	public boolean fireRouteMessageReceived(RouteMessage routeMessage, SmSession smSession)
+	public boolean fireRouteMessageReceived(RouterManager routerManager, RouteMessage routeMessage, SmSession smSession)
 	{
 		Object[] services = getServices();
 		if (services != null)
@@ -31,7 +32,7 @@ public class RouterToSmInterceptorServiceTracker extends ServiceTracker
 			for (Object service : services)
 			{
 				RouterToSmInterceptor interceptor = (RouterToSmInterceptor) service;
-				if (interceptor.routeMessageReceived(routeMessage, smSession))
+				if (interceptor.routeMessageReceived(routerManager, routeMessage, smSession))
 				{
 					return true;
 				}
@@ -41,7 +42,7 @@ public class RouterToSmInterceptorServiceTracker extends ServiceTracker
 		return false;
 	}
 	
-	public boolean fireRouteMessageSent(RouteMessage routeMessage, SmSession smSession)
+	public boolean fireRouteMessageSent(RouterManager routerManager, RouteMessage routeMessage, SmSession smSession)
 	{
 		Object[] services = getServices();
 		if (services != null)
@@ -49,7 +50,7 @@ public class RouterToSmInterceptorServiceTracker extends ServiceTracker
 			for (Object service : services)
 			{
 				RouterToSmInterceptor interceptor = (RouterToSmInterceptor) service;
-				if (interceptor.routeMessageSent(routeMessage, smSession))
+				if (interceptor.routeMessageSent(routerManager, routeMessage, smSession))
 				{
 					return true;
 				}
