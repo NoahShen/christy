@@ -317,7 +317,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		OnlineUserImpl onlineUser = (OnlineUserImpl) getOnlineUser(node);
 		if (onlineUser != null)
 		{
-			onlineUser.getUserResource(resource);
+			return onlineUser.getUserResource(resource);
 		}
 		return null;
 	}
@@ -336,7 +336,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	
 
 	@Override
-	public UserResource createUserResource(String userNode, String resource, String relatedC2s, String streamId)
+	public UserResource createUserResource(String userNode, String resource, String relatedC2s, String streamId, boolean sessionBinded)
 	{
 		if (getOnlineUsersLimit() > 0)
 		{
@@ -363,11 +363,10 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		
 		UserResourceImpl userResource = 
 			new UserResourceImpl(onlineUser, resource, relatedC2s, streamId, this);
-		
+		userResource.setSessionBinded(sessionBinded);
 		onlineUser.addUserResource(userResource);
 		
 		fireUserResourceAdded(onlineUser, userResource);
-		
 		return userResource;
 	}
 	
@@ -464,9 +463,9 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		
 		if (smToRouterInterceptorServiceTracker.fireSmMessageSent(routeMessage, SmManagerImpl.this, user))
 		{
-			loggerServiceTracker.debug("Message which will send to router"
-						+ "has been intercepted.Message:"
-						+ routeMessage.toXml());
+//			loggerServiceTracker.debug("Message which will send to router"
+//						+ "has been intercepted.Message:"
+//						+ routeMessage.toXml());
 			return;
 		}
 		
@@ -540,14 +539,17 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		{
 			String userNode = routeMessage.getToUserNode();
 			OnlineUserImpl onlineUser = onlineUsers.get(userNode);
-			
 			if (smToRouterInterceptorServiceTracker.fireSmMessageReceived(routeMessage, SmManagerImpl.this, onlineUser))
 			{
-				loggerServiceTracker.debug("Message which recieved from "
-							+ session + "has been intercepted.Message:"
-							+ routeMessage.toXml());
+//				loggerServiceTracker.debug("Message which recieved from "
+//							+ session + "has been intercepted.Message:"
+//							+ routeMessage.toXml());
 				return;
 			}
+			
+			// online users may be changed by interceptor
+			onlineUser = onlineUsers.get(userNode);
+			
 			transferToHandlerManager(onlineUser, routeMessage);
 		}
 
@@ -1001,7 +1003,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			}
 			
 			
-			userResource2 = createUserResource(node, resource, c2sName, streamId);
+			userResource2 = createUserResource(node, resource, c2sName, streamId, false);
 			
 			Iq iqResult = new Iq(Iq.Type.result);
 			iqResult.setStanzaId(iqRequest.getStanzaId());

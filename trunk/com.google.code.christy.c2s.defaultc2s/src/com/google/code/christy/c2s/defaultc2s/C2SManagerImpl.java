@@ -438,6 +438,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			
 			StringReader strReader = new StringReader(xml);
 			XmlPullParser parser = new MXParser();
+			parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
 			parser.setInput(strReader);
 
 			try
@@ -499,7 +500,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 
 		private void handleStream(XmlPullParser parser, IoSession session)
 		{
-			String xmlns = parser.getAttributeValue("", "xmlns");
+			String xmlns = parser.getNamespace(null);
 			String from = parser.getAttributeValue("", "from");
 			String id = parser.getAttributeValue("", "id");
 			

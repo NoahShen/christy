@@ -162,10 +162,21 @@ public class CheckedNode implements XmlStanza
 		@Override
 		public String toXml()
 		{
-			return "<bindedResouce name=\"" + getName() + "\"" +
+			
+			StringBuilder builder = new StringBuilder("<bindedResouce name=\"" + getName() + "\"" +
 					" relatedC2s=\"" + getRelatedC2s() + "\"" +
 					" streamId=\"" + getStreamId() +"\"" +
-					" sessionBinded=\"" + isSesseionBinded() + "/>";
+					" sessionBinded=\"" + isSesseionBinded() + "\"");// + "/>";
+			if (presence != null)
+			{
+				builder.append(">").append(presence.toXml()).append("</bindedResouce>");
+			}
+			else
+			{
+				builder.append("/>");
+			}
+			
+			return builder.toString();
 		}
 		
 	}

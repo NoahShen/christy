@@ -49,7 +49,7 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 					String relatedC2s = bindedRes.getRelatedC2s();
 					String streamId = bindedRes.getStreamId();
 					UserResource userResource = 
-						smManager.createUserResource(userNode, resource, relatedC2s, streamId);
+						smManager.createUserResource(userNode, resource, relatedC2s, streamId, bindedRes.isSesseionBinded());
 					
 					userResource.setPresence(bindedRes.getPresence());
 				}
@@ -57,11 +57,13 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 			
 
 			RouteMessage searchCompleted = new RouteMessage(smManager.getName(),routeMessage.getStreamId());
+			searchCompleted.setTo(routeMessage.getFrom());
 			searchCompleted.setToUserNode(userNode);
 			searchCompleted.addRouteExtension(new SearchCompletedExtension());
 			smManager.sendToRouter(searchCompleted);
 			
-			return true;
+			return false;
+			
 		}
 		// times <= total searching 
 		else
@@ -86,12 +88,14 @@ public class ConsistentHashingInterceptor implements SmToRouterInterceptor
 			RouteMessage searchResponse = new RouteMessage(smManager.getName(),routeMessage.getStreamId());
 			searchResponse.setToUserNode(routeMessage.getToUserNode());
 			searchResponse.setFrom(smManager.getName());
+			searchResponse.setTo(routeMessage.getFrom());
 			searchResponse.addRouteExtension(searchExtension);
 			searchResponse.setXmlStanza(routeMessage.getXmlStanza());
 			smManager.sendToRouter(searchResponse);
-
-			return true;
+			
+			
 		}
+		return true;
 	}
 
 	@Override
