@@ -170,7 +170,7 @@ public interface SmManager extends Propertied
 	 * @param streamId
 	 * @return
 	 */
-	public UserResource createUserResource(String userNode, String resource, String relatedC2s, String streamId);
+	public UserResource createUserResource(String userNode, String resource, String relatedC2s, String streamId, boolean sessionBinded);
 	
 	/**
 	 * 

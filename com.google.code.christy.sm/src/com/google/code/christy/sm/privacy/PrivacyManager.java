@@ -394,6 +394,11 @@ public class PrivacyManager
 	public void userResourceAdded(OnlineUserImpl onlineUser, UserResourceImpl userResource)
 	{
 		UserPrivacyListDbHelper dbHelper = userPrivacyListDbHelperTracker.getUserPrivacyListDbHelper();
+		if (dbHelper == null)
+		{
+			return;
+		}
+		
 		try
 		{
 			UserPrivacyList userPrivacyList = dbHelper.getDefaultUserPrivacyList(onlineUser.getNode());

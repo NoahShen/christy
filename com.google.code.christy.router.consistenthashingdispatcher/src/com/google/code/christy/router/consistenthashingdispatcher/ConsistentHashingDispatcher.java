@@ -228,16 +228,12 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 			int total = searchExtension.getTotal();
 			if (total != newAddedSmSessionCount.get())
 			{
-				
 				routeMessage.removeRouteExtension(searchExtension);
 				sendMessage(routeMessage);
-				return true;
 			}
 			else
 			{
-				
-				
-				RouteMessage searchMessage = new RouteMessage("router", routeMessage.getStreamId());
+				RouteMessage searchMessage = new RouteMessage(routeMessage.getTo(), routeMessage.getStreamId());
 				searchExtension.incrementTimes();
 				searchMessage.setToUserNode(routeMessage.getToUserNode());
 				searchMessage.addRouteExtension(searchExtension);
@@ -259,16 +255,14 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 					// SM Module may be breakdown, research 
 					routeMessage.removeRouteExtension(searchExtension);
 					sendMessage(routeMessage);
-					return true;
+					
 				}
 				else
 				{
 					smSession2.write(searchMessage);
 				}
-				
-				
 			}
-			
+			return true;
 		}
 
 		
@@ -300,18 +294,16 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 	@Override
 	public boolean routeMessageSent(RouteMessage routeMessage, SmSession smSession)
 	{
-		
-		
 		if (newAddedSmSessionCount.get() > 0)
 		{
-						
+			//should not intercept search messsage	
 			if (!routeMessage.containExtension(SearchRouteExtension.ELEMENTNAME, 
 							SearchRouteExtension.NAMESPACE))
 			{
-				//should not intercept search messsage
 				String node = routeMessage.getToUserNode();
 				if (blockedMessages.containsKey(node))
 				{
+					// TODO MayBe ,sm crash , never remove the user's blockedMessages
 					blockedMessages.put(node, routeMessage);
 					return true;
 				}
@@ -327,8 +319,6 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 
 			
 		}
-		
-		
 		return false;
 	}
 

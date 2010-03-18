@@ -620,7 +620,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 		private void c2shandleStream(XmlPullParser parser, IoSession session)
 		{
-			String xmlns = parser.getAttributeValue("", "xmlns");
+			String xmlns = parser.getNamespace(null);
 			String to = parser.getAttributeValue("", "to");
 			String domain = parser.getAttributeValue("", "domain");
 
@@ -791,9 +791,9 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			if (routerToSmInterceptorServiceTracker.fireRouteMessageReceived(routeMessage, 
 															(SmSession) session.getAttachment()))
 			{
-				loggerServiceTracker.debug("Message which recieved from "
-							+ session + "has been intercepted.Message:"
-							+ routeMessage.toXml());
+//				loggerServiceTracker.debug("Message which recieved from "
+//							+ session + "has been intercepted.Message:"
+//							+ routeMessage.toXml());
 				return;
 			}
 
@@ -932,7 +932,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 		private void smhandleStream(XmlPullParser parser, IoSession session)
 		{
-			String xmlns = parser.getAttributeValue("", "xmlns");
+			String xmlns = parser.getNamespace(null);
 			String to = parser.getAttributeValue("", "to");
 			String domain = parser.getAttributeValue("", "domain");
 
