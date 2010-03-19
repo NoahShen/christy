@@ -42,10 +42,11 @@ public class SearchRouteExtensionParser implements RouteExtensionParser
 	{
 		int times = Integer.parseInt((parser.getAttributeValue("", "times")));
 		int total = Integer.parseInt((parser.getAttributeValue("", "total")));
+		String hashCircleId = parser.getAttributeValue("", "hashcircleid");
 		String startNode = parser.getAttributeValue("", "startNode");
 		String fromc2s = parser.getAttributeValue("", "fromc2s");
 		
-		SearchRouteExtension searchRouteExtension = new SearchRouteExtension(times, total, startNode, fromc2s);
+		SearchRouteExtension searchRouteExtension = new SearchRouteExtension(times, total, hashCircleId, startNode, fromc2s);
 		boolean done = false;
 		while (!done)
 		{
