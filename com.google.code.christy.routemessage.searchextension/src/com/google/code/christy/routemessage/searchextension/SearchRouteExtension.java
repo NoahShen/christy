@@ -21,6 +21,8 @@ public class SearchRouteExtension implements RouteExtension
 	
 	private int total;
 	
+	private String hashCircleId;
+	
 	private String startNode;
 	
 	private String fromc2s;
@@ -28,14 +30,18 @@ public class SearchRouteExtension implements RouteExtension
 	private List<CheckedNode> checkedNodes = new ArrayList<CheckedNode>();
 	
 	/**
+	 * 
 	 * @param times
 	 * @param total
+	 * @param hashCircleId
 	 * @param startNode
+	 * @param fromc2s
 	 */
-	public SearchRouteExtension(int times, int total, String startNode, String fromc2s)
+	public SearchRouteExtension(int times, int total, String hashCircleId, String startNode, String fromc2s)
 	{
 		this.times = times;
 		this.total = total;
+		this.hashCircleId = hashCircleId;
 		this.startNode = startNode;
 		this.fromc2s = fromc2s;
 	}
@@ -69,6 +75,16 @@ public class SearchRouteExtension implements RouteExtension
 	public int getTotal()
 	{
 		return total;
+	}
+
+	public String getHashCircleId()
+	{
+		return hashCircleId;
+	}
+
+	public void setHashCircleId(String hashCircleId)
+	{
+		this.hashCircleId = hashCircleId;
 	}
 
 	/**
@@ -135,6 +151,7 @@ public class SearchRouteExtension implements RouteExtension
 			new StringBuilder("<" + ELEMENTNAME + " times=\"")
 			.append(getTimes()).append("\"")
 			.append(" total=\"").append(getTotal()).append("\"")
+			.append(" hashcircleid=\"").append(getHashCircleId()).append("\"")
 			.append(" startNode=\"").append(getStartNode()).append("\"")
 			.append(" fromc2s=\"").append(getFromc2s()).append("\"")
 			.append(" xmlns=\"" + NAMESPACE + "\"");

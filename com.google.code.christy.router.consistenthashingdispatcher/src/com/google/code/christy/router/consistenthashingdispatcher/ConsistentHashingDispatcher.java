@@ -19,6 +19,7 @@ import com.google.code.christy.router.RouterManager;
 import com.google.code.christy.router.RouterToSmInterceptor;
 import com.google.code.christy.router.RouterToSmMessageDispatcher;
 import com.google.code.christy.router.SmSession;
+import com.google.code.christy.util.StringUtils;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
@@ -46,7 +47,8 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 	private Map<String, SmSession> smSessions = new ConcurrentHashMap<String, SmSession>();
 	
 	private ListMultimap<String, Object> blockedMessages;
-		
+	
+	private String hashCircleId;
 	
 	/**
 	 * @param hashFunctionServiceTracker
@@ -121,6 +123,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 			{
 				circle.put(hashFunction.hash(key + i), smSession);
 			}
+			reGenerateHashCircleId();
 			smSessions.put(smSession.getSmName(), smSession);
 			success = true;
 			break;
@@ -138,6 +141,17 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 		}
 
 	}
+
+	private void reGenerateHashCircleId()
+	{
+		StringBuilder builder = new StringBuilder();
+		for (Integer i : circle.keySet())
+		{
+			builder.append(i);
+		}
+		hashCircleId = StringUtils.hash(builder.toString(), "MD5");
+	}
+
 
 	private boolean hashDuplicate(String smName)
 	{
@@ -162,6 +176,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 		{
 			circle.remove(hashFunction.hash(key + i));
 		}
+		reGenerateHashCircleId();
 		smSessions.remove(smSession.getSmName());
 		if (isStartWorking.get())
 		{
@@ -218,7 +233,8 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 			
 			int total = searchExtension.getTotal();
 			// hash ring changed
-			if (total != newAddedSmSessionCount.get())
+			String circleId = searchExtension.getHashCircleId();
+			if (total != newAddedSmSessionCount.get() || !hashCircleId.equals(circleId))
 			{
 				routeMessage.removeRouteExtension(searchExtension);
 				sendMessage(routeMessage);
@@ -312,7 +328,8 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 				String c2sName = routeMessage.getFrom();
 				SearchRouteExtension searchExtension = 
 					new SearchRouteExtension(0, 
-										newAddedSmSessionCount.get(), 
+										newAddedSmSessionCount.get(),
+										hashCircleId,
 										smSession.getSmName(), 
 										c2sName);
 				routeMessage.addRouteExtension(searchExtension);
