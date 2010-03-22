@@ -101,7 +101,7 @@ public class ConsistentHashingDispatcher implements RouterToSmMessageDispatcher,
 	@Override
 	public String getName()
 	{
-		return "ConsistentHashingResourceBinder";
+		return "ConsistentHashingDispatcher";
 	}
 
 	@Override
