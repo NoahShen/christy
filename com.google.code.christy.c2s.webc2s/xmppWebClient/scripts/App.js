@@ -1,30 +1,31 @@
 
 $(document).ready(function() {
-//	$("#loginBg").gradientz({
-//		start: "black",     // start color: default is the background color
-//		end: "white"      // end color: default is the background color.
-//
-//	});
+	$("#background").gradientz({
+		start: "white",     // start color: default is the background color
+		end: "#A2FF95"      // end color: default is the background color.
+	});
 	
-	$("#button_login").click(function(){
+	$("#button_login").click(function() {		
 		
 		var username = $("#username").val();
 		var password = $("#password").val();
-		if (username == null || username.length == 0){
+		if (username == null || username.length == 0) {
 			var usernameMessage = $.i18n.prop("login.username.missingMessage");
 			if (usernameMessage == null || usernameMessage.length == 0){
 				usernameMessage = "Please input username!";
 			}
 			alert(usernameMessage);
+			$("#username").focus();
 			return false;
 		}
 		
-		if (password == null || password.length == 0){
+		if (password == null || password.length == 0) {
 			var pwdMessage = $.i18n.prop("login.password.missingMessage");
 			if (pwdMessage == null || pwdMessage.length == 0){
 				pwdMessage = "Please input password!";
 			}
 			alert(pwdMessage);
+			$("#password").focus();
 			return false;
 		}
 		
@@ -33,6 +34,8 @@ $(document).ready(function() {
 			return false;
 		}
 		
+		
+		
 		connectionMgr.requestCreateConnection({
 			hold: 1,
 			to: "example.com",
@@ -40,6 +43,14 @@ $(document).ready(function() {
 			ver: "1.6",
 			wait: "10"
 		});
+		
+		$("#login_loader_img").css({"display": ""});
+		var logging_in = $.i18n.prop("login.logging_in");
+		if (logging_in == null || logging_in.length == 0){
+			logging_in = "Logging in...";
+		}
+		$("#login_status").text(logging_in);
+		
 	});
 	
 	$.i18n.properties({
