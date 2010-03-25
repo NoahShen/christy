@@ -15,7 +15,7 @@ $(document).ready(function() {
 				usernameMessage = "Please input username!";
 			}
 			alert(usernameMessage);
-			$("#username").focus();
+			$("#username")[0].focus();
 			return false;
 		}
 		
@@ -25,7 +25,7 @@ $(document).ready(function() {
 				pwdMessage = "Please input password!";
 			}
 			alert(pwdMessage);
-			$("#password").focus();
+			$("#password")[0].focus();
 			return false;
 		}
 		
