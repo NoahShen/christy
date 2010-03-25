@@ -40,7 +40,10 @@
 		
 	</head>
 	<body class="easyui-layout">
-		<div id="loginDiv" style="position:absolute;width:100%;height:100%;z-index:9039;">
+		<div id="background" style="position:absolute;width:100%;height:100%;z-index:8000;">
+		</div>
+		
+		<div id="loginDiv" style="position:absolute;width:100%;height:100%;z-index:8787;">
 			
 			<div align="center"><img src="http://www.fring.com/images/logo.gif" style="padding:20px"/></div>
 			<table align="center" style="margin:0 auto;">
@@ -60,14 +63,20 @@
 		            	</td>
 		            </tr>
 		            <tr>
+		            	<td/>
+		            	<td>
+		            		<div ><img id="login_loader_img" src="/resource/ajax-loader2.gif" style="display:none"/><label id="login_status" for="login_loader_img" style="float:left;font-size:9pt;">&nbsp</label></div>
+		            	</td>
+		            </tr>
+		            <tr>
 		                <td/>
 		                <td style="padding-top:10px;"><input id="button_login" type="button" value="Login" style="float:left;"></input></td>
 		            </tr>
 	            </tbody>
         	</table>
 		</div>
-		<div region="north" border="false" split="false" style="height:20px;background:#B3DFDA;">north region</div>
-		<div region="center" border="false" split="false" style="overflow:hidden;">center region</div>
+		<div region="north" border="false" split="false" style="height:20px;background:#B3DFDA;display:none;">north region</div>
+		<div region="center" border="false" split="false" style="overflow:hidden;display:none;">center region</div>
 		
 	</body>
 
