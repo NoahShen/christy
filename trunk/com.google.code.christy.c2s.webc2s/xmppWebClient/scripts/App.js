@@ -172,7 +172,5 @@ function saslSuccess() {
 
 function loginSuccess() {
 	$("#loginDiv").css("display", "none");
-	$.getScript("/scripts/mainui.js", function(){
-		alert("s");
-	}); 
+	$.getScript("/scripts/mainui.js"); 
 }
