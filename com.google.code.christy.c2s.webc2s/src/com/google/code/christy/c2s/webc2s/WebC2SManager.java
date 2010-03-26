@@ -1121,7 +1121,20 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 					if (!webClientSession.isSuspended()
 							&& System.currentTimeMillis() - webClientSession.getLastActive() > inactivity * 1000)
 					{
+						if (loggerServiceTracker.isDebugEnabled())
+						{
+							loggerServiceTracker.debug("session(" + webClientSession.getStreamId() +") time out");
+						}
 						webClientSession.close();
+						if (webClientSession.getUsername() != null)
+						{
+							RouteMessage routeMessage = new RouteMessage(WebC2SManager.this.getName(), webClientSession.getStreamId());
+							routeMessage.setToUserNode(webClientSession.getUsername());
+							routeMessage.setCloseStream(true);
+							routerSession.write(routeMessage.toXml());
+						}
+						
+						
 					}
 				}
 				
