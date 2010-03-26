@@ -73,7 +73,9 @@ public class RouteMessageParserImpl implements RouteMessageParser
 				}
 				else if ("iq".equals(elementName)
 						|| "message".equals(elementName)
-						|| "presence".equals(elementName))
+						|| "presence".equals(elementName)
+						|| "error".equals(elementName)
+						|| "stream:error".equals(elementName))
 				{
 					routeMessage.setXmlStanza(xmppParserServiceTracker.getParser().parseParser(parser));
 				}
