@@ -6,12 +6,10 @@
 <!--	
 		<script src="scripts/lib/jquery-1.3.2.js" type="text/javascript"></script>
 -->
-	
-		<link rel="stylesheet" type="text/css" href="scripts/lib/themes/default/easyui.css" />
-		<link rel="stylesheet" type="text/css" href="scripts/lib/themes/icon.css" />
+		
+		<link rel="stylesheet" type="text/css" href="scripts/lib/sexybuttons.css" />
 		
 		<script src="scripts/lib/jquery-1.4.2.min.js" type="text/javascript"></script>
-		<script src="scripts/lib/jquery.easyui.min.js" type="text/javascript"></script>
 		<script src="scripts/lib/jquery.i18n.properties-1.0.4-min.js" type="text/javascript"></script>
 		<script src="scripts/lib/gradientz.js" type="text/javascript"></script>
 <!--
@@ -39,13 +37,13 @@
 		<script src="scripts/App.js" type="text/javascript"></script>
 		
 	</head>
-	<body class="easyui-layout">
-		<div id="background" style="position:absolute;width:100%;height:100%;z-index:8000;">
+	<body>
+		<div id="background" style="position:relative;width:100%;height:100%;">
 		</div>
 		
-		<div id="loginDiv" style="position:absolute;width:100%;height:100%;z-index:8787;">
+		<div id="loginDiv" style="position:absolute;top:0px;left:0px;width:100%;height:100%;z-index:8787;">
 			
-			<div align="center"><img src="http://www.fring.com/images/logo.gif" style="padding:20px"/></div>
+			<div align="center"><img src="/resource/logo.gif" style="padding:20px"/></div>
 			<table align="center" style="margin:0 auto;">
 	            <tbody>
 		            <tr>
@@ -65,18 +63,22 @@
 		            <tr>
 		            	<td/>
 		            	<td>
-		            		<div ><img id="login_loader_img" src="/resource/ajax-loader2.gif" style="display:none"/><label id="login_status" for="login_loader_img" style="float:left;font-size:9pt;">&nbsp</label></div>
+		            		<div>
+		            			<div id="login_status" style="font-size:9pt;float:left;">&nbsp</div>
+		            			<img id="login_loader_img" src="/resource/ajax-loader2.gif" style="display:none"/>
+		            		</div>
 		            	</td>
 		            </tr>
 		            <tr>
 		                <td/>
-		                <td style="padding-top:10px;"><input id="button_login" type="button" value="Login" style="float:left;"></input></td>
+		                <td style="padding-top:10px;">
+		                	<button  id="button_login" class="sexybutton sexysimple sexyteal" style="float:left;">Login</button>
+		                </td>
 		            </tr>
 	            </tbody>
         	</table>
 		</div>
-		<div region="north" border="false" split="false" style="height:20px;background:#B3DFDA;display:none;">north region</div>
-		<div region="center" border="false" split="false" style="overflow:hidden;display:none;">center region</div>
+		
 		
 	</body>
 
