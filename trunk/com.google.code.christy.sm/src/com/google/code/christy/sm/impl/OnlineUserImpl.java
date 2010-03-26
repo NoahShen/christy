@@ -2,9 +2,8 @@ package com.google.code.christy.sm.impl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 import com.google.code.christy.sm.OnlineUser;
 import com.google.code.christy.sm.UserResource;
@@ -19,7 +18,7 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 	
 	private PrivacyList defaultPrivacyList;
 	
-	private Set<UserResource> userResources = new CopyOnWriteArraySet<UserResource>();
+	private List<UserResource> userResources = new LinkedList<UserResource>();
 
 	private SmManagerImpl smManagerImpl;
 	
@@ -147,17 +146,23 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 	public UserResource removeUserResource(String resource)
 	{
 		UserResource userResource = null;
-		for (Iterator<UserResource> it = userResources.iterator(); it.hasNext();)
+		synchronized(userResources) 
 		{
-			UserResource res = it.next();
-			if (resource.equals(res.getResource()))
+			
+			for (Iterator<UserResource> it = userResources.iterator(); it.hasNext();)
 			{
-				it.remove();
-				userResource = res;
-				break;
+				UserResource res = it.next();
+				if (resource.equals(res.getResource()))
+				{
+					it.remove();
+					userResource = res;
+					break;
+				}
 			}
+			
 		}
 		
+
 		if (userResources.isEmpty())
 		{
 			smManagerImpl.removeOnlineUser(this);

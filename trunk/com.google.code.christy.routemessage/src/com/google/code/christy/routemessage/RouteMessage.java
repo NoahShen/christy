@@ -6,6 +6,7 @@ package com.google.code.christy.routemessage;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.google.code.christy.xmpp.StreamError;
 import com.google.code.christy.xmpp.XmlStanza;
 
 
@@ -266,7 +267,11 @@ public class RouteMessage implements XmlStanza
 		{
 			builder.append(" toUserNode=\"").append(getToUserNode()).append("\"");
 		}
-		
+		// add namespace for <stream:error/>
+		if (getXmlStanza() != null && getXmlStanza() instanceof StreamError)
+		{
+			builder.append(" xmlns:stream=\"http://etherx.jabber.org/streams\"");
+		}
 		builder.append(">");
 		
 		if (isCloseStream())

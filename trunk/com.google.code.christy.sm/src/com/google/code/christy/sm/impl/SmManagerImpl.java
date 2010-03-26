@@ -1007,7 +1007,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				
 				RouteMessage closeRouteMessage = 
 					new RouteMessage(getName(), c2sName, streamId);
-				closeRouteMessage.setXmlStanza(CloseStream.getCloseStream());
+				closeRouteMessage.setCloseStream(true);
 				sendToRouter(closeRouteMessage);
 				return;
 			}
@@ -1021,7 +1021,11 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 					new StreamError(StreamError.Condition.conflict);
 				
 				userResource2.sendToSelfClient(streamError);
-				userResource2.sendToSelfClient(CloseStream.getCloseStream());
+				
+				RouteMessage closeRouteMessage = 
+					new RouteMessage(getName(), c2sName, streamId);
+				closeRouteMessage.setCloseStream(true);
+				userResource2.sendToSelfClient(closeRouteMessage);
 				removeUserResource(node, resource);
 			}
 			
