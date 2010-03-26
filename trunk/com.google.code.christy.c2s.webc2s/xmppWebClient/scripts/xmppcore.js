@@ -1,6 +1,7 @@
-Christy = function(){};
+Christy = {};
 Christy.requestUrl = "webclient/JHB.do";
-
+Christy.loginTimeout = 30 * 1000; // 30 sec
+Christy.intervalTime = 0.5 * 1000; //0.5 sec
 ////////////start of JID
 
 JID = jClass.extend({
@@ -2811,6 +2812,7 @@ XmppConnectionMgr = jClass.extend({
 				
 				if (aThis.connectionErrorCount > 5) {
 					clearInterval(aThis.intervalId);
+					aThis.removeAllConnections();
 					var event = {
 						eventType: ConnectionEventType.Error,
 						when: TimeUtils.currentTimeMillis(),
@@ -2939,7 +2941,7 @@ XmppConnectionMgr = jClass.extend({
 		});
 		this.sendBody(body);
 		if (this.intervalId == null) {
-			this.intervalId = setInterval(this.processRequest, 1000);
+			this.intervalId = setInterval(this.processRequest, Christy.intervalTime);
 			this.working = true;
 		}
 	},
@@ -3057,6 +3059,32 @@ XmppConnectionMgr = jClass.extend({
         return null;
 	},
 	
+	removeAllConnections: function(){
+		for (var i = 0; i < this.connections.length; ++i){
+			var conn = this.connections[i];
+			conn.closed = true;
+			conn.authenticated = false;
+			conn.sessionBinded = false;
+			conn.resourceBinded = false;
+			
+			this.connections.splice(i,1);
+			var event = {
+				eventType: ConnectionEventType.ConnectionClosed,
+				when: TimeUtils.currentTimeMillis(),
+				connection: conn
+			}
+			this.fireConnectionEvent(event);
+		}
+		
+		if (this.connections.length == 0) {
+			clearInterval(this.intervalId);
+			this.processRequest(true);
+			this.intervalId = null;
+			this.streamId = null;
+			this.working = false;
+		}
+	},
+	
 	removeConnectionByStreamName: function(streamName, body) {
 		for (var i = 0; i < this.connections.length; ++i){
 			var conn = this.connections[i];
@@ -3083,6 +3111,7 @@ XmppConnectionMgr = jClass.extend({
 			clearInterval(this.intervalId);
 			this.processRequest(true);
 			this.intervalId = null;
+			this.streamId = null;
 			this.working = false;
 		}
 	},
@@ -3096,18 +3125,21 @@ XmppConnectionMgr = jClass.extend({
         return null;
 	},
 	
-	addConnectionListener: function(eventType, listenerFunc) {
+	addConnectionListener: function(eventTypes, listenerFunc) {
 		// wrapper
+		var types = eventTypes
+		if (!isArray(eventTypes)) {
+			types = [eventTypes];
+		}
 		this.listeners.push({
-			eventType: eventType,
+			eventTypes: types,
 			handler: listenerFunc
 		})
 	},
 	
-	removeConnectionListener: function(eventType, listenerFunc) {
+	removeConnectionListener: function(listenerFunc) {
 		for (var i = 0; i < this.listeners.length; ++i){
-			if (this.listeners[i].eventType == eventType
-				&& this.listeners[i].handler == listenerFunc){
+			if (this.listeners[i].handler == listenerFunc){
 				this.listeners.splice(i,1);
 			}
 		}
@@ -3119,7 +3151,7 @@ XmppConnectionMgr = jClass.extend({
 	
 	fireConnectionEvent: function(event) {
 		for (var i = 0; i < this.listeners.length; ++i){
-			if (this.listeners[i].eventType == event.eventType){
+			if (this.listeners[i].eventTypes.contains(event.eventType)){
 				this.listeners[i].handler(event);
 			}
 		}
@@ -3171,6 +3203,8 @@ ConnectionEventType = {
 	StreamError: "StreamError",
 	
 	Error: "Error",
+	
+	Timeout: "Timeout",
 	
 	SaslSuccessful: "SaslSuccessful",
 	
@@ -3319,6 +3353,7 @@ XmppConnection = jClass.extend({
 		var connectionThis = this;
 		this.handleStanza({
 			filter: new PacketIdFilter(id),
+			timeout: Christy.loginTimeout,
 			handler: function(iqResponse) {
 				var eventType = ConnectionEventType.BindResourceFailed;
 				if (iqResponse.getType() == IqType.RESULT) {
@@ -3340,6 +3375,16 @@ XmppConnection = jClass.extend({
 				if (eventType == ConnectionEventType.ResourceBinded) {
 					connectionThis.bindSession();
 				}
+			},
+			timeoutHandler: function() {
+				var event = {
+					eventType: ConnectionEventType.BindResourceFailed,
+					when: TimeUtils.currentTimeMillis(),
+					connection: connectionThis,
+					reason: "timeout"
+				}
+				var connectionMgr = XmppConnectionMgr.getInstance();
+				connectionMgr.fireConnectionEvent(event);
 			}
 		});
 		// TODO Do not need second arg in new Protocal
@@ -3359,6 +3404,7 @@ XmppConnection = jClass.extend({
 		var connectionThis = this;
 		this.handleStanza({
 			filter: new PacketIdFilter(id),
+			timeout: Christy.loginTimeout,
 			handler: function(iqResponse) {
 				
 				var eventType = ConnectionEventType.BindSessionFailed;
@@ -3376,6 +3422,17 @@ XmppConnection = jClass.extend({
 						connection: connectionThis,
 						stanza: iqResponse
 				}
+				connectionMgr.fireConnectionEvent(event);
+			},
+			
+			timeoutHandler: function() {
+				var event = {
+					eventType: ConnectionEventType.BindSessionFailed,
+					when: TimeUtils.currentTimeMillis(),
+					connection: connectionThis,
+					reason: "timeout"
+				}
+				var connectionMgr = XmppConnectionMgr.getInstance();
 				connectionMgr.fireConnectionEvent(event);
 			}
 		});
@@ -3738,6 +3795,19 @@ XmppConnection = jClass.extend({
 	 */ 
 	handleStanza: function(handler) {
 		this.handlers.push(handler);
+		if (handler.timeout && handler.timeoutHandler) {
+			var aThis = this;
+			setTimeout(function(){
+				for (var i =  0; i < aThis.handlers.length; ++i) {
+					if (aThis.handlers[i] == handler) {
+						aThis.handlers.splice(i,1);
+						handler.timeoutHandler();
+						return;
+					}
+				}
+			}, handler.timeout);
+		}
+		
 	},
 	
 	isSessionBinded: function() {
