@@ -1,0 +1,82 @@
+.lists {
+	height:84px;
+	margin:0 auto;
+	padding:0 0 10px;
+	position:relative;
+	width:730px;
+}
+.google-list {
+	display:inline;
+	float:left;
+	height:82px;
+	margin:0 145px 0 53px;
+	overflow:hidden;
+	padding:0;
+	position:relative;
+	width:600px;
+}
+.google-list ul {
+	margin:0;
+	overflow:hidden;
+	padding:14px 0 0;
+	position:absolute;
+}
+.google-list li {
+	float:left;
+	font-family:"Trebuchet MS",Arial,Helvetica,sans-serif;
+	font-size:10px;
+	font-weight:bold;
+	line-height:12px;
+	list-style:none;
+	padding:0 0 30px 17px;
+	width:82px;
+}
+.google-list li a {
+	color:#6C93C5;
+	float:left;
+	text-decoration:none;
+}
+.google-list li a:hover {
+	text-decoration:underline;
+}
+.google-list li a .imgcont {
+	height:43px;
+	overflow:hidden;
+}
+.google-list li a .img {
+	display:block;
+	margin:0 auto;
+	padding:0;
+	height:41px;
+	width:80px;
+	border:1px solid #D9D9D9;
+	cursor:pointer;
+	background:#FFFFFF none repeat scroll 0 0;
+}
+.google-list li a span {
+	display:block;
+	padding:1px 0 0 1px;
+	text-align:center;
+}
+a.button-left {
+	background-image:url(c-google-arrows.gif);
+	background-position:0 0;
+	height:44px;
+	left:24px;
+	overflow:hidden;
+	position:absolute;
+	text-indent:-9999px;
+	top:18px;
+	width:28px;
+}
+a.button-right {
+	background-image:url(c-google-arrows.gif);
+	background-position:-28px 0;
+	height:44px;
+	overflow:hidden;
+	position:absolute;
+	right:40px;
+	text-indent:-9999px;
+	top:18px;
+	width:28px;
+}
