@@ -1,5 +1,4 @@
 (function() {
-
 //	var serviceDiv = $("<div></div>").css({
 //		"position":"relative",
 //		"top":"0px",
@@ -10,26 +9,76 @@
 //	
 //	$("body").append(serviceDiv);
 	
-	var serviceDiv = $("<div></div>").css({
-		"position":"absolute",
-		"top": "0px",
-		"background-color": "red",
-		"width": "100%",
-		"height": "100%"
-	}).text("AAAAAAAAAA");
-	
-	
-	var systemDiv = $("<div></div>")
-	.attr("id", "scrollable")
-	.addClass("lists")
+	var mainDiv = $("<div></div>")
+	.attr("id", "main")
 	.css({
 		"position":"absolute",
-		"bottom": "0px"
-		
+		"top":"0px",
+		"left":"0px",
+		"width": "100%",
+		"height": "100%"
 	});
 	
+	var center = $("<div id=\"center\" style=\"background-color:#FF3300\">Center<br/><br/><br/><br/><br/><br/></div>");
+	mainDiv.append(center);
+	var bottom = $("<div id=\"bottom\" style=\"background-color:#CCCCCC\"></div>");
+	mainDiv.append(bottom);
+	
+	
+	var layoutSettings = {
+	Name: "Main",
+	        Dock:   $.layoutEngine.DOCK.FILL,
+	        EleID:   "main",        
+	        Children:[{
+				Name    :   "Fill",
+				Dock    :   $.layoutEngine.DOCK.FILL,
+		 		EleID   :   "center"
+			},{
+				Name    :   "Bottom",
+				Dock    :   $.layoutEngine.DOCK.BOTTOM,
+				EleID   :   "bottom",
+				Height  :   125
+			}]
+	};
+	
+	$.layoutEngine(layoutSettings);
+	
+	
+	$("body").append(mainDiv);
+	
+//	var mainDiv = $("<div></div>").css({
+//		"position":"absolute",
+//		"top": "0px",
+//		"width": "100%",
+//		"height": "100%"
+//	});
+//	
+//	var serviceDiv = $("<div></div>").css({
+//		"position":"relative",
+//		"top": "0px",
+//		"width": "100%",
+//		"height": "100%"
+//	}).html("AAAAAAAAAAAAAAAA");
+//	
+//	
+//	var systemDiv = $("<div></div>").css({
+//		"position":"relative",
+//		"bottom": "20px",
+//		"height": "20px"
+//		
+//	});
+//	
+	var statusIcon = $("<img id=\"status-img\" src=\"/resource/status/available.png\"></img>");
+	
+	bottom.append(statusIcon);
+	
+	//start of scroll 
+	var scrollDiv = $("<div></div>")
+		.attr("id", "scrollable")
+		.addClass("lists");
+	
 	var prev = $("<a></a>").attr("href", "#").addClass("prev");
-	systemDiv.append(prev);
+	scrollDiv.append(prev);
 	
 	var scrollOutDiv = $("<div class=\"items\" style=\"overflow: hidden; position: relative; visibility: visible; width: 478px;\">");
 	
@@ -42,11 +91,8 @@
 	
 	scrollOutDiv.append($("<br clear=\"all\"/>"));
 	
-	systemDiv.append(scrollOutDiv);
-	systemDiv.append("<a class=\"next\" href=\"#\"></a>");
-	
-	$("body").append(serviceDiv);
-	$("body").append(systemDiv);
+	scrollDiv.append(scrollOutDiv);
+	scrollDiv.append("<a class=\"next\" href=\"#\"></a>");
 	
 	var $content = $(".scrollable_demo");
 	var i = 5;  //已知显示的<a>元素的个数
@@ -69,6 +115,11 @@
 			}
 		}
 	});
-
+	//end of scroll 
 	
+//	mainDiv.append(serviceDiv);
+//	mainDiv.append(systemDiv);
+	
+	
+	$("body").append(mainDiv);
 })();
