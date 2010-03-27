@@ -1,8 +1,6 @@
 
-$(document).ready(function() {
-	
-	
-	
+$(document).ready(function() {	
+	$.ImportBasePath = "/scripts/";
 	
 	$("#background").gradientz({
 		start: "white",     // start color: default is the background color
@@ -172,5 +170,7 @@ function saslSuccess() {
 
 function loginSuccess() {
 	$("#loginDiv").css("display", "none");
-	$.getScript("/scripts/mainui.js"); 
+	$.include(["lib/scrollImagesCss/scrollable.css", "mainui.js"]);
+//	$.get("/scripts/lib/slide-images-show.css");
+//	$.get("/scripts/mainui.js"); 
 }
