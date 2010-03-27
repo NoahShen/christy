@@ -170,7 +170,11 @@ function saslSuccess() {
 
 function loginSuccess() {
 	$("#loginDiv").css("display", "none");
-	$.include(["lib/scrollImagesCss/scrollable.css", "mainui.js"]);
+	$.include([
+				"lib/scrollImagesCss/scrollable.css",
+				"lib/jquery.layoutengine.js",
+				"mainui.js"
+	]);
 //	$.get("/scripts/lib/slide-images-show.css");
 //	$.get("/scripts/mainui.js"); 
 }

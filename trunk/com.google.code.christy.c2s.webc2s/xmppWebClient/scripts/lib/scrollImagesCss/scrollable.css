@@ -1,11 +1,11 @@
 /* outmost wrapper element, containing all elements  */
 #scrollable {
-	background-color:#efefef;
-	border:1px solid #ddd;
+/*	background-color:#efefef;*/
+/*	border:1px solid #ddd;*/
 	padding:10px 8px;
 	width:523px;
 	height:65px;
-	margin-top:30px;
+	margin-top:0px;
 }
 
 /* container for the scrollable items */
