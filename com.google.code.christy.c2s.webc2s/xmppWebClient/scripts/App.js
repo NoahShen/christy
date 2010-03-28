@@ -1,6 +1,5 @@
 
-$(document).ready(function() {	
-	$.ImportBasePath = "/scripts/";
+$(document).ready(function() {
 	
 	$("#background").gradientz({
 		start: "white",     // start color: default is the background color
@@ -9,6 +8,15 @@ $(document).ready(function() {
 	
 	// TODO test code
 	loginSuccess();
+	$.i18n.properties({
+	    name:"i18n",
+	    path:"i18n/",
+	    mode:"both",
+	    language:"zh_CN",
+	    callback: function() {
+
+	    }
+	});
 	return;
 	
 	var connectionMgr = XmppConnectionMgr.getInstance();
@@ -171,9 +179,9 @@ function saslSuccess() {
 function loginSuccess() {
 	$("#loginDiv").css("display", "none");
 	$.include([
-				"lib/scrollImagesCss/scrollable.css",
-				"lib/jquery.layoutengine.js",
-				"mainui.js"
+				"/resource/layout.css",
+				"/scripts/lib/jquery.layoutengine.js",
+				"/scripts/mainui.js"
 	]);
 //	$.get("/scripts/lib/slide-images-show.css");
 //	$.get("/scripts/mainui.js"); 
