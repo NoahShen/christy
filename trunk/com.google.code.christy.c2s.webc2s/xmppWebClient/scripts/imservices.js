@@ -78,8 +78,33 @@
 	var userinfo = $("<div id='userinfo'></div>");
 	userinfo.attr("type", "contact");
 	
-	var userphoto = $("<img src='/resource/userface.bmp' class='marginpadding'/>");
-	userinfo.append(userphoto);
+	var userinfotable = $("<table class='marginpadding'>" +
+			"<tbody>" +
+				"<tr>" +
+					"<td>" +
+						"<img id='userphoto' src='/resource/userface.bmp'/>" + 
+					"</td>" +
+					"<td>" +
+						"<table>" +
+							"<tbody>" +
+								"<tr>" +
+									"<td>" +
+										"<img id='user-status-img' src='/resource/status/available.png' style='padding-right:10px;'/>" +
+										"<span id='username'>Noah</span>" +
+									"</td>" +
+								"</tr>" +
+								"<tr>" +
+									"<td>" +
+										"<div id='user-status-message'>status</div>" +
+									"</td>" +
+								"</tr>" +
+							"</tbody>" +
+						"</table>" +
+					"</td>" +
+				"</tr>" +
+			"</tbody>" +
+		"</table>");
+	userinfo.append(userinfotable);
 	
 	var contactlist = $("<div id='contactlist'></div>");
 	contactlist.attr("type", "contact");
@@ -108,7 +133,7 @@
 		 			Name: "Top3",
 					Dock: $.layoutEngine.DOCK.TOP,
 					EleID: "userinfo",
-					Height: 30
+					Height: 60
 		 		},{
 		 			Name: "Fill3",
 					Dock: $.layoutEngine.DOCK.FILL,

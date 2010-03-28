@@ -42,9 +42,9 @@
 	};
 	
 	
-	var statusIcon = $("<img id='status-img' src='/resource/status/available.png'/>");
+	var appStatusImg = $("<img id='app-status-img' src='/resource/status/available.png'/>");
 	
-	bottom.append(statusIcon);
+	bottom.append(appStatusImg);
 	
 	$("body").append(mainDiv);
 	$.layoutEngine(layoutSettings);
