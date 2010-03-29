@@ -178,11 +178,10 @@ function saslSuccess() {
 
 function loginSuccess() {
 	$("#loginDiv").css("display", "none");
-	$.include([
-				"/resource/layout.css",
-				"/scripts/lib/jquery.layoutengine.js",
-				"/scripts/mainui.js"
-	]);
+	$.include(["/resource/layout.css",
+				"/scripts/lib/jquery.layoutengine.js"], function(){
+		$.include(["/scripts/mainui.js"]);
+	});
 //	$.get("/scripts/lib/slide-images-show.css");
 //	$.get("/scripts/mainui.js"); 
 }
