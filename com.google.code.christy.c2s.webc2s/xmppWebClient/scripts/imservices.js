@@ -35,23 +35,23 @@
 	var userinfo = $("<div id='userinfo'></div>");
 	userinfo.attr("type", "contact");
 	
-	var userinfotable = $("<table class='marginpadding'>" +
+	var userinfotable = $("<table style='padding-top:12px;padding-left:5px;'>" +
 			"<tbody>" +
 				"<tr>" +
 					"<td>" +
-						"<img id='userphoto' src='/resource/userface.bmp'/>" + 
+						"<img id='userphoto' src='/resource/userface.bmp' width='50' height='50' />" + 
 					"</td>" +
 					"<td>" +
-						"<table>" +
+						"<table style='padding-left:5px'>" +
 							"<tbody>" +
 								"<tr>" +
-									"<td valign='middle'>" +
+									"<td>" +
 										"<img id='user-status-img' src='/resource/status/available.png' />" +
 										"<img id='user-status-menu' src='/resource/statusmenu.png' style='padding-left:2px;padding-right:10px;' />" +
 										"<span id='userinfo-username'>Noah</span>" +
 									"</td>" +
 								"</tr>" +
-								"<tr>" +
+								"<tr style='height:30px;'>" +
 									"<td>" +
 										"<div id='user-status-message'>status</div>" +
 									"</td>" +
@@ -62,7 +62,27 @@
 				"</tr>" +
 			"</tbody>" +
 		"</table>");
-		
+	
+//	var searchbar = $("<div style='padding-top:5px;padding-left:5px;'>" +
+//						"<img id='add-contact' src='/resource/status/available.png' style='float:left;width:20px;'/>" +
+//						"<input id='search-contact-input' type='text'/ >" +
+//						"<button id='search-contact-button' style='float:right;width:20px;'>Search</button>" +
+//					"</div>");
+	var searchbar = $("<table style='padding-top:5px;padding-left:5px;width:100%;'>" +
+						"<tbody>" +
+							"<tr>" +
+								"<td style='width:20px;'>" +
+									"<img id='add-contact' src='/resource/status/available.png'/>" +
+								"</td>" +
+								"<td>" +
+									"<input id='search-contact-input' type='text' style='width:100%;'/>" +
+								"</td>" +
+								"<td style='width:40px;'>" +
+									"<button id='search-contact-button' >Search</button>" +
+								"</td>" +
+							"</tr>" +
+						"</tbody>" +
+					"</table>");
 	var statusMenu = $("<ul id='myMenu' class='contextMenu'>" +
 			"<li class='edit'><a href='#edit'>Edit</a></li>" +
 			"<li class='cut separator'><a href='#cut'>Cut</a></li>" +
@@ -72,10 +92,13 @@
 			"<li class='quit separator'><a href='#quit'>Quit</a></li>" +
 	"</ul>");
 	
+	
+	
+	
 	userinfo.append(statusMenu);
-	
-	
 	userinfo.append(userinfotable);
+	userinfo.append(searchbar);
+	
 	
 	var contactlist = $("<div id='contactlist'></div>");
 	contactlist.attr("type", "contact");
@@ -83,7 +106,7 @@
 	imCenter.append(userinfo);
 	imCenter.append(contactlist);
 	
-	var imTopHeight = 30;
+	var imTopHeight = 40;
 	
 	var imlayoutSettings = {
 		Name: "Main",
@@ -106,7 +129,7 @@
 		 			Name: "Top3",
 					Dock: $.layoutEngine.DOCK.TOP,
 					EleID: "userinfo",
-					Height: 60
+					Height: 110
 		 		},{
 		 			Name: "Fill3",
 					Dock: $.layoutEngine.DOCK.FILL,
@@ -146,4 +169,22 @@
 			alert(action);
 		}
 	);
+	
+	var statusMessageClickFunc = function(){
+		
+		$(this).unbind("click");
+		var statusMessage = $(this);
+		var oldmessage = $(this).text();
+		var inputStatusMessage = $("<input id='input-status-message' type='text' value='" + oldmessage + "'/>");
+		inputStatusMessage.bind("blur", function(){
+			statusMessage.empty();
+			statusMessage.text($(this).val());
+			statusMessage.bind("click", statusMessageClickFunc);
+		});
+		$(this).empty();
+		$(this).append(inputStatusMessage);
+		inputStatusMessage[0].focus();
+	};
+	$("#user-status-message").bind("click", statusMessageClickFunc);
+	
 })();

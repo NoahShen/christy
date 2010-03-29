@@ -182,6 +182,4 @@ function loginSuccess() {
 				"/scripts/lib/jquery.layoutengine.js"], function(){
 		$.include(["/scripts/mainui.js"]);
 	});
-//	$.get("/scripts/lib/slide-images-show.css");
-//	$.get("/scripts/mainui.js"); 
 }
