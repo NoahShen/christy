@@ -1,48 +1,5 @@
 (function() {
-//	var imDiv = $("<div class='marginpadding'></div>")
-//	.attr("id", "imDiv")
-//	.css({
-//		"position":"relative",
-//		"top":"5px",
-//		"left":"5px",
-//		"width": "100%",
-//		"height": "100%"
-//	});
-//	
-//	var contact = $("<b class='marginpadding'></b>");
-//	contact.addClass("sexybutton");
-//	contact.text($.i18n.prop("imservices.contact"));
-//	imDiv.append(contact);
-//	
-//	var chat = $("<b style=\"margin:10px;padding:5px\"></b>");
-//	chat.addClass("sexybutton");
-//	chat.text($.i18n.prop("imservices.chat"));
-//	imDiv.append(chat);
-//	
-//	var contactDiv = $("<div id=\"contactDiv\" style=\"margin:10px;\"></div>");
-//	
-//	
-//	var userinfo = $("<div id=\"userinfo\" style='background:blue;'>userinfo</div>");
-//	var contactlist = $("<div id=\"contactlist\" style='background:red;'>contactlist</div>");
-//	
-//	contactDiv.append(userinfo);
-//	contactDiv.append(contactlist);
 	
-//	var contactLayoutSettings = {
-//		Name: "ContactLayout",
-//        Dock: $.layoutEngine.DOCK.FILL,
-//        EleID: "contactDiv",        
-//        Children:[{
-//			Name: "Top",
-//			Dock: $.layoutEngine.DOCK.TOP,
-//			EleID: "userinfo",
-//			Height: 30
-//		},{
-//			Name: "Fill",
-//			Dock: $.layoutEngine.DOCK.FILL,
-//	 		EleID: "contactlist"
-//		}]
-//	};
 	
 	var imTop = $("<div id='imTop'></div>");
 	var contactTab = $("<b class='marginpadding'></b>");
@@ -88,9 +45,10 @@
 						"<table>" +
 							"<tbody>" +
 								"<tr>" +
-									"<td>" +
-										"<img id='user-status-img' src='/resource/status/available.png' style='padding-right:10px;'/>" +
-										"<span id='username'>Noah</span>" +
+									"<td valign='middle'>" +
+										"<img id='user-status-img' src='/resource/status/available.png' />" +
+										"<img id='user-status-menu' src='/resource/statusmenu.png' style='padding-left:2px;padding-right:10px;' />" +
+										"<span id='userinfo-username'>Noah</span>" +
 									"</td>" +
 								"</tr>" +
 								"<tr>" +
@@ -104,6 +62,19 @@
 				"</tr>" +
 			"</tbody>" +
 		"</table>");
+		
+	var statusMenu = $("<ul id='myMenu' class='contextMenu'>" +
+			"<li class='edit'><a href='#edit'>Edit</a></li>" +
+			"<li class='cut separator'><a href='#cut'>Cut</a></li>" +
+			"<li class='copy'><a href='#copy'>Copy</a></li>" +
+			"<li class='paste'><a href='#paste'>Paste</a></li>" +
+			"<li class='delete'><a href='#delete'>Delete</a></li>" +
+			"<li class='quit separator'><a href='#quit'>Quit</a></li>" +
+	"</ul>");
+	
+	userinfo.append(statusMenu);
+	
+	
 	userinfo.append(userinfotable);
 	
 	var contactlist = $("<div id='contactlist'></div>");
@@ -112,7 +83,9 @@
 	imCenter.append(userinfo);
 	imCenter.append(contactlist);
 	
-	var layoutSettings = {
+	var imTopHeight = 30;
+	
+	var imlayoutSettings = {
 		Name: "Main",
         Dock: $.layoutEngine.DOCK.FILL,
         EleID: "main",        
@@ -124,7 +97,7 @@
 	 			Name: "Top2",
 				Dock: $.layoutEngine.DOCK.TOP,
 				EleID: "imTop",
-				Height: 30
+				Height: imTopHeight
 	 		},{
 	 			Name: "Fill2",
 				Dock: $.layoutEngine.DOCK.FILL,
@@ -150,27 +123,27 @@
 	
 	$("#center").append(imTop);
 	$("#center").append(imCenter);
-	$.layoutEngine(layoutSettings);
+	$.layoutEngine(imlayoutSettings);
 	
-//	
-//	imDiv.append(contactDiv);
-//	
-//	
-//	var chatDiv = $("<div id=\"chatDiv\" style=\"margin:10px;\">Chat</div>");
-//	// TODO
-//	imDiv.append(chatDiv);
-//	
-//	imDiv.find("b:first").addClass("sexysimple sexyteal");
-//	imDiv.find("div:gt(0)").hide();
-//	imDiv.find("b").click(function(){
-//		$(this).addClass("sexysimple sexyteal").siblings("b").removeClass("sexysimple sexyteal");
-//		imDiv.find("div:eq("+$(this).index()+")").show().siblings("div").hide();
-//	});
-//	
-//	
-//	$("#center").append(imDiv);
-//	$.layoutEngine(contactLayoutSettings);
-//	contactDiv.css("position", "relative");
-//	userinfo.css("display","");
-//	contactlist.css("display","");
+	var menuX = $("#user-status-img").offset().left;
+	var menuY = $("#user-status-img").offset().top - imTopHeight + $("#user-status-img").height();
+
+	$("#user-status-menu").contextMenu({
+			menu: 'myMenu',
+			leftButton: true,
+			x: menuX,
+			y: menuY
+		},function(action, el, pos) {
+			alert(action);
+		}
+	);
+	$("#user-status-img").contextMenu({
+			menu: 'myMenu',
+			leftButton: true,
+			x: menuX,
+			y: menuY
+		},function(action, el, pos) {
+			alert(action);
+		}
+	);
 })();

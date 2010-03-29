@@ -9,9 +9,7 @@
 //	
 //	$("body").append(serviceDiv);
 	
-	var mainDiv = $("<div></div>")
-	.attr("id", "main")
-	.css({
+	var mainDiv = $("<div id='main'></div>").css({
 		"position":"absolute",
 		"top":"0px",
 		"left":"0px",
@@ -48,6 +46,11 @@
 	
 	$("body").append(mainDiv);
 	$.layoutEngine(layoutSettings);
-
-	$.include(["/scripts/imservices.js"]);
+	
+	$.include(["/scripts/lib/jquerycontextmenu/jquery.contextMenu.css",
+				"/scripts/lib/jquerycontextmenu/jquery.contextMenu.js"
+				], function(){
+		$.include(["/scripts/imservices.js"]);
+	});
+	
 })();
