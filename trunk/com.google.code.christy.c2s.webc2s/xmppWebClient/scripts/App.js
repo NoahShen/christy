@@ -18,6 +18,8 @@ $(document).ready(function() {
 	    }
 	});
 	return;
+	// TODO test code
+	
 	
 	var connectionMgr = XmppConnectionMgr.getInstance();
 	var listener = function(event){
