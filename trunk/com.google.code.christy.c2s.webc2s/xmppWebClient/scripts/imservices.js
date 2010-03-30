@@ -62,12 +62,8 @@
 				"</tr>" +
 			"</tbody>" +
 		"</table>");
-	
-//	var searchbar = $("<div style='padding-top:5px;padding-left:5px;'>" +
-//						"<img id='add-contact' src='/resource/status/available.png' style='float:left;width:20px;'/>" +
-//						"<input id='search-contact-input' type='text'/ >" +
-//						"<button id='search-contact-button' style='float:right;width:20px;'>Search</button>" +
-//					"</div>");
+
+
 	var searchbar = $("<table style='padding-top:5px;padding-left:5px;width:100%;'>" +
 						"<tbody>" +
 							"<tr>" +
