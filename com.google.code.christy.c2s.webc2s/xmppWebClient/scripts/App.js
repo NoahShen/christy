@@ -2,17 +2,18 @@
 $(document).ready(function() {
 	
 	$("#background").gradientz({
-		start: "white",     // start color: default is the background color
-		end: "#A2FF95"      // end color: default is the background color.
+		start: "#CEF6CE",     // start color: default is the background color
+		end: "#FFFFFF",      // end color: default is the background color.
+		angle: 90
 	});
 	
 	// TODO test code
 	loginSuccess();
 	$.i18n.properties({
-	    name:"i18n",
-	    path:"i18n/",
-	    mode:"both",
-	    language:"zh_CN",
+	    name: "i18n",
+	    path: "i18n/",
+	    mode: "both",
+	    language:" zh_CN",
 	    callback: function() {
 
 	    }
@@ -141,10 +142,10 @@ $(document).ready(function() {
 	$("#button_login").click(loginAction);
 	
 	$.i18n.properties({
-	    name:"i18n",
-	    path:"i18n/",
-	    mode:"both",
-	    language:"zh_CN",
+	    name: "i18n",
+	    path: "i18n/",
+	    mode: "both",
+	    language: "zh_CN",
 	    callback: function() {
 
 	        var loginUsername = $.i18n.prop("login.username");
