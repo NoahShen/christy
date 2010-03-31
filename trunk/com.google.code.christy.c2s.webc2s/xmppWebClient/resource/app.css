@@ -1,0 +1,12 @@
+.marginpadding {
+	margin:2px;
+	padding:10px;
+}
+
+input[type="text"] {
+	padding:3px;
+	border:#ccc 1px solid;
+	border-radius: 9px; /* css 3 */
+	-moz-border-radius: 9px;  /* mozilla */
+  	-webkit-border-radius: 9px;  /* webkit */
+ }  
