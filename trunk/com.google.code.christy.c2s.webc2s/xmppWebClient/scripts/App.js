@@ -4,7 +4,7 @@ $(document).ready(function() {
 	$("#background").gradientz({
 		start: "#CEF6CE",     // start color: default is the background color
 		end: "#FFFFFF",      // end color: default is the background color.
-		angle: 45
+		distance: 100
 	});
 	
 	
