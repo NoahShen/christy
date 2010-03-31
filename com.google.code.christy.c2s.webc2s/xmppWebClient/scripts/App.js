@@ -145,7 +145,7 @@ $(document).ready(function() {
 	
 	$.i18n.properties({
 	    name: "i18n",
-	    path: "i18n/",
+	    path: "/i18n/",
 	    mode: "both",
 	    language: "zh_CN",
 	    callback: function() {
