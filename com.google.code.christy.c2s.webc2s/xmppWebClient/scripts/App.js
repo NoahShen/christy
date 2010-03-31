@@ -12,9 +12,9 @@ $(document).ready(function() {
 	loginSuccess();
 	$.i18n.properties({
 	    name: "i18n",
-	    path: "i18n/",
+	    path: "/i18n/",
 	    mode: "both",
-	    language:" zh_CN",
+	    language:"zh_CN",
 	    callback: function() {
 
 	    }
@@ -195,7 +195,7 @@ function saslSuccess() {
 
 function loginSuccess() {
 	$("#loginDiv").css("display", "none");
-	$.include(["/resource/layout.css"], function(){
+	$.include(["/resource/app.css"], function(){
 		$.include(["/scripts/mainui.js"]);
 	});
 }

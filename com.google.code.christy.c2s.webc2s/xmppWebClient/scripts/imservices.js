@@ -93,8 +93,11 @@
 	userinfo.append(searchbar);
 	
 	
-	var contactlist = $("<div id='contactlist'></div>");
+	var contactlist = $("<div id='contactlist' style='overflow:auto;'></div>");
 	contactlist.attr("type", "contact");
+	
+	
+	
 	
 	imCenter.append(userinfo);
 	imCenter.append(contactlist);
