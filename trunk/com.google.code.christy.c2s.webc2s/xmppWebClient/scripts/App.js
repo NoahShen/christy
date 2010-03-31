@@ -4,8 +4,9 @@ $(document).ready(function() {
 	$("#background").gradientz({
 		start: "#CEF6CE",     // start color: default is the background color
 		end: "#FFFFFF",      // end color: default is the background color.
-		angle: 90
+		angle: 45
 	});
+	
 	
 	// TODO test code
 	loginSuccess();
@@ -20,6 +21,7 @@ $(document).ready(function() {
 	});
 	return;
 	// TODO test code
+	
 	
 	
 	var connectionMgr = XmppConnectionMgr.getInstance();
@@ -159,6 +161,18 @@ $(document).ready(function() {
 	        $("#button_login").text(loginAction);
 	    }
 	});
+	
+	var layoutSettings = {
+		Name: "Login",
+        Dock: $.layoutEngine.DOCK.FILL,
+        EleID: "loginDiv",        
+        Children:[{
+			Name: "Fill",
+			Dock: $.layoutEngine.DOCK.FILL,
+	 		EleID: "loginDiv"
+		}]
+	};
+	$.layoutEngine(layoutSettings);
 });
 
 function disabledInputController(bool) {
@@ -181,8 +195,7 @@ function saslSuccess() {
 
 function loginSuccess() {
 	$("#loginDiv").css("display", "none");
-	$.include(["/resource/layout.css",
-				"/scripts/lib/jquery.layoutengine.js"], function(){
+	$.include(["/resource/layout.css"], function(){
 		$.include(["/scripts/mainui.js"]);
 	});
 }

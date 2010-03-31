@@ -1,13 +1,4 @@
 (function() {
-//	var serviceDiv = $("<div></div>").css({
-//		"position":"relative",
-//		"top":"0px",
-//		"left":"0px",
-//		"width":"100%",
-//		"height":"97%",
-//	});
-//	
-//	$("body").append(serviceDiv);
 	
 	var mainDiv = $("<div id='main'></div>").css({
 		"position":"absolute",

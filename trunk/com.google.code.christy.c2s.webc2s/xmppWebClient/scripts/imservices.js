@@ -35,7 +35,7 @@
 	var userinfo = $("<div id='userinfo'></div>");
 	userinfo.attr("type", "contact");
 	
-	var userinfotable = $("<table style='padding-top:12px;padding-left:5px;'>" +
+	var userinfotable = $("<table style='padding-left:5px;'>" +
 			"<tbody>" +
 				"<tr>" +
 					"<td>" +
@@ -64,7 +64,7 @@
 		"</table>");
 
 
-	var searchbar = $("<table style='padding-top:5px;padding-left:5px;width:100%;'>" +
+	var searchbar = $("<table style='padding-left:5px;width:100%;'>" +
 						"<tbody>" +
 							"<tr>" +
 								"<td style='width:20px;'>" +
