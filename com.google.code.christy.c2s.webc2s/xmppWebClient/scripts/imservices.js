@@ -67,9 +67,6 @@
 	var searchbar = $("<table style='padding-left:5px;width:100%;'>" +
 						"<tbody>" +
 							"<tr>" +
-								"<td style='width:20px;'>" +
-									"<img id='add-contact' src='/resource/status/available.png'/>" +
-								"</td>" +
 								"<td>" +
 									"<input id='search-contact-input' type='text' style='width:100%;'/>" +
 								"</td>" +
