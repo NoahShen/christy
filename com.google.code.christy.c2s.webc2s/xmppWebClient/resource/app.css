@@ -20,5 +20,10 @@ input[type="password"] {
 }
 
 div[contactJid] {
-	border-bottom:#ccc 1px solid;
+	border-bottom: #ccc 1px solid;
+}
+
+div[status-message] {
+	font-size: x-small;
+	color: gray;
 }
