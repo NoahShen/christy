@@ -18,3 +18,7 @@ input[type="password"] {
 	-moz-border-radius: 9px;  /* mozilla */
   	-webkit-border-radius: 9px;  /* webkit */
 }
+
+div[contactJid] {
+	border-bottom:#ccc 1px solid;
+}

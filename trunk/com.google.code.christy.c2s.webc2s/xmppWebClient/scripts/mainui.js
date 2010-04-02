@@ -10,8 +10,7 @@
 	
 	var center = $("<div id='center'></div>");
 	mainDiv.append(center);
-	var bottom = $("<div id='bottom' style='background-color:#CCCCCC'></div>");
-	mainDiv.append(bottom);
+
 	
 	
 	var layoutSettings = {
@@ -22,19 +21,18 @@
 			Name: "Fill",
 			Dock: $.layoutEngine.DOCK.FILL,
 	 		EleID: "center"
-		},{
-			Name: "Bottom",
-			Dock: $.layoutEngine.DOCK.BOTTOM,
-			EleID: "bottom",
-			Height: 20
 		}]
 	};
 	
 	
-	var appStatusImg = $("<img id='app-status-img' src='/resource/status/available.png'/>");
+	var appMenu = $("<div id='appMenu'><img id='appMenuImg' src='/resource/status/available.png'/></div>");
+	appMenu.css({"position": "fixed",
+					"right":"0", 
+					"top": "0", 
+					"z-index": "8888",
+					"padding": "10px"});
 	
-	bottom.append(appStatusImg);
-	
+	$("body").append(appMenu);
 	$("body").append(mainDiv);
 	$.layoutEngine(layoutSettings);
 	

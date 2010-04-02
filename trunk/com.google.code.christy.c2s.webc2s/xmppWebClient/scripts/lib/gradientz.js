@@ -26,9 +26,17 @@
     return html;
   }
   
-  function canvasGradient(angle, colorStart, colorEnd, width, height, distance, css) {
-    var canvas=$("<canvas class=gradientz_inserted width="+width+"px height="+ height +"px style='position:absolute; ; " + css + "'></canvas>");
-    var ctx=canvas[0].getContext('2d');
+  function canvasGradient(angle, colorStart, colorEnd, width, height, distance, css, fillWidth, fillHeight) {
+    var canvas = $("<canvas class='gradientz_inserted' width="+width+"px height="+ height +"px style='position:absolute;" + css + "'></canvas>");
+    if (fillWidth) {
+    	canvas.css("width", "100%");
+    }
+    
+    if (fillHeight) {
+    	canvas.css("height", "100%");
+    }
+    
+    var ctx = canvas[0].getContext('2d');
     
     var flip = angle < 0
     angle = Math.abs(angle)
@@ -96,7 +104,7 @@
           $(this).css({overflow: "hidden"})
         }
         else  //canvasGradient returns a DOM element
-          $$.prepend(canvasGradient(radians, settings.start, settings.end, w, h, d,  settings.css));
+          $$.prepend(canvasGradient(radians, settings.start, settings.end, w, h, d,  settings.css, settings.fillWidth, settings.fillHeight));
       })  
     }
   })(jQuery);

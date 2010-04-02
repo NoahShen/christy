@@ -1,6 +1,4 @@
 (function() {
-	
-	
 	var imTop = $("<div id='imTop'></div>");
 	var contactTab = $("<b class='marginpadding'></b>");
 	contactTab.attr("type", "contact");
@@ -93,9 +91,25 @@
 	userinfo.append(searchbar);
 	
 	
-	var contactlist = $("<div id='contactlist' style='overflow:auto;padding-left:5px;'></div>");
+	var contactlist = $("<div id='contactlist'></div>");
 	contactlist.attr("type", "contact");
-	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("Noah", "example.com", "res"), "Noah")))
+	//TODO test code
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("Noah", "example.com", "res"), "Noah")));
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("aa", "example.com", "res"), "aa")));
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("bb", "example.com", "res"), "bb")));
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("cc", "example.com", "res"), null)));
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("dd", "example.com", "res"), "dd")));
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("ee", "example.com", "res"), null)));
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("ff", "example.com", "res"), null)));
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("gg", "example.com", "res"), null)));
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("hh", "example.com", "res"), null)));
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("ii", "example.com", "res"), "ii")));
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("jj", "example.com", "res"), null)));
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("kk", "example.com", "res"), null)));
+
+	removeContact(contactlist, new XmppContact(new IqRosterItem(new JID("kk", "example.com", "res"), null)));
+	
+	
 	
 	imCenter.append(userinfo);
 	imCenter.append(contactlist);
@@ -130,11 +144,6 @@
 					EleID: "contactlist",
 		 		}]
 	 		}]
-		},{
-			Name: "Bottom",
-			Dock: $.layoutEngine.DOCK.BOTTOM,
-			EleID: "bottom",
-			Height: 20
 		}]
 	};
 	
@@ -188,20 +197,54 @@ function addContact(contactlistJqObj, newContact) {
 	
 	var newJid = newContact.getBareJid();
 	
-	var insertJqObj = null;
-	var contacts = contactlistJqObj.children();
-	$.each(contacts, function(index, value) {
-		var contactJqObj = $(value);
-		var contact = contactJqObj.attr("contact");
-		var jid = contact.getBareJid();
-		if (newJid.toPrepedBareJID() < jid.toPrepedBareJID()) {
-			insertJqObj = contactJqObj;
-			return false;
-		}
-	});
+	var insertJqObj = getInsertJqObj(contactlistJqObj, newJid.toPrepedBareJID());
 	
-	var newContactJqObj = $("<div>" + newJid.toBareJID()+ "</div>");
-	newContactJqObj.attr("contact", newContact);
+	var showName = (newContact.getNickname()) ? newContact.getNickname() : newJid.toPrepedBareJID();
+	var newContactJqObj = $("<div>" +
+								"<table style='width:100%;'>" +
+									"<tr>" +
+										"<td >" +
+											"<img src='/resource/status/unavailable.png'/>" +
+										"</td>" +
+										"<td style='width:100%;'>" +
+											"<table>" +
+												"<tr>" +
+													"<td>" +
+														"<div>" + showName + "</div>" +
+													"</td>" +
+												"</tr>" +
+												"<tr>" +
+													"<td>" +
+														"<div>Status Messsage</div>" +
+													"</td>" +
+												"</tr>" +
+											"</table>" + 
+										"</td>" +
+										"<td>" +
+											"<img src='/resource/statusmenu.png'/>" +
+										"</td>" +
+									"<tr/>" +
+								"</table>" +
+							"</div>");
+							
+//	var statusImg = $("<img src='/resource/status/unavailable.png'/>");
+//	if (newContact.isResourceAvailable()) {
+//		var userResource = newContact.getMaxPriorityResource();
+//		var presence = userResource.currentPresence;
+//		if (presence.getShow() == PresenceShow.AVAILABLE) {
+//			statusImg.attr("src", "/resource/status/available.png");
+//		} else if (presence.getShow() == PresenceShow.AWAY) {
+//			statusImg.attr("src", "/resource/status/away.png");
+//		} else if (presence.getShow() == PresenceShow.CHAT) {
+//			statusImg.attr("src", "/resource/status/chat.png");
+//		} else if (presence.getShow() == PresenceShow.DND) {
+//			statusImg.attr("src", "/resource/status/dnd.png");
+//		} else if (presence.getShow() == PresenceShow.XA) {
+//			statusImg.attr("src", "/resource/status/xa.png");
+//		} 
+//	}
+	
+	newContactJqObj.attr("contactJid", newJid.toPrepedBareJID());
 		
 	if (insertJqObj == null) {
 		contactlistJqObj.append(newContactJqObj);
@@ -209,4 +252,25 @@ function addContact(contactlistJqObj, newContact) {
 		newContactJqObj.insertBefore(insertJqObj);
 	}
 	
+}
+
+function removeContact(contactlistJqObj, contact) {
+	var bareJid = contact.getBareJid();
+	var contactEl = contactlistJqObj.children("div[contactJid='" + bareJid.toPrepedBareJID() + "']");
+	var contactJqObj = $(contactEl);
+	contactJqObj.remove();
+}
+
+function getInsertJqObj(contactlistJqObj, newBareJid) {
+	var insertJqObj = null;
+	var contacts = contactlistJqObj.children();
+	$.each(contacts, function(index, value) {
+		var contactJqObj = $(value);
+		var bareJid = contactJqObj.attr("contactJid");
+		if (newBareJid < bareJid) {
+			insertJqObj = contactJqObj;
+			return false;
+		}
+	});
+	return insertJqObj;
 }

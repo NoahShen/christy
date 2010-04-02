@@ -3838,7 +3838,7 @@ XmppContact = jClass.extend({
 	},
 	
 	getNickname: function() {
-		return this.rosterItem.setRosterName();
+		return this.rosterItem.getRosterName();
 	},
 	
 	getGroups: function() {
