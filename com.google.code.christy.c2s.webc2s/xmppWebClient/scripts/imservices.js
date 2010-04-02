@@ -93,11 +93,9 @@
 	userinfo.append(searchbar);
 	
 	
-	var contactlist = $("<div id='contactlist' style='overflow:auto;'></div>");
+	var contactlist = $("<div id='contactlist' style='overflow:auto;padding-left:5px;'></div>");
 	contactlist.attr("type", "contact");
-	
-	
-	
+	addContact(contactlist, new XmppContact(new IqRosterItem(new JID("Noah", "example.com", "res"), "Noah")))
 	
 	imCenter.append(userinfo);
 	imCenter.append(contactlist);
@@ -184,3 +182,31 @@
 	$("#user-status-message").bind("click", statusMessageClickFunc);
 	
 })();
+
+
+function addContact(contactlistJqObj, newContact) {
+	
+	var newJid = newContact.getBareJid();
+	
+	var insertJqObj = null;
+	var contacts = contactlistJqObj.children();
+	$.each(contacts, function(index, value) {
+		var contactJqObj = $(value);
+		var contact = contactJqObj.attr("contact");
+		var jid = contact.getBareJid();
+		if (newJid.toPrepedBareJID() < jid.toPrepedBareJID()) {
+			insertJqObj = contactJqObj;
+			return false;
+		}
+	});
+	
+	var newContactJqObj = $("<div>" + newJid.toBareJID()+ "</div>");
+	newContactJqObj.attr("contact", newContact);
+		
+	if (insertJqObj == null) {
+		contactlistJqObj.append(newContactJqObj);
+	} else {
+		newContactJqObj.insertBefore(insertJqObj);
+	}
+	
+}

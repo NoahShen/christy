@@ -195,7 +195,5 @@ function saslSuccess() {
 
 function loginSuccess() {
 	$("#loginDiv").css("display", "none");
-	$.include(["/resource/app.css"], function(){
-		$.include(["/scripts/mainui.js"]);
-	});
+	$.include(["/scripts/mainui.js"]);
 }

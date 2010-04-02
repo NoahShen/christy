@@ -3596,6 +3596,13 @@ XmppConnection = jClass.extend({
 
 		var userResource = contact.getResource(resource);
 		if (userResource == null) {
+			/**
+			 * Resource {
+			 * 	resource: resource
+			 * 	oldPresence: oldPresence
+			 * 	currentPresence: currentPresence
+			 * }
+			 */
 			userResource = {
 				resource: resource
 			}
