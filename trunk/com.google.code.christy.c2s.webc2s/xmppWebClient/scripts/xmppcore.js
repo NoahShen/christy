@@ -583,6 +583,7 @@ Presence = Packet.extend({
 	init: function(type) {
 	    this._super();
 	    this.type = type;
+	    this.priority = Number.MIN_VALUE;
 	},
 	
 	isAvailable: function(){
@@ -657,7 +658,7 @@ Presence = Packet.extend({
         if (this.getUserStatus() != null){
 			xml += "<status>" + StringUtils.escapeXml(this.getUserStatus()) + "</status>";
         }
-        if (this.priority != null){
+        if (this.priority != Number.MIN_VALUE){
 			xml += "<priority>" + this.priority + "</priority>";
         }
         if (this.show != null && this.show != PresenceShow.AVAILABLE){
