@@ -9,4 +9,12 @@ input[type="text"] {
 	border-radius: 9px; /* css 3 */
 	-moz-border-radius: 9px;  /* mozilla */
   	-webkit-border-radius: 9px;  /* webkit */
- }  
+}
+
+input[type="password"] {
+	padding:3px;
+	border:#ccc 1px solid;
+	border-radius: 9px; /* css 3 */
+	-moz-border-radius: 9px;  /* mozilla */
+  	-webkit-border-radius: 9px;  /* webkit */
+}

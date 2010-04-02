@@ -17,7 +17,7 @@
 	var layoutSettings = {
 		Name: "Main",
         Dock: $.layoutEngine.DOCK.FILL,
-        EleID: "main",        
+        EleID: "main",
         Children:[{
 			Name: "Fill",
 			Dock: $.layoutEngine.DOCK.FILL,
