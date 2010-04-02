@@ -3,8 +3,9 @@ $(document).ready(function() {
 	
 	$("#background").gradientz({
 		start: "#CEF6CE",     // start color: default is the background color
-		end: "#FFFFFF",      // end color: default is the background color.
-		distance: 100
+		end: "#FFFFFF",     // end color: default is the background color.
+		distance: 100,
+		fillWidth: true
 	});
 	
 	
