@@ -120,7 +120,7 @@
 	
 	var presence2 = new Presence(PresenceType.AVAILABLE);
 	presence2.setUserStatus("status2");
-	presence2.setShow(PresenceShow.AWAY);
+//	presence2.setShow(PresenceShow.AWAY);
 	contact2.addResource({
 		resource: "res2",
 		currentPresence: presence2
