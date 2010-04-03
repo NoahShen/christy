@@ -7,9 +7,6 @@
 		"width": "100%",
 		"height": "100%"
 	});
-	
-	var center = $("<div id='center'></div>");
-	mainDiv.append(center);
 
 	
 	
@@ -20,7 +17,7 @@
         Children:[{
 			Name: "Fill",
 			Dock: $.layoutEngine.DOCK.FILL,
-	 		EleID: "center"
+	 		EleID: "main"
 		}]
 	};
 	
@@ -37,7 +34,8 @@
 	$.layoutEngine(layoutSettings);
 	
 	$.include(["/scripts/lib/jquerycontextmenu/jquery.contextMenu.css",
-				"/scripts/lib/jquerycontextmenu/jquery.contextMenu.js"
+				"/scripts/lib/jquerycontextmenu/jquery.contextMenu.js",
+				"/resource/imchat.css"
 				], function(){
 		$.include(["/scripts/imservices.js"]);
 	});

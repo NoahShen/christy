@@ -1,0 +1,23 @@
+#chat-scroller-header span {
+	text-decoration: none; 
+	color: #867863;
+}
+
+#chat-scroller-header spanv:hover {
+	text-decoration: none; 
+	color: #4b412f
+}
+
+#chat-scroller-header span.selected {
+	text-decoration: underline !important; 
+	color: #4b412f !important;
+}
+
+
+span[tabContactJid] {
+	padding-left: 10px;
+}
+
+div[chatPanelId] {
+	padding-left: 10px;
+}
