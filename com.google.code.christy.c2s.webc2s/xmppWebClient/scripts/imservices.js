@@ -1,5 +1,10 @@
 (function() {
+	
+	var imservices = $("<div id='imservices'></div>");
+	
+	// im tabs
 	var imTop = $("<div id='imTop'></div>");
+	// contact tab
 	var contactTab = $("<b class='marginpadding'></b>");
 	contactTab.attr("type", "contact");
 	contactTab.addClass("sexybutton");
@@ -7,11 +12,13 @@
 	imTop.append(contactTab);
 	
 	var chatTab = $("<b class='marginpadding'></b>");
+	// chat tab
 	chatTab.attr("type", "chat");
 	chatTab.addClass("sexybutton");
 	chatTab.text($.i18n.prop("imservices.chat"));
 	imTop.append(chatTab);
 	
+	// tabs click event
 	imTop.find("b:first").addClass("sexysimple sexyteal");
 	imTop.find("b").click(function(){
 		$(this).addClass("sexysimple sexyteal").siblings("b").removeClass("sexysimple sexyteal");
@@ -30,6 +37,7 @@
 	
 	var imCenter = $("<div id='imCenter'></div>");
 	
+	// user info ,username,status,photo
 	var userinfo = $("<div id='userinfo'></div>");
 	userinfo.attr("type", "contact");
 	
@@ -61,7 +69,8 @@
 			"</tbody>" +
 		"</table>");
 
-
+	
+	// search contact
 	var searchbar = $("<table style='padding-left:5px;width:100%;'>" +
 						"<tbody>" +
 							"<tr>" +
@@ -74,6 +83,8 @@
 							"</tr>" +
 						"</tbody>" +
 					"</table>");
+					
+	// user's status menu 
 	var statusMenu = $("<ul id='myMenu' class='contextMenu'>" +
 			"<li class='edit'><a href='#edit'>Edit</a></li>" +
 			"<li class='cut separator'><a href='#cut'>Cut</a></li>" +
@@ -93,6 +104,8 @@
 	
 	var contactlist = $("<div id='contactlist'></div>");
 	contactlist.attr("type", "contact");
+	
+	
 	//TODO test code
 	var contact1 = new XmppContact(new IqRosterItem(new JID("Noah", "example.com", "res"), "Noah"));
 	var contact2 = new XmppContact(new IqRosterItem(new JID("aa", "example.com", "res"), "aa"));
@@ -129,8 +142,38 @@
 	updateContact(contactlist, contact1);
 	updateContact(contactlist, contact2);
 	
+	// TODO end of test
+	
+	// start of chat html
+	
+	var chatScrollHeader = $("<div id='chat-scroller-header'></div>");
+	chatScrollHeader.attr("type", "chat");
+	
+	var chatScrollBody = $("<div id='chat-scroller-body'></div>");
+	chatScrollBody.attr("type", "chat");
+	
+	var chatPanel = $("<div id='chat-panel'></div>");	
+	chatScrollBody.append(chatPanel);
+	
+	// TODO test code
+	createChatHtml(chatScrollHeader, chatPanel, {
+		jid: "Noah1@example.com",
+		showName: "Noah1"
+	});
+	
+	createChatHtml(chatScrollHeader, chatPanel, {
+		jid: "Noah2@example.com",
+		showName: "Noah2"
+	});
+	
+	// end of chat html
+	
 	imCenter.append(userinfo);
 	imCenter.append(contactlist);
+	
+	imCenter.append(chatScrollHeader);
+	imCenter.append(chatScrollBody);
+	
 	
 	var imTopHeight = 40;
 	
@@ -141,7 +184,7 @@
         Children:[{
 			Name: "Fill",
 			Dock: $.layoutEngine.DOCK.FILL,
-	 		EleID: "center",
+	 		EleID: "imservices",
 	 		Children:[{
 	 			Name: "Top2",
 				Dock: $.layoutEngine.DOCK.TOP,
@@ -165,8 +208,11 @@
 		}]
 	};
 	
-	$("#center").append(imTop);
-	$("#center").append(imCenter);
+	imservices.append(imTop);
+	imservices.append(imCenter);
+	
+	$("#main").append(imservices);
+	
 	$.layoutEngine(imlayoutSettings);
 	
 	var menuX = $("#user-status-img").offset().left;
@@ -190,6 +236,8 @@
 			alert(action);
 		}
 	);
+	
+	contactTab.click();
 	
 	var statusMessageClickFunc = function(){
 		
@@ -327,8 +375,6 @@ function updateContact(contactlistJqObj, contact) {
 		var oldContactJqObj = $(value);
 		var oldContactStatusCode = oldContactJqObj.attr("statusCode");
 		var contactStatusCode = contactJqObj.attr("statusCode");
-//		alert(contactJqObj.attr("contactJid") + ":" + oldContactJqObj.attr("contactJid"));
-//		alert(contactStatusCode + ":" + oldContactStatusCode);
 		
 		if (contactStatusCode > oldContactStatusCode) {
 			contactJqObj.insertBefore(oldContactJqObj);
@@ -350,4 +396,47 @@ function removeContact(contactlistJqObj, contact) {
 	var contactEl = contactlistJqObj.children("div[contactJid='" + bareJid.toPrepedBareJID() + "']");
 	var contactJqObj = $(contactEl);
 	contactJqObj.remove();
+}
+
+function createChatHtml(chatScrollHeader, chatPanel, contactInfo) {
+	
+	var chatPanelTab = $("<span tabContactJid='" + contactInfo.jid + "'>" + contactInfo.showName + "</span>");
+	
+	var chatHandlerFunc = function(){
+
+		$("span[tabContactJid]").removeClass('selected');
+		$(this).addClass('selected');	
+
+		var currentChatPanel = $("#chat-panel > div[chatPanelId=" + $(this).attr('tabContactJid') + "-chatPanel]");
+		currentChatPanel.siblings().hide();	
+		currentChatPanel.show();
+
+	};
+	
+	chatPanelTab.click(chatHandlerFunc);
+	chatScrollHeader.append(chatPanelTab);
+
+//	chatPanel.append("<div chatPanelId='" + contactInfo.jid + "-chatPanel' style='display:none;'>" +
+//							"<table style='width:100%;'>" +
+//								"<tr style='height:100%;'>" +
+//									"<td>" +
+//										"Message" +
+//									"</td>" +
+//								"</tr>" +
+//								"<tr style='height:100px;'>" +
+//									"<td>" +
+//										"<input type='text' style='width:100%;'/>" +
+//									"</td>" +
+//								"</tr>" +
+//							"</table>" +
+//						"</div>");
+
+	chatPanel.append("<div chatPanelId='" + contactInfo.jid + "-chatPanel' style='display:none;'>" +
+							"<div style='width:100%;'>" +
+								"a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>" +
+							"</div>" +
+							"<div style='width:100%;bottom:0;'>" +
+								"<input type='text' style='width:100%;'/>" +
+							"</div>" +
+						"</div>");
 }
