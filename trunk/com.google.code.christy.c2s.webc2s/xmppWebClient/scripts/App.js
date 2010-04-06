@@ -196,5 +196,11 @@ function saslSuccess() {
 
 function loginSuccess() {
 	$("#loginDiv").css("display", "none");
-	$.include(["/scripts/mainui.js"]);
+	
+	$.include(["/scripts/lib/jquerycontextmenu/jquery.contextMenu.css",
+				"/scripts/lib/jquerycontextmenu/jquery.contextMenu.js"
+				], function(){
+		$.include(["/scripts/mainui.js"]);
+	});
+	
 }
