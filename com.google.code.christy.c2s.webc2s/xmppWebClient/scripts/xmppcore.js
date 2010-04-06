@@ -3412,10 +3412,10 @@ XmppConnection = jClass.extend({
 				if (iqResponse.getType() == IqType.RESULT) {
 					eventType = ConnectionEventType.SessionBinded;
 					this.sessionBinded = true;
-					connectionThis.queryRoster();
-					if (connectionThis.initPresence) {
-						connectionThis.sendStanza(connectionThis.initPresence);
-					}
+//					connectionThis.queryRoster();
+//					if (connectionThis.initPresence) {
+//						connectionThis.sendStanza(connectionThis.initPresence);
+//					}
 				}
 				var event = {
 						eventType: eventType,

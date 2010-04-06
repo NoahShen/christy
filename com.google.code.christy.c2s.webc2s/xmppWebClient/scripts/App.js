@@ -10,17 +10,17 @@ $(document).ready(function() {
 	
 	
 	// TODO test code
-	loginSuccess();
-	$.i18n.properties({
-	    name: "i18n",
-	    path: "/i18n/",
-	    mode: "both",
-	    language:"zh_CN",
-	    callback: function() {
-
-	    }
-	});
-	return;
+//	loginSuccess();
+//	$.i18n.properties({
+//	    name: "i18n",
+//	    path: "/i18n/",
+//	    mode: "both",
+//	    language:"zh_CN",
+//	    callback: function() {
+//
+//	    }
+//	});
+//	return;
 	// TODO test code
 	
 	
