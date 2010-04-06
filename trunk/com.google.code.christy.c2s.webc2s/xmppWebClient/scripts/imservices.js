@@ -1,5 +1,5 @@
 (function() {
-	
+		
 	var imservices = $("<div id='imservices'></div>");
 	
 	// im tabs
@@ -227,6 +227,7 @@
 			alert(action);
 		}
 	);
+	
 	$("#user-status-img").contextMenu({
 			menu: 'myMenu',
 			leftButton: true,
@@ -256,6 +257,39 @@
 	};
 	$("#user-status-message").bind("click", statusMessageClickFunc);
 	
+		
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	
+	connectionMgr.addConnectionListener(
+		[
+			ConnectionEventType.ContactUpdated,
+			ConnectionEventType.ContactRemoved
+		],
+		
+		function(event) {
+			var contact = event.contact;
+			var eventType = event.eventType;
+			if (eventType == ConnectionEventType.ContactUpdated) {
+				var bareJid = contact.getBareJid();
+				var contactEl = contactlist.children("div[contactJid='" + bareJid.toPrepedBareJID() + "']");
+				if (contactEl.length > 0) {
+					updateContact(contactlist, contact);
+				} else {
+					addContact(contactlist, contact);
+				}
+			} else if (eventType == ConnectionEventType.ContactRemoved) {
+				removeContact(contactlist, contact);
+			}
+			
+			
+		}
+	);
+
+	var conn = connectionMgr.getAllConnections()[0];
+	conn.queryRoster();
+	if (conn.initPresence) {
+		conn.sendStanza(conn.initPresence);
+	}
 })();
 
 

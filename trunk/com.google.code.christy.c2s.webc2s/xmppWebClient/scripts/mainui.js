@@ -59,10 +59,7 @@
 	);
 	
 	
-	$.include(["/scripts/lib/jquerycontextmenu/jquery.contextMenu.css",
-				"/scripts/lib/jquerycontextmenu/jquery.contextMenu.js",
-				"/resource/imchat.css"
-				], function(){
+	$.include(["/resource/imchat.css"], function(){
 		$.include(["/scripts/imservices.js"]);
 	});
 	
