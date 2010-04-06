@@ -73,6 +73,11 @@ if(jQuery)( function() {
 							if (o.y) {
 								y = o.y;
 							}
+							
+							if (o.menulocFunc) {
+								x = o.menulocFunc().x;
+								y = o.menulocFunc().y;
+							}
 							// Show the menu
 							$(document).unbind('click');
 							$(menu).css({ top: y, left: x }).fadeIn(o.inSpeed);
