@@ -747,7 +747,6 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	
 					}
 					
-
 					Continuation oldContinuation = webClientSession.getContinuation();
 					if (oldContinuation != null)
 					{
@@ -862,10 +861,12 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 						{
 							webClientSession.close();
 						}
-						webClientSession.setContinuation(null);
+						
+						if (webClientSession.getContinuation() == continuation)
+						{
+							webClientSession.setContinuation(null);
+						}
 					}
-					
-					
 				}
 			}
 			
