@@ -2746,6 +2746,7 @@ XmppConnectionMgr = jClass.extend({
 		this.connectionErrorCount = 0;
 		this.keyGenerater = new KeyGenerater();
 		this.working = false;
+		this.hold = 1;
 	},
 	
 	isWorking: function(){
@@ -2772,6 +2773,11 @@ XmppConnectionMgr = jClass.extend({
 			}
 			return;
 		}
+		
+		if (aThis.requestingCount > aThis.hold) {
+			return;
+		}
+		
 		if (aThis.bodyMessagQueue.length > 0) {
 			var bodyMessage = aThis.bodyMessagQueue.shift();
 			aThis.execAjaxRequest(bodyMessage);
