@@ -64,10 +64,16 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 		RosterItem item = new RosterItem();
 		item.setUsername(username);
 		item.setNickname("bNoah2");
-		item.setGroups(new String[]{"group1"});
+		item.setGroups(new String[]{"group1", "group2"});
 		item.setRosterJID(new JID("bNoah2", "example", null));
 		item.setSubscription(RosterItem.Subscription.both);
-		return new RosterItem[]{item};
+		
+		RosterItem item2 = new RosterItem();
+		item2.setUsername(username);
+		item2.setNickname("Noah2");
+		item2.setRosterJID(new JID("Noah2", "example", null));
+		item2.setSubscription(RosterItem.Subscription.both);
+		return new RosterItem[]{item, item2};
 //		return objSet.toArray(new RosterItem[]{});
 	}
 

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.google.code.christy.util.AbstractPropertied;
+import com.google.code.christy.xmpp.StreamError;
 import com.google.code.christy.xmpp.XmlStanza;
 
 /**
@@ -26,7 +27,11 @@ public class Body extends AbstractPropertied implements XmlStanza
 
 	public void addStanza(XmlStanza stanza)
 	{
-	        this.stanzas.add(stanza);
+		if (stanza instanceof StreamError)
+		{
+			setProperty("xmlns:stream", "http://etherx.jabber.org/streams");
+		}
+		this.stanzas.add(stanza);
 	}
 
 	public void removeStanza(XmlStanza stanza) {
@@ -62,6 +67,7 @@ public class Body extends AbstractPropertied implements XmlStanza
 	    		for (XmlStanza stanza : stanzas)
 	    		{
 	    			buf.append(stanza.toXml());
+	    			
 			}
 	    		
 	    		buf.append("</body>");

@@ -540,19 +540,23 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 				WebClientSession webClientSession = webClientSessions.get(streamId);
 				if (webClientSession != null)
 				{
-					if (routeMessage.isCloseStream())
+					synchronized (webClientSession)
 					{
-						webClientSession.setProperty("closed");
+						if (routeMessage.isCloseStream())
+						{
+							webClientSession.setProperty("closed");
+						}
+						else
+						{
+							webClientSession.write(routeMessage.getXmlStanza());
+						}
+						Continuation continuation = webClientSession.getContinuation();
+						if (continuation != null)
+						{
+							continuation.resume();
+						}
 					}
-					else
-					{
-						webClientSession.write(routeMessage.getXmlStanza());
-					}
-					Continuation continuation = webClientSession.getContinuation();
-					if (continuation != null)
-					{
-						continuation.resume();
-					}
+					
 					
 				}
 			}
@@ -732,128 +736,135 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 					return;
 				}
 				
-				if (webClientSession.getHolded() >= maxHolded)
+				synchronized (webClientSession)
 				{
-					Continuation continuation2 = webClientSession.getContinuation();
-					if (continuation2 != null)
-					{
-						continuation2.resume();
-						webClientSession.decreaseHolded();
-					}
-					if (webClientSession.getHolded() >= maxHolded)
+					if (webClientSession.getHolded() >= maxHolded + 1)
 					{
 						response.setContentType("text/html;charset=UTF-8");
 						response.sendError(HttpServletResponse.SC_FORBIDDEN, "too many simultaneous requests");
 						webClientSession.close();
 						return;
+	
 					}
+					
 
-				}
-				
-				webClientSession.increaseHolded();
-				if (!checkKey(webClientSession, body))
-				{
-					Body responsebody = new Body();
-					responsebody.setProperty("type", "terminate");
-					responsebody.setProperty("condition", "bad-request");
-					webClientSession.write(responsebody, response, (String) body.getProperty("rid"));
-					webClientSession.close();
-					return;
-				}
-				
-				boolean handled = false;
-				for (XmlStanza stanza : body.getStanzas())
-				{
-					if (handleStanza(webClientSession, body, stanza, response))
+					Continuation oldContinuation = webClientSession.getContinuation();
+					if (oldContinuation != null)
 					{
-						handled = true;
+						oldContinuation.resume();
+						webClientSession.setContinuation(null);
+						
 					}
-				}
-				String type = (String) body.getProperty("type");
-				if ("terminate".equals(type))
-				{
-					RouteMessage routeMessage = new RouteMessage(getName(), webClientSession.getStreamId());
-					routeMessage.setToUserNode(webClientSession.getUsername());
-					routeMessage.setCloseStream(true);
-					routerSession.write(routeMessage.toXml());
 					
-					Body responseBody = new Body();
-					responseBody.setProperty("type", "terminate");
-					webClientSession.write(responseBody, response, (String) body.getProperty("rid"));
-					webClientSession.close();
-					return;
-				}
-				
-				if (!handled)
-				{
-					
-					if (webClientSession.hasMessage())
+					webClientSession.increaseHolded();
+					if (!checkKey(webClientSession, body))
 					{
 						Body responsebody = new Body();
-						responsebody.setProperty("sid", webClientSession.getStreamId());
-						for (XmlStanza stanza : webClientSession.getAllMessage())
-						{
-							if (stanza instanceof StreamFeature)
-							{
-								responsebody.setProperty("xmlns:stream", "http://etherx.jabber.org/streams");
-							}
-							responsebody.addStanza(stanza);
-						}
-						boolean closed = webClientSession.containsProperty("closed");
-						if (closed)
-						{
-							responsebody.setProperty("type", "terminate");
-						}
-						
+						responsebody.setProperty("type", "terminate");
+						responsebody.setProperty("condition", "bad-request");
 						webClientSession.write(responsebody, response, (String) body.getProperty("rid"));
-						webClientSession.decreaseHolded();
-						if (closed)
-						{
-							webClientSession.close();
-						}
+						webClientSession.close();
 						return;
 					}
 					
-					continuation.setTimeout(webClientSession.getWait() * 1000);
-					webClientSession.setContinuation(continuation);
-					continuation.setAttribute("webClientSession", webClientSession);
-					continuation.setAttribute("rid", body.getProperty("rid"));
-					continuation.suspend();
-					return;
+					boolean handled = false;
+					for (XmlStanza stanza : body.getStanzas())
+					{
+						if (handleStanza(webClientSession, body, stanza, response))
+						{
+							handled = true;
+						}
+					}
+					String type = (String) body.getProperty("type");
+					if ("terminate".equals(type))
+					{
+						RouteMessage routeMessage = new RouteMessage(getName(), webClientSession.getStreamId());
+						routeMessage.setToUserNode(webClientSession.getUsername());
+						routeMessage.setCloseStream(true);
+						routerSession.write(routeMessage.toXml());
+						
+						Body responseBody = new Body();
+						responseBody.setProperty("type", "terminate");
+						webClientSession.write(responseBody, response, (String) body.getProperty("rid"));
+						webClientSession.close();
+						return;
+					}
+					
+					if (!handled)
+					{
+						
+						if (webClientSession.hasMessage())
+						{
+							Body responsebody = new Body();
+							responsebody.setProperty("sid", webClientSession.getStreamId());
+							for (XmlStanza stanza : webClientSession.getAllMessage())
+							{
+								if (stanza instanceof StreamFeature)
+								{
+									responsebody.setProperty("xmlns:stream", "http://etherx.jabber.org/streams");
+								}
+								responsebody.addStanza(stanza);
+							}
+							boolean closed = webClientSession.containsProperty("closed");
+							if (closed)
+							{
+								responsebody.setProperty("type", "terminate");
+							}
+							
+							webClientSession.write(responsebody, response, (String) body.getProperty("rid"));
+							webClientSession.decreaseHolded();
+							if (closed)
+							{
+								webClientSession.close();
+							}
+							return;
+						}
+						
+						continuation.setTimeout(webClientSession.getWait() * 1000);
+						webClientSession.setContinuation(continuation);
+						continuation.setAttribute("webClientSession", webClientSession);
+						continuation.setAttribute("rid", body.getProperty("rid"));
+						continuation.suspend();
+						return;
+					}
+					
+					webClientSession.decreaseHolded();
 				}
-				
-				webClientSession.decreaseHolded();
 			}
 			else
 			{
 				WebClientSession webClientSession = (WebClientSession) continuation.getAttribute("webClientSession");
 				if (webClientSession != null)
 				{
-					Body responsebody = new Body();
-					responsebody.setProperty("sid", webClientSession.getStreamId());
-					if (webClientSession.hasMessage())
+					synchronized(webClientSession)
 					{
-						for (XmlStanza stanza : webClientSession.getAllMessage())
+						Body responsebody = new Body();
+						responsebody.setProperty("sid", webClientSession.getStreamId());
+						if (webClientSession.hasMessage())
 						{
-							if (stanza instanceof StreamFeature)
+							for (XmlStanza stanza : webClientSession.getAllMessage())
 							{
-								responsebody.setProperty("xmlns:stream", "http://etherx.jabber.org/streams");
+								if (stanza instanceof StreamFeature)
+								{
+									responsebody.setProperty("xmlns:stream", "http://etherx.jabber.org/streams");
+								}
+								responsebody.addStanza(stanza);
 							}
-							responsebody.addStanza(stanza);
 						}
+						boolean closed = webClientSession.containsProperty("closed");
+						if (closed)
+						{
+							responsebody.setProperty("type", "terminate");
+						}
+						webClientSession.write(responsebody, response, (String) continuation.getAttribute("rid"));
+						webClientSession.decreaseHolded();
+						if (closed)
+						{
+							webClientSession.close();
+						}
+						webClientSession.setContinuation(null);
 					}
-					boolean closed = webClientSession.containsProperty("closed");
-					if (closed)
-					{
-						responsebody.setProperty("type", "terminate");
-					}
-					webClientSession.write(responsebody, response, (String) continuation.getAttribute("rid"));
-					webClientSession.decreaseHolded();
-					if (closed)
-					{
-						webClientSession.close();
-					}
-					webClientSession.setContinuation(null);
+					
 					
 				}
 			}
