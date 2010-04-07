@@ -268,6 +268,7 @@
 		
 		function(event) {
 			var contact = event.contact;
+			alert(contact.getBareJid().toBareJID());
 			var eventType = event.eventType;
 			if (eventType == ConnectionEventType.ContactUpdated) {
 				var bareJid = contact.getBareJid();
@@ -275,6 +276,7 @@
 				if (contactEl.length > 0) {
 					updateContact(contactlist, contact);
 				} else {
+					alert("add:" + contact.getBareJid().toBareJID());
 					addContact(contactlist, contact);
 				}
 			} else if (eventType == ConnectionEventType.ContactRemoved) {
@@ -337,11 +339,13 @@ function addContact(contactlistJqObj, newContact) {
 	$.each(contacts, function(index, value) {
 		var oldContactJqObj = $(value);
 		var bareJid = oldContactJqObj.attr("contactJid");
-		if (newBareJid.toPrepedBareJID() < bareJid) {
+		var statusCode = oldContactJqObj.attr("statusCode");
+		if (statusCode <= 0 && newBareJid.toPrepedBareJID() < bareJid) {
 			newContactJqObj.insertBefore(oldContactJqObj);
 			inserted = true;
 			return false;
 		}
+		
 	});
 	
 	if (!inserted) {
@@ -349,6 +353,8 @@ function addContact(contactlistJqObj, newContact) {
 	} 
 	
 }
+
+
 
 function updateContact(contactlistJqObj, contact) {
 	var bareJid = contact.getBareJid();

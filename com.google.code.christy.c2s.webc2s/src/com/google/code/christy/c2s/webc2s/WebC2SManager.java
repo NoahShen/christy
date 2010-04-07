@@ -734,10 +734,20 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 				
 				if (webClientSession.getHolded() >= maxHolded)
 				{
-					response.setContentType("text/html;charset=UTF-8");
-					response.sendError(HttpServletResponse.SC_FORBIDDEN, "too many simultaneous requests");
-					webClientSession.close();
-					return;
+					Continuation continuation2 = webClientSession.getContinuation();
+					if (continuation2 != null)
+					{
+						continuation2.resume();
+						webClientSession.decreaseHolded();
+					}
+					if (webClientSession.getHolded() >= maxHolded)
+					{
+						response.setContentType("text/html;charset=UTF-8");
+						response.sendError(HttpServletResponse.SC_FORBIDDEN, "too many simultaneous requests");
+						webClientSession.close();
+						return;
+					}
+
 				}
 				
 				webClientSession.increaseHolded();
@@ -796,11 +806,11 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 						}
 						
 						webClientSession.write(responsebody, response, (String) body.getProperty("rid"));
+						webClientSession.decreaseHolded();
 						if (closed)
 						{
 							webClientSession.close();
 						}
-						webClientSession.decreaseHolded();
 						return;
 					}
 					
@@ -838,12 +848,13 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 						responsebody.setProperty("type", "terminate");
 					}
 					webClientSession.write(responsebody, response, (String) continuation.getAttribute("rid"));
+					webClientSession.decreaseHolded();
 					if (closed)
 					{
 						webClientSession.close();
 					}
 					webClientSession.setContinuation(null);
-					webClientSession.decreaseHolded();
+					
 				}
 			}
 			

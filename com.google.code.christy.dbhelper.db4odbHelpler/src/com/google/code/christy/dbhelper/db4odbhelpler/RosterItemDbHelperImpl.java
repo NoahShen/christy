@@ -50,7 +50,7 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 			@Override
 			public boolean match(RosterItem rosterItem)
 			{
-				if (rosterItem.getUsername().equalsIgnoreCase(username))
+				if (rosterItem.getUsername().equals(username))
 				{
 					return true;
 				}
@@ -59,8 +59,16 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 			
 		});
 		
+		// TODO test code;
 		
-		return objSet.toArray(new RosterItem[]{});
+		RosterItem item = new RosterItem();
+		item.setUsername(username);
+		item.setNickname("bNoah2");
+		item.setGroups(new String[]{"group1"});
+		item.setRosterJID(new JID("bNoah2", "example", null));
+		item.setSubscription(RosterItem.Subscription.both);
+		return new RosterItem[]{item};
+//		return objSet.toArray(new RosterItem[]{});
 	}
 
 	@Override
@@ -95,7 +103,7 @@ public class RosterItemDbHelperImpl implements RosterItemDbHelper
 			@Override
 			public boolean match(RosterItem rosterItem)
 			{
-				if (rosterItem.getUsername().equalsIgnoreCase(username)
+				if (rosterItem.getUsername().equals(username)
 						&& rosterItem.getRosterJID().equals(rosterJID))
 				{
 					return true;
