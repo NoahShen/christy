@@ -52,7 +52,7 @@
 							"<tbody>" +
 								"<tr>" +
 									"<td>" +
-										"<img id='user-status-img' src='/resource/status/available.png' />" +
+										"<img id='user-status-img' src='/resource/status/unavailable.png' />" +
 										"<img id='user-status-menu' src='/resource/statusmenu.png' style='padding-left:2px;padding-right:10px;' />" +
 										"<span id='userinfo-username'>Noah</span>" +
 									"</td>" +
@@ -93,7 +93,7 @@
 			"<li class='delete'><a href='#delete'>Delete</a></li>" +
 			"<li class='quit separator'><a href='#quit'>Quit</a></li>" +
 	"</ul>");
-	
+	statusMenu.hide();
 	
 	
 	
@@ -240,12 +240,15 @@
 	var conn = connectionMgr.getAllConnections()[0];
 	conn.queryRoster();
 	if (conn.initPresence) {
-		conn.sendStanza(conn.initPresence);
+		conn.changeStatus(conn.initPresence);
+		var imgPath = getStatusImgPath(conn.initPresence);
+		$("#user-status-img").attr("src", imgPath);
+		
 	}
-	
+	$("#userinfo-username").text(conn.getJid().toBareJID());
 	
 	//TODO test code
-//	var contact1 = new XmppContact(new IqRosterItem(new JID("Noah", "example.com", "res"), "Noah"));
+//	var contact1 = new mppContact(new IqRosterItem(new JID("Noah", "example.com", "res"), "Noah"));
 //	contact1.getRosterItem().addGroup("g1");
 //	var contact2 = new XmppContact(new IqRosterItem(new JID("aa", "example.com", "res"), "aa"));
 //	updateContact(contactlist, contact1);
@@ -527,4 +530,24 @@ function createChatHtml(chatScrollHeader, chatPanel, contactInfo) {
 								"<input type='text' style='width:100%;'/>" +
 							"</div>" +
 						"</div>");
+}
+
+function getStatusImgPath(presence) {
+	if (presence.isAvailable()) {
+		if (presence.getShow() == PresenceShow.AWAY) {
+			return "/resource/status/away.png";
+		} else if (presence.getShow() == PresenceShow.CHAT) {
+			return "/resource/status/chat.png";
+		} else if (presence.getShow() == PresenceShow.DND) {
+			return "/resource/status/dnd.png";
+		} else if (presence.getShow() == PresenceShow.XA) {
+			return "/resource/status/xa.png";
+		} else {
+			return "/resource/status/available.png";
+		}
+	}
+
+	return "/resource/status/unavailable.png";
+	
+	
 }

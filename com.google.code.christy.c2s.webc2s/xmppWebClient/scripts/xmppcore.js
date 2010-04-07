@@ -3263,6 +3263,8 @@ XmppConnection = jClass.extend({
 		this.contacts = new Array();
 		this.otherResources = new Array();
 		this.chats = new Array();
+		this.oldPresence = null;
+		this.currentPresence = null;
 	},
 	
 	setAllowedMechanisms: function(allowedMechanisms) {
@@ -3451,6 +3453,12 @@ XmppConnection = jClass.extend({
 		iq.addPacketExtension(new IqRoster());
 		
 		this.sendStanza(iq);
+	},
+	
+	changeStatus: function(presence) {
+		this.oldPresence = this.currentPresence;
+		this.currentPresence = presence;
+		this.sendStanza(presence);
 	},
 	
 	packetHandler: function(packet) {
