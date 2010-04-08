@@ -36,7 +36,6 @@ import com.google.code.christy.sm.privacy.PrivacyManager;
 import com.google.code.christy.sm.privacy.UserPrivacyListDbHelperTracker;
 import com.google.code.christy.sm.user.UserDbHelperTracker;
 import com.google.code.christy.util.AbstractPropertied;
-import com.google.code.christy.xmpp.CloseStream;
 import com.google.code.christy.xmpp.Iq;
 import com.google.code.christy.xmpp.IqBind;
 import com.google.code.christy.xmpp.IqRoster;

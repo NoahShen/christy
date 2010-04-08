@@ -146,6 +146,23 @@ public abstract class Packet extends AbstractXmlStanza
 		}
 		return null;
 	}
+	
+	public boolean containExtension(String elementName, String namespace)
+	{
+		if (namespace == null)
+		{
+			return false;
+		}
+		for (PacketExtension ext : packetExtensions)
+		{
+			if ((elementName == null || elementName.equals(ext.getElementName())) 
+					&& namespace.equals(ext.getNamespace()))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Adds a packet extension to the packet.
