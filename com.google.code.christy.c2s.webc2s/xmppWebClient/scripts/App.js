@@ -28,7 +28,8 @@ $(document).ready(function() {
 	var connectionMgr = XmppConnectionMgr.getInstance();
 	var listener = function(event){
 		var conn = event.connection;
-		conn.login($("#username").val(), $("#password").val(), "Christy", new Presence(PresenceShow.AVAILABLE));
+		var initPresence = new Presence(PresenceType.AVAILABLE);
+		conn.login($("#username").val(), $("#password").val(), "Christy", initPresence);
 		connectionMgr.removeConnectionListener(listener);
 	};
 	connectionMgr.addConnectionListener(ConnectionEventType.Created, listener);
@@ -92,11 +93,10 @@ $(document).ready(function() {
 			
 			if (loginFailed) {
 				$("#login_status").css("color", "red");
-				disabledInputController(false);
 				$("#login_loader_img").css({"display": "none"});
 				connectionMgr.removeAllConnections();
 			}
-			
+			disabledInputController(!loginFailed);
 			
 		};
 		
@@ -118,7 +118,7 @@ $(document).ready(function() {
 			to: "example.com",
 			ack: "1",
 			ver: "1.6",
-			wait: "10"
+			wait: "60"
 		});
 		
 		disabledInputController(true);

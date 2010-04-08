@@ -241,14 +241,20 @@
 	conn.queryRoster();
 	if (conn.initPresence) {
 		conn.changeStatus(conn.initPresence);
-		var imgPath = getStatusImgPath(conn.initPresence);
-		$("#user-status-img").attr("src", imgPath);
+		var imgPathAndStatusMess = getStatusInfo(conn.initPresence);
+		
+		$("#user-status-img").attr("src", imgPathAndStatusMess.imgPath);
+		var statusMessage = imgPathAndStatusMess.statusMessage;
+		if (conn.initPresence.getUserStatus() != null) {
+			statusMessage = conn.initPresence.getUserStatus();
+		}
+		$("#user-status-message").text(statusMessage);
 		
 	}
 	$("#userinfo-username").text(conn.getJid().toBareJID());
 	
 	//TODO test code
-//	var contact1 = new mppContact(new IqRosterItem(new JID("Noah", "example.com", "res"), "Noah"));
+//	var contact1 = new XmppContact(new IqRosterItem(new JID("Noah", "example.com", "res"), "Noah"));
 //	contact1.getRosterItem().addGroup("g1");
 //	var contact2 = new XmppContact(new IqRosterItem(new JID("aa", "example.com", "res"), "aa"));
 //	updateContact(contactlist, contact1);
@@ -353,28 +359,10 @@ function updateContact(contactlistJqObj, contact) {
 		var userResource = contact.getMaxPriorityResource();
 		var presence = userResource.currentPresence;
 		
-		if (presence.getShow() == PresenceShow.AWAY) {
-			statusImgSrc = "/resource/status/away.png";
-			statusMessage = $.i18n.prop("imservices.status.away");
-			contactJqObj.attr("statusCode", 3);
-		} else if (presence.getShow() == PresenceShow.CHAT) {
-			statusImgSrc = "/resource/status/chat.png";
-			statusMessage = $.i18n.prop("imservices.status.chat");
-			contactJqObj.attr("statusCode", 5);
-		} else if (presence.getShow() == PresenceShow.DND) {
-			statusImgSrc = "/resource/status/dnd.png";
-			statusMessage = $.i18n.prop("imservices.status.dnd");
-			contactJqObj.attr("statusCode", 2);
-		} else if (presence.getShow() == PresenceShow.XA) {
-			statusImgSrc = "/resource/status/xa.png";
-			statusMessage = $.i18n.prop("imservices.status.xa");
-			contactJqObj.attr("statusCode", 1);
-		} else if (presence.isAvailable() 
-			|| presence.getShow() == PresenceShow.AVAILABLE) {
-			statusImgSrc = "/resource/status/available.png";
-			statusMessage = $.i18n.prop("imservices.status.available");
-			contactJqObj.attr("statusCode", 4);
-		}
+		var statusInfo = getStatusInfo(presence);
+		contactJqObj.attr("statusCode", statusInfo.statusCode);
+		statusImgSrc = statusInfo.imgPath;
+		statusMessage = statusInfo.statusMessage;
 		
 		if (presence.getUserStatus() != null) {
 			statusMessage = presence.getUserStatus();
@@ -532,22 +520,37 @@ function createChatHtml(chatScrollHeader, chatPanel, contactInfo) {
 						"</div>");
 }
 
-function getStatusImgPath(presence) {
+function getStatusInfo(presence) {
+	var imgPath = "/resource/status/unavailable.png";
+	var statusMessage = "";
+	var statusCode = 0;
 	if (presence.isAvailable()) {
 		if (presence.getShow() == PresenceShow.AWAY) {
-			return "/resource/status/away.png";
+			statusMessage = $.i18n.prop("imservices.status.away");
+			imgPath = "/resource/status/away.png";
+			statusCode = 3;
 		} else if (presence.getShow() == PresenceShow.CHAT) {
-			return "/resource/status/chat.png";
+			statusMessage = $.i18n.prop("imservices.status.chat");
+			imgPath = "/resource/status/chat.png";
+			statusCode = 5;
 		} else if (presence.getShow() == PresenceShow.DND) {
-			return "/resource/status/dnd.png";
+			statusMessage = $.i18n.prop("imservices.status.dnd");
+			imgPath = "/resource/status/dnd.png";
+			statusCode = 2;
 		} else if (presence.getShow() == PresenceShow.XA) {
-			return "/resource/status/xa.png";
+			statusMessage = $.i18n.prop("imservices.status.xa");
+			imgPath = "/resource/status/xa.png";
+			statusCode = 1;
 		} else {
-			return "/resource/status/available.png";
+			statusMessage = $.i18n.prop("imservices.status.available");
+			imgPath = "/resource/status/available.png";
+			statusCode = 4;
 		}
 	}
 
-	return "/resource/status/unavailable.png";
+	return {imgPath: imgPath, 
+				statusMessage: statusMessage, 
+				statusCode: statusCode};
 	
 	
 }
