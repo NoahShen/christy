@@ -43,8 +43,6 @@
 	
 	$.layoutEngine(layoutSettings);
 	
-	
-	
 	appMenu.contextMenu({
 			menu: 'appMenuItems',
 			leftButton: true,
