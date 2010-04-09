@@ -207,6 +207,7 @@
 		var statusMessage = $(this);
 		var oldmessage = $(this).text();
 		var inputStatusMessage = $("<input id='input-status-message' type='text' value='" + oldmessage + "'/>");
+		inputStatusMessage.select();
 		inputStatusMessage.bind("blur", function(){
 			statusMessage.empty();
 			statusMessage.text($(this).val());
