@@ -1,3 +1,12 @@
+div[contactJid] {
+	
+}
+
+div[status-message] {
+	font-size: x-small;
+	color: gray;
+}
+
 #chat-scroller-header span {
 	text-decoration: none; 
 	color: #867863;
@@ -19,5 +28,10 @@ span[tabContactJid] {
 }
 
 div[chatPanelId] {
+	padding-left: 10px;
+}
+
+.contactGroup {
+
 	padding-left: 10px;
 }

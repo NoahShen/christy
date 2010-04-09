@@ -750,7 +750,11 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 					Continuation oldContinuation = webClientSession.getContinuation();
 					if (oldContinuation != null)
 					{
-						oldContinuation.resume();
+						if (!oldContinuation.isResumed())
+						{
+							oldContinuation.resume();
+						}
+						
 						webClientSession.setContinuation(null);
 						
 					}

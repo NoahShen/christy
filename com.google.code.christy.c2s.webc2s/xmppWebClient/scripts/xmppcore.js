@@ -245,11 +245,11 @@ UnknownExtension = PacketExtension.extend({
 	},
 	
 	getElementName: function() {
-		return xmlElement.nodeName;
+		return this.xmlElement.nodeName;
 	},
 	
 	getNamespace: function() {
-		return xmlElement.getAttribute("xmlns");
+		return this.xmlElement.getAttribute("xmlns");
 	},
 	
 	generateXml: function(element) {
@@ -2662,7 +2662,6 @@ XmppParser.getInstance = function() {
 
 XmppParser.ExtensionParser = jClass.extend({
 	init: function() {
-		this._super();
 	},
 	
 	getElementName: function() {
@@ -3912,3 +3911,674 @@ XmppContact = jClass.extend({
 
 
 // end of XmppConnectionMgr
+
+
+// start of IqVCard
+IqVCard = PacketExtension.extend({
+	init: function(){
+		this._super();
+		this.workPhones = new Array();
+		this.workAddress = new Array();
+		this.homePhones = new Array();
+		this.homeAddress = new Array();
+	},
+	
+	getElementName: function(){
+		return IqVCard.ELEMENTNAME;
+	},
+	
+	getNamespace: function(){
+		return IqVCard.NAMESPACE;
+	},
+	
+	/**
+	 * @return the organizationName
+	 */
+	getOrganizationName: function() {
+		return this.organizationName;
+	},
+
+	/**
+	 * @param organizationName
+	 *                  the organizationName to set
+	 */
+	setOrganizationName: function(organizationName) {
+		this.organizationName = organizationName;
+	},
+
+	/**
+	 * @return the organizationUnit
+	 */
+	getOrganizationUnit: function() {
+		return this.organizationUnit;
+	},
+
+	/**
+	 * @param organizationUnit
+	 *                  the organizationUnit to set
+	 */
+	setOrganizationUnit: function(organizationUnit) {
+		this.organizationUnit = organizationUnit;
+	},
+
+	/**
+	 * @return the title
+	 */
+	getTitle: function() {
+		return this.title;
+	},
+
+	/**
+	 * @param title
+	 *                  the title to set
+	 */
+	setTitle: function(title) {
+		this.title = title;
+	},
+
+	/**
+	 * @return the role
+	 */
+	getRole: function() {
+		return this.role;
+	},
+
+	/**
+	 * @param role
+	 *                  the role to set
+	 */
+	setRole: function(role) {
+		this.role = role;
+	},
+
+	/**
+	 * @return the familyName
+	 */
+	getFamilyName: function() {
+		return this.familyName;
+	},
+
+	/**
+	 * @param familyName
+	 *                  the familyName to set
+	 */
+	setFamilyName: function(familyName) {
+		this.familyName = familyName;
+	},
+
+	/**
+	 * @return the givenName
+	 */
+	getGivenName: function() {
+		return this.givenName;
+	},
+
+	/**
+	 * @param givenName
+	 *                  the givenName to set
+	 */
+	setGivenName: function(givenName) {
+		this.givenName = givenName;
+	},
+
+	/**
+	 * @return the middleName
+	 */
+	getMiddleName: function() {
+		return this.middleName;
+	},
+
+	/**
+	 * @param middleName
+	 *                  the middleName to set
+	 */
+	setMiddleName: function(middleName) {
+		this.middleName = middleName;
+	},
+
+	setFullName: function(fullName) {
+		this.fullName = fullName;
+	},
+
+	getFullName: function() {
+		return this.fullName;
+	},
+
+	/**
+	 * @return the nickName
+	 */
+	getNickName: function() {
+		return this.nickName;
+	},
+
+	/**
+	 * @param nickName
+	 *                  the nickName to set
+	 */
+	setNickName: function(nickName) {
+		this.nickName = nickName;
+	},
+
+	/**
+	 * @return the url
+	 */
+	getUrl: function() {
+		return this.url;
+	},
+
+	/**
+	 * @param url
+	 *                  the url to set
+	 */
+	setUrl: function(url) {
+		this.url = url;
+	},
+
+	/**
+	 * @return the birthday
+	 */
+	getBirthday: function() {
+		return this.birthday;
+	},
+
+	/**
+	 * @param birthday
+	 *                  the birthday to set
+	 */
+	setBirthday: function(birthday) {
+		this.birthday = birthday;
+	},
+
+	/**
+	 * Set work phone number
+	 * 
+	 * @param phoneType
+	 *                  one of VOICE, FAX, PAGER, MSG, CELL, VIDEO, BBS,
+	 *                  MODEM, ISDN, PCS, PREF
+	 * @param phoneNum
+	 *                  phone number
+	 */
+	setWorkPhone: function(phoneType, phoneNum) {
+		this.workPhones.push({phoneType: phoneType, phoneNum: phoneNum});
+	},
+
+	/**
+	 * Get work phone number
+	 * 
+	 * @param phoneType
+	 *                  one of VOICE, FAX, PAGER, MSG, CELL, VIDEO, BBS,
+	 *                  MODEM, ISDN, PCS, PREF
+	 */
+	getWorkPhone: function(phoneType) {
+		for (var i =  0; i < this.workPhones.length; ++i){
+			var workPhone = this.workPhones[i];
+			if (workPhone.phoneType == phoneType){
+				return workPhone.phoneNum;
+			}
+		}
+		return null;
+	},
+
+	/**
+	 * Get work address field
+	 * 
+	 * @param addrField
+	 *                  one of POSTAL, PARCEL, (DOM | INTL), PREF, POBOX,
+	 *                  EXTADR, STREET, LOCALITY, REGION, PCODE, CTRY
+	 */
+	getWorkAddress: function(addrField) {
+		for (var i =  0; i < this.workAddress.length; ++i){
+			var workAddr = this.workAddress[i];
+			if (workAddr.addrField == addrField){
+				return workAddr.value;
+			}
+		}
+		return null;
+	},
+
+	/**
+	 * Set work address field
+	 * 
+	 * @param addrField
+	 *                  one of POSTAL, PARCEL, (DOM | INTL), PREF, POBOX,
+	 *                  EXTADR, STREET, LOCALITY, REGION, PCODE, CTRY
+	 */
+	setWorkAddress: function(addrField, value) {
+		this.workAddress.push({addrField: addrField, value: value});
+	},
+
+	/**
+	 * Set home phone number
+	 * 
+	 * @param phoneType
+	 *                  one of VOICE, FAX, PAGER, MSG, CELL, VIDEO, BBS,
+	 *                  MODEM, ISDN, PCS, PREF
+	 * @param phoneNum
+	 *                  phone number
+	 */
+	setHomePhone: function(phoneType, phoneNum) {
+		this.homePhones.push({phoneType: phoneType, phoneNum: phoneNum});
+	},
+
+	/**
+	 * Get home phone number
+	 * 
+	 * @param phoneType
+	 *                  one of VOICE, FAX, PAGER, MSG, CELL, VIDEO, BBS,
+	 *                  MODEM, ISDN, PCS, PREF
+	 */
+	getHomePhone: function(phoneType) {
+		for (var i =  0; i < this.homePhones.length; ++i){
+			var homePhone = this.homePhones[i];
+			if (homePhone.phoneType == phoneType){
+				return homePhone.phoneNum;
+			}
+		}
+		return null;
+	},
+
+	/**
+	 * Get home address field
+	 * 
+	 * @param addrField
+	 *                  one of POSTAL, PARCEL, (DOM | INTL), PREF, POBOX,
+	 *                  EXTADR, STREET, LOCALITY, REGION, PCODE, CTRY
+	 */
+	getHomeAddress: function(addrField) {
+		for (var i =  0; i < this.homeAddress.length; ++i){
+			var homeAddr = this.homeAddress[i];
+			if (homeAddr.addrField == addrField){
+				return homeAddr.value;
+			}
+		}
+		return null;
+	},
+
+	/**
+	 * Set home address field
+	 * 
+	 * @param addrField
+	 *                  one of POSTAL, PARCEL, (DOM | INTL), PREF, POBOX,
+	 *                  EXTADR, STREET, LOCALITY, REGION, PCODE, CTRY
+	 */
+	setHomeAddress: function(addrField, value) {
+		this.homeAddress.push({addrField: addrField, value: value});
+	},
+
+	/**
+	 * @return the email
+	 */
+	getEmail: function() {
+		return this.email;
+	},
+
+	/**
+	 * @param email
+	 *                  the email to set
+	 */
+	setEmail: function(email) {
+		this.email = email;
+	},
+
+	/**
+	 * @return the jabberID
+	 */
+	getJabberID: function() {
+		return this.jabberID;
+	},
+
+	/**
+	 * @param jabberID
+	 *                  the jabberID to set
+	 */
+	setJabberID: function(jabberID) {
+		this.jabberID = jabberID;
+	},
+
+	/**
+	 * @return the description
+	 */
+	getDescription: function() {
+		return this.description;
+	},
+
+	/**
+	 * @param description
+	 *                  the description to set
+	 */
+	setDescription: function(description) {
+		this.description = description;
+	},
+
+	/**
+	 * @return the photoType
+	 */
+	getPhotoType: function() {
+		return this.photoType;
+	},
+
+	/**
+	 * @param photoType
+	 *                  the photoType to set
+	 */
+	setPhotoType: function(photoType) {
+		this.photoType = photoType;
+	},
+
+	/**
+	 * @return the photoBinval
+	 */
+	getPhotoBinval: function() {
+		return this.photoBinval;
+	},
+
+	/**
+	 * @param photoBinval
+	 *                  the photoBinval to set
+	 */
+	setPhotoBinval: function(photoBinval) {
+		this.photoBinval = photoBinval;
+	},
+
+	hasPhoto: function() {
+		return this.getPhotoType() != null
+				 || this.getPhotoBinval() != null;
+	},
+
+	hasOrg: function() {
+		return this.getOrganizationName() != null
+				 || this.getOrganizationUnit() != null;
+	},
+
+	hasNameField: function() {
+		return this.familyName != null
+				 || this.givenName != null 
+				 || this.middleName != null;
+	},
+
+	
+	toXml: function() {
+		var xml = "";
+		xml += ("<" + this.getElementName() + " " + "xmlns=\"" + this.getNamespace() + "\">");
+		if (this.getFullName() != null) {
+			xml += "<FN>" + this.getFullName() + "</FN>";
+		}
+		if (this.hasNameField()) {
+			xml += "<N>";
+			if (this.getFamilyName() != null) {
+				xml += "<FAMILY>" + StringUtils.escapeXml(this.getFamilyName()) + "</FAMILY>";
+			}
+			if (this.getGivenName() != null) {
+				xml += "<GIVEN>" + StringUtils.escapeXml(this.getGivenName()) + "</GIVEN>";
+			}
+			if (this.getMiddleName() != null) {
+				xml += "<MIDDLE>" + StringUtils.escapeXml(this.getMiddleName()) + "</MIDDLE>";
+			}
+			xml += "</N>";
+		}
+		if (this.getNickName() != null) {
+			xml += "<NICKNAME>" + StringUtils.escapeXml(this.getNickName()) + "</NICKNAME>";
+		}
+		if (this.getUrl() != null) {
+			xml += "<URL>" + this.getUrl() + "</URL>";
+		}
+		if (this.getBirthday() != null) {
+			xml += "<BDAY>" + this.getBirthday() + "</BDAY>";
+		}
+		if (this.hasOrg()) {
+			xml += "<ORG>";
+			if (this.getOrganizationName() != null) {
+				xml += "<ORGNAME>" + StringUtils.escapeXml(this.getOrganizationName()) + "</ORGNAME>";
+			}
+			if (this.getOrganizationUnit() != null) {
+				xml += "<ORGUNIT>" + StringUtils.escapeXml(this.getOrganizationUnit()) + "</ORGUNIT>";
+			}
+			xml += "</ORG>";
+		}
+		if (this.getTitle() != null) {
+			xml += "<TITLE>" + this.getTitle() + "</TITLE>";
+		}
+		if (this.getRole() != null) {
+			xml += "<ROLE>" + this.getRole() + "</ROLE>";
+		}
+		if (this.workPhones.length != 0) {
+			for (var i =  0; i < this.workPhones.length; ++i){
+				var workPhone = this.workPhones[i];
+				xml += " <TEL>" + "<WORK/><" + workPhone.phoneType + "/><NUMBER>" + workPhone.phoneNum + "</NUMBER></TEL>";
+			}
+			
+		}
+		if (this.workAddress.length != 0) {
+			xml += "<ADR><WORD/>";
+			
+			for (var i =  0; i < this.workAddress.length; ++i){
+				var workAddr = this.workAddress[i];
+				xml += "<" + workAddr.addrField + ">" + StringUtils.escapeXml(workAddr.value) + "</" + workAddr.addrField + ">";
+			}
+			xml += "</ADR>";
+		}
+		
+		
+		if (this.homePhones.length != 0) {
+			for (var i =  0; i < this.homePhones.length; ++i) {
+				var homePhone = this.homePhones[i];
+				xml += " <TEL>" + "<HOME/><" + homePhone.phoneType + "/><NUMBER>" + homePhone.phoneNum + "</NUMBER></TEL>";
+			}
+		}
+		if (this.homeAddress.length != 0) {
+			
+			xml += "<ADR><HOME/>";
+			
+			for (var i =  0; i < this.homeAddress.length; ++i) {
+				var homeAddr = this.homeAddress[i];
+				xml += "<" + homeAddr.addrField + ">" + StringUtils.escapeXml(homeAddr.value) + "</" + homeAddr.addrField + ">";
+			}
+			xml += "</ADR>";
+		}
+		
+		if (this.getEmail() != null) {
+			xml += "<EMAIL><INTERNET/><PREF/><USERID>" + this.getEmail() + "</USERID></EMAIL>";
+		}
+		if (this.getJabberID() != null) {
+			xml += "<JABBERID>" + this.getJabberID() + "</JABBERID>";
+		}
+		if (this.getDescription() != null) {
+			xml += "<DESC>" + StringUtils.escapeXml(this.getDescription()) + "</DESC>";
+		}
+		if (this.hasPhoto()) {
+			xml += "<PHOTO>";
+			if (this.getPhotoType() != null) {
+				xml += "<TYPE>" + StringUtils.escapeXml(this.getPhotoType()) + "</TYPE>";
+			}
+			if (this.getPhotoBinval() != null) {
+				xml += "<BINVAL>" + StringUtils.escapeXml(this.getPhotoBinval()) + "</BINVAL>";
+			}
+			xml += "</PHOTO>";
+
+		}
+
+		xml += "</vCard>";
+
+		return xml;
+	}
+});
+IqVCard.ELEMENTNAME = "vCard";
+IqVCard.NAMESPACE = "vcard-temp";
+
+// end of IqVCard
+
+
+// start of VCardExtensionParser
+
+VCardExtensionParser = XmppParser.ExtensionParser.extend({
+	init: function() {
+		this._super();
+	},
+	
+	getElementName: function() {
+		return VCardExtensionParser.ELEMENTNAME
+	},
+	
+	getNamespace: function() {
+		return VCardExtensionParser.NAMESPACE;
+	},
+	
+	parseExtension: function(xmppParser, xmlElement) {
+		var vCard = new IqVCard();
+		var childNodes = xmlElement.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle = childNodes[i];
+			// ELEMENT_NODE
+			if (childEle.nodeType == 1) {
+				var elementName = childEle.nodeName;
+			
+				if ("FN" == elementName) {
+					vCard.setFullName(childEle.firstChild.nodeValue);
+				} else if ("N" == elementName) {
+					this.parseN(vCard, childEle);
+				} else if ("NICKNAME" == elementName) {
+					vCard.setNickName(childEle.firstChild.nodeValue);
+				} else if ("URL" == elementName) {
+					vCard.setUrl(childEle.firstChild.nodeValue);
+				} else if ("BDAY" == elementName) {
+					vCard.setBirthday(childEle.firstChild.nodeValue);
+				} else if ("ORG" == elementName) {
+					this.parseORG(vCard, childEle);
+				} else if ("TITLE" == elementName) {
+					vCard.setTitle(childEle.firstChild.nodeValue);
+				} else if ("ROLE" == elementName) {
+					vCard.setRole(childEle.firstChild.nodeValue);
+				} else if ("TEL" == elementName) {
+					this.parseTEL(vCard, childEle);
+				} else if ("ADR" == elementName) {
+					this.parseADR(vCard, childEle);
+				} else if ("EMAIL" == elementName) {
+					this.parseEMAIL(vCard, childEle);
+				} else if ("JABBERID" == elementName) {
+					vCard.setJabberID(childEle.firstChild.nodeValue);
+				} else if ("DESC" == elementName) {
+					vCard.setDescription(childEle.firstChild.nodeValue);
+				} else if ("PHOTO" == elementName) {
+					this.parsePHOTO(vCard, childEle);
+				}
+			}
+			
+		}
+		
+		return vCard;
+	},
+	
+	parseN: function(card, childEle) {
+		for (var i = 0; i < childEle.length; ++i) {
+			var childEle2 = childEle[i];
+			if (childEle2.nodeType == 1) {
+				var elementName = childEle2.nodeName;
+				if ("FAMILY" == elementName) {
+					card.setFamilyName(childEle2.firstChild.nodeValue);
+				} else if ("GIVEN" == elementName) {
+					card.setGivenName(childEle2.firstChild.nodeValue);
+				} else if ("MIDDLE" == elementName) {
+					card.setMiddleName(childEle2.firstChild.nodeValue);
+				}
+			}
+		}
+	},
+	
+	parseORG: function(card, childEle) {
+		var childNodes = childEle.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle2 = childNodes[i];
+			if (childEle2.nodeType == 1) {
+				var elementName = childEle2.nodeName;
+				if ("ORGNAME" == elementName) {
+					card.setOrganizationName(childEle2.firstChild.nodeValue);
+				} else if ("ORGUNIT".equals(elementName)) {
+					card.setOrganizationUnit(childEle2.firstChild.nodeValue);
+				}
+				
+			}
+		}
+	},
+	
+	parseTEL: function(card, childEle) {
+		var phoneType = null;
+		var childNodes = childEle.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle2 = childNodes[i];
+			if (childEle2.nodeType == 1) {
+				var elementName = childEle2.nodeName;
+				if ("WORK" == elementName) {
+					work = true;
+					var phoneTypeEle = childEle2.nextSibling;
+					phoneType = phoneTypeEle.nodeName;
+				}
+				else if ("NUMBER" == elementName) {
+					if (phoneType != null) {
+						if (work) {
+							card.setWorkPhone(phoneType, childEle2.firstChild.nodeValue);
+						} else {
+							card.setHomePhone(phoneType, childEle2.firstChild.nodeValue);
+						}
+					}
+				}
+			}
+		}
+	},
+	
+	parseADR: function(card, childEle) {
+		var childNodes = childEle.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle2 = childNodes[i];
+			if (childEle2.nodeType == 1) {
+				var elementName = childEle2.nodeName;
+				if ("WORK" == elementName) {
+					work = true;
+				} else {
+					if (work) {
+						card.setWorkAddress(elementName, childEle2.firstChild.nodeValue);
+					} else {
+						card.setHomeAddress(elementName, childEle2.firstChild.nodeValue);
+					}
+				}
+			}
+		}
+		
+	},
+	
+	parseEMAIL: function(card, childEle) {
+		var childNodes = childEle.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle2 = childNodes[i];
+			if (childEle2.nodeType == 1) {
+				var elementName = childEle2.nodeName;
+				if ("USERID" == elementName) {
+					card.setEmail(childEle2.firstChild.nodeValue);
+				}
+			}
+		}
+	},
+	
+	parsePHOTO: function(card, childEle) {
+		var childNodes = childEle.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle2 = childNodes[i];
+			if (childEle2.nodeType == 1) {
+				var elementName = childEle2.nodeName;
+				if ("TYPE" == elementName) {
+					card.setPhotoType(childEle2.firstChild.nodeValue);
+				} else if ("BINVAL" == elementName) {
+					card.setPhotoBinval(childEle2.firstChild.nodeValue);
+				}
+			}
+		}
+		
+	}
+});
+
+VCardExtensionParser.ELEMENTNAME = "vCard";
+VCardExtensionParser.NAMESPACE = "vcard-temp";
+
+// end of VCardExtensionParser
+
+var parser = XmppParser.getInstance();
+parser.addExtensionParser(new VCardExtensionParser());
