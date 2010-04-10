@@ -214,7 +214,16 @@
 		});
 		inputStatusMessage.bind("blur", function(){
 			statusMessage.empty();
-			statusMessage.text($(this).val());
+			statusMessageVal = $(this).val();
+			if (statusMessageVal == null || statusMessageVal == "") {
+				var conn = connectionMgr.getAllConnections()[0];
+				if (conn) {
+					var imgPathAndStatusMess = getStatusInfo(conn.currentPresence);
+					statusMessageVal = imgPathAndStatusMess.statusMessage;
+				}
+				
+			}
+			statusMessage.text(statusMessageVal);
 			statusMessage.bind("click", statusMessageClickFunc);
 			if (messageChanged) {
 				var conn = connectionMgr.getAllConnections()[0];
@@ -577,9 +586,9 @@ function createChatHtml(chatScrollHeader, chatPanel, contactInfo) {
 
 function getStatusInfo(presence) {
 	var imgPath = "/resource/status/unavailable.png";
-	var statusMessage = "";
+	var statusMessage = $.i18n.prop("imservices.status.unavailable");
 	var statusCode = 0;
-	if (presence.isAvailable()) {
+	if (presence != null && presence.isAvailable()) {
 		if (presence.getShow() == PresenceShow.AWAY) {
 			statusMessage = $.i18n.prop("imservices.status.away");
 			imgPath = "/resource/status/away.png";
