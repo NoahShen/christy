@@ -206,12 +206,28 @@
 		$(this).unbind("click");
 		var statusMessage = $(this);
 		var oldmessage = $(this).text();
+		var messageChanged = false;
 		var inputStatusMessage = $("<input id='input-status-message' type='text' value='" + oldmessage + "'/>");
 		inputStatusMessage.select();
+		inputStatusMessage.change(function(){
+			messageChanged = true;
+		});
 		inputStatusMessage.bind("blur", function(){
 			statusMessage.empty();
 			statusMessage.text($(this).val());
 			statusMessage.bind("click", statusMessageClickFunc);
+			if (messageChanged) {
+				var conn = connectionMgr.getAllConnections()[0];
+				if (conn) {
+					var currentPres = conn.currentPresence;
+					if (currentPres == null) {
+						currentPres = new Presence(PresenceType.AVAILABLE);
+					}
+					currentPres.setStanzaId(null);
+					currentPres.setUserStatus($(this).val());
+					conn.changeStatus(currentPres);
+				}
+			}
 		});
 		$(this).empty();
 		$(this).append(inputStatusMessage);

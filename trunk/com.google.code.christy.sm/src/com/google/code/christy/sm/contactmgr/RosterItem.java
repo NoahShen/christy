@@ -4,7 +4,9 @@
 package com.google.code.christy.sm.contactmgr;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.google.code.christy.xmpp.JID;
 
@@ -31,7 +33,7 @@ public class RosterItem implements Serializable
 	
 	private Subscription subscription;
 	
-	private String[] groups;
+	private List<String> groups = new ArrayList<String>();
 	
 	/**
 	 * 
@@ -85,7 +87,7 @@ public class RosterItem implements Serializable
 	 */
 	public String[] getGroups()
 	{
-		return groups;
+		return groups.toArray(new String[]{});
 	}
 
 	/**
@@ -133,13 +135,18 @@ public class RosterItem implements Serializable
 	 */
 	public void setGroups(String[]  groups)
 	{
-		this.groups = groups;
+		this.groups = new ArrayList<String>(Arrays.asList(groups));
+	}
+	
+	public void addGroup(String group)
+	{
+		this.groups.add(group);
 	}
 
 	@Override
 	public String toString()
 	{
-		return "RosterItem [ask=" + ask + ", groups=" + Arrays.toString(groups) + ", nickname=" + nickname + ", rosterJID=" + rosterJID
+		return "RosterItem [ask=" + ask + ", groups=" + groups + ", nickname=" + nickname + ", rosterJID=" + rosterJID
 				+ ", subscription=" + subscription + ", username=" + username + "]";
 	}
 
