@@ -38,6 +38,12 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 	private static final String DELETEGROUP_SQL = "DELETE FROM UserRosterGroup WHERE rosterId IN (SELECT rosterId FROM UserRoster WHERE username = ? AND jid=?)";
 	
 	
+	private static final String UPDATEASK_SQL = "UPDATE UserRoster SET ask = ? WHERE username = ? AND jid = ?";
+
+	private static final String UPDATENAME_SQL = "UPDATE UserRoster SET name = ? WHERE username = ? AND jid = ?";
+	
+	private static final String UPDATESUBSCRIPTION_SQL = "UPDATE UserRoster SET subscription = ? WHERE username = ? AND jid = ?";
+	
 	/**
 	 * @param connectionPool
 	 */
@@ -270,28 +276,103 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 	@Override
 	public void updateRosterItemAsk(String username, JID rosterJID, Ask ask) throws Exception
 	{
-		// TODO Auto-generated method stub
-		
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(UPDATEASK_SQL);
+			preStat.setString(1, ask.name());
+			preStat.setString(2, username);
+			preStat.setString(3, rosterJID.toBareJID());
+			preStat.executeUpdate();
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+		}
 	}
 
 	@Override
 	public void updateRosterItemGroups(String username, JID rosterJID, String[] groups) throws Exception
 	{
-		// TODO Auto-generated method stub
-		
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			connection.setAutoCommit(false);
+			PreparedStatement preStatDeleteGroup = connection.prepareStatement(DELETEGROUP_SQL);
+			preStatDeleteGroup.setString(1, username);
+			preStatDeleteGroup.setString(2, rosterJID.toBareJID());
+			preStatDeleteGroup.executeUpdate();
+			
+			for (int i = 0; i < groups.length; ++i)
+			{
+				String group = groups[i];
+				PreparedStatement preStatGroup = connection.prepareStatement(ADDROSTERITEMGROUP_SQL);
+				preStatGroup.setString(1, group);
+				preStatGroup.setString(2, username);
+				preStatGroup.setString(3, rosterJID.toBareJID());
+				preStatGroup.executeUpdate();
+			}		
+			
+			connection.commit();
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connection.setAutoCommit(true);
+				connectionPool.returnConnection(connection);
+			}
+		}
 	}
 
 	@Override
 	public void updateRosterItemNickname(String username, JID rosterJID, String nickname) throws Exception
 	{
-		// TODO Auto-generated method stub
-		
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(UPDATENAME_SQL);
+			preStat.setString(1, nickname);
+			preStat.setString(2, username);
+			preStat.setString(3, rosterJID.toBareJID());
+			preStat.executeUpdate();
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+		}
 	}
 
 	@Override
 	public void updateRosterItemSubscription(String username, JID rosterJID, Subscription subscription) throws Exception
 	{
-		// TODO Auto-generated method stub
+		
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(UPDATESUBSCRIPTION_SQL);
+			preStat.setString(1, subscription.name());
+			preStat.setString(2, username);
+			preStat.setString(3, rosterJID.toBareJID());
+			preStat.executeUpdate();
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+		}
 		
 	}
 
