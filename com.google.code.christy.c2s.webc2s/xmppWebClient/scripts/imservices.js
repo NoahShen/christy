@@ -5,13 +5,13 @@
 	// im tabs
 	var imTop = $("<div id='imTop'></div>");
 	// contact tab
-	var contactTab = $("<b class='marginpadding'></b>");
+	var contactTab = $("<b id='contact-tab' class='marginpadding'></b>");
 	contactTab.attr("type", "contact");
 	contactTab.addClass("sexybutton");
 	contactTab.text($.i18n.prop("imservices.contact"));
 	imTop.append(contactTab);
 	
-	var chatTab = $("<b class='marginpadding'></b>");
+	var chatTab = $("<b id='chat-tab' class='marginpadding'></b>");
 	// chat tab
 	chatTab.attr("type", "chat");
 	chatTab.addClass("sexybutton");
@@ -32,6 +32,11 @@
 				jqEl.hide();
 			}
 		});
+		if (type == "contact") {
+			$.layoutEngine(imContactlayoutSettings);
+		} else if (type == "chat") {
+			$.layoutEngine(imChatlayoutSettings);
+		}
 	});
 
 	
@@ -116,18 +121,6 @@
 	var chatPanel = $("<div id='chat-panel'></div>");	
 	chatScrollBody.append(chatPanel);
 	
-	// TODO test code
-	createChatHtml(chatScrollHeader, chatPanel, {
-		jid: "Noah1@example.com",
-		showName: "Noah1"
-	});
-	
-	createChatHtml(chatScrollHeader, chatPanel, {
-		jid: "Noah2@example.com",
-		showName: "Noah2"
-	});
-	
-	// end of chat html
 	
 	imCenter.append(userinfo);
 	imCenter.append(contactlist);
@@ -138,7 +131,7 @@
 	
 	var imTopHeight = 40;
 	
-	imlayoutSettings = {
+	imContactlayoutSettings = {
 		Name: "Main",
         Dock: $.layoutEngine.DOCK.FILL,
         EleID: "main",        
@@ -169,12 +162,43 @@
 		}]
 	};
 	
+	imChatlayoutSettings = {
+		Name: "Main",
+        Dock: $.layoutEngine.DOCK.FILL,
+        EleID: "main",        
+        Children:[{
+			Name: "Fill",
+			Dock: $.layoutEngine.DOCK.FILL,
+	 		EleID: "imservices",
+	 		Children:[{
+	 			Name: "Top2",
+				Dock: $.layoutEngine.DOCK.TOP,
+				EleID: "imTop",
+				Height: imTopHeight
+	 		},{
+	 			Name: "Fill2",
+				Dock: $.layoutEngine.DOCK.FILL,
+		 		EleID: "imCenter",
+		 		Children:[{
+		 			Name: "Top3",
+					Dock: $.layoutEngine.DOCK.TOP,
+					EleID: "chat-scroller-header",
+					Height: 30
+		 		},{
+		 			Name: "Fill3",
+					Dock: $.layoutEngine.DOCK.FILL,
+					EleID: "chat-scroller-body"
+		 		}]
+	 		}]
+		}]
+	};
+	
 	imservices.append(imTop);
 	imservices.append(imCenter);
 	
 	$("#main").append(imservices);
 	
-	$.layoutEngine(imlayoutSettings);
+	$.layoutEngine(imContactlayoutSettings);
 	
 	var menuX = $("#user-status-img").offset().left;
 	var menuY = $("#user-status-img").offset().top - imTopHeight + $("#user-status-img").height();
@@ -211,6 +235,12 @@
 		inputStatusMessage.select();
 		inputStatusMessage.change(function(){
 			messageChanged = true;
+		});
+		
+		inputStatusMessage.keypress(function(event) {
+			if (event.keyCode == 13) {
+				inputStatusMessage.blur();
+			}
 		});
 		inputStatusMessage.bind("blur", function(){
 			statusMessage.empty();
@@ -304,45 +334,58 @@
 	
 	
 	//TODO test code
-	var contact1 = new XmppContact(new IqRosterItem(new JID("Noah", "example.com", "res"), "Noah"));
-	contact1.getRosterItem().addGroup("g1");
-	var contact2 = new XmppContact(new IqRosterItem(new JID("aa", "example.com", "res"), "aa"));
-	updateContact(contactlist, contact1);
-	updateContact(contactlist, contact2);
-	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("bb", "example.com", "res"), "bb")));
-	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("cc", "example.com", "res"), null)));
-	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("D", "example.com", "res"), "dd")));
-	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("ee", "example.com", "res"), null)));
-	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("ff", "example.com", "res"), null)));
-	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("gg", "example.com", "res"), null)));
-	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("hh", "example.com", "res"), null)));
-	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("ii", "example.com", "res"), "ii")));
-	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("jj", "example.com", "res"), null)));
-	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("KK", "example.com", "res"), null)));
-	
-	removeContact(contactlist, new XmppContact(new IqRosterItem(new JID("kk", "example.com", "res"), null)));
-	var presence = new Presence(PresenceType.AVAILABLE);
-	presence.setUserStatus("status");
-	presence.setShow(PresenceShow.AWAY);
-	contact1.addResource({
-		resource: "res1",
-		currentPresence: presence
-	});
-	contact1.getRosterItem().removeGroupName("g1");
-	
-	
-	var presence2 = new Presence(PresenceType.AVAILABLE);
-	presence2.setUserStatus("status2");
-	presence2.setShow(PresenceShow.AWAY);
-	contact2.addResource({
-		resource: "res2",
-		currentPresence: presence2
-	});
-	
-	updateContact(contactlist, contact1);
-	updateContact(contactlist, contact2);
+//	var contact1 = new XmppContact(new IqRosterItem(new JID("Noah", "example.com", "res"), "Noah"));
+//	contact1.getRosterItem().addGroup("g1");
+//	var contact2 = new XmppContact(new IqRosterItem(new JID("aa", "example.com", "res"), "aa"));
+//	updateContact(contactlist, contact1);
+//	updateContact(contactlist, contact2);
+//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("bb", "example.com", "res"), "bb")));
+//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("cc", "example.com", "res"), null)));
+//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("D", "example.com", "res"), "dd")));
+//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("ee", "example.com", "res"), null)));
+//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("ff", "example.com", "res"), null)));
+//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("gg", "example.com", "res"), null)));
+//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("hh", "example.com", "res"), null)));
+//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("ii", "example.com", "res"), "ii")));
+//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("jj", "example.com", "res"), null)));
+//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("KK", "example.com", "res"), null)));
+//	
+//	removeContact(contactlist, new XmppContact(new IqRosterItem(new JID("kk", "example.com", "res"), null)));
+//	var presence = new Presence(PresenceType.AVAILABLE);
+//	presence.setUserStatus("status");
+//	presence.setShow(PresenceShow.AWAY);
+//	contact1.addResource({
+//		resource: "res1",
+//		currentPresence: presence
+//	});
+//	contact1.getRosterItem().removeGroupName("g1");
+//	
+//	
+//	var presence2 = new Presence(PresenceType.AVAILABLE);
+//	presence2.setUserStatus("status2");
+//	presence2.setShow(PresenceShow.AWAY);
+//	contact2.addResource({
+//		resource: "res2",
+//		currentPresence: presence2
+//	});
+//	
+//	updateContact(contactlist, contact1);
+//	updateContact(contactlist, contact2);
 
 	// TODO end of test
+	
+		// TODO test code
+	createChatHtml(chatScrollHeader, chatPanel, {
+		jid: "Noah1@example.com",
+		showName: "Noah1"
+	});
+//	
+//	createChatHtml(chatScrollHeader, chatPanel, {
+//		jid: "Noah2@example.com",
+//		showName: "Noah2"
+//	});
+	
+	// end of chat html
 })();
 
 
@@ -384,6 +427,21 @@ function createContactJqObj(newContact) {
 	newContactJqObj.attr("contactJid", newBareJid.toPrepedBareJID());
 	newContactJqObj.attr("statusCode", 0);
 	
+	newContactJqObj.click(function(){
+		var contactJid = $(this).attr("contactJid");
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		var contact = conn.getContact(JID.createJID(contactJid));
+		var chatScrollHeader = $("#chat-scroller-header");
+		var chatPanel = $("#chat-panel");
+		createChatHtml(chatScrollHeader, chatPanel, {
+			jid: contactJid,
+			showName: contact.getShowName()
+		});
+		
+		
+	});
+	
 	return newContactJqObj;
 }
 
@@ -399,8 +457,6 @@ function updateContact(contactlistJqObj, contact) {
 	if (contactJqObj.length == 0) {
 		contactJqObj = createContactJqObj(contact);
 		addContact = true;
-	} else {
-		contactJqObj.remove();
 	}
 	
 	var statusImgSrc = null;
@@ -447,31 +503,29 @@ function updateContact(contactlistJqObj, contact) {
 		}
 		var inserted = false;
 		var contacts = groupJqObj.children("[contactjid]");
-		var contactJqObj2 = contactJqObj.clone(true);
+//		var contactJqObj2 = contactJqObj.clone(true);
 		$.each(contacts, function(index, value) {		
 			var oldContactJqObj = $(value);
 			var oldContactStatusCode = oldContactJqObj.attr("statusCode");
-			var contactStatusCode = contactJqObj2.attr("statusCode");
+			var contactStatusCode = contactJqObj.attr("statusCode");
 			
 			if (contactStatusCode > oldContactStatusCode) {
-				contactJqObj2.insertBefore(oldContactJqObj);
+				contactJqObj.insertBefore(oldContactJqObj);
 				inserted = true;
 				return false;
 			} else if (contactStatusCode == oldContactStatusCode) {
 				var oldBareJid = oldContactJqObj.attr("contactJid");
 				if (bareJid.toPrepedBareJID() < oldBareJid) {
-					contactJqObj2.insertBefore(oldContactJqObj);
+					contactJqObj.insertBefore(oldContactJqObj);
 					inserted = true;
 					return false;
 				}
 			}
 		});
 		if (!inserted) {
-			groupJqObj.append(contactJqObj2);
-		}
-		
+			groupJqObj.append(contactJqObj);
+		}	
 	}
-	
 	
 	//update group
 	var groupJqObjs = contactlistJqObj.children("[groupname]");
@@ -499,7 +553,7 @@ function updateContact(contactlistJqObj, contact) {
 		
 	if (addContact 
 		&& $("#contactlist").is(":visible")) {
-		$.layoutEngine(imlayoutSettings);
+		$.layoutEngine(imContactlayoutSettings);
 	}
 }
 
@@ -543,45 +597,65 @@ function removeContact(contactlistJqObj, contact) {
 
 function createChatHtml(chatScrollHeader, chatPanel, contactInfo) {
 	
-	var chatPanelTab = $("<span tabContactJid='" + contactInfo.jid + "'>" + contactInfo.showName + "</span>");
+	var chatPanelTab = chatScrollHeader.children("span[tabContactJid='" + contactInfo.jid + "']");
+	if (chatPanelTab[0] == null) {
+		chatPanelTab = $("<span tabContactJid='" + contactInfo.jid + "'>" + contactInfo.showName + "</span>");
 	
-	var chatHandlerFunc = function(){
-
-		$("span[tabContactJid]").removeClass('selected');
-		$(this).addClass('selected');	
-
-		var currentChatPanel = $("#chat-panel > div[chatPanelId=" + $(this).attr('tabContactJid') + "-chatPanel]");
-		currentChatPanel.siblings().hide();	
-		currentChatPanel.show();
-
-	};
+		var chatHandlerFunc = function(){
 	
-	chatPanelTab.click(chatHandlerFunc);
-	chatScrollHeader.append(chatPanelTab);
-
-//	chatPanel.append("<div chatPanelId='" + contactInfo.jid + "-chatPanel' style='display:none;'>" +
-//							"<table style='width:100%;'>" +
-//								"<tr style='height:100%;'>" +
-//									"<td>" +
-//										"Message" +
-//									"</td>" +
-//								"</tr>" +
-//								"<tr style='height:100px;'>" +
-//									"<td>" +
-//										"<input type='text' style='width:100%;'/>" +
-//									"</td>" +
-//								"</tr>" +
-//							"</table>" +
-//						"</div>");
-
-	chatPanel.append("<div chatPanelId='" + contactInfo.jid + "-chatPanel' style='display:none;'>" +
-							"<div style='width:100%;'>" +
-								"a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>" +
-							"</div>" +
-							"<div style='width:100%;bottom:0;'>" +
-								"<input type='text' style='width:100%;'/>" +
-							"</div>" +
-						"</div>");
+			$("span[tabContactJid]").removeClass('selected');
+			$(this).addClass('selected');	
+	
+			var currentChatPanel = $("#chat-panel > div[chatPanelId=" + $(this).attr('tabContactJid') + "-chatPanel]");
+			currentChatPanel.siblings().hide();	
+			currentChatPanel.show();
+			$.layoutEngine(imChatlayoutSettings);
+		};
+		
+		chatPanelTab.click(chatHandlerFunc);
+		chatScrollHeader.append(chatPanelTab);
+		
+		var contactChatPanel = $("<div chatPanelId='" + contactInfo.jid + "-chatPanel' style='display:none;'>" +
+									"<div style='width:100%;height:100%;bottom:20pt;'>" +
+										"a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>" +
+										"<div>" +
+											"&nbsp" +
+										"</div>" +
+										"<div>" +
+											"&nbsp" +
+										"</div>" +
+									"</div>" +
+								"</div>");
+		
+		var controlBar = $("<table style='bottom:0pt;right:3pt;left:3pt;position:fixed;'>" +
+								"<tr>" +
+									"<td>" +
+										"<button href='#XXX' style='float:left;'>Close</button>" +
+									"</td>" +
+									"<td style='width:100%;'>" +
+										"<input type='text' style='width:100%;'/>" +
+									"</td>" +
+									"<td>" +
+										"<button style='float:right;'>Send</button>" +
+									"</td>" +
+								"</tr>" +
+							"</table>");
+		
+		controlBar.find("button:first").click(function(){
+			alert($(this).text());
+		});
+		
+		controlBar.find("button:last").click(function(){
+			alert($(this).text());
+		});
+		
+		contactChatPanel.append(controlBar);
+		
+		chatPanel.append(contactChatPanel);
+	}
+	
+	$("#chat-tab").click();
+	chatPanelTab.click();
 }
 
 function getStatusInfo(presence) {
