@@ -1145,24 +1145,28 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 				WebClientSession[] sessions = webClientSessions.values().toArray(new WebClientSession[]{});
 				for (WebClientSession webClientSession : sessions)
 				{
-					if (!webClientSession.isSuspended()
-							&& System.currentTimeMillis() - webClientSession.getLastActive() > inactivity * 1000)
+					synchronized (webClientSession)
 					{
-						if (loggerServiceTracker.isDebugEnabled())
+						if (!webClientSession.isSuspended()
+								&& System.currentTimeMillis() - webClientSession.getLastActive() > inactivity * 1000)
 						{
-							loggerServiceTracker.debug("session(" + webClientSession.getStreamId() +") time out");
+							if (loggerServiceTracker.isDebugEnabled())
+							{
+								loggerServiceTracker.debug("session(" + webClientSession.getStreamId() +") time out");
+							}
+							webClientSession.close();
+							if (webClientSession.getUsername() != null)
+							{
+								RouteMessage routeMessage = new RouteMessage(WebC2SManager.this.getName(), webClientSession.getStreamId());
+								routeMessage.setToUserNode(webClientSession.getUsername());
+								routeMessage.setCloseStream(true);
+								routerSession.write(routeMessage.toXml());
+							}
+							
+							
 						}
-						webClientSession.close();
-						if (webClientSession.getUsername() != null)
-						{
-							RouteMessage routeMessage = new RouteMessage(WebC2SManager.this.getName(), webClientSession.getStreamId());
-							routeMessage.setToUserNode(webClientSession.getUsername());
-							routeMessage.setCloseStream(true);
-							routerSession.write(routeMessage.toXml());
-						}
-						
-						
 					}
+					
 				}
 				
 				try
