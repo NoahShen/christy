@@ -551,7 +551,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 							webClientSession.write(routeMessage.getXmlStanza());
 						}
 						Continuation continuation = webClientSession.getContinuation();
-						if (continuation != null)
+						if (continuation != null && !continuation.isResumed())
 						{
 							continuation.resume();
 						}

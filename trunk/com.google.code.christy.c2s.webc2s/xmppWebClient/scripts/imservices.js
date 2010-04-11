@@ -641,12 +641,20 @@ function createChatHtml(chatScrollHeader, chatPanel, contactInfo) {
 								"</tr>" +
 							"</table>");
 		
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		var chat = conn.getChat(JID.createJID(contactInfo.jid), true);
 		controlBar.find("button:first").click(function(){
-			alert($(this).text());
+			chatPanelTab.remove();
+			contactChatPanel.remove();
 		});
 		
 		controlBar.find("button:last").click(function(){
-			alert($(this).text());
+			var text = controlBar.find("input").val();
+			if (text != null && text != "") {
+				conn.sendChatText(chat, text);
+			}
+			
 		});
 		
 		contactChatPanel.append(controlBar);
