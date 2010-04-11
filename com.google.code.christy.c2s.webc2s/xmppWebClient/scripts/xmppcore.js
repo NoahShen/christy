@@ -1,7 +1,7 @@
 Christy = {};
 Christy.requestUrl = "webclient/JHB.do";
 Christy.loginTimeout = 30 * 1000; // 30 sec
-Christy.intervalTime = 0.5 * 1000; //0.5 sec
+Christy.intervalTime = 1 * 1000; //0.5 sec
 ////////////start of JID
 
 JID = jClass.extend({
@@ -3588,11 +3588,15 @@ XmppConnection = jClass.extend({
 		return chat;
 	},
 	
-	getChat: function(jid) {
+	getChat: function(jid, create) {
 		for (var i =  0; i < this.chats.length; ++i) {
 			if (this.chats[i].bareJID.equalsWithBareJid(jid)) {
 				return this.chats[i];
 			}
+		}
+		
+		if (create) {
+			return this.createChat(jid, null);
 		}
 		return null;
 	},
