@@ -3855,6 +3855,14 @@ XmppContact = jClass.extend({
 		return this.rosterItem.getRosterName();
 	},
 	
+	getShowName: function() {
+		var showName = this.getNickname();
+		if (showName == null) {
+			showName = this.getBareJid().toBareJID();
+		}
+		return showName;
+	},
+	
 	getGroups: function() {
 		return this.rosterItem.getGroups();
 	},
