@@ -104,7 +104,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	
 	private int minWait = 10;
 	
-	private int inactivity = 10;
+	private int inactivity = 20;
 	
 	private int maxHolded = 1;
 	
@@ -962,9 +962,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			{
 				userAuthenticatorTracker.authenticate(webClientSession, content, mechanism);
 				webClientSession.setStatus(ClientSession.Status.authenticated);
-				
-				Success success = new Success();
-				webClientSession.write(success, response, rid);
+
 				
 				ChristyStreamFeature[] features = streamFeatureStracker.getStreamFeatures(SupportedType.afterAuth);
 				StreamFeature streamFeature = new StreamFeature();
@@ -973,7 +971,16 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 					streamFeature.addFeature(feature.getElementName(), feature.getNamespace(), feature.isRequired());
 				}
 				
-				webClientSession.write(streamFeature);
+				
+				Success success = new Success();
+				
+				Body responsebody = new Body();
+				responsebody.setProperty("sid", webClientSession.getStreamId());
+				responsebody.setProperty("ack", rid);
+				responsebody.setProperty("xmlns:stream", "http://etherx.jabber.org/streams");
+				responsebody.addStanza(success);
+				responsebody.addStanza(streamFeature);
+				webClientSession.write(responsebody, response, rid);
 				
 			}
 			catch (UnauthorizedException e)

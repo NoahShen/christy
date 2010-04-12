@@ -3044,11 +3044,10 @@ XmppConnectionMgr = jClass.extend({
 	
 	fireBodyHandler: function(body) {
 		for (var i = this.bodyHandlers.length - 1; i >= 0; --i){
-			// TODO check rid
-//					if (this.bodyHandlers[i].rid == body.getAttribute("ack")){
+			if (this.bodyHandlers[i].rid == body.getAttribute("ack")){
 				this.bodyHandlers[i].handler(body);
 				this.bodyHandlers.splice(i,1);
-//					}
+			}
 		}
 	},
 	

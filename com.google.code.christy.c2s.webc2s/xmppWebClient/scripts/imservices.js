@@ -232,6 +232,8 @@
 				presence.setUserStatus(statusMess.text());
 			}
 			conn.changeStatus(presence);
+			var statuImgPath = getStatusInfo(presence).imgPath;
+			$("#user-status-img").attr("src", statuImgPath);
 		}
 	};
 	$("#user-status-menu").contextMenu({
@@ -647,7 +649,7 @@ function createChatHtml(chatScrollHeader, chatPanel, contactInfo) {
 		
 		var contactChatPanel = $("<div chatPanelId='" + contactInfo.jid + "-chatPanel' style='display:none;'>" +
 									"<div style='width:100%;height:100%;bottom:20pt;'>" +
-										"a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>a<br/>" +
+										"<div messagecontent='1'></div>" +
 										"<div>" +
 											"&nbsp" +
 										"</div>" +
@@ -683,6 +685,7 @@ function createChatHtml(chatScrollHeader, chatPanel, contactInfo) {
 			var text = controlBar.find("input").val();
 			if (text != null && text != "") {
 				conn.sendChatText(chat, text);
+				controlBar.find("input").val("");
 			}
 			
 		});

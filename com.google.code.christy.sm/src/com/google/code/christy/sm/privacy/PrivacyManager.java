@@ -401,12 +401,16 @@ public class PrivacyManager
 		
 		try
 		{
-			UserPrivacyList userPrivacyList = dbHelper.getDefaultUserPrivacyList(onlineUser.getNode());
-			if (userPrivacyList != null)
+			if (onlineUser.getDefaultPrivacyList() == null)
 			{
-				PrivacyList privacyList = userPrivacyListToPrivacyList(userPrivacyList);
-				onlineUser.setDefaultPrivacyList(privacyList);
+				UserPrivacyList userPrivacyList = dbHelper.getDefaultUserPrivacyList(onlineUser.getNode());
+				if (userPrivacyList != null)
+				{
+					PrivacyList privacyList = userPrivacyListToPrivacyList(userPrivacyList);
+					onlineUser.setDefaultPrivacyList(privacyList);
+				}
 			}
+			
 		}
 		catch (Exception e)
 		{

@@ -627,9 +627,18 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 					else
 					{
 						resources = smHandlerServiceTracker.checkResource(SmManagerImpl.this, onlineUser, packet);
-						if (resources == null)
+						if (resources == null || resources.length == 0)
 						{
-							resources = new UserResource[]{null};
+							// contact send presence or probe presence to me 
+							if (packet instanceof Presence)
+							{
+								resources = contactManager.checkResource(SmManagerImpl.this, onlineUser, packet);
+							}
+							else
+							{
+								resources = new UserResource[]{null};
+							}
+							
 						}
 					}
 					
@@ -804,7 +813,6 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			MessageQueueWrapper wrapper = getMessage(node);
 			do
 			{
-				
 				if (wrapper != null)
 				{
 					RouteMessage routeMessage = wrapper.getRouteMessage();
@@ -814,7 +822,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 
 						if (routeMessage.isCloseStream())
 						{
-							handleCloseStream(userResource, routeMessage);
+							handleCloseStream(onlineUser, userResource, routeMessage);
 						}
 						else if (stanza instanceof Iq)
 						{
@@ -1042,10 +1050,11 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		}
 		
 
-		private void handleCloseStream(UserResource userResource, RouteMessage routeMessage)
+		private void handleCloseStream(OnlineUserImpl onlineUser, UserResource userResource, RouteMessage routeMessage)
 		{
 			if (userResource != null)
 			{
+				contactManager.handlePresence(SmManagerImpl.this, onlineUser, userResource, new Presence(Presence.Type.unavailable));
 				userResource.logOut();
 			}
 		}
