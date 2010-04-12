@@ -64,7 +64,7 @@
 								"</tr>" +
 								"<tr style='height:30px;'>" +
 									"<td>" +
-										"<div id='user-status-message'>status</div>" +
+										"<div id='user-status-message'>available</div>" +
 									"</td>" +
 								"</tr>" +
 							"</tbody>" +
@@ -91,12 +91,11 @@
 					
 	// user's status menu 
 	var statusMenu = $("<ul id='myMenu' class='contextMenu'>" +
-			"<li class='edit'><a href='#edit'>Edit</a></li>" +
-			"<li class='cut separator'><a href='#cut'>Cut</a></li>" +
-			"<li class='copy'><a href='#copy'>Copy</a></li>" +
-			"<li class='paste'><a href='#paste'>Paste</a></li>" +
-			"<li class='delete'><a href='#delete'>Delete</a></li>" +
-			"<li class='quit separator'><a href='#quit'>Quit</a></li>" +
+			"<li class='available'><a href='#available'>" + $.i18n.prop("imservices.status.available") + "</a></li>" +
+			"<li class='away'><a href='#away'>" + $.i18n.prop("imservices.status.away") + "</a></li>" +
+			"<li class='chat'><a href='#chat'>" + $.i18n.prop("imservices.status.chat") + "</a></li>" +
+			"<li class='dnd'><a href='#dnd'>" + $.i18n.prop("imservices.status.dnd") + "</a></li>" +
+			"<li class='xa'><a href='#xa'>" + $.i18n.prop("imservices.status.xa") + "</a></li>" +
 	"</ul>");
 	statusMenu.hide();
 	
@@ -203,14 +202,44 @@
 	var menuX = $("#user-status-img").offset().left;
 	var menuY = $("#user-status-img").offset().top - imTopHeight + $("#user-status-img").height();
 
+	var statusMenuHandler = function(action, el, pos) {
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			var currentPresence = conn.currentPresence;
+			if (currentPresence != null) {
+				var showType = currentPresence.getShow();
+				if (showType == null && currentPresence.isAvailable()) {
+					showType = PresenceShow.AVAILABLE;
+				}
+				if (showType == action) {
+					return;
+				}
+			}
+			
+			var presence = new Presence(PresenceType.AVAILABLE);
+			if (action == "away") {
+				presence.setShow(PresenceShow.AWAY);
+			} else if (action == "chat") {
+				presence.setShow(PresenceShow.CHAT);
+			} else if (action == "dnd") {
+				presence.setShow(PresenceShow.DND);
+			} else if (action == "xa") {
+				presence.setShow(PresenceShow.XA);
+			}
+			var statusMess = $("#user-status-message");
+			if (statusMess.attr("emptyStatus") == "false") {
+				presence.setUserStatus(statusMess.text());
+			}
+			conn.changeStatus(presence);
+		}
+	};
 	$("#user-status-menu").contextMenu({
 			menu: 'myMenu',
 			leftButton: true,
 			x: menuX,
 			y: menuY
-		},function(action, el, pos) {
-			alert(action);
-		}
+		}, statusMenuHandler
 	);
 	
 	$("#user-status-img").contextMenu({
@@ -218,9 +247,7 @@
 			leftButton: true,
 			x: menuX,
 			y: menuY
-		},function(action, el, pos) {
-			alert(action);
-		}
+		}, statusMenuHandler
 	);
 	
 	contactTab.click();
@@ -245,13 +272,16 @@
 		inputStatusMessage.bind("blur", function(){
 			statusMessage.empty();
 			statusMessageVal = $(this).val();
+			var connectionMgr = XmppConnectionMgr.getInstance();
 			if (statusMessageVal == null || statusMessageVal == "") {
 				var conn = connectionMgr.getAllConnections()[0];
 				if (conn) {
 					var imgPathAndStatusMess = getStatusInfo(conn.currentPresence);
 					statusMessageVal = imgPathAndStatusMess.statusMessage;
 				}
-				
+				statusMessage.attr("emptyStatus", true);
+			} else {
+				statusMessage.attr("emptyStatus", false);
 			}
 			statusMessage.text(statusMessageVal);
 			statusMessage.bind("click", statusMessageClickFunc);
@@ -375,10 +405,10 @@
 	// TODO end of test
 	
 		// TODO test code
-	createChatHtml(chatScrollHeader, chatPanel, {
-		jid: "Noah1@example.com",
-		showName: "Noah1"
-	});
+//	createChatHtml(chatScrollHeader, chatPanel, {
+//		jid: "Noah1@example.com",
+//		showName: "Noah1"
+//	});
 //	
 //	createChatHtml(chatScrollHeader, chatPanel, {
 //		jid: "Noah2@example.com",
