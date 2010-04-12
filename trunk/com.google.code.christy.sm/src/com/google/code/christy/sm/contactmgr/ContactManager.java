@@ -14,6 +14,7 @@ import com.google.code.christy.util.collections.LRULinkedHashMap;
 import com.google.code.christy.xmpp.Iq;
 import com.google.code.christy.xmpp.IqRoster;
 import com.google.code.christy.xmpp.JID;
+import com.google.code.christy.xmpp.Packet;
 import com.google.code.christy.xmpp.PacketUtils;
 import com.google.code.christy.xmpp.Presence;
 import com.google.code.christy.xmpp.XmppError;
@@ -78,6 +79,15 @@ public class ContactManager
 		this.cacheSize = cacheSize;
 		rosterCache.clear();
 		rosterCache = new LRULinkedHashMap<String, IqRoster>(cacheSize);
+	}
+	
+	public UserResource[] checkResource(SmManager smManager, OnlineUser onlineUser, Packet packet)
+	{
+		if (onlineUser != null)
+		{
+			return onlineUser.getAllActiveUserResources();
+		}
+		return new UserResource[]{null};
 	}
 
 	public void handlePresence(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Presence presence)
@@ -391,11 +401,9 @@ public class ContactManager
 		{
 			userResource.sendToOtherUser(presence);
 			return;
-			
 		}
 		
 		String username = userResource.getOnlineUser().getNode();
-		
 		try
 		{
 			IqRoster roster = getIqRoster(username);
@@ -484,9 +492,9 @@ public class ContactManager
 				try
 				{
 					Presence clonePresence = (Presence) toPresence.clone();
-					clonePresence.setFrom(new JID(onlineUser.getNode(), smManager.getDomain(), res.getResource()));
-					clonePresence.setTo(new JID(onlineUser.getNode(), smManager.getDomain(), userResource.getResource()));
-					userResource.sendToOtherUser(clonePresence);
+					clonePresence.setFrom(new JID(onlineUser.getNode(), smManager.getDomain(), userResource.getResource()));
+					clonePresence.setTo(new JID(onlineUser.getNode(), smManager.getDomain(), res.getResource()));
+					res.sendToSelfClient(clonePresence);
 				}
 				catch (CloneNotSupportedException e)
 				{
@@ -1022,8 +1030,7 @@ public class ContactManager
 			return;
 		}
 		
-		if (presence.getFrom() == null
-				&& userResource != null)
+		if (presence.getFrom() == null)
 		{
 			return;
 		}

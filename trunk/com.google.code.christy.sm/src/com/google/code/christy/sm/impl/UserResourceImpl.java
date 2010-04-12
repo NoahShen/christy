@@ -148,7 +148,9 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 			
 			if (jid.getDomain().equals(smManager.getDomain()))
 			{
-				routeMessage.setToUserNode(jid.getNode());
+				// TODO check case sentity
+				String toUserNode = jid.getNodePreped();
+				routeMessage.setToUserNode(toUserNode);
 			}
 			
 			JID from = packet.getFrom();
