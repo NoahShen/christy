@@ -35,3 +35,10 @@ div[chatPanelId] {
 
 	padding-left: 10px;
 }
+
+
+.contextMenu LI.available A { background-image: url(status/available.png); }
+.contextMenu LI.away A { background-image: url(status/away.png); }
+.contextMenu LI.chat A { background-image: url(status/chat.png); }
+.contextMenu LI.xa A { background-image: url(status/xa.png); }
+.contextMenu LI.dnd A { background-image: url(status/dnd.png); }
