@@ -28,7 +28,7 @@ span[tabContactJid] {
 }
 
 div[chatPanelId] {
-	padding-left: 10px;
+	padding-left: 7px;
 }
 
 .contactGroup {
@@ -42,3 +42,15 @@ div[chatPanelId] {
 .contextMenu LI.chat A { background-image: url(status/chat.png); }
 .contextMenu LI.xa A { background-image: url(status/xa.png); }
 .contextMenu LI.dnd A { background-image: url(status/dnd.png); }
+
+.hasNewMessage {
+	font-weight: bolder;
+}
+
+.contactMessage {
+	color: blue;
+}
+
+.myMessage {
+	color: red;
+}

@@ -569,7 +569,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				{
 					userResource = onlineUser.getUserResourceByStreamId(streamId);
 				}
-				// the user's session lost
+
 				if (userResource == null)
 				{
 					if (!(stanza instanceof Iq))
@@ -577,6 +577,12 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 						RouteMessage mess = new RouteMessage(SmManagerImpl.this.getName(), routeMessage.getFrom(), routeMessage.getStreamId());
 						mess.setCloseStream(true);
 						sendToRouter(mess);
+						
+						if (loggerServiceTracker.isDebugEnabled())
+						{
+							loggerServiceTracker.debug("user's resource not exist, binding resource first:"
+										+ routeMessage.toXml());
+						}
 						return;
 					}
 					
@@ -588,6 +594,13 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 						RouteMessage mess = new RouteMessage(SmManagerImpl.this.getName(), routeMessage.getFrom(), routeMessage.getStreamId());
 						mess.setCloseStream(true);
 						sendToRouter(mess);
+						
+						if (loggerServiceTracker.isDebugEnabled())
+						{
+							loggerServiceTracker.debug("bind is null:"
+										+ routeMessage.toXml());
+						}
+						
 						return;
 					}
 					
@@ -1016,6 +1029,12 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 					new RouteMessage(getName(), c2sName, streamId);
 				closeRouteMessage.setCloseStream(true);
 				sendToRouter(closeRouteMessage);
+				
+				if (loggerServiceTracker.isDebugEnabled())
+				{
+					loggerServiceTracker.debug("bind request is bad request:"
+								+ routeMessage.toXml());
+				}
 				return;
 			}
 			
@@ -1034,6 +1053,12 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				closeRouteMessage.setCloseStream(true);
 				userResource2.sendToSelfClient(closeRouteMessage);
 				removeUserResource(node, resource);
+				
+				if (loggerServiceTracker.isDebugEnabled())
+				{
+					loggerServiceTracker.debug("remove old resource:"
+								+ routeMessage.toXml());
+				}
 			}
 			
 			
