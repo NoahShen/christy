@@ -124,10 +124,6 @@ public class UserResourceImpl extends AbstractPropertied implements UserResource
 	@Override
 	public void sendToOtherUser(XmlStanza stanza)
 	{
-		if (!isAvailable())
-		{
-			return;
-		}
 		
 		if (stanza instanceof Packet)
 		{

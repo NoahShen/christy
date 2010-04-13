@@ -2800,6 +2800,7 @@ XmppConnectionMgr = jClass.extend({
 			dataType: "xml",
 			cache: false,
 			type: "post",
+			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 			data: bodyMessage.toXml(),
 			processData: false,
 			success: function(xml){
@@ -3245,6 +3246,8 @@ ConnectionEventType = {
 	
 	ChatCreated: "ChatCreated",
 	
+	ChatRemoved: "ChatRemoved",
+	
 	MessageReceived: "MessageReceived",
 	
 	ChatResourceChanged: "ChatResourceChanged",
@@ -3598,6 +3601,25 @@ XmppConnection = jClass.extend({
 			return this.createChat(jid, null);
 		}
 		return null;
+	},
+	
+	removeChat: function(jid) {
+		for (var i =  0; i < this.chats.length; ++i) {
+			if (this.chats[i].bareJID.equalsWithBareJid(jid)) {
+				var chat = this.chats[i];
+				this.chats.splice(i,1);
+				
+				var chatRemoved = ConnectionEventType.ChatRemoved;
+				var event = {
+						eventType: chatRemoved,
+						when: TimeUtils.currentTimeMillis(),
+						connection: this,
+						chat: chat
+				}
+				var connectionMgr = XmppConnectionMgr.getInstance();
+				connectionMgr.fireConnectionEvent(event);
+			}
+		}
 	},
 	
 	handleStatusChanged: function(presence) {

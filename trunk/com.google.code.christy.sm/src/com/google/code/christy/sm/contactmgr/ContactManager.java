@@ -437,7 +437,7 @@ public class ContactManager
 					toRosterPresence.setTo(item.getJid());
 					userResource.sendToOtherUser(toRosterPresence);
 					
-					if (firstPresence)
+					if (firstPresence && toRosterPresence.isAvailable())
 					{
 						Presence presenceProbe = new Presence(Presence.Type.probe);
 						presenceProbe.setFrom(new JID(onlineUser.getNode(), smManager.getDomain(), userResource.getResource()));
