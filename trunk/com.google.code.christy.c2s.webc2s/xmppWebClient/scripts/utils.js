@@ -1,3 +1,8 @@
+function scrollToWindowBottom() {
+	var c = window.document.body.scrollHeight;
+	window.scroll(0,c); 
+}
+
 Array.prototype.contains = function(obj) {
     var i = this.length;
     while (i--) {

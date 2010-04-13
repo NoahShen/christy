@@ -471,6 +471,14 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		return webClientSessions.size();
 	}
 	
+	private void sendCloseStream(WebClientSession webClientSession)
+	{
+		RouteMessage routeMessage = new RouteMessage(getName(), webClientSession.getStreamId());
+		routeMessage.setToUserNode(webClientSession.getUsername());
+		routeMessage.setCloseStream(true);
+		routerSession.write(routeMessage.toXml());
+	}
+	
 	private class RouterHandler implements IoHandler
 	{
 		
@@ -740,9 +748,17 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 				{
 					if (webClientSession.getHolded() >= maxHolded + 1)
 					{
+						sendCloseStream(webClientSession);
 						response.setContentType("text/html;charset=UTF-8");
 						response.sendError(HttpServletResponse.SC_FORBIDDEN, "too many simultaneous requests");
 						webClientSession.close();
+						
+						if (loggerServiceTracker.isDebugEnabled())
+						{
+							loggerServiceTracker.debug(webClientSession.getUsername() + 
+										"[" + webClientSession.getStreamId() + "]:" + 
+										"too many simultaneous requests");
+						}
 						return;
 	
 					}
@@ -762,11 +778,19 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 					webClientSession.increaseHolded();
 					if (!checkKey(webClientSession, body))
 					{
+						sendCloseStream(webClientSession);
 						Body responsebody = new Body();
 						responsebody.setProperty("type", "terminate");
-						responsebody.setProperty("condition", "bad-request");
+						responsebody.setProperty("condition", "item-not-found");
 						webClientSession.write(responsebody, response, (String) body.getProperty("rid"));
 						webClientSession.close();
+						
+						if (loggerServiceTracker.isDebugEnabled())
+						{
+							loggerServiceTracker.debug(webClientSession.getUsername() + 
+										"[" + webClientSession.getStreamId() + "]:" + 
+										"Invalid Key Sequence Error");
+						}
 						return;
 					}
 					
@@ -781,10 +805,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 					String type = (String) body.getProperty("type");
 					if ("terminate".equals(type))
 					{
-						RouteMessage routeMessage = new RouteMessage(getName(), webClientSession.getStreamId());
-						routeMessage.setToUserNode(webClientSession.getUsername());
-						routeMessage.setCloseStream(true);
-						routerSession.write(routeMessage.toXml());
+						sendCloseStream(webClientSession);
 						
 						Body responseBody = new Body();
 						responseBody.setProperty("type", "terminate");
@@ -876,6 +897,8 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			
 		}
 
+		
+		
 		private boolean checkKey(WebClientSession webClientSession, Body body)
 		{
 			if (webClientSession.getLastKey() == null)
@@ -1159,15 +1182,14 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 						{
 							if (loggerServiceTracker.isDebugEnabled())
 							{
-								loggerServiceTracker.debug("session(" + webClientSession.getStreamId() +") time out");
+								loggerServiceTracker.debug(webClientSession.getUsername() + 
+											"[" + webClientSession.getStreamId() + "]:" + 
+											"Session time out.");
 							}
 							webClientSession.close();
 							if (webClientSession.getUsername() != null)
 							{
-								RouteMessage routeMessage = new RouteMessage(WebC2SManager.this.getName(), webClientSession.getStreamId());
-								routeMessage.setToUserNode(webClientSession.getUsername());
-								routeMessage.setCloseStream(true);
-								routerSession.write(routeMessage.toXml());
+								sendCloseStream(webClientSession);
 							}
 							
 							

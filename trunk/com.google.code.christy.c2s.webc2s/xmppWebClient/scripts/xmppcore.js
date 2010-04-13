@@ -2778,6 +2778,9 @@ XmppConnectionMgr = jClass.extend({
 		}
 		
 		if (aThis.bodyMessagQueue.length > 0) {
+			if (aThis.requestingCount >= this.hold + 1) {
+				return;
+			}
 			var bodyMessage = aThis.bodyMessagQueue.shift();
 			aThis.execAjaxRequest(bodyMessage);
 		} else {

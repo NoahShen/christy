@@ -36,6 +36,7 @@
 			$.layoutEngine(imContactlayoutSettings);
 		} else if (type == "chat") {
 			$.layoutEngine(imChatlayoutSettings);
+			$("#chat-scroller-header").find("span:first").click();
 		}
 	});
 
@@ -654,8 +655,8 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 		var chatHandlerFunc = function(){
 	
 			$("span[tabContactJid]").removeClass('selected');
-			$(this).addClass('selected');	
-	
+			$(this).addClass("selected");	
+			$(this).removeClass("newMessage");
 			var currentChatPanel = $("#chat-panel > div[chatPanelId=" + $(this).attr('tabContactJid') + "-chatPanel]");
 			currentChatPanel.siblings().hide();	
 			currentChatPanel.show();
@@ -665,66 +666,109 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 		chatPanelTab.click(chatHandlerFunc);
 		chatScrollHeader.append(chatPanelTab);
 		
+//		var contactChatPanel = $("<div chatPanelId='" + contactInfo.jid + "-chatPanel' style='display:none;'>" +
+//									"<div style='width:100%;height:100%;'>" +
+//										"<div messagearea='1'></div>" +
+//										"<div>&nbsp<br/>&nbsp</div>" +
+//									"</div>" +
+//								"</div>");
+								
 		var contactChatPanel = $("<div chatPanelId='" + contactInfo.jid + "-chatPanel' style='display:none;'>" +
-									"<div style='width:100%;height:100%;bottom:20pt;'>" +
-										"<div messagearea='1'></div>" +
-										"<div>" +
-											"&nbsp" +
-										"</div>" +
-										"<div>" +
-											"&nbsp" +
-										"</div>" +
-									"</div>" +
+									"<table style='width:100%;height:100%;'>" +
+										"<tr style='height:100%;'>" +
+											"<td>" +
+												"<div messagearea='1' style='width:100%;height:100%;'></div>" +
+											"</td>" +
+										"</tr>" +
+										"<tr>" +
+											"<td>" +
+												"<table style=''>" +
+													"<tr>" +
+														"<td>" +
+															"<button style='float:left;'>Close</button>" +
+														"</td>" +
+														"<td style='width:100%;'>" +
+															"<input type='text' style='width:100%;'/>" +
+														"</td>" +
+														"<td>" +
+															"<button style='float:right;'>Send</button>" +
+														"</td>" +
+													"</tr>" +
+												"</table>" +
+											"</td>" +
+										"</tr>" +
+									"</table>" +
 								"</div>");
 		
-		var controlBar = $("<table style='bottom:0pt;right:3pt;left:3pt;position:fixed;'>" +
-								"<tr>" +
-									"<td>" +
-										"<button href='#XXX' style='float:left;'>Close</button>" +
-									"</td>" +
-									"<td style='width:100%;'>" +
-										"<input type='text' style='width:100%;'/>" +
-									"</td>" +
-									"<td>" +
-										"<button style='float:right;'>Send</button>" +
-									"</td>" +
-								"</tr>" +
-							"</table>");
-		
+//		var controlBar = $("<table style='bottom:0pt;right:3pt;left:3pt;position:fixed;'>" +
+//								"<tr>" +
+//									"<td>" +
+//										"<button style='float:left;'>Close</button>" +
+//									"</td>" +
+//									"<td style='width:100%;'>" +
+//										"<input type='text' style='width:100%;'/>" +
+//									"</td>" +
+//									"<td>" +
+//										"<button style='float:right;'>Send</button>" +
+//									"</td>" +
+//								"</tr>" +
+//							"</table>");
+		var controlBar = contactChatPanel.find("table:last");
+									
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
 		var contactJid = JID.createJID(contactInfo.jid);
 		var chat = conn.getChat(contactJid, true);
+		
+		var messageArea = contactChatPanel.find("div[messagearea]");
 		controlBar.find("button:first").click(function(){
 			chatPanelTab.remove();
 			contactChatPanel.remove();
 			conn.removeChat(contactJid);
 		});
 		
-		controlBar.find("button:last").click(function(){
+		var sendMessageAction = function(){
 			var text = controlBar.find("input").val();
 			if (text != null && text != "") {
 				conn.sendChatText(chat, text);
 				controlBar.find("input").val("");
+				messageArea.append("<div class='myMessage'>" + $("#userinfo-username").text() + ":" + text + "</div>");
+				$.layoutEngine(imChatlayoutSettings);
+				scrollToWindowBottom();
+				
 			}
 			
+		};
+		controlBar.find("input").keypress(function(event) {
+			if (event.keyCode == 13) {
+				sendMessageAction();
+			}
 		});
+		controlBar.find("button:last").click(sendMessageAction);
 		
 		connectionMgr.addConnectionListener([
 				ConnectionEventType.MessageReceived
 			],
 			
 			function(event) {
-				var chat = event.chat;
-				var contact = conn.getContact(chat.bareJID);
-				var showName = (contact) ? contact.getShowName() : chat.bareJID.getNode();
+				var eventChat = event.chat;
+				if (eventChat != chat) {
+					return;
+				}
+				var contact = conn.getContact(eventChat.bareJID);
+				var showName = (contact) ? contact.getShowName() : eventChat.bareJID.getNode();
 				var message = event.stanza;
-				var messageArea = contactChatPanel.find("div[messagearea]");
-				messageArea.append("<div>" + showName + ":" + message.getBody());
+				messageArea.append("<div class='contactMessage'>" + showName + ":" + message.getBody() + "</div>");
+				$.layoutEngine(imChatlayoutSettings);
+				scrollToWindowBottom();
+
+				if (!contactChatPanel.is(":visible")) {
+					chatPanelTab.addClass("hasNewMessage");
+				}
 			}
 		);
 	
-		contactChatPanel.append(controlBar);
+//		contactChatPanel.append(controlBar);
 		chatPanel.append(contactChatPanel);
 	}
 	
