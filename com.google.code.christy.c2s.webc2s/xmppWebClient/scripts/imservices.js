@@ -227,13 +227,18 @@
 			} else if (action == "xa") {
 				presence.setShow(PresenceShow.XA);
 			}
+			
+			
 			var statusMess = $("#user-status-message");
 			if (statusMess.attr("emptyStatus") == "false") {
 				presence.setUserStatus(statusMess.text());
-			}
+			} 
 			conn.changeStatus(presence);
-			var statuImgPath = getStatusInfo(presence).imgPath;
-			$("#user-status-img").attr("src", statuImgPath);
+			var statusInfo = getStatusInfo(presence);
+			$("#user-status-img").attr("src", statusInfo.imgPath);
+			var presenceStatus = presence.getUserStatus();
+			var statusMessContent = (presenceStatus == null) ? statusInfo.statusMessage : presenceStatus;
+			statusMess.text(statusMessContent);
 		}
 	};
 	$("#user-status-menu").contextMenu({
@@ -259,22 +264,31 @@
 		$(this).unbind("click");
 		var statusMessage = $(this);
 		var oldmessage = $(this).text();
-		var messageChanged = false;
 		var inputStatusMessage = $("<input id='input-status-message' type='text' value='" + oldmessage + "'/>");
-		inputStatusMessage.select();
-		inputStatusMessage.change(function(){
-			messageChanged = true;
-		});
+		
 		
 		inputStatusMessage.keypress(function(event) {
 			if (event.keyCode == 13) {
-				inputStatusMessage.blur();
+				$(this).blur();
 			}
 		});
 		inputStatusMessage.bind("blur", function(){
 			statusMessage.empty();
 			statusMessageVal = $(this).val();
 			var connectionMgr = XmppConnectionMgr.getInstance();
+			if (statusMessageVal != oldmessage) {
+				var conn = connectionMgr.getAllConnections()[0];
+				if (conn) {
+					var currentPres = conn.currentPresence;
+					if (currentPres == null) {
+						currentPres = new Presence(PresenceType.AVAILABLE);
+					}
+					currentPres.setStanzaId(null);
+					currentPres.setUserStatus(statusMessageVal);
+					conn.changeStatus(currentPres);
+				}
+			}
+			
 			if (statusMessageVal == null || statusMessageVal == "") {
 				var conn = connectionMgr.getAllConnections()[0];
 				if (conn) {
@@ -287,21 +301,11 @@
 			}
 			statusMessage.text(statusMessageVal);
 			statusMessage.bind("click", statusMessageClickFunc);
-			if (messageChanged) {
-				var conn = connectionMgr.getAllConnections()[0];
-				if (conn) {
-					var currentPres = conn.currentPresence;
-					if (currentPres == null) {
-						currentPres = new Presence(PresenceType.AVAILABLE);
-					}
-					currentPres.setStanzaId(null);
-					currentPres.setUserStatus($(this).val());
-					conn.changeStatus(currentPres);
-				}
-			}
+			
 		});
 		$(this).empty();
 		$(this).append(inputStatusMessage);
+		inputStatusMessage.select();
 		inputStatusMessage[0].focus();
 	};
 	$("#user-status-message").bind("click", statusMessageClickFunc);
@@ -311,20 +315,32 @@
 	
 	connectionMgr.addConnectionListener([
 			ConnectionEventType.ContactUpdated,
-			ConnectionEventType.ContactRemoved
+			ConnectionEventType.ContactRemoved,
+			ConnectionEventType.ContactStatusChanged,
+			ConnectionEventType.ChatCreated
 		],
 		
 		function(event) {
 			var contact = event.contact;
 			var eventType = event.eventType;
-			if (eventType == ConnectionEventType.ContactUpdated) {
+			if (eventType == ConnectionEventType.ContactUpdated
+				|| eventType == ConnectionEventType.ContactStatusChanged) {
 				updateContact(contactlist, contact);
 			} else if (eventType == ConnectionEventType.ContactRemoved) {
 				removeContact(contactlist, contact);
+			} else if (eventType == ConnectionEventType.ChatCreated) {
+				var connection = event.connection;
+				var bareJID = event.chat.bareJID;
+				var contact = connection.getContact(bareJID);
+				var showName = (contact) ? contact.getShowName() : bareJID.toBareJID();
+				createChatHtml(chatScrollHeader, chatPanel, false, {
+					jid: bareJID.toBareJID(),
+					showName: showName
+				});
 			}
 		}
 	);
-
+	
 	var conn = connectionMgr.getAllConnections()[0];
 	if (conn) {
 		conn.queryRoster();
@@ -466,7 +482,7 @@ function createContactJqObj(newContact) {
 		var contact = conn.getContact(JID.createJID(contactJid));
 		var chatScrollHeader = $("#chat-scroller-header");
 		var chatPanel = $("#chat-panel");
-		createChatHtml(chatScrollHeader, chatPanel, {
+		createChatHtml(chatScrollHeader, chatPanel, true, {
 			jid: contactJid,
 			showName: contact.getShowName()
 		});
@@ -490,7 +506,7 @@ function updateContact(contactlistJqObj, contact) {
 		contactJqObj = createContactJqObj(contact);
 		addContact = true;
 	}
-	
+
 	var statusImgSrc = null;
 	var statusMessage = null;
 	if (contact.isResourceAvailable()) {
@@ -587,6 +603,8 @@ function updateContact(contactlistJqObj, contact) {
 		&& $("#contactlist").is(":visible")) {
 		$.layoutEngine(imContactlayoutSettings);
 	}
+	
+	// TODO update chat tab
 }
 
 function addGroup(contactlistJqObj, groupName) {
@@ -627,7 +645,7 @@ function removeContact(contactlistJqObj, contact) {
 	contactJqObj.remove();
 }
 
-function createChatHtml(chatScrollHeader, chatPanel, contactInfo) {
+function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo) {
 	
 	var chatPanelTab = chatScrollHeader.children("span[tabContactJid='" + contactInfo.jid + "']");
 	if (chatPanelTab[0] == null) {
@@ -649,7 +667,7 @@ function createChatHtml(chatScrollHeader, chatPanel, contactInfo) {
 		
 		var contactChatPanel = $("<div chatPanelId='" + contactInfo.jid + "-chatPanel' style='display:none;'>" +
 									"<div style='width:100%;height:100%;bottom:20pt;'>" +
-										"<div messagecontent='1'></div>" +
+										"<div messagearea='1'></div>" +
 										"<div>" +
 											"&nbsp" +
 										"</div>" +
@@ -675,10 +693,12 @@ function createChatHtml(chatScrollHeader, chatPanel, contactInfo) {
 		
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
-		var chat = conn.getChat(JID.createJID(contactInfo.jid), true);
+		var contactJid = JID.createJID(contactInfo.jid);
+		var chat = conn.getChat(contactJid, true);
 		controlBar.find("button:first").click(function(){
 			chatPanelTab.remove();
 			contactChatPanel.remove();
+			conn.removeChat(contactJid);
 		});
 		
 		controlBar.find("button:last").click(function(){
@@ -690,13 +710,29 @@ function createChatHtml(chatScrollHeader, chatPanel, contactInfo) {
 			
 		});
 		
+		connectionMgr.addConnectionListener([
+				ConnectionEventType.MessageReceived
+			],
+			
+			function(event) {
+				var chat = event.chat;
+				var contact = conn.getContact(chat.bareJID);
+				var showName = (contact) ? contact.getShowName() : chat.bareJID.getNode();
+				var message = event.stanza;
+				var messageArea = contactChatPanel.find("div[messagearea]");
+				messageArea.append("<div>" + showName + ":" + message.getBody());
+			}
+		);
+	
 		contactChatPanel.append(controlBar);
-		
 		chatPanel.append(contactChatPanel);
 	}
 	
-	$("#chat-tab").click();
-	chatPanelTab.click();
+	if (showChatPanel) {
+		$("#chat-tab").click();
+		chatPanelTab.click();
+	}
+	
 }
 
 function getStatusInfo(presence) {
