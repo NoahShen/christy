@@ -13,14 +13,14 @@ public class UserMysqlDbHelper implements UserDbHelper
 {
 	private ConnectionPool connectionPool;
 	
-	private static final String ADDUSER_SQL = "INSERT INTO User (username, password, creationDate)" +
+	private static final String ADDUSER_SQL = "INSERT INTO user (username, password, creationDate)" +
 						" VALUES (?, ?, NOW())";
 	
-	private static final String GETUSER_SQL = "SELECT * FROM User WHERE username = ?";
+	private static final String GETUSER_SQL = "SELECT * FROM user WHERE username = ?";
 	
-	private static final String REMOVEUSER_SQL = "DELETE FROM User WHERE username = ?";
+	private static final String REMOVEUSER_SQL = "DELETE FROM user WHERE username = ?";
 	
-	private static final String UPDATEUSER_SQL = "UPDATE User SET password = ? WHERE username = ?";
+	private static final String UPDATEUSER_SQL = "UPDATE user SET password = ? WHERE username = ?";
 	/**
 	 * @param connectionPool
 	 */
