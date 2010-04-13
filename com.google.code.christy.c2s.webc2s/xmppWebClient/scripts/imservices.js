@@ -498,15 +498,17 @@ function createContactJqObj(newContact) {
 
 function updateContact(contactlistJqObj, contact) {
 	var bareJid = contact.getBareJid();
-	var contactEl = contactlistJqObj.find("div[contactJid='" + bareJid.toPrepedBareJID() + "']");
+	var contactJqObj = contactlistJqObj.find("div[contactjid='" + bareJid.toPrepedBareJID() + "']");
 	
 	var addContact = false;
-	var contactJqObj = $(contactEl);
 	
 	if (contactJqObj.length == 0) {
-		contactJqObj = createContactJqObj(contact);
 		addContact = true;
-	}
+	} 
+	
+	contactJqObj.remove();
+	
+	contactJqObj = createContactJqObj(contact);
 
 	var statusImgSrc = null;
 	var statusMessage = null;
@@ -546,33 +548,33 @@ function updateContact(contactlistJqObj, contact) {
 	//add contact to group
 	for (j = 0; j < groupNames.length; ++j) {
 		var groupName = groupNames[j];
+		
 		var groupJqObj = contactlistJqObj.find("div[groupname='" + groupName + "']");
 		if (groupJqObj.length == 0) {
 			groupJqObj = addGroup(contactlistJqObj, groupName);
 		}
 		var inserted = false;
 		var contacts = groupJqObj.children("[contactjid]");
-//		var contactJqObj2 = contactJqObj.clone(true);
 		$.each(contacts, function(index, value) {		
 			var oldContactJqObj = $(value);
 			var oldContactStatusCode = oldContactJqObj.attr("statusCode");
 			var contactStatusCode = contactJqObj.attr("statusCode");
 			
 			if (contactStatusCode > oldContactStatusCode) {
-				contactJqObj.insertBefore(oldContactJqObj);
+				contactJqObj.clone(true).insertBefore(oldContactJqObj);
 				inserted = true;
 				return false;
 			} else if (contactStatusCode == oldContactStatusCode) {
 				var oldBareJid = oldContactJqObj.attr("contactJid");
 				if (bareJid.toPrepedBareJID() < oldBareJid) {
-					contactJqObj.insertBefore(oldContactJqObj);
+					contactJqObj.clone(true).insertBefore(oldContactJqObj);
 					inserted = true;
 					return false;
 				}
 			}
 		});
 		if (!inserted) {
-			groupJqObj.append(contactJqObj);
+			groupJqObj.append(contactJqObj.clone(true));
 		}	
 	}
 	
@@ -609,7 +611,7 @@ function updateContact(contactlistJqObj, contact) {
 }
 
 function addGroup(contactlistJqObj, groupName) {
-	var newGroupJqObj = $("<div></div>").attr("groupname", groupName).append();
+	var newGroupJqObj = $("<div></div>").attr("groupname", groupName);
 	var groupLabel = $("<div id='" + groupName + "-label' class='contactGroup'></div>").text(groupName);
 	
 	newGroupJqObj.append(groupLabel);
@@ -653,10 +655,9 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 		chatPanelTab = $("<span tabContactJid='" + contactInfo.jid + "'>" + contactInfo.showName + "</span>");
 	
 		var chatHandlerFunc = function(){
-	
 			$("span[tabContactJid]").removeClass('selected');
 			$(this).addClass("selected");	
-			$(this).removeClass("newMessage");
+			$(this).removeClass("hasNewMessage");
 			var currentChatPanel = $("#chat-panel > div[chatPanelId=" + $(this).attr('tabContactJid') + "-chatPanel]");
 			currentChatPanel.siblings().hide();	
 			currentChatPanel.show();
@@ -676,22 +677,22 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 		var contactChatPanel = $("<div chatPanelId='" + contactInfo.jid + "-chatPanel' style='display:none;'>" +
 									"<table style='width:100%;height:100%;'>" +
 										"<tr style='height:100%;'>" +
-											"<td>" +
+											"<td style='padding-left:7px;'>" +
 												"<div messagearea='1' style='width:100%;height:100%;'></div>" +
 											"</td>" +
 										"</tr>" +
 										"<tr>" +
 											"<td>" +
-												"<table style=''>" +
+												"<table>" +
 													"<tr>" +
 														"<td>" +
-															"<button style='float:left;'>Close</button>" +
+															"<button>Close</button>" +
 														"</td>" +
 														"<td style='width:100%;'>" +
 															"<input type='text' style='width:100%;'/>" +
 														"</td>" +
 														"<td>" +
-															"<button style='float:right;'>Send</button>" +
+															"<button>Send</button>" +
 														"</td>" +
 													"</tr>" +
 												"</table>" +
@@ -722,6 +723,13 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 		
 		var messageArea = contactChatPanel.find("div[messagearea]");
 		controlBar.find("button:first").click(function(){
+			var selectedTab = chatPanelTab.prev();
+			if (selectedTab[0] == null) {
+				selectedTab = chatPanelTab.next();
+			}
+			
+			selectedTab.click();
+			
 			chatPanelTab.remove();
 			contactChatPanel.remove();
 			conn.removeChat(contactJid);
@@ -734,7 +742,10 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 				controlBar.find("input").val("");
 				messageArea.append("<div class='myMessage'>" + $("#userinfo-username").text() + ":" + text + "</div>");
 				$.layoutEngine(imChatlayoutSettings);
-				scrollToWindowBottom();
+				if (messageArea.is(":visible")) {
+					scrollToWindowBottom();
+				}
+				
 				
 			}
 			
@@ -760,7 +771,9 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 				var message = event.stanza;
 				messageArea.append("<div class='contactMessage'>" + showName + ":" + message.getBody() + "</div>");
 				$.layoutEngine(imChatlayoutSettings);
-				scrollToWindowBottom();
+				if (messageArea.is(":visible")) {
+					scrollToWindowBottom();
+				}
 
 				if (!contactChatPanel.is(":visible")) {
 					chatPanelTab.addClass("hasNewMessage");

@@ -1,7 +1,3 @@
-div[contactJid] {
-	
-}
-
 div[status-message] {
 	font-size: x-small;
 	color: gray;
@@ -27,12 +23,8 @@ span[tabContactJid] {
 	padding-left: 10px;
 }
 
-div[chatPanelId] {
-	padding-left: 7px;
-}
 
 .contactGroup {
-
 	padding-left: 10px;
 }
 

@@ -17,32 +17,32 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 {
 	private ConnectionPool connectionPool;
 	
-	private static final String ADDROSTERITEM_SQL = "INSERT INTO UserRoster (username, jid, name, subscription, ask)" +
+	private static final String ADDROSTERITEM_SQL = "INSERT INTO userroster (username, jid, name, subscription, ask)" +
 							" VALUES (?, ?, ?, ?, ?)";
 	
-	private static final String ADDROSTERITEMGROUP_SQL = "INSERT INTO UserRosterGroup (rosterId, groupName)" +
-							" (SELECT rosterId, ? FROM UserRoster WHERE username = ? AND jid=?)";
+	private static final String ADDROSTERITEMGROUP_SQL = "INSERT INTO userrostergroup (rosterId, groupName)" +
+							" (SELECT rosterId, ? FROM userroster WHERE username = ? AND jid=?)";
 	
 	
-	private static final String GETROSTERITEM_SQL = "SELECT * FROM (SELECT * FROM UserRoster WHERE UserRoster.username = ? ) R" +
-							" LEFT JOIN UserRosterGroup G ON R.rosterId = G.rosterId";
+	private static final String GETROSTERITEM_SQL = "SELECT * FROM (SELECT * FROM userroster WHERE userroster.username = ? ) R" +
+							" LEFT JOIN userrostergroup G ON R.rosterId = G.rosterId";
 	
-	private static final String GETONEROSTERITEM_SQL = "SELECT * FROM (SELECT * FROM UserRoster WHERE UserRoster.username = ? AND UserRoster.jid = ?) R" +
-							" LEFT JOIN UserRosterGroup G ON R.rosterId = G.rosterId";
+	private static final String GETONEROSTERITEM_SQL = "SELECT * FROM (SELECT * FROM userroster WHERE userroster.username = ? AND userroster.jid = ?) R" +
+							" LEFT JOIN userrostergroup G ON R.rosterId = G.rosterId";
 	
-	private static final String REMOVEROSTERITEM_SQL = "DELETE UserRoster, UserRosterGroup FROM UserRoster, UserRosterGroup" +
-							" WHERE UserRoster.username = ? AND UserRoster.jid = ? AND UserRoster.rosterID = UserRosterGroup.rosterID";
+	private static final String REMOVEROSTERITEM_SQL = "DELETE userroster, userrostergroup FROM userroster, userrostergroup" +
+							" WHERE userroster.username = ? AND userroster.jid = ? AND userroster.rosterID = userrostergroup.rosterID";
 	
-	private static final String UPDATEROSTERITEM_SQL = "UPDATE UserRoster SET subscription = ?, name = ?, ask = ? WHERE username = ? AND jid = ?";
+	private static final String UPDATEROSTERITEM_SQL = "UPDATE userroster SET subscription = ?, name = ?, ask = ? WHERE username = ? AND jid = ?";
 	
-	private static final String DELETEGROUP_SQL = "DELETE FROM UserRosterGroup WHERE rosterId IN (SELECT rosterId FROM UserRoster WHERE username = ? AND jid=?)";
+	private static final String DELETEGROUP_SQL = "DELETE FROM userrostergroup WHERE rosterId IN (SELECT rosterId FROM userroster WHERE username = ? AND jid=?)";
 	
 	
-	private static final String UPDATEASK_SQL = "UPDATE UserRoster SET ask = ? WHERE username = ? AND jid = ?";
+	private static final String UPDATEASK_SQL = "UPDATE userroster SET ask = ? WHERE username = ? AND jid = ?";
 
-	private static final String UPDATENAME_SQL = "UPDATE UserRoster SET name = ? WHERE username = ? AND jid = ?";
+	private static final String UPDATENAME_SQL = "UPDATE userroster SET name = ? WHERE username = ? AND jid = ?";
 	
-	private static final String UPDATESUBSCRIPTION_SQL = "UPDATE UserRoster SET subscription = ? WHERE username = ? AND jid = ?";
+	private static final String UPDATESUBSCRIPTION_SQL = "UPDATE userroster SET subscription = ? WHERE username = ? AND jid = ?";
 	
 	/**
 	 * @param connectionPool
