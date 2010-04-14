@@ -1,3 +1,5 @@
+var appMenuEvents = new Array();
+
 (function() {
 	
 	var mainDiv = $("<div id='main'></div>").css({
@@ -20,7 +22,7 @@
 	 		EleID: "main"
 		}]
 	};
-	var appMenuItems = $("<ul id='appMenuItems' class='contextMenu'>" +
+	var appMenuItems = $("<ul id='appMenuItems' class='contextMenu' style='display:none'>" +
 			"<li class='edit'><a href='#edit'>Edit</a></li>" +
 			"<li class='cut separator'><a href='#cut'>Cut</a></li>" +
 			"<li class='copy'><a href='#copy'>Copy</a></li>" +
@@ -51,8 +53,24 @@
 				var menuY = appMenu.offset().top + 10 + appMenu.height();
 				return {x: menuX, y: menuY};
 			}
-		},function(action, el, pos) {
-			alert(action);
+			
+		}, function(action, el, pos) {
+			
+			if (action == "") {
+				// TODO...
+				return;
+			}
+			
+			var eventInfo = appMenuEvents[action];
+			if (eventInfo) {
+				var handler = eventInfo.handler;
+				if (handler) {
+					handler();
+				}
+				delete appMenuEvents[action];
+			}
+			
+			$("#" + action).remove();
 		}
 	);
 	
@@ -62,3 +80,39 @@
 	});
 	
 })();
+
+function addAppEventInfo(eventInfo) {
+	var eventId = eventInfo.eventId;
+	if (eventId == null) {
+		return;
+	}
+	if (appMenuEvents[eventId] || $("#" + eventId)[0]) {
+		updateAppEventInfo(eventInfo);
+		return;
+	}
+	
+	var eventName = eventInfo.eventName;
+	eventName = mCutStr(eventName, 7);
+	var eventCss = eventInfo.css;
+	var appMenu = $("#appMenuItems");
+	appMenu.prepend("<li id='" + eventId + "' class='" + eventCss + "'>" +
+						"<a href='#" + eventId + "'>" + 
+							eventName + "</a></li>");
+	
+	appMenuEvents[eventId] = eventInfo;
+}
+
+function updateAppEventInfo(eventInfo) {
+	var eventId = eventInfo.eventId;
+	if (eventId == null) {
+		return;
+	}
+
+	var item = $("#" + eventId);
+	item.removeClass();
+	item.addClass(eventInfo.css);
+	item.children("a").text(eventInfo.eventName);
+	
+	
+	appMenuEvents[eventId] = eventInfo;
+}

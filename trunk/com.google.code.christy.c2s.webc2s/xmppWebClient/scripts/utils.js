@@ -1,3 +1,17 @@
+function mCutStr(text, len){
+    if(text.length < len) {
+        return text;
+    } else {
+        var pos=0;
+        for(i=0;i<len;i++) {
+            (text.substr(i,1).charCodeAt(0) >= 160) ? i++ : "";
+            pos++;
+        }
+        return text.substr(0,pos)+"...";
+    }
+}
+
+
 function scrollToWindowBottom() {
 	var c = window.document.body.scrollHeight;
 	window.scroll(0,c); 
