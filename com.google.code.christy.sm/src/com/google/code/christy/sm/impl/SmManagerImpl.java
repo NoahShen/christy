@@ -3,10 +3,13 @@
  */
 package com.google.code.christy.sm.impl;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
@@ -22,6 +25,7 @@ import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
@@ -82,6 +86,8 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	private IoSession routerSession;
 	
 	private Map<String, OnlineUserImpl> onlineUsers = new ConcurrentHashMap<String , OnlineUserImpl>();
+	
+	private Set<String> c2sSessionNames = new HashSet<String>();
 	
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	
@@ -544,7 +550,48 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 					routeMessageParserServiceTracker.getRouteMessageParser().parseParser(parser);
 				handleRoute(routeMessage, session);
 			}
+			else if ("internal".equals(elementName))
+			{
+				handleInternal(parser);
+			}
 
+		}
+
+		private void handleInternal(XmlPullParser parser) throws XmlPullParserException, IOException
+		{
+			boolean done = false;
+			while (!done)
+			{
+				int eventType = parser.next();
+				String elementName = parser.getName();
+				if (eventType == XmlPullParser.START_TAG)
+				{
+					if ("c2ssession".equals(elementName))
+					{
+						c2sSessionNames.add(parser.getAttributeValue("", "name"));
+					}
+				}
+				else if (eventType == XmlPullParser.END_TAG)
+				{
+					if ("internal".equals(elementName))
+					{
+						done = true;
+					}
+				}
+			}
+			
+			OnlineUserImpl[] onlineUsers2 = onlineUsers.values().toArray(new OnlineUserImpl[]{});
+			for (OnlineUserImpl user : onlineUsers2)
+			{
+				for (UserResource res : user.getAllUserResources())
+				{
+					String c2sName = res.getRelatedC2s();
+					if (!c2sSessionNames.contains(c2sName))
+					{
+						res.logOut();
+					}
+				}
+			}
 		}
 
 		private void handleRoute(RouteMessage routeMessage, IoSession session)
