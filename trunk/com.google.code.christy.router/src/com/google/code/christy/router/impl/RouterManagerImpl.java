@@ -63,6 +63,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	
 	public static final String SMROUTER_AUTH_NAMESPACE = "christy:internal:sm2router:auth";
 
+	public static final String SMROUTER_SYNCC2S_NAMESPACE = "christy:internal:sm2router:syncc2s";
+	
 	private IoAcceptor c2sAcceptor;
 	
 	private boolean started = false;
@@ -474,6 +476,18 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		loggerServiceTracker.debug("remove smSession:" + smname);
 	}
 	
+	private void notifySmAboutC2sSessions(SmSessionImpl smSession)
+	{
+		StringBuffer buff = new StringBuffer();
+		buff.append("<internal xmlns='" + SMROUTER_SYNCC2S_NAMESPACE + "'>");
+		for (C2sSessionImpl c2sSession : c2sSessions.values())
+		{
+			buff.append("<c2ssession name='" + c2sSession.getC2sName() + "'/>");
+		}
+		
+		buff.append("</internal>");
+		smSession.write(buff.toString());
+	}
 	
 	private class C2sHandler implements IoHandler
 	{
@@ -599,6 +613,12 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 										RouterManagerImpl.this);
 					session.setAttachment(c2sSession);
 					c2sSession.write("<success xmlns='" + C2SROUTER_AUTH_NAMESPACE + "' />");
+					
+					for (SmSessionImpl smSession : smSessions.values())
+					{
+						notifySmAboutC2sSessions(smSession);
+					}
+					
 					return;
 				}
 				else
@@ -694,6 +714,11 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			if (c2sSession != null)
 			{
 				c2sSession.close();
+			}
+			
+			for (SmSessionImpl smSession : smSessions.values())
+			{
+				notifySmAboutC2sSessions(smSession);
 			}
 		}
 
@@ -904,6 +929,9 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 										routerToSmInterceptorServiceTracker);
 					session.setAttachment(smSession);
 					smSession.write("<success xmlns='" + SMROUTER_AUTH_NAMESPACE + "' />");
+					
+					notifySmAboutC2sSessions(smSession);
+					
 					try
 					{
 						dispatcherServiceTracker.getDispatcher().smSessionAdded(smSession);
@@ -940,6 +968,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				return;
 			}
 		}
+
+		
 
 		private void smhandleStream(XmlPullParser parser, IoSession session)
 		{
