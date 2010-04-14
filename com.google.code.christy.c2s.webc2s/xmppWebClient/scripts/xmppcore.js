@@ -2767,26 +2767,27 @@ XmppConnectionMgr = jClass.extend({
 		
 		if (clearBody) {
 			while (aThis.bodyMessagQueue.length != 0) {
+				if (aThis.requestingCount >= aThis.hold + 1) {
+					continue;
+				}
 				var bodyMessage = aThis.bodyMessagQueue.shift();
 				aThis.execAjaxRequest(bodyMessage);
 			}
 			return;
 		}
 		
-		if (aThis.requestingCount > aThis.hold) {
+		if (aThis.requestingCount >= aThis.hold + 1) {
 			return;
 		}
-		
+			
 		if (aThis.bodyMessagQueue.length > 0) {
-			if (aThis.requestingCount >= this.hold + 1) {
-				return;
-			}
 			var bodyMessage = aThis.bodyMessagQueue.shift();
 			aThis.execAjaxRequest(bodyMessage);
 		} else {
 			if (aThis.requestingCount < aThis.hold) {
 				aThis.sendBody(new Body());
 			}
+			
 		}
 	},
 	
@@ -3204,8 +3205,8 @@ KeyGenerater = jClass.extend({
 });
 
 ConnectionEventType = {
-	
-	Closed: "Closed",
+
+	ConnectionClosed: "ConnectionClosed",
 	
 	Created: "Created",
 	
@@ -3253,9 +3254,8 @@ ConnectionEventType = {
 	
 	MessageReceived: "MessageReceived",
 	
-	ChatResourceChanged: "ChatResourceChanged",
+	ChatResourceChanged: "ChatResourceChanged"
 	
-	ConnectionClosed: "ConnectionClosed"
 }		
 
 XmppConnection = jClass.extend({
