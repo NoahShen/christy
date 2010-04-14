@@ -334,10 +334,14 @@
 				var bareJID = event.chat.bareJID;
 				var contact = connection.getContact(bareJID);
 				var showName = (contact) ? contact.getShowName() : bareJID.toBareJID();
+				
 				createChatHtml(chatScrollHeader, chatPanel, false, {
 					jid: bareJID.toBareJID(),
 					showName: showName
 				});
+				if (chatScrollHeader.children().size() == 1) {
+					chatScrollHeader.children().click();
+				}
 			}
 		}
 	);
@@ -662,7 +666,11 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 			currentChatPanel.siblings().hide();	
 			currentChatPanel.show();
 			$.layoutEngine(imChatlayoutSettings);
-			scrollToWindowBottom();
+			var messageArea = currentChatPanel.find("div[messagearea]");
+			if (messageArea.is(":visible")) {
+				scrollToWindowBottom();
+			}
+			removeAppEventInfo(StringUtils.hash(contactInfo.jid, "md5"));
 		};
 		
 		chatPanelTab.click(chatHandlerFunc);
@@ -679,7 +687,7 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 									"<table style='width:100%;height:100%;'>" +
 										"<tr style='height:100%;'>" +
 											"<td style='padding-left:7px;'>" +
-												"<div messagearea='1' style='width:100%;height:100%;'></div>" +
+												"<div messagearea='1' style='width:100%;height:100%;word-break:break-all;'></div>" +
 											"</td>" +
 										"</tr>" +
 										"<tr>" +

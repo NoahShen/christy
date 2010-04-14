@@ -128,7 +128,14 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 	
 	public boolean addUserResource(UserResource userResource)
 	{
-		return userResources.add(userResource);
+		boolean b = userResources.add(userResource);
+		
+		if (smManagerImpl.getLoggerServiceTracker().isDebugEnabled())
+		{
+			smManagerImpl.getLoggerServiceTracker().debug("resource[" + userResource + "]:added");
+		}
+		
+		return b;
 	}
 	
 	public boolean removeUserResource(UserResource userResource)
@@ -140,6 +147,12 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 			smManagerImpl.removeOnlineUser(this);
 		}
 		smManagerImpl.fireUserResourceRemoved(this, (UserResourceImpl) userResource);
+		
+		if (smManagerImpl.getLoggerServiceTracker().isDebugEnabled())
+		{
+			smManagerImpl.getLoggerServiceTracker().debug("resource[" + userResource + "]:removed");
+		}
+		
 		return b;
 	}
 	
@@ -168,6 +181,12 @@ public class OnlineUserImpl extends AbstractPropertied implements OnlineUser
 			smManagerImpl.removeOnlineUser(this);
 		}
 		smManagerImpl.fireUserResourceRemoved(this, (UserResourceImpl) userResource);
+		
+		if (smManagerImpl.getLoggerServiceTracker().isDebugEnabled())
+		{
+			smManagerImpl.getLoggerServiceTracker().debug("resource[" + userResource + "]:removed");
+		}
+		
 		return userResource;
 	}
 

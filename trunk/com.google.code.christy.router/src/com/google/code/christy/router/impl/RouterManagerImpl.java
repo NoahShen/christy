@@ -597,7 +597,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 										c2sname, 
 										session, 
 										RouterManagerImpl.this);
-					
+					session.setAttachment(c2sSession);
 					c2sSession.write("<success xmlns='" + C2SROUTER_AUTH_NAMESPACE + "' />");
 					return;
 				}
@@ -685,7 +685,16 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void sessionClosed(IoSession session) throws Exception
 		{
-			loggerServiceTracker.debug("session" + session + ": sessionClosed");
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("session" + session + ": sessionClosed");
+			}
+			
+			C2sSessionImpl c2sSession = (C2sSessionImpl) session.getAttachment();
+			if (c2sSession != null)
+			{
+				c2sSession.close();
+			}
 		}
 
 		@Override
@@ -1006,10 +1015,11 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		public void sessionClosed(IoSession session) throws Exception
 		{
 			loggerServiceTracker.debug("session" + session + ": sessionClosed");
-			Object atta = session.getAttachment();
-			if (atta != null || atta instanceof SmSession)
+			SmSession smSession = (SmSession) session.getAttachment();
+			if (smSession != null)
 			{
-				dispatcherServiceTracker.getDispatcher().smSessionRemoved((SmSession) atta);
+				dispatcherServiceTracker.getDispatcher().smSessionRemoved(smSession);
+				smSession.close();
 			}
 		}
 

@@ -67,17 +67,26 @@ var appMenuEvents = new Array();
 				if (handler) {
 					handler();
 				}
-				delete appMenuEvents[action];
+				
 			}
-			
-			$("#" + action).remove();
+			removeAppEventInfo(action);
 		}
 	);
-	
+
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	connectionMgr.addConnectionListener([
+			ConnectionEventType.ConnectionClosed
+		],
+		function(event) {
+			appMenu.children("img").attr("src", "/resource/status/unavailable.png");
+			alert($.i18n.prop("app.connectionClosed"));
+		}
+	);
 	
 	$.include(["/resource/imchat.css"], function(){
 		$.include(["/scripts/imservices.js"]);
 	});
+	
 	
 })();
 
@@ -115,4 +124,9 @@ function updateAppEventInfo(eventInfo) {
 	
 	
 	appMenuEvents[eventId] = eventInfo;
+}
+
+function removeAppEventInfo(eventId) {
+	delete appMenuEvents[eventId];
+	$("#" + eventId).remove();
 }

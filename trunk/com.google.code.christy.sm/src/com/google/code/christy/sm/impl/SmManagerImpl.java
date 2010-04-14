@@ -137,6 +137,11 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		return contactManager;
 	}
 
+	LoggerServiceTracker getLoggerServiceTracker()
+	{
+		return loggerServiceTracker;
+	}
+
 	@Override
 	public void exit()
 	{
@@ -324,13 +329,17 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	@Override
 	public void removeOnlineUser(OnlineUser onlineUser)
 	{
-		onlineUsers.remove(onlineUser.getNode());
+		removeOnlineUser(onlineUser.getNode());
 	}
 	
 	@Override
 	public void removeOnlineUser(String node)
 	{
-		onlineUsers.remove(node);
+		OnlineUserImpl onlineUser = onlineUsers.remove(node);
+		if (loggerServiceTracker.isDebugEnabled())
+		{
+			loggerServiceTracker.debug(node + "[" + onlineUser + "]:removed");
+		}
 	}
 	
 
@@ -350,6 +359,10 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		{
 			onlineUser = new OnlineUserImpl(userNode, this);
 			onlineUsers.put(userNode, onlineUser);
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug(userNode + "[" + onlineUser + "]:added");
+			}
 		}
 		
 		if (getResourceLimitPerUser() > 0)

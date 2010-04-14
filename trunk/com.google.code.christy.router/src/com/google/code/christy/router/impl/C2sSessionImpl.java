@@ -39,8 +39,11 @@ public class C2sSessionImpl extends AbstractPropertied implements C2sSession
 	@Override
 	public void close()
 	{
-		iosession.write(CloseStream.getCloseStream());
-		iosession.close();
+		if (iosession.isConnected())
+		{
+			iosession.write(CloseStream.getCloseStream());
+			iosession.close();
+		}
 		routerManager.removeC2sSession(c2sName);
 		
 	}

@@ -51,8 +51,12 @@ public class SmSessionImpl extends AbstractPropertied implements SmSession
 	@Override
 	public void close()
 	{
-		iosession.write(CloseStream.getCloseStream());
-		iosession.close();
+		if (iosession.isConnected())
+		{
+			iosession.write(CloseStream.getCloseStream());
+			iosession.close();
+		}
+		
 		routerManager.removeSmSession(smName);
 	}
 
