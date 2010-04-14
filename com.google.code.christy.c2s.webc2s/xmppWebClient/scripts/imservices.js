@@ -662,6 +662,7 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 			currentChatPanel.siblings().hide();	
 			currentChatPanel.show();
 			$.layoutEngine(imChatlayoutSettings);
+			scrollToWindowBottom();
 		};
 		
 		chatPanelTab.click(chatHandlerFunc);
@@ -722,6 +723,40 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 		var chat = conn.getChat(contactJid, true);
 		
 		var messageArea = contactChatPanel.find("div[messagearea]");
+		
+		var messageReceivedHandler = function(event) {
+			var eventChat = event.chat;
+			if (eventChat != chat) {
+				return;
+			}
+			var contact = conn.getContact(eventChat.bareJID);
+			var showName = (contact) ? contact.getShowName() : eventChat.bareJID.getNode();
+			var message = event.stanza;
+			messageArea.append("<div class='contactMessage'>" + showName + ":" + message.getBody() + "</div>");
+			$.layoutEngine(imChatlayoutSettings);
+			if (messageArea.is(":visible")) {
+				scrollToWindowBottom();
+			}
+
+			if (!contactChatPanel.is(":visible")) {
+				chatPanelTab.addClass("hasNewMessage");
+				addAppEventInfo({
+					eventId: StringUtils.hash(eventChat.bareJID.toPrepedBareJID(), "md5"),
+					eventName: showName,
+					handler: function() {
+						$("#chat-tab").click();
+						chatPanelTab.click();
+					}
+				});
+			}
+		};
+		
+		connectionMgr.addConnectionListener([
+				ConnectionEventType.MessageReceived
+			],
+			messageReceivedHandler
+		);
+			
 		controlBar.find("button:first").click(function(){
 			var selectedTab = chatPanelTab.prev();
 			if (selectedTab[0] == null) {
@@ -733,6 +768,7 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 			chatPanelTab.remove();
 			contactChatPanel.remove();
 			conn.removeChat(contactJid);
+			connectionMgr.removeConnectionListener(messageReceivedHandler);
 		});
 		
 		var sendMessageAction = function(){
@@ -756,30 +792,7 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 			}
 		});
 		controlBar.find("button:last").click(sendMessageAction);
-		
-		connectionMgr.addConnectionListener([
-				ConnectionEventType.MessageReceived
-			],
-			
-			function(event) {
-				var eventChat = event.chat;
-				if (eventChat != chat) {
-					return;
-				}
-				var contact = conn.getContact(eventChat.bareJID);
-				var showName = (contact) ? contact.getShowName() : eventChat.bareJID.getNode();
-				var message = event.stanza;
-				messageArea.append("<div class='contactMessage'>" + showName + ":" + message.getBody() + "</div>");
-				$.layoutEngine(imChatlayoutSettings);
-				if (messageArea.is(":visible")) {
-					scrollToWindowBottom();
-				}
 
-				if (!contactChatPanel.is(":visible")) {
-					chatPanelTab.addClass("hasNewMessage");
-				}
-			}
-		);
 	
 //		contactChatPanel.append(controlBar);
 		chatPanel.append(contactChatPanel);

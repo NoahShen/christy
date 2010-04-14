@@ -75,8 +75,9 @@ if(jQuery)( function() {
 							}
 							
 							if (o.menulocFunc) {
-								x = o.menulocFunc().x;
-								y = o.menulocFunc().y;
+								var menuPos = o.menulocFunc();
+								x = menuPos.x;
+								y = menuPos.y;
 							}
 							// Show the menu
 							$(document).unbind('click');
