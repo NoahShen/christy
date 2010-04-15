@@ -33,6 +33,8 @@ public class Activator implements BundleActivator
 
 	private WebC2sController webc2sController;
 
+	private HttpServletServiceTracker httpServletServiceTracker;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -74,6 +76,10 @@ public class Activator implements BundleActivator
 		userAuthenticatorTracker.open();
 		//authenticator
 		
+		httpServletServiceTracker = new HttpServletServiceTracker(context);
+		httpServletServiceTracker.open();
+		
+		
 		loggerServiceTracker = new LoggerServiceTracker(context);
 		loggerServiceTracker.open();
 		
@@ -81,15 +87,15 @@ public class Activator implements BundleActivator
 								xmppParserServiceTracker,
 								streamFeatureStracker,
 								userAuthenticatorTracker,
+								httpServletServiceTracker,
 								loggerServiceTracker);
 
 		c2sManagerRegistration = context.registerService(C2SManager.class.getName(), c2sManager, null);
 
-		webc2sController = new WebC2sController(c2sManager);
-		webc2sController.start();
+//		webc2sController = new WebC2sController(c2sManager);
+//		webc2sController.start();
 		
 		// TODO
-		
 		c2sManager.setName("c2s_web1");
 		c2sManager.setDomain("example.com");
 		c2sManager.setRouterIp("localhost");
@@ -168,6 +174,12 @@ public class Activator implements BundleActivator
 		{
 			webc2sController.stop();
 			webc2sController = null;
+		}
+		
+		if (httpServletServiceTracker != null)
+		{
+			httpServletServiceTracker.close();
+			httpServletServiceTracker = null;
 		}
 	}
 

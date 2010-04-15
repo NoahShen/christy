@@ -10,10 +10,74 @@ Target Server Type    : MYSQL
 Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-04-13 17:47:14
+Date: 2010-04-15 17:44:32
 */
 
 SET FOREIGN_KEY_CHECKS=0;
+-- ----------------------------
+-- Table structure for `enterpriseuser`
+-- ----------------------------
+DROP TABLE IF EXISTS `enterpriseuser`;
+CREATE TABLE `enterpriseuser` (
+  `username` char(50) NOT NULL,
+  `password` char(50) NOT NULL,
+  `creationDate` datetime NOT NULL,
+  `modificationDate` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of enterpriseuser
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for `shop`
+-- ----------------------------
+DROP TABLE IF EXISTS `shop`;
+CREATE TABLE `shop` (
+  `shopId` int(20) NOT NULL,
+  `enterpriseUser` char(50) NOT NULL,
+  `type` text NOT NULL,
+  `title` tinytext NOT NULL,
+  `content` text,
+  `shopImg` text,
+  `creationDate` datetime NOT NULL,
+  `modificationDate` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`shopId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of shop
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for `shopevaluation`
+-- ----------------------------
+DROP TABLE IF EXISTS `shopevaluation`;
+CREATE TABLE `shopevaluation` (
+  `shopId` int(20) NOT NULL default '0',
+  `evaluation` text NOT NULL,
+  PRIMARY KEY  (`shopId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of shopevaluation
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for `shoploc`
+-- ----------------------------
+DROP TABLE IF EXISTS `shoploc`;
+CREATE TABLE `shoploc` (
+  `shopId` int(11) NOT NULL,
+  `longitude` double NOT NULL,
+  `latitude` double NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of shoploc
+-- ----------------------------
+
 -- ----------------------------
 -- Table structure for `user`
 -- ----------------------------

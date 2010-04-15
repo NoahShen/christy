@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/mysql-connector-java-5.0.5-bin.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/org.json.jar" sourcepath="lib/json.zip"/>
 	<classpathentry exported="true" kind="lib" path="lib/db4o-6.4.14.8131-java5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/google-collect-1.0-rc3.jar"/>

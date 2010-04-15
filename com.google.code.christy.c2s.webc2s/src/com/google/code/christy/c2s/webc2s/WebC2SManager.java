@@ -7,6 +7,8 @@ package com.google.code.christy.c2s.webc2s;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -26,7 +28,6 @@ import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
 import org.eclipse.jetty.continuation.Continuation;
 import org.eclipse.jetty.continuation.ContinuationSupport;
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.DefaultHandler;
@@ -34,6 +35,7 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.osgi.framework.ServiceReference;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -124,12 +126,15 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	
 	private UserAuthenticatorTracker userAuthenticatorTracker;
 	
+	private HttpServletServiceTracker httpServletServiceTracker;
+	
 	private LoggerServiceTracker loggerServiceTracker;
 	
 	public WebC2SManager(RouteMessageParserServiceTracker routeMessageParserServiceTracker,
 				XmppParserServiceTracker xmppParserServiceTracker,
 				ChristyStreamFeatureServiceTracker streamFeatureStracker,
 				UserAuthenticatorTracker userAuthenticatorTracker,
+				HttpServletServiceTracker httpServletServiceTracker,
 				LoggerServiceTracker loggerServiceTracker)
 	{
 		super();
@@ -138,6 +143,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		this.xmppParserServiceTracker = xmppParserServiceTracker;
 		this.streamFeatureStracker = streamFeatureStracker;
 		this.userAuthenticatorTracker = userAuthenticatorTracker;
+		this.httpServletServiceTracker = httpServletServiceTracker;
 		this.loggerServiceTracker = loggerServiceTracker;
 	}
 
@@ -310,11 +316,41 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		resource_handler.setWelcomeFiles(new String[] { "index.html" });
 		resource_handler.setResourceBase(getResourceBase());
 		
+		Map<String, ServletContextHandler> servletHandlers = new LinkedHashMap<String, ServletContextHandler>();
+		
 		ServletContextHandler root = new ServletContextHandler(contexts, getContextPath(), ServletContextHandler.SESSIONS);
 		root.addServlet(new ServletHolder(new XmppServlet()), getPathSpec());
+		servletHandlers.put(getContextPath(), root);
+		
+		for (ServiceReference ref : httpServletServiceTracker.getServiceReferences())
+		{
+			String contextPath = (String) ref.getProperty("contextPath");
+			String pathSpec = (String) ref.getProperty("pathSpec");
+			HttpServlet servlet = (HttpServlet) httpServletServiceTracker.getService(ref);
+			if (contextPath == null || pathSpec == null)
+			{
+				continue;
+			}
+			
+			ServletContextHandler contextHandler = servletHandlers.get(contextPath);
+			if (contextHandler == null)
+			{
+				contextHandler = new ServletContextHandler(contexts, contextPath, ServletContextHandler.SESSIONS);
+				servletHandlers.put(contextPath, contextHandler);
+			}
+			contextHandler.addServlet(new ServletHolder(servlet), pathSpec);
+		}
+		
 		
 		HandlerList handlers = new HandlerList();
-		handlers.setHandlers(new Handler[] { root, resource_handler, new DefaultHandler() });
+		
+		for (ServletContextHandler contextHandler : servletHandlers.values())
+		{
+			handlers.addHandler(contextHandler);
+		}
+		
+		handlers.addHandler(resource_handler);
+		handlers.addHandler(new DefaultHandler());
 		server.setHandler(handlers);
 		server.start();
 		

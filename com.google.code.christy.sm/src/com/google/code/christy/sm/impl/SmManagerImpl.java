@@ -6,11 +6,11 @@ package com.google.code.christy.sm.impl;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -87,7 +87,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	
 	private Map<String, OnlineUserImpl> onlineUsers = new ConcurrentHashMap<String , OnlineUserImpl>();
 	
-	private Set<String> c2sSessionNames = new HashSet<String>();
+	private Set<String> c2sSessionNames = new ConcurrentSkipListSet<String>();
 	
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	
@@ -360,6 +360,17 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			}
 		}
 		
+		// Maybe c2s has crashed
+		if (!c2sSessionNames.contains(relatedC2s))
+		{
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("c2s[" + relatedC2s + "] not connected, " + 
+							userNode + "/" + resource + "bind resource failed");
+			}
+			return null;
+		}
+		
 		OnlineUserImpl onlineUser = (OnlineUserImpl) getOnlineUser(userNode);
 		if (onlineUser == null)
 		{
@@ -559,6 +570,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 
 		private void handleInternal(XmlPullParser parser) throws XmlPullParserException, IOException
 		{
+			c2sSessionNames.clear();
 			boolean done = false;
 			while (!done)
 			{
@@ -578,6 +590,11 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 						done = true;
 					}
 				}
+			}
+			
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("c2sNames:" + c2sSessionNames);
 			}
 			
 			OnlineUserImpl[] onlineUsers2 = onlineUsers.values().toArray(new OnlineUserImpl[]{});
@@ -1079,9 +1096,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				
 				
 				RouteMessage responseMessage = 
-					new RouteMessage(getName(), 
-							routeMessage.getFrom(),
-							routeMessage.getStreamId());
+					new RouteMessage(getName(), c2sName, streamId);
 				responseMessage.setXmlStanza(iqError);
 				sendToRouter(responseMessage);
 				
@@ -1123,14 +1138,39 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			
 			
 			userResource2 = createUserResource(node, resource, c2sName, streamId, false);
+			if (userResource2 != null)
+			{
+				Iq iqResult = new Iq(Iq.Type.result);
+				iqResult.setStanzaId(iqRequest.getStanzaId());
+				IqBind resultBind = new IqBind();
+				resultBind.setJid(new JID(node, getDomain(), resource));
+				iqResult.addExtension(resultBind);
+				
+				userResource2.sendToSelfClient(iqResult);
+			}
+			else
+			{
+				XmppError error = new XmppError(XmppError.Condition.internal_server_error);
+				
+				Iq iqError = new Iq(Iq.Type.error);
+				iqError.setStanzaId(iqRequest.getStanzaId());
+				iqError.addExtension(bind);
+				iqError.setError(error);
+				
+				
+				RouteMessage responseMessage = 
+					new RouteMessage(getName(), 
+							routeMessage.getFrom(),
+							routeMessage.getStreamId());
+				responseMessage.setXmlStanza(iqError);
+				sendToRouter(responseMessage);
+				
+				RouteMessage closeRouteMessage = 
+					new RouteMessage(getName(), c2sName, streamId);
+				closeRouteMessage.setCloseStream(true);
+				sendToRouter(closeRouteMessage);
+			}
 			
-			Iq iqResult = new Iq(Iq.Type.result);
-			iqResult.setStanzaId(iqRequest.getStanzaId());
-			IqBind resultBind = new IqBind();
-			resultBind.setJid(new JID(node, getDomain(), resource));
-			iqResult.addExtension(resultBind);
-			
-			userResource2.sendToSelfClient(iqResult);
 			
 		}
 		
