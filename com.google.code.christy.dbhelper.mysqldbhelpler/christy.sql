@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : connection
-Source Server Version : 50022
+Source Server         : christy
+Source Server Version : 50083
 Source Host           : localhost:3306
 Source Database       : christy
 
 Target Server Type    : MYSQL
-Target Server Version : 50022
+Target Server Version : 50083
 File Encoding         : 65001
 
-Date: 2010-04-15 17:44:32
+Date: 2010-04-15 23:33:54
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -56,7 +56,8 @@ CREATE TABLE `shop` (
 DROP TABLE IF EXISTS `shopevaluation`;
 CREATE TABLE `shopevaluation` (
   `shopId` int(20) NOT NULL default '0',
-  `evaluation` text NOT NULL,
+  `itemId` int(20) NOT NULL,
+  `itemName` varchar(50) NOT NULL,
   PRIMARY KEY  (`shopId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -76,6 +77,22 @@ CREATE TABLE `shoploc` (
 
 -- ----------------------------
 -- Records of shoploc
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for `shopvoter`
+-- ----------------------------
+DROP TABLE IF EXISTS `shopvoter`;
+CREATE TABLE `shopvoter` (
+  `username` char(50) NOT NULL,
+  `shopId` int(20) NOT NULL,
+  `itemId` int(20) NOT NULL,
+  `value` int(11) NOT NULL,
+  PRIMARY KEY  (`username`,`shopId`,`itemId`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of shopvoter
 -- ----------------------------
 
 -- ----------------------------
@@ -108,7 +125,7 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster
