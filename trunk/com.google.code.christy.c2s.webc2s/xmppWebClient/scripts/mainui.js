@@ -23,12 +23,8 @@ var appMenuEvents = new Array();
 		}]
 	};
 	var appMenuItems = $("<ul id='appMenuItems' class='contextMenu' style='display:none'>" +
-			"<li class='edit'><a href='#edit'>Edit</a></li>" +
-			"<li class='cut separator'><a href='#cut'>Cut</a></li>" +
-			"<li class='copy'><a href='#copy'>Copy</a></li>" +
-			"<li class='paste'><a href='#paste'>Paste</a></li>" +
-			"<li class='delete'><a href='#delete'>Delete</a></li>" +
-			"<li class='quit separator'><a href='#quit'>Quit</a></li>" +
+			"<li class=''><a href='#imservices'>IM</a></li>" +
+			"<li class=''><a href='#shopServices'>Shop</a></li>" +
 	"</ul>");
 	
 	var appMenu = $("<div id='appMenu'><img id='appMenuImg' src='/resource/status/available.png'/></div>");
@@ -56,8 +52,24 @@ var appMenuEvents = new Array();
 			
 		}, function(action, el, pos) {
 			
-			if (action == "") {
-				// TODO...
+			if (action == "imservices") {
+				var imservices = $("#imservices");
+				if (imservices[0]) {
+					imservices.show();
+					imservices.children(".sexysimple").click();
+					imservices.siblings().hide();
+				}
+				return;
+			} else if (action == "shopServices") {
+				var shopservices = $("#shopservices");
+				if (shopservices[0]) {
+					shopservices.show();
+					shopservices.children(".sexysimple").click();
+					shopservices.siblings().hide();
+				} else {
+					$.include(["/scripts/shopservices.js"]);
+				}
+				
 				return;
 			}
 			

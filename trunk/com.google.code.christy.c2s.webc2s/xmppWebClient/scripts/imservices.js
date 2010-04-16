@@ -695,13 +695,15 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 												"<table>" +
 													"<tr>" +
 														"<td>" +
-															"<button>Close</button>" +
+															"<button>" + $.i18n.prop("imservices.action.close") + "</button>" +
 														"</td>" +
 														"<td style='width:100%;'>" +
 															"<input type='text' style='width:100%;'/>" +
 														"</td>" +
 														"<td>" +
-															"<button>Send</button>" +
+															"<button class='sexybutton sexysimple sexymygray'>" +
+																$.i18n.prop("imservices.action.send") +
+															"</button>" +
 														"</td>" +
 													"</tr>" +
 												"</table>" +
