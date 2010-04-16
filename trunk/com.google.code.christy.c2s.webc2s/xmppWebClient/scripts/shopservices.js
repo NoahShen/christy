@@ -51,14 +51,15 @@
 	var searchBar = $("<div style='text-align:center;margin:auto;'>" +
 							"<input type='text' style='margin-right:0.1cm;'/>" +
 							"<button class='sexybutton sexysimple sexymygray sexysmall'>Search</button>" +
-							"<button class='sexybutton sexysimple sexymygray sexysmall'>Search Near</button>" +
 						"</div>");
 
 	searchBar.attr("type", "shopsearch");
 	
 	shopservicesCenter.append(searchBar);
 	
-	shopservicesCenter.append("<br/>");
+	var br = $("<br/>");
+	br.attr("type", "shopsearch");
+	shopservicesCenter.append(br);
 	
 	var popularArea = $("<table>" +
 							"<tr>" +
@@ -77,9 +78,15 @@
 								"<td>Popular Area4</td>" +
 							"</tr>" +
 						"</table>");
-	
+	popularArea.attr("type", "shopsearch");
 	shopservicesCenter.append(popularArea);
 
+	var searchNear = $("<div style='right:0;bottom:0;position:absolute;'>" +
+							"<button class='sexybutton sexysimple sexymygray sexysmall'>Search Near</button>" +
+						"</div>");
+	searchNear.attr("type", "shopsearch");
+	shopservicesCenter.append(searchNear);
+	
 	shopservices.append(shopservicesCenter);
 	
 	shopsearchTablayoutSettings = {
