@@ -14,7 +14,7 @@ $(document).ready(function() {
 	$.i18n.properties({
 	    name: "i18n",
 	    path: "/i18n/",
-	    mode: "both",
+	    mode: "map",
 	    language:"zh_CN",
 	    callback: function() {
 
@@ -147,7 +147,7 @@ $(document).ready(function() {
 	$.i18n.properties({
 	    name: "i18n",
 	    path: "/i18n/",
-	    mode: "both",
+	    mode: "map",
 	    language: "zh_CN",
 	    callback: function() {
 
