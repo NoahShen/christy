@@ -54,7 +54,7 @@
 									"<button style='float:left;margin-left:0.2cm;' class='sexybutton sexysimple sexymygray sexysmall'>Back</button>" +
 								"</td>" +
 								"<td style='width:33%;'>" +
-									"<div id='shopTitle'></div>" +
+									"<div id='shopTitle'>Search</div>" +
 								"</td>" +
 								"<td>" +
 									"<button style='float:right;margin-right:1cm;' class='sexybutton sexysimple sexymygray sexysmall'>Search Near</button>" +
@@ -66,6 +66,7 @@
 		var showItem = $("#shopCenter").children("div:visible");
 		var prev = showItem.prev();
 		if (prev[0]) {
+			$("#shopTitle").text(prev.attr("title"));
 			prev.siblings().hide();
 			prev.show();
 		}
@@ -75,8 +76,6 @@
 	controlBar.find("button:last").click(function(){
 		var shopList = $("#shoplist");
 		shopList.empty();
-		shopList.siblings().hide();
-		shopList.show();
 		
 		var shopInfo = {
 			id: 0,
@@ -91,11 +90,16 @@
 		
 		var shopTable = createShopInfo(shopInfo);
 		shopList.append(shopTable);
+		
+		$("#shopTitle").text(shopList.attr("title"));
+		shopList.siblings().hide();
+		shopList.show();
 	});
 	
 	shopservices.append(controlBar);
+	
 	var shopCenter = $("<div id='shopCenter'></div>");
-	var shopSearch = $("<div id='shopSearch' class='marginpadding'></div>");
+	var shopSearch = $("<div id='shopSearch' title='Search' class='marginpadding'></div>");
 	var searchBar = $("<div style='text-align:center;margin:auto;'>" +
 							"<input type='text' style='margin-right:0.1cm;'/>" +
 							"<button class='sexybutton sexysimple sexymygray sexysmall'>Search</button>" +
@@ -103,8 +107,7 @@
 	
 	shopSearch.append(searchBar);
 	
-	var br = $("<br/>");
-	shopSearch.append(br);
+	shopSearch.append("<br/>");
 	
 	var popularArea = $("<table>" +
 							"<tr>" +
@@ -124,16 +127,14 @@
 							"</tr>" +
 						"</table>");
 	shopSearch.append(popularArea);	
-	shopCenter.append(shopSearch);
+	shopCenter.append(shopSearch);	
+
 	
-	
-	
-	
-	var shopList = $("<div id='shoplist' class='marginpadding' style='display:none;'></div>");
+	var shopList = $("<div id='shoplist' title='Search Result' class='marginpadding' style='display:none;'></div>");
 	shopCenter.append(shopList);
 	
-	var shopDetail = $("<div id='shopdetail' class='marginpadding' style='display:none;'></div>");
-	shopCenter.append(shopDetail);
+	var shopDetailJqObj = $("<div id='shopdetail' class='marginpadding' style='display:none;'></div>");
+	shopCenter.append(shopDetailJqObj);
 	
 	shopservices.append(shopCenter);
 	
@@ -141,24 +142,31 @@
 	shopserviceTablayoutSettings = {
 		Name: "Main",
         Dock: $.layoutEngine.DOCK.FILL,
-        EleID: "main",        
-        Children:[{
-			Name: "Fill",
+        EleID: "main",
+		Children:[{
+			Name: "Top",
 			Dock: $.layoutEngine.DOCK.FILL,
-	 		EleID: "shopCenter"
-		},{
- 			Name: "Bottom",
-			Dock: $.layoutEngine.DOCK.BOTTOM,
-			EleID: "shopcontrolbar",
-			Height: 30
+			EleID: "shopservices",
+			Children:[{
+	 			Name: "Top2",
+				Dock: $.layoutEngine.DOCK.TOP,
+				EleID: "shopcontrolbar",
+				Height: 30
+			}, {
+				Name: "Fill2",
+				Dock: $.layoutEngine.DOCK.FILL,
+		 		EleID: "shopCenter"
+			}]
 		}]
+        
 	};
 	
 	
 	$("#main").append(shopservices);
 	shopservices.siblings().hide();
 	
-//	$.layoutEngine(shopserviceTablayoutSettings);
+	$.layoutEngine(shopserviceTablayoutSettings);
+	
 })();
 
 function createShopInfo(shopInfo) {
@@ -220,6 +228,7 @@ function createShopInfo(shopInfo) {
 		
 		var shopDetailJqObj = $("#shopdetail");
 		shopDetailJqObj.empty();
+		shopDetailJqObj.attr("title", "上海1号私藏菜");
 		var baseInfo = shopDetail.basicInfo;
 		var shopBaseInfo = $("<table shopId='" + baseInfo.id + "'>" +
 								"<tr>" +
@@ -258,7 +267,7 @@ function createShopInfo(shopInfo) {
 		}
 		shopDetailJqObj.append(evaluJqObj);
 		
-//		shopDetailJqObj.append("<br/>");
+		shopDetailJqObj.append("<br/>");
 		
 		var comms = shopDetail.comments;
 		var commsJqObj = $("<div></div>");
@@ -277,10 +286,12 @@ function createShopInfo(shopInfo) {
 									"</tr>" +
 								"</table>");
 		}
+		
+		$("#shopTitle").text(shopDetailJqObj.attr("title"));
 		shopDetailJqObj.append(commsJqObj);
 		shopDetailJqObj.siblings().hide();
 		shopDetailJqObj.show();
-//		$.layoutEngine(shopserviceTablayoutSettings);
+		$.layoutEngine(shopserviceTablayoutSettings);
 	});
 	
 	return shopInfoTable;
