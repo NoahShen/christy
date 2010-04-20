@@ -26,6 +26,8 @@
 (function($) {
 
 	$.extend({
+		// TODO added by Noah
+		defaultTag: 'script',
 		// You can change the base path to be applied in all imports
 		ImportBasePath: '',
 		// Associative array storing wating tasks and their callback
@@ -81,11 +83,18 @@
             } else {
                 m = data.match(/([^\/\\]+)$/);
                 if (m) {
-					return {
+                	// TODO changed by Noah
+                	return {
 						filename: m[1],
 						ext: null,
-						tag: null
+						tag: defaultTag
 					};
+					
+//					return {
+//						filename: m[1],
+//						ext: null,
+//						tag: null
+//					};
 				}
 				else {
 					return {

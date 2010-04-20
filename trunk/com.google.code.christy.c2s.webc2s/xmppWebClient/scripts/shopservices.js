@@ -58,22 +58,26 @@
 								"</td>" +
 								"<td>" +
 									"<button style='float:right;margin-right:1cm;' class='sexybutton sexysimple sexymygray sexysmall'>Search Near</button>" +
+									"<button style='float:right;margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map List</button>" +
+									"<button style='float:right;margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map</button>" +
 								"</td>" +
 							"</tr>" +
 						"</table>");
-						
-	controlBar.find("button:first").click(function(){
+				
+	var buttons = controlBar.find("button");		
+	$(buttons.get(0)).click(function(){
 		var showItem = $("#shopCenter").children("div:visible");
 		var prev = showItem.prev();
 		if (prev[0]) {
 			$("#shopTitle").text(prev.attr("title"));
 			prev.siblings().hide();
 			prev.show();
+			$.layoutEngine(shopserviceTablayoutSettings);
 		}
 		
 	});
 	
-	controlBar.find("button:last").click(function(){
+	$(buttons.get(1)).click(function(){
 		var shopList = $("#shoplist");
 		shopList.empty();
 		
@@ -94,6 +98,21 @@
 		$("#shopTitle").text(shopList.attr("title"));
 		shopList.siblings().hide();
 		shopList.show();
+	});
+	
+	$(buttons.get(2)).click(function(){
+		var shopInfo = {
+			id: 0,
+			name: "上海1号私藏菜",
+			imgSrc: "/resource/hongshaorou.jpg",
+			hasCoupon: true,
+			score: 90,
+			perCapita: 50,
+			street: "鲁班路",
+			type: "本帮菜",
+			longitude: 31.221891,
+			latitude: 121.443297
+		};
 	});
 	
 	shopservices.append(controlBar);
@@ -165,9 +184,17 @@
 	$("#main").append(shopservices);
 	shopservices.siblings().hide();
 	
+	
 	$.layoutEngine(shopserviceTablayoutSettings);
 	
 })();
+
+function showShopServices() {
+	var shopservices = $("#shopservices");
+	shopservices.siblings().hide();
+	shopservices.show();
+	$.layoutEngine(shopserviceTablayoutSettings);
+}
 
 function createShopInfo(shopInfo) {
 	var shopInfoTable = $("<table shopId='" + shopInfo.id + "'>" +
