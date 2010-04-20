@@ -772,12 +772,15 @@ public class XMPPParserImpl implements XmppParser
 		buf.append(">");
 		
 		boolean done = false;
+		boolean hasContent = false;
 		while (!done)
 		{
 			int eventType = parser.next();
 			String currentElement = parser.getName();
+			
 			if (eventType == XmlPullParser.START_TAG)
 			{
+				hasContent = false;
 				String prefix2 = parser.getPrefix();
 				String nspace2 = parser.getNamespace(null);
 				if (prefix2 != null)
@@ -808,19 +811,28 @@ public class XMPPParserImpl implements XmppParser
 			}
 			else if (eventType == XmlPullParser.TEXT)
 			{
+				hasContent = true;
 				buf.append(parser.getText());
 			}
 			else if (eventType == XmlPullParser.END_TAG)
 			{
-				String prefix2 = parser.getPrefix();
-				if (prefix2 != null)
+				if (hasContent)
 				{
-					buf.append("</" + prefix2 + ":" + currentElement + ">");
+					String prefix2 = parser.getPrefix();
+					if (prefix2 != null)
+					{
+						buf.append("</" + prefix2 + ":" + currentElement + ">");
+					}
+					else
+					{
+						buf.append("</" + currentElement + ">");
+					}
 				}
 				else
 				{
-					buf.append("</" + currentElement + ">");
+					buf.insert(buf.length() - 1, "/");
 				}
+				
 				if (currentElement.equals(elementName))
 				{
 					done = true;

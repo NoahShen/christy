@@ -442,6 +442,13 @@
 })();
 
 
+function showImServices() {
+	var imservices = $("#imservices");
+	imservices.siblings().hide();
+	imservices.show();
+	imservices.children(".sexysimple").click();
+}
+
 function createContactJqObj(newContact) {
 	
 	var newBareJid = newContact.getBareJid();

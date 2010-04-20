@@ -1,0 +1,18 @@
+<html>
+	<head>
+		<script src="http://ditu.google.cn/maps?file=api&amp;v=2&amp;key=ABQIAAAAuzpWr51oR6m775odTgrhPBQEO34WZEWuIFq1A7yobGXPE-K5exS2AO9TF78NrQFufRMT68o4QfnoUA&sensor=false" type="text/javascript"></script>
+		<script>
+			function initialize() {
+				if (GBrowserIsCompatible()) {
+	        		var map = new GMap2(document.getElementById("map_canvas"));
+	        		map.setCenter(new GLatLng(31.221891, 121.443297), 13);
+	        		window.parent.mapFrameLoaded();
+	      		}
+	    	}
+			
+		</script>
+	</head>
+	<body onload="initialize()" onunload="GUnload()">
+		<div id='map_canvas' style='width:100%;height:100%;'></div>
+	</body>
+</html>

@@ -25,6 +25,7 @@ var appMenuEvents = new Array();
 	var appMenuItems = $("<ul id='appMenuItems' class='contextMenu' style='display:none'>" +
 			"<li class=''><a href='#imservices'>IM</a></li>" +
 			"<li class=''><a href='#shopServices'>Shop</a></li>" +
+			"<li class=''><a href='#mapServices'>Map</a></li>" +
 	"</ul>");
 	
 	var appMenu = $("<div id='appMenu'><img id='appMenuImg' src='/resource/status/available.png'/></div>");
@@ -55,19 +56,24 @@ var appMenuEvents = new Array();
 			if (action == "imservices") {
 				var imservices = $("#imservices");
 				if (imservices[0]) {
-					imservices.show();
-					imservices.children(".sexysimple").click();
-					imservices.siblings().hide();
+					showImServices();
 				}
 				return;
 			} else if (action == "shopServices") {
 				var shopservices = $("#shopservices");
 				if (shopservices[0]) {
-					shopservices.show();
-					shopservices.children(".sexysimple").click();
-					shopservices.siblings().hide();
+					showShopServices();
 				} else {
 					$.include(["/scripts/shopservices.js"]);
+				}
+				
+				return;
+			} else if (action == "mapServices") {
+				var mapServices = $("#mapservices");
+				if (mapServices[0]) {
+					showMapServices();
+				} else {
+					$.include(["/scripts/mapservices.js"]);
 				}
 				
 				return;
