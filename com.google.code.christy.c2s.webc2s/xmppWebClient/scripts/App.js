@@ -204,3 +204,17 @@ function loginSuccess() {
 	});
 	
 }
+
+function getCurrentPosition(success_callback, error_callback) {
+	if (typeof (geo_position_js) == "undefined") {
+		$.include(["/scripts/lib/geo.js"], function(){
+			if(geo_position_js.init()){
+				geo_position_js.getCurrentPosition(success_callback,error_callback,{enableHighAccuracy:true});
+			}
+		});
+	} else {
+		if(geo_position_js.init()){
+			geo_position_js.getCurrentPosition(success_callback,error_callback,{enableHighAccuracy:true});
+		}
+	}
+}

@@ -7,6 +7,7 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.code.christy.lib.ConnectionPool;
 import com.google.code.christy.sm.contactmgr.RosterItem;
 import com.google.code.christy.sm.contactmgr.RosterItemDbHelper;
 import com.google.code.christy.sm.contactmgr.RosterItem.Ask;

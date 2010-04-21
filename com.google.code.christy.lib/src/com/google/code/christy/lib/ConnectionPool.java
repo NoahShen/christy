@@ -1,4 +1,4 @@
-package com.google.code.christy.dbhelper.mysqldbhelpler;
+package com.google.code.christy.lib;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Driver;
