@@ -37,4 +37,10 @@ public class GeoUtils
 		s = Math.round(s * 10000) / 10000;
 		return s;
 	}
+	
+//	public static void main(String[] args)
+//	{
+//		double distance = distanceOfTwoPoints(121.474707, 31.2041252, 121.443297, 31.221891, GaussSphere.WGS84);
+//		System.out.println(distance);
+//	}
 }
