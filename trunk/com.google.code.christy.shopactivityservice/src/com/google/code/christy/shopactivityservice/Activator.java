@@ -34,9 +34,9 @@ public class Activator implements BundleActivator
 						"123456");
 		connPool .createPool();
 		
-		ShopLocDbhelper shopLocDbhelper = new ShopLocDbhelper(connPool);
+		ShopDbhelper shopDbhelper = new ShopDbhelper(connPool);
 		
-		ShopServlet shopServlet = new ShopServlet(loggerServiceTracker, shopLocDbhelper);
+		ShopServlet shopServlet = new ShopServlet(loggerServiceTracker, shopDbhelper);
 		Hashtable<String, String> properties = new Hashtable<String, String>();
 		properties.put("contextPath", "/shop");
 		properties.put("pathSpec", "/");

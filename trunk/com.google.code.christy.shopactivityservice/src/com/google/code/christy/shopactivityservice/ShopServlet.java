@@ -26,13 +26,13 @@ public class ShopServlet extends HttpServlet
 
 	private LoggerServiceTracker loggerServiceTracker;
 
-	private ShopLocDbhelper shopLocDbhelper;
+	private ShopDbhelper shopDbhelper;
 	
-	public ShopServlet(LoggerServiceTracker loggerServiceTracker, ShopLocDbhelper shopLocDbhelper)
+	public ShopServlet(LoggerServiceTracker loggerServiceTracker, ShopDbhelper shopLocDbhelper)
 	{
 		super();
 		this.loggerServiceTracker = loggerServiceTracker;
-		this.shopLocDbhelper = shopLocDbhelper;
+		this.shopDbhelper = shopLocDbhelper;
 	}
 
 	@Override
@@ -133,23 +133,47 @@ public class ShopServlet extends HttpServlet
 		
 		try
 		{
-			ShopLoc[] shopLocs = shopLocDbhelper.getAllShopLoc();
-			List<ShopLoc> nearShopLocs = new ArrayList<ShopLoc>();
-			for (ShopLoc loc : shopLocs)
+			Shop[] shops = shopDbhelper.getAllShop();
+			List<Shop> nearShops = new ArrayList<Shop>();
+			for (Shop shop : shops)
 			{
+				
 				double distance = GeoUtils.distanceOfTwoPoints(longitude, latitude, 
-									loc.getLongitude(), loc.getLatitude(),
+									shop.getLongitude(), shop.getLatitude(),
 									GeoUtils.GaussSphere.WGS84);
-				// TODO
-				System.out.println(distance);
-				if (distance <= 5)
+
+				if (distance <= 10 * 1000)
 				{
-					nearShopLocs.add(loc);
+					nearShops.add(shop);
 				}
 			}
-			// TODO
-			System.out.println(nearShopLocs);
-			System.out.println(shopLocs);
+			
+			JSONArray array = new JSONArray();
+			for (Shop s : nearShops)
+			{
+				JSONObject jsonObj = new JSONObject();
+				try
+				{
+					jsonObj.put("id", s.getShopId());
+					jsonObj.put("name", s.getTitle());
+					jsonObj.put("imgSrc", s.getShopImg());
+					jsonObj.put("hasCoupon", true);
+					jsonObj.put("score", 90);
+					jsonObj.put("perCapita", 50);
+					jsonObj.put("street", s.getStreet());
+					jsonObj.put("type", s.getType());
+					array.put(jsonObj);
+				}
+				catch (JSONException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+			
+			
+			resp.getWriter().write(array.toString());
 			
 		}
 		catch (Exception e1)
@@ -159,32 +183,7 @@ public class ShopServlet extends HttpServlet
 		}
 		
 		
-		JSONArray array = new JSONArray();
-		for (int i = 0; i < 10; ++i)
-		{
-			JSONObject jsonObj = new JSONObject();
-			try
-			{
-				jsonObj.put("id", i);
-				jsonObj.put("name", "上海1号私藏菜" + i);
-				jsonObj.put("imgSrc", "/resource/hongshaorou.jpg");
-				jsonObj.put("hasCoupon", true);
-				jsonObj.put("score", 90 + i);
-				jsonObj.put("perCapita", 50 + i);
-				jsonObj.put("street", "鲁班路" + i);
-				jsonObj.put("type", "本帮菜" + i);
-				array.put(jsonObj);
-			}
-			catch (JSONException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
 		
-		
-		resp.getWriter().write(array.toString());
 		
 	}
 
