@@ -8,6 +8,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.lib.ConnectionPool;
 import com.google.code.christy.log.LoggerServiceTracker;
 
 public class Activator implements BundleActivator
@@ -20,13 +21,22 @@ public class Activator implements BundleActivator
 	 */
 	private LoggerServiceTracker loggerServiceTracker;
 	private ServiceRegistration shopServletRegistration;
+	private ConnectionPool connPool;
 
 	public void start(BundleContext context) throws Exception
 	{
 		loggerServiceTracker = new LoggerServiceTracker(context);
 		loggerServiceTracker.open();
 		
-		ShopServlet shopServlet = new ShopServlet(loggerServiceTracker);
+		connPool = new ConnectionPool("com.mysql.jdbc.Driver",
+						"jdbc:mysql://localhost/christy",
+						"root",
+						"123456");
+		connPool .createPool();
+		
+		ShopLocDbhelper shopLocDbhelper = new ShopLocDbhelper(connPool);
+		
+		ShopServlet shopServlet = new ShopServlet(loggerServiceTracker, shopLocDbhelper);
 		Hashtable<String, String> properties = new Hashtable<String, String>();
 		properties.put("contextPath", "/shop");
 		properties.put("pathSpec", "/");
@@ -44,6 +54,11 @@ public class Activator implements BundleActivator
 		{
 			loggerServiceTracker.close();
 			loggerServiceTracker = null;
+		}
+		
+		if (connPool != null)
+		{
+			connPool.closeConnectionPool();
 		}
 		
 		if (shopServletRegistration != null)

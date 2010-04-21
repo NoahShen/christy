@@ -6,6 +6,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.lib.ConnectionPool;
 import com.google.code.christy.sm.contactmgr.RosterItem;
 import com.google.code.christy.sm.contactmgr.RosterItemDbHelper;
 import com.google.code.christy.sm.user.User;
