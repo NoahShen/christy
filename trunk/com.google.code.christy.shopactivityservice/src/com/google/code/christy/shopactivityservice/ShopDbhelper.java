@@ -6,6 +6,7 @@ package com.google.code.christy.shopactivityservice;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +26,13 @@ public class ShopDbhelper
 	
 	private static final String GETALLSHOPWITHOVERALL_SQL = "SELECT * FROM shop LEFT JOIN shopoverall O ON O.shopId = shop.shopId";
 	
-	private static final String GETSHOPWITHOVERALL_SQL = "SELECT * FROM (SELECT * FROM shop WHERE shopId = ?) R LEFT JOIN shopoverall O ON O.shopId = R.shopId";
+	private static final String GETSHOPDETAIL_SQL = "SELECT R.shopId, R.enterpriseUser, R.type, R.title, R.content, R.shopImg, R.district, R.street, R.tel, R.longitude, R.latitude," +
+							" O.itemName, O.itemValue," +
+							" C.commentId, C.username, C.score, C.content AS commentContent, C.modificationDate as commentMoDate FROM" +
+							" (SELECT * FROM shop WHERE shopId = ?) R" +
+							" LEFT JOIN shopoverall O ON O.shopId = R.shopId" +
+							" LEFT JOIN shopcomment C ON C.shopId = R.shopId" +
+							" ORDER BY C.modificationDate DESC";
 
 	public ShopDbhelper(ConnectionPool connectionPool)
 	{
@@ -129,8 +136,10 @@ public class ShopDbhelper
 				String itemValue = shopResSet.getString("itemValue");
 				if (itemName != null)
 				{
-					shop.putOverall(itemName, itemValue);
+					shop.addOverall(itemName, itemValue);
 				}
+				
+				
 				
 			}
 			return shops.values().toArray(new Shop[]{});
@@ -145,15 +154,16 @@ public class ShopDbhelper
 		}
 	}
 	
-	public Shop getShop(long shopId) throws Exception
+	public Shop getShopDetail(long shopId) throws Exception
 	{
 		Connection connection = null;
 		try
 		{
 			connection = connectionPool.getConnection();
-			PreparedStatement preStat = connection.prepareStatement(GETSHOPWITHOVERALL_SQL);
+			PreparedStatement preStat = connection.prepareStatement(GETSHOPDETAIL_SQL);
 			preStat.setLong(1, shopId);
 			ResultSet shopResSet = preStat.executeQuery();
+
 			Shop shop = null;
 			while (shopResSet.next()) 
 			{
@@ -189,10 +199,32 @@ public class ShopDbhelper
 				{
 					String itemName = shopResSet.getString("itemName");
 					String itemValue = shopResSet.getString("itemValue");
-					if (itemName != null)
+					if (itemName != null && !shop.containOverall(itemName))
 					{
-						shop.putOverall(itemName, itemValue);
+						shop.addOverall(itemName, itemValue);
 					}
+					
+					long commentId = shopResSet.getLong("commentId");
+					if (!shop.containComment(commentId))
+					{
+						String username = shopResSet.getString("username");
+						int score = shopResSet.getInt("score");
+						String commentContent = shopResSet.getString("commentContent");
+						Timestamp timestamp = shopResSet.getTimestamp("commentMoDate");
+						
+						ShopComment comment = new ShopComment();
+						comment.setCommentId(commentId);
+						comment.setContent(commentContent);
+						comment.setLasModitDate(timestamp.getTime());
+						comment.setScore(score);
+						comment.setUsername(username);
+						comment.setShopId(id);
+						shop.addComment(comment);
+					}
+					
+					
+					
+					
 				}
 			}
 			return shop;

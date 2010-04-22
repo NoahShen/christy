@@ -1,3 +1,5 @@
+var shopSearchResult = {};
+
 (function() {
 	
 	var shopservices = $("<div id='shopservices'></div>");	
@@ -56,9 +58,10 @@
 					latitude: p.coords.latitude,
 					longitude: p.coords.longitude
 				},
-				success: function(shopSearchResult){
-					for (i = 0; i < shopSearchResult.length; ++i) {
-						var shopTable = createShopInfo(shopSearchResult[i]);
+				success: function(searchResult){
+					shopSearchResult = searchResult;
+					for (i = 0; i < searchResult.length; ++i) {
+						var shopTable = createShopInfo(searchResult[i]);
 						shopList.append(shopTable);
 					}
 					$.layoutEngine(shopserviceTablayoutSettings);
@@ -213,6 +216,7 @@ function showShopDetail(shopDetail) {
 	shopDetailJqObj.empty();
 	shopDetailJqObj.attr("title", "上海1号私藏菜");
 	var baseInfo = shopDetail.basicInfo;
+	var overall = shopDetail.overall;
 	var shopBaseInfo = $("<table shopId='" + baseInfo.id + "'>" +
 							"<tr>" +
 								"<td>" +
@@ -220,7 +224,9 @@ function showShopDetail(shopDetail) {
 								"</td>" +
 								"<td>" +
 									"<div>" + baseInfo.name + " "+ baseInfo.hasCoupon + "</div>" +
-									"<div>" + shopDetail.overall.score + " "+ shopDetail.overall.perCapita + "</div>" +
+									"<div>" + overall.score + " "+ overall.perCapita + "</div>" +
+									"<span>Service:" + overall.service + "</span>" + 
+									"<span>Taste:" + overall.taste + "</span>" + 
 								"</td>" +
 							"</tr>" +
 						"</table>");
@@ -241,14 +247,6 @@ function showShopDetail(shopDetail) {
 					"</table>");
 					
 	shopDetailJqObj.append(contact);
-	
-	var evaluJqObj = $("<div></div>");		
-	var evalus = shopDetail.evaluation;
-	for (i = 0; i < evalus.length; ++i) {
-		var evaluation = evalus[i];
-		evaluJqObj.append("<span>" + evaluation.name + ":" + evaluation.value + "</span>");
-	}
-	shopDetailJqObj.append(evaluJqObj);
 	
 	shopDetailJqObj.append("<br/>");
 	
