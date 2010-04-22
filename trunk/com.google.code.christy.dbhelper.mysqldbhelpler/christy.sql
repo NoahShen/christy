@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : christy
-Source Server Version : 50083
+Source Server         : connection
+Source Server Version : 50022
 Source Host           : localhost:3306
 Source Database       : christy
 
 Target Server Type    : MYSQL
-Target Server Version : 50083
+Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-04-21 21:40:36
+Date: 2010-04-22 12:15:30
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -55,7 +55,7 @@ CREATE TABLE `shop` (
 -- ----------------------------
 -- Records of shop
 -- ----------------------------
-INSERT INTO `shop` VALUES ('0', 'ENoah', 'food::localcuisine ', '上海1号私藏菜', '私藏菜比私房菜更多一点点“藏”的意思，有“酒香不怕巷子深”的傲气，正合了中国人爱追根究底的惯常。所以对于私藏变为公众皆知的秘密也就理所当然，无数的欲说还休。\r\n   老上海的韵味一边敛一边放。老式台灯、桌案、杨州漆器、铁质鸟笼、欧式沙发、回纹走廊等等，尽数着婉约复古的气息，美食暖胃，缓如流水。\r\n   上海1号私藏菜是以本帮菜、海派菜为主打，每一道菜都是玩过花样儿的。即使冠着简单寻常的名字，厨师们却下了无数的心思在里面，让时尚上海人的健康饮食观念贯彻得更透，浓油赤酱皆改作了清爽耐品，许多烹饪秘方私家独创，精致耐品，故名之“私藏菜”。\r\n   细碟精巧的手撕豇豆藏着淡淡芥末味，毫无疑问地手工制作；老弄堂红烧肉的选材更是讲究，只用野猪与家猪杂交的第五代猪肉；火山石器烧裙翅用功深，滋补功效好，中看中吃', '/resource/hongshaorou.jpg', '静安区', '南京西路1856号', '021-51501177', '121.443297', '31.221891', '2010-04-18 10:29:22', '2010-04-21 21:01:54');
+INSERT INTO `shop` VALUES ('0', 'ENoah', 'food::localcuisine ', '上海1号私藏菜', '私藏菜比私房菜更多一点点“藏”的意思，有“酒香不怕巷子深”的傲气，正合了中国人爱追根究底的惯常。所以对于私藏变为公众皆知的秘密也就理所当然，无数的欲说还休。\r\n   老上海的韵味一边敛一边放。老式台灯、桌案、杨州漆器、铁质鸟笼、欧式沙发、回纹走廊等等，尽数着婉约复古的气息，美食暖胃，缓如流水。\r\n   上海1号私藏菜是以本帮菜、海派菜为主打，每一道菜都是玩过花样儿的。即使冠着简单寻常的名字，厨师们却下了无数的心思在里面，让时尚上海人的健康饮食观念贯彻得更透，浓油赤酱皆改作了清爽耐品，许多烹饪秘方私家独创，精致耐品，故名之“私藏菜”。\r\n   细碟精巧的手撕豇豆藏着淡淡芥末味，毫无疑问地手工制作；老弄堂红烧肉的选材更是讲究，只用野猪与家猪杂交的第五代猪肉；火山石器烧裙翅用功深，滋补功效好，中看中吃', '/resource/hongshaorou.jpg', '静安区', '南京西路1856号', '021-51501177', '121.443297', '31.221891', '2010-04-18 10:29:22', '2010-04-22 11:04:11');
 
 -- ----------------------------
 -- Table structure for `shopevaluation`
@@ -73,19 +73,22 @@ CREATE TABLE `shopevaluation` (
 -- ----------------------------
 
 -- ----------------------------
--- Table structure for `shoploc`
+-- Table structure for `shopoverall`
 -- ----------------------------
-DROP TABLE IF EXISTS `shoploc`;
-CREATE TABLE `shoploc` (
-  `shopId` int(11) NOT NULL,
-  `longitude` double NOT NULL,
-  `latitude` double NOT NULL
+DROP TABLE IF EXISTS `shopoverall`;
+CREATE TABLE `shopoverall` (
+  `shopId` int(20) NOT NULL,
+  `itemId` int(20) NOT NULL,
+  `itemName` varchar(50) NOT NULL,
+  `itemValue` varchar(50) NOT NULL,
+  PRIMARY KEY  (`shopId`,`itemId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
--- Records of shoploc
+-- Records of shopoverall
 -- ----------------------------
-INSERT INTO `shoploc` VALUES ('0', '121.443297', '31.221891');
+INSERT INTO `shopoverall` VALUES ('0', '0', 'score', '90');
+INSERT INTO `shopoverall` VALUES ('0', '1', 'perCapita', '95');
 
 -- ----------------------------
 -- Table structure for `shopvoter`
@@ -133,7 +136,7 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster

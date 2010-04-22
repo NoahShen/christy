@@ -3,6 +3,7 @@ package com.google.code.christy.shopactivityservice;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -47,7 +48,7 @@ public class ShopServlet extends HttpServlet
 		String action = req.getParameter("action");
 		if ("search".equals(action))
 		{
-			handleSearchNear(req, resp);
+			handleSearchNearby(req, resp);
 		}
 		else if ("getshopdetail".equals(action))
 		{
@@ -58,28 +59,31 @@ public class ShopServlet extends HttpServlet
 	private void handleGetShopDetail(HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
 		String shopId = req.getParameter("shopid");
-		JSONObject jsonObj = new JSONObject();
 		
 		try
 		{
+			Shop shop = shopDbhelper.getShop(Long.parseLong(shopId));
+			JSONObject jsonObj = new JSONObject();
+			
 			JSONObject basicInfo = new JSONObject();
 			basicInfo.put("id", shopId);
-			basicInfo.put("name", "上海1号私藏菜");
-			basicInfo.put("imgSrc", "/resource/hongshaorou.jpg");
+			basicInfo.put("name", shop.getTitle());
+			basicInfo.put("imgSrc", shop.getShopImg());
 			basicInfo.put("hasCoupon", true);
-			basicInfo.put("score", 90);
-			basicInfo.put("perCapita", 50);
-			basicInfo.put("addr", "上海市静安区南京西路1856号");
-			basicInfo.put("phone", 123456789);
+			
+			
+			JSONObject overall = new JSONObject();
+			for (Map.Entry<String, String> entry : shop.getShopOverall().entrySet())
+			{
+				overall.put(entry.getKey(), entry.getValue());
+			}
+			jsonObj.put("overall", overall);
+			
+			basicInfo.put("addr", shop.getDistrict() + " " + shop.getStreet());
+			basicInfo.put("phone", shop.getTel());
 			jsonObj.put("basicInfo", basicInfo);
 			
-			jsonObj.put("intro", "私藏菜比私房菜更多一点点“藏”的意思，有“酒香不怕巷子深”的傲气，正合了中国人爱追根究底的惯常。" +
-					"所以对于私藏变为公众皆知的秘密也就理所当然，无数的欲说还休。老上海的韵味一边敛一边放。老式台灯、" +
-					"桌案、杨州漆器、铁质鸟笼、欧式沙发、回纹走廊等等，尽数着婉约复古的气息，美食暖胃，缓如流水。" +
-					"上海1号私藏菜是以本帮菜、海派菜为主打，每一道菜都是玩过花样儿的。即使冠着简单寻常的名字，" +
-					"厨师们却下了无数的心思在里面，让时尚上海人的健康饮食观念贯彻得更透，浓油赤酱皆改作了清爽耐品，" +
-					"许多烹饪秘方私家独创，精致耐品，故名之“私藏菜”。细碟精巧的手撕豇豆藏着淡淡芥末味，毫无疑问地手工制作；" +
-					"老弄堂红烧肉的选材更是讲究，只用野猪与家猪杂交的第五代猪肉；火山石器烧裙翅用功深，滋补功效好，中看中吃");
+			jsonObj.put("intro", shop.getContent());
 			
 			
 			
@@ -114,16 +118,18 @@ public class ShopServlet extends HttpServlet
 			jsonObj.put("comments", comments);
 			
 			resp.getWriter().write(jsonObj.toString());
+				
 			
 		}
-		catch (JSONException e)
+		catch (Exception e1)
 		{
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e1.printStackTrace();
 		}
+		
 	}
 
-	private void handleSearchNear(HttpServletRequest req, HttpServletResponse resp) throws IOException
+	private void handleSearchNearby(HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
 		String latitudeStr = req.getParameter("latitude");
 		String longitudeStr = req.getParameter("longitude");
@@ -133,7 +139,7 @@ public class ShopServlet extends HttpServlet
 		
 		try
 		{
-			Shop[] shops = shopDbhelper.getAllShop();
+			Shop[] shops = shopDbhelper.getAllShopWithOverall();
 			List<Shop> nearShops = new ArrayList<Shop>();
 			for (Shop shop : shops)
 			{
@@ -157,11 +163,17 @@ public class ShopServlet extends HttpServlet
 					jsonObj.put("id", s.getShopId());
 					jsonObj.put("name", s.getTitle());
 					jsonObj.put("imgSrc", s.getShopImg());
-					jsonObj.put("hasCoupon", true);
-					jsonObj.put("score", 90);
-					jsonObj.put("perCapita", 50);
+					jsonObj.put("hasCoupon", false);
+					
+					JSONObject overall = new JSONObject();
+					for (Map.Entry<String, String> entry : s.getShopOverall().entrySet())
+					{
+						overall.put(entry.getKey(), entry.getValue());
+					}
+					jsonObj.put("overall", overall);
+					
+					
 					jsonObj.put("street", s.getStreet());
-					jsonObj.put("type", s.getType());
 					array.put(jsonObj);
 				}
 				catch (JSONException e)
