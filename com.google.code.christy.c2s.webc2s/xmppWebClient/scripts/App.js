@@ -198,7 +198,9 @@ function loginSuccess() {
 	$("#loginDiv").css("display", "none");
 	
 	$.include(["/scripts/lib/jquerycontextmenu/jquery.contextMenu.css",
-				"/scripts/lib/jquerycontextmenu/jquery.contextMenu.js"
+				"/scripts/lib/jquerycontextmenu/jquery.contextMenu.js",
+				"/scripts/lib/jquery_pagination/pagination.css",
+				"/scripts/lib/jquery_pagination/jquery.pagination.js"
 				], function(){
 		$.include(["/scripts/mainui.js"]);
 	});
@@ -210,11 +212,15 @@ function getCurrentPosition(success_callback, error_callback) {
 		$.include(["/scripts/lib/geo.js"], function(){
 			if(geo_position_js.init()){
 				geo_position_js.getCurrentPosition(success_callback,error_callback,{enableHighAccuracy:true});
+			} else {
+				alert("geo unavailable");
 			}
 		});
 	} else {
 		if(geo_position_js.init()){
 			geo_position_js.getCurrentPosition(success_callback,error_callback,{enableHighAccuracy:true});
+		} else {
+			alert("geo unavailable");
 		}
 	}
 }

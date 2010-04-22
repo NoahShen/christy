@@ -105,7 +105,7 @@ public class ShopDbhelper
 				Shop shop = shops.get(id);
 				if (shop == null)
 				{
-					shop = new Shop();
+					
 					String eusername = shopResSet.getString("enterpriseUser");
 					String type = shopResSet.getString("type");
 					String title = shopResSet.getString("title");
@@ -117,6 +117,7 @@ public class ShopDbhelper
 					double longitude = shopResSet.getDouble("longitude");
 					double latitude = shopResSet.getDouble("latitude");
 					
+					shop = new Shop();
 					shop.setShopId(id);
 					shop.setEusername(eusername);
 					shop.setType(type);
@@ -129,12 +130,12 @@ public class ShopDbhelper
 					shop.setLatitude(latitude);
 					shop.setLongitude(longitude);
 					
-					shops.put(id, shop);
+					shops.put(shop.getShopId(), shop);
 				}
 				
 				String itemName = shopResSet.getString("itemName");
 				String itemValue = shopResSet.getString("itemValue");
-				if (itemName != null)
+				if (itemName != null && !shop.containOverall(itemName))
 				{
 					shop.addOverall(itemName, itemValue);
 				}

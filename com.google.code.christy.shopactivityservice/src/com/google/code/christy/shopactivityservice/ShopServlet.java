@@ -116,28 +116,34 @@ public class ShopServlet extends HttpServlet
 		String latitudeStr = req.getParameter("latitude");
 		String longitudeStr = req.getParameter("longitude");
 		
+		String pageStr = req.getParameter("page");
+		String countStr = req.getParameter("count");
+		
+		int page = pageStr == null ?  1 : Integer.parseInt(pageStr);
+		int count = countStr == null ?  10 : Integer.parseInt(countStr);
+		
 		double latitude = Double.parseDouble(latitudeStr);
 		double longitude = Double.parseDouble(longitudeStr);
 		
 		try
 		{
 			Shop[] shops = shopDbhelper.getAllShopWithOverall();
-			List<Shop> nearShops = new ArrayList<Shop>();
-			for (Shop shop : shops)
+			List<Shop> nearShops = checkDistance(shops, longitude, latitude);
+			
+			List<Shop> resultShops = new ArrayList<Shop>();
+			
+			int start = (page -1) * count;
+			if (start <= nearShops.size() -1)
 			{
-				
-				double distance = GeoUtils.distanceOfTwoPoints(longitude, latitude, 
-									shop.getLongitude(), shop.getLatitude(),
-									GeoUtils.GaussSphere.WGS84);
-
-				if (distance <= 10 * 1000)
+				for (int i = start; i < nearShops.size() && resultShops.size() < count; ++start,++i)
 				{
-					nearShops.add(shop);
+					resultShops.add(nearShops.get(i));
 				}
 			}
 			
+			JSONObject resultJsonObj = new JSONObject();
 			JSONArray array = new JSONArray();
-			for (Shop s : nearShops)
+			for (Shop s : resultShops)
 			{
 				JSONObject jsonObj = new JSONObject();
 				try
@@ -165,9 +171,9 @@ public class ShopServlet extends HttpServlet
 				}
 				
 			}
-			
-			
-			resp.getWriter().write(array.toString());
+			resultJsonObj.put("total", nearShops.size());
+			resultJsonObj.put("shops", array);
+			resp.getWriter().write(resultJsonObj.toString());
 			
 		}
 		catch (Exception e1)
@@ -179,6 +185,25 @@ public class ShopServlet extends HttpServlet
 		
 		
 		
+	}
+
+	private List<Shop> checkDistance(Shop[] shops, double longitude, double latitude)
+	{
+		List<Shop> nearShops = new ArrayList<Shop>();
+		for (Shop shop : shops)
+		{
+			
+			double distance = GeoUtils.distanceOfTwoPoints(longitude, latitude, 
+								shop.getLongitude(), shop.getLatitude(),
+								GeoUtils.GaussSphere.WGS84);
+
+			if (distance <= 10 * 1000)
+			{
+				nearShops.add(shop);
+			}
+		}
+		
+		return nearShops;
 	}
 
 	@Override

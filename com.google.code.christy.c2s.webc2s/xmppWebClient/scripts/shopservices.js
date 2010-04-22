@@ -44,36 +44,12 @@ var shopSearchResult = {};
 	
 	$(buttons.get(1)).click(function(){
 		var shopList = $("#shoplist");
-		shopList.empty();
+		$(shopList.children()[0]).empty();
 		
 		getCurrentPosition(function(p) {
-			$.ajax({
-				url: "/shop/",
-				dataType: "json",
-				cache: false,
-				type: "get",
-				contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-				data: {
-					action: "search",
-					latitude: p.coords.latitude,
-					longitude: p.coords.longitude
-				},
-				success: function(searchResult){
-					shopSearchResult = searchResult;
-					for (i = 0; i < searchResult.length; ++i) {
-						var shopTable = createShopInfo(searchResult[i]);
-						shopList.append(shopTable);
-					}
-					$.layoutEngine(shopserviceTablayoutSettings);
-				},
-				error: function (xmlHttpRequest, textStatus, errorThrown) {
-					
-				},
-				complete: function(xmlHttpRequest, textStatus) {
-					
-				}
-			});
-		
+			
+			searchShopsByLoc(shopList, p, 1, 2, true);
+			
 		}, function(){});		
 		
 		$("#shopTitle").text(shopList.attr("title"));
@@ -123,7 +99,10 @@ var shopSearchResult = {};
 	shopCenter.append(shopSearch);	
 
 	
-	var shopList = $("<div id='shoplist' title='Search Result' class='marginpadding' style='display:none;'></div>");
+	var shopList = $("<div id='shoplist' title='Search Result' class='marginpadding' style='display:none;'>" +
+						"<div style='width:100%;height:100%;'></div>" +
+						"<div id='pagination' class='pagination'></div>" +
+					"</div>");
 	shopCenter.append(shopList);
 	
 	var shopDetailJqObj = $("<div id='shopdetail' class='marginpadding' style='display:none;'></div>");
@@ -313,5 +292,51 @@ function showShopDetailPanel() {
 	showShopInMap.siblings().hide();
 	showShopInMap.show();
 	
+	$.layoutEngine(shopserviceTablayoutSettings);
+}
+
+function searchShopsByLoc(shopList, p, page, count, updatePage) {
+	
+	$.ajax({
+		url: "/shop/",
+		dataType: "json",
+		cache: false,
+		type: "get",
+		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+		data: {
+			action: "search",
+			latitude: p.coords.latitude,
+			longitude: p.coords.longitude,
+			page: page,
+			count: count
+		},
+		success: function(searchResult){
+			shopSearchResult = searchResult;
+			$(shopList.children()[0]).empty();
+			var shops = searchResult.shops;
+			for (i = 0; i < shops.length; ++i) {
+				var shopTable = createShopInfo(shops[i]);
+				$(shopList.children()[0]).append(shopTable);
+			}
+			if (updatePage) {
+				$("#pagination").pagination(10, {
+					num_edge_entries: 1,
+					num_display_entries: 8,
+					items_per_page: count,
+	                callback: function(page_id, jq) {
+						searchShopsByLoc(shopList, p, page_id + 1, count, false);
+	                }
+	            });
+			}
+			
+			$.layoutEngine(shopserviceTablayoutSettings);
+		},
+		error: function (xmlHttpRequest, textStatus, errorThrown) {
+			
+		},
+		complete: function(xmlHttpRequest, textStatus) {
+			
+		}
+	});
 	$.layoutEngine(shopserviceTablayoutSettings);
 }
