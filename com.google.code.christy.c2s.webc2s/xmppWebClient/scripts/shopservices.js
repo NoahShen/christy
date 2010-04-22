@@ -59,6 +59,8 @@ var shopSearchResult = {};
 		var nextButton = $(this).next();
 		nextButton.siblings().hide();
 		nextButton.show();
+		
+		$.layoutEngine(shopserviceTablayoutSettings);
 	});
 	
 	$(buttons.get(2)).click(function(){
@@ -338,5 +340,5 @@ function searchShopsByLoc(shopList, p, page, count, updatePage) {
 			
 		}
 	});
-	$.layoutEngine(shopserviceTablayoutSettings);
+	
 }
