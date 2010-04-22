@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-04-22 12:15:30
+Date: 2010-04-22 17:33:35
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -56,6 +56,36 @@ CREATE TABLE `shop` (
 -- Records of shop
 -- ----------------------------
 INSERT INTO `shop` VALUES ('0', 'ENoah', 'food::localcuisine ', '上海1号私藏菜', '私藏菜比私房菜更多一点点“藏”的意思，有“酒香不怕巷子深”的傲气，正合了中国人爱追根究底的惯常。所以对于私藏变为公众皆知的秘密也就理所当然，无数的欲说还休。\r\n   老上海的韵味一边敛一边放。老式台灯、桌案、杨州漆器、铁质鸟笼、欧式沙发、回纹走廊等等，尽数着婉约复古的气息，美食暖胃，缓如流水。\r\n   上海1号私藏菜是以本帮菜、海派菜为主打，每一道菜都是玩过花样儿的。即使冠着简单寻常的名字，厨师们却下了无数的心思在里面，让时尚上海人的健康饮食观念贯彻得更透，浓油赤酱皆改作了清爽耐品，许多烹饪秘方私家独创，精致耐品，故名之“私藏菜”。\r\n   细碟精巧的手撕豇豆藏着淡淡芥末味，毫无疑问地手工制作；老弄堂红烧肉的选材更是讲究，只用野猪与家猪杂交的第五代猪肉；火山石器烧裙翅用功深，滋补功效好，中看中吃', '/resource/hongshaorou.jpg', '静安区', '南京西路1856号', '021-51501177', '121.443297', '31.221891', '2010-04-18 10:29:22', '2010-04-22 11:04:11');
+INSERT INTO `shop` VALUES ('1', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:31:15');
+INSERT INTO `shop` VALUES ('2', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:32:23');
+INSERT INTO `shop` VALUES ('3', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:32:29');
+INSERT INTO `shop` VALUES ('4', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:32:34');
+INSERT INTO `shop` VALUES ('5', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:32:46');
+INSERT INTO `shop` VALUES ('6', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:32:53');
+INSERT INTO `shop` VALUES ('7', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:32:57');
+INSERT INTO `shop` VALUES ('8', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:33:05');
+INSERT INTO `shop` VALUES ('9', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:33:10');
+
+-- ----------------------------
+-- Table structure for `shopcomment`
+-- ----------------------------
+DROP TABLE IF EXISTS `shopcomment`;
+CREATE TABLE `shopcomment` (
+  `commentId` int(20) NOT NULL auto_increment,
+  `shopId` int(20) NOT NULL,
+  `username` char(50) NOT NULL,
+  `score` int(20) NOT NULL,
+  `content` text,
+  `creationDate` datetime NOT NULL,
+  `modificationDate` timestamp NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`commentId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of shopcomment
+-- ----------------------------
+INSERT INTO `shopcomment` VALUES ('0', '0', 'Noah', '90', '早就听说这家的菜很好吃了 很多人都喜欢来这家的哦 我是和家人一起来的 那次我们吃的都是很满意呢 这家的环境还是不错哦 价格也是公道的 我们都是可以接受呢 真的是不错哦 热情的服务也是我们非常的满意呢 值得来试试哦', '2010-04-22 14:01:22', '2010-04-22 14:05:20');
+INSERT INTO `shopcomment` VALUES ('1', '0', 'Noah2', '95', '很奇怪的一家店，11点过去，刚开门的时候，居然就排队，排队的都是5、60的老人。诺大的店堂，居然只有非常小的电梯可以上去，一次也就6个人。中午的午市的火山石器烧裙翅吃口不错，才43，的确是特色了。下次有机会来吃点心', '2010-04-22 14:05:46', '2010-04-22 14:05:49');
 
 -- ----------------------------
 -- Table structure for `shopevaluation`
@@ -89,6 +119,8 @@ CREATE TABLE `shopoverall` (
 -- ----------------------------
 INSERT INTO `shopoverall` VALUES ('0', '0', 'score', '90');
 INSERT INTO `shopoverall` VALUES ('0', '1', 'perCapita', '95');
+INSERT INTO `shopoverall` VALUES ('0', '2', 'service', '90');
+INSERT INTO `shopoverall` VALUES ('0', '3', 'taste', '90');
 
 -- ----------------------------
 -- Table structure for `shopvoter`

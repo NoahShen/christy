@@ -48,7 +48,7 @@ public class ShopServlet extends HttpServlet
 		String action = req.getParameter("action");
 		if ("search".equals(action))
 		{
-			handleSearchNearby(req, resp);
+			handleSearch(req, resp);
 		}
 		else if ("getshopdetail".equals(action))
 		{
@@ -62,7 +62,7 @@ public class ShopServlet extends HttpServlet
 		
 		try
 		{
-			Shop shop = shopDbhelper.getShop(Long.parseLong(shopId));
+			Shop shop = shopDbhelper.getShopDetail(Long.parseLong(shopId));
 			JSONObject jsonObj = new JSONObject();
 			
 			JSONObject basicInfo = new JSONObject();
@@ -85,36 +85,18 @@ public class ShopServlet extends HttpServlet
 			
 			jsonObj.put("intro", shop.getContent());
 			
-			
-			
-			JSONArray evaluations = new JSONArray();
-			JSONObject evaluation1 = new JSONObject();
-			evaluation1.put("name", "服务");
-			evaluation1.put("value", 90);
-			evaluations.put(evaluation1);
-			
-			JSONObject evaluation2 = new JSONObject();
-			evaluation2.put("name", "口味");
-			evaluation2.put("value", 91);			
-			evaluations.put(evaluation2);
-			
-			jsonObj.put("evaluation", evaluations);
-			
 			JSONArray comments = new JSONArray();
-			JSONObject comment1 = new JSONObject();
-			comment1.put("username", "Noah");
-			comment1.put("time", System.currentTimeMillis());
-			comment1.put("score", 90);
-			comment1.put("content", "早就听说这家的菜很好吃了 很多人都喜欢来这家的哦 我是和家人一起来的 那次我们吃的都是很满意呢 这家的环境还是不错哦 价格也是公道的 我们都是可以接受呢 真的是不错哦 热情的服务也是我们非常的满意呢 值得来试试哦");
-			comments.put(comment1);
-
-			JSONObject comment2 = new JSONObject();
-			comment2.put("username", "Noah2");
-			comment2.put("time", System.currentTimeMillis());
-			comment2.put("score", 90);
-			comment2.put("content", "很奇怪的一家店，11点过去，刚开门的时候，居然就排队，排队的都是5、60的老人。诺大的店堂，居然只有非常小的电梯可以上去，一次也就6个人。中午的午市的火山石器烧裙翅吃口不错，才43，的确是特色了。下次有机会来吃点心");
-			comments.put(comment2);
 			
+			for (ShopComment shopComment: shop.getComments().values())
+			{
+				JSONObject comment = new JSONObject();
+				comment.put("username", shopComment.getUsername());
+				comment.put("time", shopComment.getLasModitDate());
+				comment.put("score", shopComment.getScore());
+				comment.put("content", shopComment.getContent());
+				comments.put(comment);
+			}
+
 			jsonObj.put("comments", comments);
 			
 			resp.getWriter().write(jsonObj.toString());
@@ -129,7 +111,7 @@ public class ShopServlet extends HttpServlet
 		
 	}
 
-	private void handleSearchNearby(HttpServletRequest req, HttpServletResponse resp) throws IOException
+	private void handleSearch(HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
 		String latitudeStr = req.getParameter("latitude");
 		String longitudeStr = req.getParameter("longitude");

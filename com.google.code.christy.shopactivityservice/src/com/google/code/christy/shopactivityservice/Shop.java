@@ -29,6 +29,8 @@ public class Shop
 
 	private Map<String, String> shopOverall = new HashMap<String, String>();
 	
+	private Map<Long, ShopComment> comments = new HashMap<Long, ShopComment>();
+	
 	public Shop()
 	{
 		super();
@@ -210,9 +212,14 @@ public class Shop
 		this.longitude = longitude;
 	}
 
-	public void putOverall(String name, String value)
+	public void addOverall(String name, String value)
 	{
 		shopOverall.put(name, value);
+	}
+	
+	public boolean containOverall(String name)
+	{
+		return shopOverall.containsKey(name);
 	}
 	
 	public void removeOverall(String name)
@@ -226,5 +233,27 @@ public class Shop
 	}
 	
 	
+	public boolean containComment(long commentId)
+	{
+		return comments.containsKey(commentId);
+	}
+	
+	public void addComment(ShopComment comment)
+	{
+		if (!containComment(comment.getCommentId()))
+		{
+			comments.put(comment.getCommentId(), comment);
+		}
+	}
+	
+	public void removeComment(long commentId)
+	{
+		comments.remove(commentId);
+	}
+
+	public Map<Long, ShopComment> getComments()
+	{
+		return comments;
+	}
 	
 }
