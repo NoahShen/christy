@@ -11,7 +11,7 @@
 									"<div id='shopTitle'>Search</div>" +
 								"</td>" +
 								"<td>" +
-									"<button id='searchShop' style='float:right;margin-right:1cm;' class='sexybutton sexysimple sexymygray sexysmall'>Search Near</button>" +
+									"<button id='searchShop' style='float:right;margin-right:1cm;' class='sexybutton sexysimple sexymygray sexysmall'>Search Nearby</button>" +
 									"<button id='maplistShop' style='float:right;margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map List</button>" +
 									"<button id='showshopinmap' style='float:right;margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map</button>" +
 								"</td>" +
@@ -174,8 +174,8 @@ function createShopInfo(shopInfo) {
 									"</td>" +
 									"<td>" +
 										"<div>" + shopInfo.name + " "+ shopInfo.hasCoupon + "</div>" +
-										"<div>" + shopInfo.score + " "+ shopInfo.perCapita + "</div>" +
-										"<div>" + shopInfo.street + " "+ shopInfo.type + "</div>" +
+										"<div>" + shopInfo.overall.score + " "+ shopInfo.overall.perCapita + "</div>" +
+										"<div>" + shopInfo.street + "</div>" +
 									"</td>" +
 								"</tr>" +
 							"</table>");
@@ -220,7 +220,7 @@ function showShopDetail(shopDetail) {
 								"</td>" +
 								"<td>" +
 									"<div>" + baseInfo.name + " "+ baseInfo.hasCoupon + "</div>" +
-									"<div>" + baseInfo.score + " "+ baseInfo.perCapita + "</div>" +
+									"<div>" + shopDetail.overall.score + " "+ shopDetail.overall.perCapita + "</div>" +
 								"</td>" +
 							"</tr>" +
 						"</table>");

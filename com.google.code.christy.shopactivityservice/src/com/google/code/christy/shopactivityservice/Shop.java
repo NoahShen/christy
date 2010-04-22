@@ -1,5 +1,8 @@
 package com.google.code.christy.shopactivityservice;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Shop
 {
 	private long shopId;
@@ -24,6 +27,8 @@ public class Shop
 	
 	private double longitude;
 
+	private Map<String, String> shopOverall = new HashMap<String, String>();
+	
 	public Shop()
 	{
 		super();
@@ -205,5 +210,21 @@ public class Shop
 		this.longitude = longitude;
 	}
 
+	public void putOverall(String name, String value)
+	{
+		shopOverall.put(name, value);
+	}
+	
+	public void removeOverall(String name)
+	{
+		shopOverall.remove(name);
+	}
+
+	public Map<String, String> getShopOverall()
+	{
+		return shopOverall;
+	}
+	
+	
 	
 }
