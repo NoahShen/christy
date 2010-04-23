@@ -10,29 +10,19 @@ $(document).ready(function() {
 	
 	
 	// TODO test code
-	loginSuccess();
-	$.i18n.properties({
-	    name: "i18n",
-	    path: "/i18n/",
-	    mode: "map",
-	    language:"zh_CN",
-	    callback: function() {
-
-	    }
-	});
-	return;
+//	loginSuccess();
+//	$.i18n.properties({
+//	    name: "i18n",
+//	    path: "/i18n/",
+//	    mode: "map",
+//	    language:"zh_CN",
+//	    callback: function() {
+//
+//	    }
+//	});
+//	return;
 	// TODO test code
 	
-	
-	
-	var connectionMgr = XmppConnectionMgr.getInstance();
-	var listener = function(event){
-		var conn = event.connection;
-		var initPresence = new Presence(PresenceType.AVAILABLE);
-		conn.login($("#username").val(), $("#password").val(), "Christy", initPresence);
-		connectionMgr.removeConnectionListener(listener);
-	};
-	connectionMgr.addConnectionListener(ConnectionEventType.Created, listener);
 	
 	var cookiesUsername = Cookies.get("username");
 	if (cookiesUsername) {
@@ -42,7 +32,28 @@ $(document).ready(function() {
 		$("#username")[0].focus();
 	}
 	
-	var loginAction = function() {		
+	var loginAction = function() {
+		
+		var connecting = $.i18n.prop("login.connecting");
+		$("#login_status").text(connecting);
+
+		$.include(["/scripts/utils.js",
+					"scripts/xmppcore.js"
+					], function(){
+			var connectionMgr = XmppConnectionMgr.getInstance();
+			var listener = function(event){
+				var conn = event.connection;
+				var initPresence = new Presence(PresenceType.AVAILABLE);
+				conn.login($("#username").val(), $("#password").val(), "Christy", initPresence);
+				connectionMgr.removeConnectionListener(listener);
+			};
+			connectionMgr.addConnectionListener(ConnectionEventType.Created, listener);
+			doLogin();
+		});
+		
+	}
+	
+	var doLogin = function() {		
 		
 		var username = $("#username").val();
 		var password = $("#password").val();
@@ -123,10 +134,10 @@ $(document).ready(function() {
 		
 		disabledInputController(true);
 		
-		
-		$("#login_loader_img").css({"display": ""});
 		var logging_in = $.i18n.prop("login.logging_in");
 		$("#login_status").text(logging_in);
+		
+		$("#login_loader_img").show();
 		
 	};
 	
@@ -154,12 +165,12 @@ $(document).ready(function() {
 	        var loginUsername = $.i18n.prop("login.username");
 	        var loginPassword = $.i18n.prop("login.password");
 	        var rememberUsername = $.i18n.prop("login.remember_username");
-	        var loginAction = $.i18n.prop("login.loginAction");
+	        var login = $.i18n.prop("login.loginAction");
 	        
 	        $("#login_username").text(loginUsername);
 	        $("#login_password").text(loginPassword);
 	        $("#login_RememberUsername").text(rememberUsername);
-	        $("#button_login").text(loginAction);
+	        $("#button_login").text(login);
 	    }
 	});
 	
@@ -195,7 +206,7 @@ function saslSuccess() {
 }
 
 function loginSuccess() {
-	$("#loginDiv").css("display", "none");
+	$("#loginDiv").hide();
 	
 	$.include(["/scripts/lib/jquerycontextmenu/jquery.contextMenu.css",
 				"/scripts/lib/jquerycontextmenu/jquery.contextMenu.js",
@@ -205,22 +216,4 @@ function loginSuccess() {
 		$.include(["/scripts/mainui.js"]);
 	});
 	
-}
-
-function getCurrentPosition(success_callback, error_callback) {
-	if (typeof (geo_position_js) == "undefined") {
-		$.include(["/scripts/lib/geo.js"], function(){
-			if(geo_position_js.init()){
-				geo_position_js.getCurrentPosition(success_callback,error_callback,{enableHighAccuracy:true});
-			} else {
-				alert("geo unavailable");
-			}
-		});
-	} else {
-		if(geo_position_js.init()){
-			geo_position_js.getCurrentPosition(success_callback,error_callback,{enableHighAccuracy:true});
-		} else {
-			alert("geo unavailable");
-		}
-	}
 }
