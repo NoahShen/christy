@@ -29,11 +29,11 @@ span[tabContactJid] {
 }
 
 
-.contextMenu LI.available A { background-image: url(status/available.png); }
-.contextMenu LI.away A { background-image: url(status/away.png); }
-.contextMenu LI.chat A { background-image: url(status/chat.png); }
-.contextMenu LI.xa A { background-image: url(status/xa.png); }
-.contextMenu LI.dnd A { background-image: url(status/dnd.png); }
+.contextMenu LI.available A { background-image: url(/resource/status/available.png); }
+.contextMenu LI.away A { background-image: url(/resource/status/away.png); }
+.contextMenu LI.chat A { background-image: url(/resource/status/chat.png); }
+.contextMenu LI.xa A { background-image: url(/resource/status/xa.png); }
+.contextMenu LI.dnd A { background-image: url(/resource/status/dnd.png); }
 
 .hasNewMessage {
 	font-weight: bolder;

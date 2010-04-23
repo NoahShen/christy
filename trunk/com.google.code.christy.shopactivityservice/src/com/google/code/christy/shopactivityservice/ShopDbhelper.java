@@ -205,8 +205,8 @@ public class ShopDbhelper
 						shop.addOverall(itemName, itemValue);
 					}
 					
-					Long commentId = (Long) shopResSet.getObject("commentId");
-					if (commentId != null && !shop.containComment(commentId))
+					Integer commentId = (Integer) shopResSet.getObject("commentId");
+					if (commentId != null && !shop.containComment(commentId.longValue()))
 					{
 						String username = shopResSet.getString("username");
 						int score = shopResSet.getInt("score");
@@ -214,7 +214,7 @@ public class ShopDbhelper
 						Timestamp timestamp = shopResSet.getTimestamp("commentMoDate");
 						
 						ShopComment comment = new ShopComment();
-						comment.setCommentId(commentId);
+						comment.setCommentId(commentId.longValue());
 						comment.setContent(commentContent);
 						comment.setLasModitDate(timestamp.getTime());
 						comment.setScore(score);

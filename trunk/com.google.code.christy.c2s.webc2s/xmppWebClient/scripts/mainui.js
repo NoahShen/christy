@@ -82,7 +82,7 @@ MainUI.init = function() {
 		],
 		function(event) {
 			appMenu.children("img").attr("src", "/resource/status/unavailable.png");
-			alert($.i18n.prop("app.connectionClosed"));
+			alert($.i18n.prop("app.connectionClosed", "连接已断开"));
 		}
 	);
 	
@@ -146,14 +146,14 @@ ImService.init = function() {
 	var contactTab = $("<b id='contact-tab' class='marginpadding'></b>");
 	contactTab.attr("type", "contact");
 	contactTab.addClass("sexybutton");
-	contactTab.text($.i18n.prop("imservices.contact"));
+	contactTab.text($.i18n.prop("imservices.contact", "联系人"));
 	imTop.append(contactTab);
 	
 	var chatTab = $("<b id='chat-tab' class='marginpadding'></b>");
 	// chat tab
 	chatTab.attr("type", "chat");
 	chatTab.addClass("sexybutton");
-	chatTab.text($.i18n.prop("imservices.chat"));
+	chatTab.text($.i18n.prop("imservices.chat", "聊天"));
 	imTop.append(chatTab);
 	
 	// tabs click event
@@ -216,11 +216,11 @@ ImService.init = function() {
 					
 	// user's status menu 
 	var statusMenu = $("<ul id='myMenu' class='contextMenu'>" +
-			"<li class='available'><a href='#available'>" + $.i18n.prop("imservices.status.available") + "</a></li>" +
-			"<li class='away'><a href='#away'>" + $.i18n.prop("imservices.status.away") + "</a></li>" +
-			"<li class='chat'><a href='#chat'>" + $.i18n.prop("imservices.status.chat") + "</a></li>" +
-			"<li class='dnd'><a href='#dnd'>" + $.i18n.prop("imservices.status.dnd") + "</a></li>" +
-			"<li class='xa'><a href='#xa'>" + $.i18n.prop("imservices.status.xa") + "</a></li>" +
+			"<li class='available'><a href='#available'>" + $.i18n.prop("imservices.status.available", "在线") + "</a></li>" +
+			"<li class='away'><a href='#away'>" + $.i18n.prop("imservices.status.away", "离开") + "</a></li>" +
+			"<li class='chat'><a href='#chat'>" + $.i18n.prop("imservices.status.chat", "空闲") + "</a></li>" +
+			"<li class='dnd'><a href='#dnd'>" + $.i18n.prop("imservices.status.dnd", "忙碌") + "</a></li>" +
+			"<li class='xa'><a href='#xa'>" + $.i18n.prop("imservices.status.xa", "离开") + "</a></li>" +
 	"</ul>");
 	statusMenu.hide();
 	
@@ -323,9 +323,6 @@ ImService.init = function() {
 	imservices.hide();
 	
 	$.layoutEngine(imContactlayoutSettings);
-	
-	var menuX = $("#user-status-img").offset().left;
-	var menuY = $("#user-status-img").offset().top - imTopHeight + $("#user-status-img").height();
 
 	var statusMenuHandler = function(action, el, pos) {
 		var connectionMgr = XmppConnectionMgr.getInstance();
@@ -366,19 +363,26 @@ ImService.init = function() {
 			statusMess.text(statusMessContent);
 		}
 	};
+
 	$("#user-status-menu").contextMenu({
 			menu: 'myMenu',
 			leftButton: true,
-			x: menuX,
-			y: menuY
+			menulocFunc: function() {
+				var menuX = $("#user-status-img").offset().left;
+				var menuY = $("#user-status-img").offset().top - imTopHeight + $("#user-status-img").height();
+				return {x: menuX, y: menuY};
+			}
 		}, statusMenuHandler
 	);
 	
 	$("#user-status-img").contextMenu({
 			menu: 'myMenu',
 			leftButton: true,
-			x: menuX,
-			y: menuY
+			menulocFunc: function() {
+				var menuX = $("#user-status-img").offset().left;
+				var menuY = $("#user-status-img").offset().top - imTopHeight + $("#user-status-img").height();
+				return {x: menuX, y: menuY};
+			}
 		}, statusMenuHandler
 	);
 	
@@ -525,7 +529,7 @@ function createContactJqObj(newContact) {
 	var newBareJid = newContact.getBareJid();
 	
 	var showName = (newContact.getNickname()) ? newContact.getNickname() : newBareJid.toBareJID();
-	var statusMessage = $.i18n.prop("imservices.status.unavailable");
+	var statusMessage = $.i18n.prop("imservices.status.unavailable", "离线");
 	var newContactJqObj = $("<div>" +
 								"<table style='width:100%;'>" +
 									"<tr>" +
@@ -608,7 +612,7 @@ function updateContact(contactlistJqObj, contact) {
 		}
 	} else {
 		statusImgSrc = "/resource/status/unavailable.png";
-		statusMessage = $.i18n.prop("imservices.status.unavailable");
+		statusMessage = $.i18n.prop("imservices.status.unavailable", "离线");
 		contactJqObj.attr("statusCode", 0);
 	}
 	
@@ -766,14 +770,14 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 												"<table>" +
 													"<tr>" +
 														"<td>" +
-															"<button>" + $.i18n.prop("imservices.action.close") + "</button>" +
+															"<button>" + $.i18n.prop("imservices.action.close", "关闭") + "</button>" +
 														"</td>" +
 														"<td style='width:100%;'>" +
 															"<input type='text' style='width:100%;'/>" +
 														"</td>" +
 														"<td>" +
 															"<button class='sexybutton sexysimple sexymygray'>" +
-																$.i18n.prop("imservices.action.send") +
+																$.i18n.prop("imservices.action.send", "发送") +
 															"</button>" +
 														"</td>" +
 													"</tr>" +
@@ -875,27 +879,27 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 
 function getStatusInfo(presence) {
 	var imgPath = "/resource/status/unavailable.png";
-	var statusMessage = $.i18n.prop("imservices.status.unavailable");
+	var statusMessage = $.i18n.prop("imservices.status.unavailable", "离线");
 	var statusCode = 0;
 	if (presence != null && presence.isAvailable()) {
 		if (presence.getShow() == PresenceShow.AWAY) {
-			statusMessage = $.i18n.prop("imservices.status.away");
+			statusMessage = $.i18n.prop("imservices.status.away", "离开");
 			imgPath = "/resource/status/away.png";
 			statusCode = 3;
 		} else if (presence.getShow() == PresenceShow.CHAT) {
-			statusMessage = $.i18n.prop("imservices.status.chat");
+			statusMessage = $.i18n.prop("imservices.status.chat", "空闲");
 			imgPath = "/resource/status/chat.png";
 			statusCode = 5;
 		} else if (presence.getShow() == PresenceShow.DND) {
-			statusMessage = $.i18n.prop("imservices.status.dnd");
+			statusMessage = $.i18n.prop("imservices.status.dnd", "忙碌");
 			imgPath = "/resource/status/dnd.png";
 			statusCode = 2;
 		} else if (presence.getShow() == PresenceShow.XA) {
-			statusMessage = $.i18n.prop("imservices.status.xa");
+			statusMessage = $.i18n.prop("imservices.status.xa", "离开");
 			imgPath = "/resource/status/xa.png";
 			statusCode = 1;
 		} else {
-			statusMessage = $.i18n.prop("imservices.status.available");
+			statusMessage = $.i18n.prop("imservices.status.available", "在线");
 			imgPath = "/resource/status/available.png";
 			statusCode = 4;
 		}
@@ -963,7 +967,7 @@ ShopService.init = function() {
 		
 		getCurrentPosition(function(p) {
 			
-			searchShopsByLoc(shopList, p, 1, 2, true);
+			searchShopsByLoc(shopList, p, 1, 5, true);
 			
 		}, function(){});		
 		
@@ -1017,7 +1021,7 @@ ShopService.init = function() {
 
 	
 	var shopList = $("<div id='shoplist' title='Search Result' class='marginpadding' style='display:none;'>" +
-						"<div style='width:100%;height:100%;'></div>" +
+						"<div></div>" +
 						"<div id='pagination' class='pagination'></div>" +
 					"</div>");
 	shopCenter.append(shopList);
