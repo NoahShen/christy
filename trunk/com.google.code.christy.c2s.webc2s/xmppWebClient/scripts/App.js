@@ -37,7 +37,7 @@ $(document).ready(function() {
 		var connecting = $.i18n.prop("login.connecting");
 		$("#login_status").text(connecting);
 
-		$.include(["/scripts/utils.js",
+		$.include(["/scripts/xmpputils.js",
 					"scripts/xmppcore.js"
 					], function(){
 			var connectionMgr = XmppConnectionMgr.getInstance();
