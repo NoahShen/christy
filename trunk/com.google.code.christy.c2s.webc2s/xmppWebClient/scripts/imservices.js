@@ -1,5 +1,6 @@
-(function() {
-		
+ImService = {};
+ImService.init = function() {
+	
 	var imservices = $("<div id='imservices'></div>");
 	
 	// im tabs
@@ -75,20 +76,6 @@
 			"</tbody>" +
 		"</table>");
 
-	
-	// search contact
-//	var searchbar = $("<table style='padding-left:5px;width:100%;'>" +
-//						"<tbody>" +
-//							"<tr>" +
-//								"<td>" +
-//									"<input id='search-contact-input' type='text' style='width:100%;'/>" +
-//								"</td>" +
-//								"<td style='width:40px;'>" +
-//									"<button id='search-contact-button' >Search</button>" +
-//								"</td>" +
-//							"</tr>" +
-//						"</tbody>" +
-//					"</table>");
 					
 	// user's status menu 
 	var statusMenu = $("<ul id='myMenu' class='contextMenu'>" +
@@ -104,7 +91,6 @@
 	
 	userinfo.append(statusMenu);
 	userinfo.append(userinfotable);
-//	userinfo.append(searchbar);
 	
 	
 	var contactlist = $("<div id='contactlist'></div>");
@@ -197,6 +183,7 @@
 	imservices.append(imCenter);
 	
 	$("#main").append(imservices);
+	imservices.hide();
 	
 	$.layoutEngine(imContactlayoutSettings);
 	
@@ -384,71 +371,16 @@
 		
 		conn.sendStanza(vCardIq);
 	}
-	
-	
-	//TODO test code
-//	var contact1 = new XmppContact(new IqRosterItem(new JID("Noah", "example.com", "res"), "Noah"));
-//	contact1.getRosterItem().addGroup("g1");
-//	var contact2 = new XmppContact(new IqRosterItem(new JID("aa", "example.com", "res"), "aa"));
-//	updateContact(contactlist, contact1);
-//	updateContact(contactlist, contact2);
-//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("bb", "example.com", "res"), "bb")));
-//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("cc", "example.com", "res"), null)));
-//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("D", "example.com", "res"), "dd")));
-//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("ee", "example.com", "res"), null)));
-//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("ff", "example.com", "res"), null)));
-//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("gg", "example.com", "res"), null)));
-//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("hh", "example.com", "res"), null)));
-//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("ii", "example.com", "res"), "ii")));
-//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("jj", "example.com", "res"), null)));
-//	updateContact(contactlist, new XmppContact(new IqRosterItem(new JID("KK", "example.com", "res"), null)));
-//	
-//	removeContact(contactlist, new XmppContact(new IqRosterItem(new JID("kk", "example.com", "res"), null)));
-//	var presence = new Presence(PresenceType.AVAILABLE);
-//	presence.setUserStatus("status");
-//	presence.setShow(PresenceShow.AWAY);
-//	contact1.addResource({
-//		resource: "res1",
-//		currentPresence: presence
-//	});
-//	contact1.getRosterItem().removeGroupName("g1");
-//	
-//	
-//	var presence2 = new Presence(PresenceType.AVAILABLE);
-//	presence2.setUserStatus("status2");
-//	presence2.setShow(PresenceShow.AWAY);
-//	contact2.addResource({
-//		resource: "res2",
-//		currentPresence: presence2
-//	});
-//	
-//	updateContact(contactlist, contact1);
-//	updateContact(contactlist, contact2);
+}
 
-	// TODO end of test
-	
-		// TODO test code
-//	createChatHtml(chatScrollHeader, chatPanel, {
-//		jid: "Noah1@example.com",
-//		showName: "Noah1"
-//	});
-//	
-//	createChatHtml(chatScrollHeader, chatPanel, {
-//		jid: "Noah2@example.com",
-//		showName: "Noah2"
-//	});
-	
-	// end of chat html
-})();
-
-
-function showImServices() {
+ImService.show = function() {
 	var imservices = $("#imservices");
 	imservices.siblings().hide();
 	imservices.show();
 	var imTop = $("#imTop");
 	imTop.children(".sexysimple").click();
 }
+
 
 function createContactJqObj(newContact) {
 	
@@ -683,13 +615,6 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 		
 		chatPanelTab.click(chatHandlerFunc);
 		chatScrollHeader.append(chatPanelTab);
-		
-//		var contactChatPanel = $("<div chatPanelId='" + contactInfo.jid + "-chatPanel' style='display:none;'>" +
-//									"<div style='width:100%;height:100%;'>" +
-//										"<div messagearea='1'></div>" +
-//										"<div>&nbsp<br/>&nbsp</div>" +
-//									"</div>" +
-//								"</div>");
 								
 		var contactChatPanel = $("<div chatPanelId='" + contactInfo.jid + "-chatPanel' style='display:none;'>" +
 									"<table style='width:100%;height:100%;'>" +
@@ -719,20 +644,7 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 										"</tr>" +
 									"</table>" +
 								"</div>");
-		
-//		var controlBar = $("<table style='bottom:0pt;right:3pt;left:3pt;position:fixed;'>" +
-//								"<tr>" +
-//									"<td>" +
-//										"<button style='float:left;'>Close</button>" +
-//									"</td>" +
-//									"<td style='width:100%;'>" +
-//										"<input type='text' style='width:100%;'/>" +
-//									"</td>" +
-//									"<td>" +
-//										"<button style='float:right;'>Send</button>" +
-//									"</td>" +
-//								"</tr>" +
-//							"</table>");
+
 		var controlBar = contactChatPanel.find("table:last");
 									
 		var connectionMgr = XmppConnectionMgr.getInstance();

@@ -1,4 +1,5 @@
-(function() {
+MapService = {};
+MapService.init = function() {
 	var mapServices = $("<div id='mapservices'></div>");
 	
 	
@@ -15,12 +16,12 @@
 						
 	mapServices.append(controlBar);
 	
-	var map = $("<iframe id='mapcanvas' name='mapcanvas' src='/mapcanvas.html' width='100%' height='100%' scrolling='no' frameborder='0'>" +
+	var map = $("<iframe id='mapcanvas' name='mapcanvas' width='100%' height='100%' scrolling='no' frameborder='0'>" +
 					"</iframe>");
 	mapServices.append(map);		
 	
 	$("#main").append(mapServices);
-	mapServices.siblings().hide();
+	mapServices.hide();
 	
 	mapserviceTablayoutSettings = {
 		Name: "Main",
@@ -43,11 +44,17 @@
 		}]  
 	};
 	$.layoutEngine(mapserviceTablayoutSettings);
+}
 
-})();
 
-function showMapServices() {
+MapService.show = function() {
 	var mapServices = $("#mapservices");
+	
+	var mapcanvas = $("#mapcanvas");
+	if (mapcanvas.attr("src") == null || mapcanvas.attr("src") == "") {
+		mapcanvas.attr("src", "/mapcanvas.html");
+	}
+	
 	mapServices.siblings().hide();
 	mapServices.show();
 	$.layoutEngine(mapserviceTablayoutSettings);

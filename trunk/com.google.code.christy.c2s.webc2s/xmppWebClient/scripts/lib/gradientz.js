@@ -11,7 +11,7 @@
 //  })
 // For more information: see www.parkerfox.co.uk/labs/gradientz
 
-;(function($){
+(function($){
 
   if($.browser.msie && document.namespaces["v"] == null) {
     document.namespaces.add("v", "urn:schemas-microsoft-com:vml");
