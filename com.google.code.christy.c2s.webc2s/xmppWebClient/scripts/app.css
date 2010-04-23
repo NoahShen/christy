@@ -20,3 +20,17 @@ input[type="password"] {
 }
 
 .sexybutton.sexysimple.sexymygray { background-color: #999999; }
+
+.progressbar {
+	background-color: #EEEEEE;
+	border: 1px solid #BBBBBB;
+	color: #222222;
+	height: 16px;
+	width: 200px;
+}
+
+.progressbar .bar {
+	background-color:#6CAF00;
+	height:16px;
+	width:0;
+}

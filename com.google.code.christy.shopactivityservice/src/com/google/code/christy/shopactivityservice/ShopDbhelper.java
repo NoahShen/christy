@@ -205,8 +205,8 @@ public class ShopDbhelper
 						shop.addOverall(itemName, itemValue);
 					}
 					
-					long commentId = shopResSet.getLong("commentId");
-					if (!shop.containComment(commentId))
+					Long commentId = (Long) shopResSet.getObject("commentId");
+					if (commentId != null && !shop.containComment(commentId))
 					{
 						String username = shopResSet.getString("username");
 						int score = shopResSet.getInt("score");

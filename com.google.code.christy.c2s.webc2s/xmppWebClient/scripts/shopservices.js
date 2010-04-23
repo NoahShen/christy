@@ -1,6 +1,7 @@
-var shopSearchResult = {};
+ShopService = {};
+ShopService.shopSearchResult = {};
 
-(function() {
+ShopService.init = function() {
 	
 	var shopservices = $("<div id='shopservices'></div>");	
 	
@@ -141,9 +142,10 @@ var shopSearchResult = {};
 	
 	$.layoutEngine(shopserviceTablayoutSettings);
 	
-})();
+}
 
-function showShopServices() {
+
+ShopService.show = function() {
 	var shopservices = $("#shopservices");
 	shopservices.siblings().hide();
 	shopservices.show();
