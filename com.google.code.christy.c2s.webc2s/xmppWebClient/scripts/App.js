@@ -9,8 +9,10 @@ $(document).ready(function() {
 	});
 	
 	
+	$.ImportBasePath = "/scripts/";
+	
 	// TODO test code
-//	loginSuccess();
+//	sessionBindedSuccess();
 //	$.i18n.properties({
 //	    name: "i18n",
 //	    path: "/i18n/",
@@ -21,8 +23,6 @@ $(document).ready(function() {
 //	    }
 //	});
 //	return;
-	// TODO test code
-	$.ImportBasePath = "/scripts/";
 	
 	var cookiesUsername = Cookies.get("username");
 	if (cookiesUsername) {
@@ -37,26 +37,24 @@ $(document).ready(function() {
 		var username = $("#username").val();
 		var password = $("#password").val();
 		if (username == null || username.length == 0) {
-			var usernameMessage = $.i18n.prop("login.username.missingMessage");
+			var usernameMessage = $.i18n.prop("login.username.missingMessage", "请输入用户名！");
 			alert(usernameMessage);
 			$("#username")[0].focus();
 			return;
 		}
 		
 		if (password == null || password.length == 0) {
-			var pwdMessage = $.i18n.prop("login.password.missingMessage");
+			var pwdMessage = $.i18n.prop("login.password.missingMessage", "请输入密码！");
 			alert(pwdMessage);
 			$("#password")[0].focus();
 			return;
 		}
 		
 		
-		var connecting = $.i18n.prop("login.connecting");
+		var connecting = $.i18n.prop("login.connecting", "正在连接...");
 		$("#login_status").text(connecting);
 
-		$.include(["xmpputils.js",
-					"xmppcore.js"
-					], function(){
+		$.include(["lib/jClass.js", "xmpputils.js", "xmppcore.js"], function(){
 			var connectionMgr = XmppConnectionMgr.getInstance();
 			var listener = function(event){
 				var conn = event.connection;
@@ -82,22 +80,22 @@ $(document).ready(function() {
 			var loginStatus = null;
 			var loginFailed = false;
 			if (type == ConnectionEventType.SaslSuccessful) {
-				loginStatus = $.i18n.prop("login.saslsuccess");
+				loginStatus = $.i18n.prop("login.saslsuccess", "验证成功...");
 				saslSuccess();
 			} else if (type == ConnectionEventType.SaslFailed) {
-				loginStatus = $.i18n.prop("login.saslfailed");
+				loginStatus = $.i18n.prop("login.saslfailed", "验证失败...");
 				loginFailed = true;
 			} else if (type == ConnectionEventType.ResourceBinded) {
-				loginStatus = $.i18n.prop("login.resourcebinded");
+				loginStatus = $.i18n.prop("login.resourcebinded", "资源绑定成功...");
 			} else if (type == ConnectionEventType.BindResourceFailed) {
-				loginStatus = $.i18n.prop("login.bindresourcefailed");
+				loginStatus = $.i18n.prop("login.bindresourcefailed", "资源绑定失败...");
 				loginFailed = true;
 			} else if (type == ConnectionEventType.SessionBinded) {
-				loginStatus = $.i18n.prop("login.sessionbinded");
+				loginStatus = $.i18n.prop("login.sessionbinded", "会话已绑定...");
 				sessionBindedSuccess();
 				connectionMgr.removeConnectionListener(lognListener);
 			} else if (type == ConnectionEventType.BindSessionFailed) {
-				loginStatus = $.i18n.prop("login.bindsessionfailed");
+				loginStatus = $.i18n.prop("login.bindsessionfailed", "会话绑定失败...");
 				loginFailed = true;
 			}
 			
@@ -135,7 +133,7 @@ $(document).ready(function() {
 		
 		disabledInputController(true);
 		
-		var logging_in = $.i18n.prop("login.logging_in");
+		var logging_in = $.i18n.prop("login.logging_in", "正在登录...");
 		$("#login_status").text(logging_in);
 		
 		$("#login_loader_img").show();
@@ -156,24 +154,34 @@ $(document).ready(function() {
 	
 	$("#button_login").click(loginAction);
 	
-	$.i18n.properties({
-	    name: "i18n",
-	    path: "/i18n/",
-	    mode: "map",
-	    language: "zh_CN",
-	    callback: function() {
-
-	        var loginUsername = $.i18n.prop("login.username");
-	        var loginPassword = $.i18n.prop("login.password");
-	        var rememberUsername = $.i18n.prop("login.remember_username");
-	        var login = $.i18n.prop("login.loginAction");
+	var loginUsername = $.i18n.prop("login.username", "用户名：");
+	var loginPassword = $.i18n.prop("login.password", "密码：");
+	var rememberUsername = $.i18n.prop("login.remember_username", "记住帐号");
+	var login = $.i18n.prop("login.loginAction", "登录");
+	
+	$("#login_username").text(loginUsername);
+	$("#login_password").text(loginPassword);
+	$("#login_RememberUsername").text(rememberUsername);
+	$("#button_login").text(login);
 	        
-	        $("#login_username").text(loginUsername);
-	        $("#login_password").text(loginPassword);
-	        $("#login_RememberUsername").text(rememberUsername);
-	        $("#button_login").text(login);
-	    }
-	});
+//	$.i18n.properties({
+//	    name: "i18n",
+//	    path: "/i18n/",
+//	    mode: "map",
+//	    language: "zh_CN",
+//	    callback: function() {
+//
+//	        var loginUsername = $.i18n.prop("login.username", "用户名：");
+//	        var loginPassword = $.i18n.prop("login.password", "密码：");
+//	        var rememberUsername = $.i18n.prop("login.remember_username", "记住帐号");
+//	        var login = $.i18n.prop("login.loginAction", "登录");
+//	        
+//	        $("#login_username").text(loginUsername);
+//	        $("#login_password").text(loginPassword);
+//	        $("#login_RememberUsername").text(rememberUsername);
+//	        $("#button_login").text(login);
+//	    }
+//	});
 	
 	var layoutSettings = {
 		Name: "Login",
