@@ -2765,7 +2765,7 @@ XmppConnectionMgr = jClass.extend({
 //					window.console.log("aThis.hold:" + aThis.hold);
 //				}
 		
-		if (clearBody) {
+		if (clearBody === true) {
 			while (aThis.bodyMessagQueue.length != 0) {
 				if (aThis.requestingCount >= aThis.hold + 1) {
 					continue;
