@@ -931,16 +931,18 @@ ShopService.init = function() {
 								"<td style='width:33%;'>" +
 									"<div id='shopTitle'>Search</div>" +
 								"</td>" +
-								"<td>" +
-									"<button id='searchShop' style='float:right;margin-right:1cm;' class='sexybutton sexysimple sexymygray sexysmall'>Search Nearby</button>" +
-									"<button id='maplistShop' style='float:right;margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map List</button>" +
-									"<button id='showshopinmap' style='float:right;margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map</button>" +
+								"<td style='float:right;'>" +
+									"<button id='searchShop' style='margin-right:1cm;' class='sexybutton sexysimple sexymygray sexysmall'>Search Nearby</button>" +
+									"<button id='maplistShop' style='margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map List</button>" +
+									"<button id='favor' style='display:none;margin-right:5px;' class='sexybutton sexysimple sexymygray sexysmall'>Favor</button>" +
+									"<button id='comment' style='display:none;margin-right:5px;' class='sexybutton sexysimple sexymygray sexysmall'>Comment</button>" +
+									"<button id='showshopinmap' style='margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map</button>" +									
 								"</td>" +
 							"</tr>" +
 						"</table>");
 				
 	var buttons = controlBar.find("button");		
-	$(buttons.get(0)).click(function(){
+	$(buttons.get(0)).click(function() {
 		var showItem = $("#shopCenter").children("div:visible");
 		var prev = showItem.prev();
 		if (prev[0]) {
@@ -961,7 +963,7 @@ ShopService.init = function() {
 		
 	});
 	
-	$(buttons.get(1)).click(function(){
+	$(buttons.get(1)).click(function() {
 		var shopList = $("#shoplist");
 		$(shopList.children()[0]).empty();
 		
@@ -1096,6 +1098,7 @@ function createShopInfo(shopInfo) {
 				shopid: shopId
 			},
 			success: function(shopDetail){
+				ShopService.currentShopDetail = shopDetail;
 				showShopDetail(shopDetail);
 			},
 			error: function (xmlHttpRequest, textStatus, errorThrown) {
@@ -1175,8 +1178,12 @@ function showShopDetail(shopDetail) {
 	shopDetailJqObj.show();
 	
 	var showInMap = $("#showshopinmap");
+	var favor = $("#favor");
+	var commentShop = $("#comment");
 	showInMap.siblings().hide();
 	showInMap.show();
+	favor.show();
+	commentShop.show();
 	
 	$.layoutEngine(shopserviceTablayoutSettings);
 }
