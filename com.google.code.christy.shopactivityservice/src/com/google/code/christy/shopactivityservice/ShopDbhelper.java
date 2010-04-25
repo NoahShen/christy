@@ -33,6 +33,10 @@ public class ShopDbhelper
 							" LEFT JOIN shopoverall O ON O.shopId = R.shopId" +
 							" LEFT JOIN shopcomment C ON C.shopId = R.shopId" +
 							" ORDER BY C.modificationDate DESC";
+	
+	private static final String ADDSHOPCOMMENT_SQL = "INSERT INTO shopcomment (shopId, username, score, content, creationDate) VALUES (?, ?, ?, ?, NOW())";
+	
+	private static final String ADDSHOPVOTER_SQL = "INSERT INTO shopvoter (username, shopId, itemName, value) VALUES (?, ?, ?, ?)";
 
 	public ShopDbhelper(ConnectionPool connectionPool)
 	{
@@ -234,6 +238,45 @@ public class ShopDbhelper
 		{
 			if (connection != null)
 			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+	
+	public void addComment(ShopComment shopComment, List<ShopVoter> voters) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			connection.setAutoCommit(false);
+			
+			PreparedStatement preStat = connection.prepareStatement(ADDSHOPCOMMENT_SQL);
+			preStat.setLong(1, shopComment.getShopId());
+			preStat.setString(2, shopComment.getUsername());
+			preStat.setInt(3, shopComment.getScore());
+			preStat.setString(4, shopComment.getContent());
+			
+			preStat.executeUpdate();
+			
+			for (ShopVoter voter : voters)
+			{
+				PreparedStatement preStat2 = connection.prepareStatement(ADDSHOPVOTER_SQL);
+				preStat2.setString(1, voter.getUsername());
+				preStat2.setLong(2, voter.getShopId());
+				preStat2.setString(3, voter.getItemName());
+				preStat2.setInt(4, voter.getValue());
+				preStat2.executeUpdate();
+			}
+			
+			connection.commit();
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connection.setAutoCommit(true);
 				connectionPool.returnConnection(connection);
 			}
 			
