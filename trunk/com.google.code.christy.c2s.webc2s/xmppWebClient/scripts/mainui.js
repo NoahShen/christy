@@ -925,8 +925,8 @@ ShopService.init = function() {
 	
 	var controlBar = $("<table id='shopcontrolbar' style='width:100%;'>" +
 							"<tr>" +
-								"<td style='width:33%;'>" +
-									"<button style='float:left;margin-left:0.2cm;' class='sexybutton sexysimple sexymygray sexysmall'>Back</button>" +
+								"<td style='width:33%;float:left;'>" +
+									"<button id='back' style='margin-left:0.2cm;' class='sexybutton sexysimple sexymygray sexysmall'>Back</button>" +
 								"</td>" +
 								"<td style='width:33%;'>" +
 									"<div id='shopTitle'>Search</div>" +
@@ -934,59 +934,12 @@ ShopService.init = function() {
 								"<td style='float:right;'>" +
 									"<button id='searchShop' style='margin-right:1cm;' class='sexybutton sexysimple sexymygray sexysmall'>Search Nearby</button>" +
 									"<button id='maplistShop' style='margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map List</button>" +
-									"<button id='favor' style='display:none;margin-right:5px;' class='sexybutton sexysimple sexymygray sexysmall'>Favor</button>" +
-									"<button id='comment' style='display:none;margin-right:5px;' class='sexybutton sexysimple sexymygray sexysmall'>Comment</button>" +
+									"<button id='favorButton' style='display:none;margin-right:5px;' class='sexybutton sexysimple sexymygray sexysmall'>Favor</button>" +
+									"<button id='commentShopButton' style='display:none;margin-right:5px;' class='sexybutton sexysimple sexymygray sexysmall'>Comment</button>" +
 									"<button id='showshopinmap' style='margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map</button>" +									
 								"</td>" +
 							"</tr>" +
 						"</table>");
-				
-	var buttons = controlBar.find("button");		
-	$(buttons.get(0)).click(function() {
-		var showItem = $("#shopCenter").children("div:visible");
-		var prev = showItem.prev();
-		if (prev[0]) {
-			$("#shopTitle").text(prev.attr("title"));
-			prev.siblings().hide();
-			prev.show();
-			
-			var showButton = null;
-			if (prev.attr("id") == "shopsearch") {
-				showShopSearchPanel();
-			} else if (prev.attr("id") == "shoplist") {
-				showShopListPanel();
-			} else if (prev.attr("id") == "shopdetail") {
-				showShopDetailPanel();
-			}
-			$.layoutEngine(shopserviceTablayoutSettings);
-		}
-		
-	});
-	
-	$(buttons.get(1)).click(function() {
-		var shopList = $("#shoplist");
-		$(shopList.children()[0]).empty();
-		
-		getCurrentPosition(function(p) {
-			
-			searchShopsByLoc(shopList, p, 1, 5, true);
-			
-		}, function(){});		
-		
-		$("#shopTitle").text(shopList.attr("title"));
-		shopList.siblings().hide();
-		shopList.show();
-		
-		var nextButton = $(this).next();
-		nextButton.siblings().hide();
-		nextButton.show();
-		
-		$.layoutEngine(shopserviceTablayoutSettings);
-	});
-	
-	$(buttons.get(2)).click(function(){
-		
-	});
 	
 	shopservices.append(controlBar);
 	
@@ -1033,6 +986,38 @@ ShopService.init = function() {
 	
 	shopservices.append(shopCenter);
 	
+	var commentShop = $("<table id='commentShop' style='display:none;width:100%;height:100%;'>" +
+							"<tr>" +
+								"<td style='float:left;'>" +
+									"<span>" + $.i18n.prop("shopservice.totalScore", "总分：") + "</span><input id='shopScore' type='text' size='3'/>" +
+								"</td>" +
+							"</tr>" +
+							"<tr>" +
+								"<td style='float:left;'>" +
+									"<div id='shopCommentItems'>" +
+										"<div>" +
+											"<span>" + $.i18n.prop("shopservice.taste", "口味：") + "</span><input id='shopTaste' type='text' size='7'/>" +
+											"<span>" + $.i18n.prop("shopservice.environment", "环境：") + "</span><input id='shopEnvironment' type='text' size='7'/>" +
+										"</div>" +
+										"<div>" +
+											"<span>" + $.i18n.prop("shopservice.service", "服务：") + "</span><input id='shopService' type='text' size='7'/>" +
+										"</div>" +
+									"</div>" +
+								"</td>" +
+							"</tr>" +
+							"<tr style='width:100%;height:100%;'>" +
+								"<td style='float:left;width:100%;height:100%;'>" +
+									"<input id='commentContent' type='text' style='width:100%;height:100%;' />" +
+								"</td>" +
+							"</tr>" +
+							"<tr >" +
+								"<td>" +
+									"<button id='submitShopComment'>" + $.i18n.prop("shopservice.submit", "提交") + "</button>" +
+								"</td>" +
+							"</tr>" +
+						"</table>");
+	shopCenter.append(commentShop);
+	
 	
 	shopserviceTablayoutSettings = {
 		Name: "Main",
@@ -1058,7 +1043,58 @@ ShopService.init = function() {
 	
 	
 	$("#main").append(shopservices);
-	shopservices.siblings().hide();
+	
+	$("#back").click(function() {
+		var showItem = $("#shopCenter").children(":visible");
+		var prev = showItem.prev();
+		if (prev[0]) {
+			$("#shopTitle").text(prev.attr("title"));
+			prev.siblings().hide();
+			prev.show();
+			
+			var showButton = null;
+			if (prev.attr("id") == "shopsearch") {
+				showShopSearchPanel();
+			} else if (prev.attr("id") == "shoplist") {
+				showShopListPanel();
+			} else if (prev.attr("id") == "shopdetail") {
+				showShopDetailPanel();
+			}
+			$.layoutEngine(shopserviceTablayoutSettings);
+		}
+		
+	});
+	
+	$("#searchShop").click(function() {
+		var shopList = $("#shoplist");
+		$(shopList.children()[0]).empty();
+		
+		getCurrentPosition(function(p) {
+			
+			searchShopsByLoc(shopList, p, 1, 5, true);
+			
+		}, function(){});		
+		
+		$("#shopTitle").text(shopList.attr("title"));
+		shopList.siblings().hide();
+		shopList.show();
+		
+		var nextButton = $(this).next();
+		nextButton.siblings().hide();
+		nextButton.show();
+		
+		$.layoutEngine(shopserviceTablayoutSettings);
+	});
+	
+	
+	
+	$("#commentShopButton").click(function(){
+		showShopComment(ShopService.currentShopDetail.basicInfo.name);
+	});
+	
+	$("#submitShopComment").click(function() {
+		submitShopComment();
+	});
 	
 	$.layoutEngine(shopserviceTablayoutSettings);
 	
@@ -1112,6 +1148,96 @@ function createShopInfo(shopInfo) {
 	});
 	
 	return shopInfoTable;
+}
+
+function submitShopComment() {
+	var shopDetail = ShopService.currentShopDetail;
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	var conn = connectionMgr.getAllConnections()[0];
+	if (conn) {
+		var username = conn.getJid().getNode();
+		var shopId = shopDetail.basicInfo.id;
+		
+		var comentContent = "";
+		var shopScore = $("#shopScore");
+		comentContent += "shopScore:" + shopScore.val() + ";";
+		
+		var commentShopTable = $("#commentShop");
+		var items = commentShopTable.find("input[item]");
+
+		$.each(items, function(index, value) {		
+			var commentItem = $(value);
+			var itemName = commentItem.attr("item");
+			var itemValue = commentItem.val();
+			comentContent += itemName + ":" + itemValue + ";";
+		});
+		
+		var content = $("#commentContent");
+		comentContent += "content" + ":" + content.val() + ";";
+		
+		
+		$.ajax({
+			url: "/shop/",
+			cache: false,
+			type: "get",
+			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+			data: {
+				action: "submitShopComment",
+				shopid: shopId,
+				username: username,
+				comentContent: comentContent
+			},
+			success: function(response){
+				if (response.result == "success") {
+					alert($.i18n.prop("shopservice.commentSuccess", "评论成功！"));
+					$("#back").click();
+				}
+			},
+			error: function (xmlHttpRequest, textStatus, errorThrown) {
+				
+			},
+			complete: function(xmlHttpRequest, textStatus) {
+				
+			}
+		});
+		
+	}
+}
+
+function showShopComment(shopTitleText) {
+	
+	var commentShopTable = $("#commentShop");
+
+	var shopDetail = ShopService.currentShopDetail;
+	var overall = shopDetail.overall;
+	if (overall) {
+		var shopCommentItems = $("#shopCommentItems");
+		shopCommentItems.empty();
+		var i = 1;
+		for(var key in overall) {
+			if ("score" != key) {
+				shopCommentItems.append("<span>" + $.i18n.prop("shopservice." + key, "项目：") + "</span><input item='" + key + "' type='text' size='7'/>");
+				if (i != 0 && i % 2 == 0) {
+					shopCommentItems.append("<br/>");
+				}
+				++i;
+			}
+		}
+	}
+	
+
+	commentShopTable.find("input").text("");
+	commentShopTable.siblings().hide();
+	commentShopTable.show();
+	
+	var shopTitle = $("#shopTitle");
+	shopTitle.text(shopTitleText);
+	
+	var commentShopButton = $("#commentShopButton");
+	commentShopButton.siblings().hide();
+	commentShopButton.hide();
+	$.layoutEngine(shopserviceTablayoutSettings);
+	
 }
 
 function showShopDetail(shopDetail) {
@@ -1178,12 +1304,12 @@ function showShopDetail(shopDetail) {
 	shopDetailJqObj.show();
 	
 	var showInMap = $("#showshopinmap");
-	var favor = $("#favor");
-	var commentShop = $("#comment");
+	var favorButton = $("#favorButton");
+	var commentShopButton = $("#commentShopButton");
 	showInMap.siblings().hide();
 	showInMap.show();
-	favor.show();
-	commentShop.show();
+	favorButton.show();
+	commentShopButton.show();
 	
 	$.layoutEngine(shopserviceTablayoutSettings);
 }
@@ -1218,8 +1344,15 @@ function showShopDetailPanel() {
 	shopDetail.show();
 	
 	var showShopInMap = $("#showshopinmap");
+	
 	showShopInMap.siblings().hide();
 	showShopInMap.show();
+	
+	var commentShopButton = $("#commentShopButton");
+	commentShopButton.show();
+	
+	var favorButton = $("#favorButton");
+	favorButton.show();
 	
 	$.layoutEngine(shopserviceTablayoutSettings);
 }

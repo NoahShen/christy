@@ -54,6 +54,70 @@ public class ShopServlet extends HttpServlet
 		{
 			handleGetShopDetail(req, resp);
 		}
+		else if ("submitShopComment".equals(action))
+		{
+			handleSubmitComment(req, resp);
+		}
+	}
+
+	private void handleSubmitComment(HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		String username = req.getParameter("username");
+		String shopIdStr = req.getParameter("shopid");
+		long shopId = Long.parseLong(shopIdStr);
+		String commentContent = req.getParameter("comentContent");
+		
+		String[] commentIems = commentContent.split(";");
+		
+		List<ShopVoter> voters = new ArrayList<ShopVoter>();
+		ShopComment shopComment = new ShopComment();
+		shopComment.setShopId(shopId);
+		shopComment.setUsername(username);
+		for (String commentItem : commentIems)
+		{
+			String[] itemNameValue = commentItem.split(":");
+			String itemName = itemNameValue[0];
+			String itemValue = itemNameValue[1];
+			if ("shopScore".equals(itemName))
+			{
+				shopComment.setScore(Integer.parseInt(itemValue));
+			}
+			else if ("content".equals(itemName))
+			{
+				shopComment.setContent(itemValue);
+			}
+			else
+			{
+				ShopVoter voter = new ShopVoter();
+				voter.setShopId(shopId);
+				voter.setUsername(username);
+				voter.setItemName(itemName);
+				voter.setValue(Integer.parseInt(itemValue));
+				voters.add(voter);
+			}
+		}
+		
+		try
+		{
+			shopDbhelper.addComment(shopComment, voters);
+		}
+		catch (Exception e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		JSONObject jsonObj = new JSONObject();
+		try
+		{
+			jsonObj.put("result", "success");
+		}
+		catch (JSONException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		resp.getWriter().write(jsonObj.toString());
 	}
 
 	private void handleGetShopDetail(HttpServletRequest req, HttpServletResponse resp) throws IOException
