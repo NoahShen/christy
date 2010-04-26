@@ -6,8 +6,6 @@ package com.google.code.christy.xmppparser;
 
 
 import org.xmlpull.v1.XmlPullParser;
-
-import com.google.code.christy.xmpp.PacketExtension;
 import com.google.code.christy.xmpp.XmlStanza;
 
 
@@ -43,7 +41,7 @@ public interface XmppParser
 	 * @return
 	 * @throws Exception
 	 */
-	public PacketExtension parseUnknownExtension(XmlPullParser parser, String elementName, String namespace) throws Exception;
+	public UnknownPacketExtension parseUnknownExtension(XmlPullParser parser, String elementName, String namespace) throws Exception;
 	
 	/**
 	 * 

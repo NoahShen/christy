@@ -245,7 +245,7 @@ function sessionBindedSuccess() {
 					}, 
 					100,
 					"swing", 
-					function(){
+					function() {
 						if (currentIndex < files.length) {
 							loadFile();
 						} else {
