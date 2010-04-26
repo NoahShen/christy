@@ -239,13 +239,23 @@ function sessionBindedSuccess() {
 	var loadFile = function() {
 		$.include(files[currentIndex], function(){
 			++currentIndex;
-			progressBar.find(".bar").css("width", (currentIndex / files.length) * 100 + "%");
-			if (currentIndex < files.length) {
-				loadFile();
-			} else {
-				progressBar.hide();
-				MainUI.init();
-			}
+//			progressBar.find(".bar").css("width", (currentIndex / files.length) * 100 + "%");
+			progressBar.find(".bar").animate({
+						width: (currentIndex / files.length) * 100 + "%"
+					}, 
+					100,
+					"swing", 
+					function(){
+						if (currentIndex < files.length) {
+							loadFile();
+						} else {
+							progressBar.hide();
+							MainUI.init();
+						}
+					}
+			);
+			
+			
 			
 		});
 	}
