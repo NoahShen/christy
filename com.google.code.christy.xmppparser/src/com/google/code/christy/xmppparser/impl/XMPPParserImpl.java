@@ -738,7 +738,7 @@ public class XMPPParserImpl implements XmppParser
 	}
 	
 	@Override
-	public PacketExtension parseUnknownExtension(XmlPullParser parser, String elementName, String namespace) 
+	public UnknownPacketExtension parseUnknownExtension(XmlPullParser parser, String elementName, String namespace) 
 														throws XmlPullParserException, IOException
 	{
 		

@@ -9,6 +9,7 @@ Bundle-Vendor: Noah
 Import-Package: com.google.code.christy.lib,
  com.google.code.christy.sm,
  com.google.code.christy.sm.contactmgr,
+ com.google.code.christy.sm.privatexml,
  com.google.code.christy.sm.user,
  com.google.code.christy.xmpp,
  com.mysql.jdbc,

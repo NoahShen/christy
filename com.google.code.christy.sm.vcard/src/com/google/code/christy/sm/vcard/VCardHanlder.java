@@ -45,6 +45,10 @@ public class VCardHanlder implements SmHandler
 			iqResponse.addExtension(vCard);
 			userResource.sendToSelfClient(iqResponse);
 		}
+		else if (iq.getType() == Iq.Type.set)
+		{
+			// TODO set vcard
+		}
 		else
 		{
 			

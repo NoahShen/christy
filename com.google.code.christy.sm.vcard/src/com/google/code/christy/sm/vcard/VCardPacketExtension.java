@@ -601,7 +601,7 @@ public class VCardPacketExtension implements PacketExtension
 
 		}
 
-		buf.append("</vCard>");
+		buf.append("</" + getElementName() + ">");
 
 		return buf.toString();
 	}

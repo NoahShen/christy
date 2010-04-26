@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : connection
-Source Server Version : 50022
+Source Server         : christy
+Source Server Version : 50083
 Source Host           : localhost:3306
 Source Database       : christy
 
 Target Server Type    : MYSQL
-Target Server Version : 50022
+Target Server Version : 50083
 File Encoding         : 65001
 
-Date: 2010-04-23 17:41:47
+Date: 2010-04-26 23:39:40
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -30,6 +30,21 @@ CREATE TABLE `enterpriseuser` (
 -- Records of enterpriseuser
 -- ----------------------------
 INSERT INTO `enterpriseuser` VALUES ('ENoah', '123456', '2010-04-18 10:17:14', '2010-04-18 10:17:22');
+
+-- ----------------------------
+-- Table structure for `privatedata`
+-- ----------------------------
+DROP TABLE IF EXISTS `privatedata`;
+CREATE TABLE `privatedata` (
+  `username` char(50) NOT NULL,
+  `stanzaKey` char(50) NOT NULL,
+  `stanzaXml` longtext NOT NULL,
+  PRIMARY KEY  (`username`,`stanzaKey`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of privatedata
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for `shop`
@@ -79,28 +94,15 @@ CREATE TABLE `shopcomment` (
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`commentId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopcomment
 -- ----------------------------
-INSERT INTO `shopcomment` VALUES ('1', '0', 'Noah', '90', '早就听说这家的菜很好吃了 很多人都喜欢来这家的哦 我是和家人一起来的 那次我们吃的都是很满意呢 这家的环境还是不错哦 价格也是公道的 我们都是可以接受呢 真的是不错哦 热情的服务也是我们非常的满意呢 值得来试试哦', '2010-04-22 14:01:22', '2010-04-22 14:05:20');
-INSERT INTO `shopcomment` VALUES ('2', '0', 'Noah2', '95', '很奇怪的一家店，11点过去，刚开门的时候，居然就排队，排队的都是5、60的老人。诺大的店堂，居然只有非常小的电梯可以上去，一次也就6个人。中午的午市的火山石器烧裙翅吃口不错，才43，的确是特色了。下次有机会来吃点心', '2010-04-22 14:05:46', '2010-04-22 14:05:49');
-
--- ----------------------------
--- Table structure for `shopevaluation`
--- ----------------------------
-DROP TABLE IF EXISTS `shopevaluation`;
-CREATE TABLE `shopevaluation` (
-  `shopId` int(20) NOT NULL default '0',
-  `itemId` int(20) NOT NULL,
-  `itemName` varchar(50) NOT NULL,
-  PRIMARY KEY  (`shopId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Records of shopevaluation
--- ----------------------------
+INSERT INTO `shopcomment` VALUES ('1', '0', 'noah', '90', '早就听说这家的菜很好吃了 很多人都喜欢来这家的哦 我是和家人一起来的 那次我们吃的都是很满意呢 这家的环境还是不错哦 价格也是公道的 我们都是可以接受呢 真的是不错哦 热情的服务也是我们非常的满意呢 值得来试试哦', '2010-04-22 14:01:22', '2010-04-25 19:57:01');
+INSERT INTO `shopcomment` VALUES ('2', '0', 'noah2', '95', '很奇怪的一家店，11点过去，刚开门的时候，居然就排队，排队的都是5、60的老人。诺大的店堂，居然只有非常小的电梯可以上去，一次也就6个人。中午的午市的火山石器烧裙翅吃口不错，才43，的确是特色了。下次有机会来吃点心', '2010-04-22 14:05:46', '2010-04-25 19:57:27');
+INSERT INTO `shopcomment` VALUES ('6', '0', 'noah', '91', '9090', '2010-04-25 21:01:02', '2010-04-25 21:01:02');
+INSERT INTO `shopcomment` VALUES ('7', '0', 'noah', '92', '9292', '2010-04-25 21:23:04', '2010-04-25 21:23:04');
 
 -- ----------------------------
 -- Table structure for `shopoverall`
@@ -108,35 +110,41 @@ CREATE TABLE `shopevaluation` (
 DROP TABLE IF EXISTS `shopoverall`;
 CREATE TABLE `shopoverall` (
   `shopId` int(20) NOT NULL,
-  `itemId` int(20) NOT NULL,
   `itemName` varchar(50) NOT NULL,
   `itemValue` varchar(50) NOT NULL,
-  PRIMARY KEY  (`shopId`,`itemId`)
+  PRIMARY KEY  (`shopId`,`itemName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopoverall
 -- ----------------------------
-INSERT INTO `shopoverall` VALUES ('0', '0', 'score', '90');
-INSERT INTO `shopoverall` VALUES ('0', '1', 'perCapita', '95');
-INSERT INTO `shopoverall` VALUES ('0', '2', 'service', '90');
-INSERT INTO `shopoverall` VALUES ('0', '3', 'taste', '90');
+INSERT INTO `shopoverall` VALUES ('0', 'perCapita', '95');
+INSERT INTO `shopoverall` VALUES ('0', 'score', '90');
+INSERT INTO `shopoverall` VALUES ('0', 'service', '90');
+INSERT INTO `shopoverall` VALUES ('0', 'taste', '90');
 
 -- ----------------------------
 -- Table structure for `shopvoter`
 -- ----------------------------
 DROP TABLE IF EXISTS `shopvoter`;
 CREATE TABLE `shopvoter` (
+  `voterId` int(20) NOT NULL auto_increment,
   `username` char(50) NOT NULL,
   `shopId` int(20) NOT NULL,
-  `itemId` int(20) NOT NULL,
+  `itemName` varchar(50) NOT NULL,
   `value` int(11) NOT NULL,
-  PRIMARY KEY  (`username`,`shopId`,`itemId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  PRIMARY KEY  (`voterId`)
+) ENGINE=MyISAM AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopvoter
 -- ----------------------------
+INSERT INTO `shopvoter` VALUES ('13', 'noah', '0', 'service', '92');
+INSERT INTO `shopvoter` VALUES ('10', 'noah', '0', 'service', '93');
+INSERT INTO `shopvoter` VALUES ('11', 'noah', '0', 'perCapita', '92');
+INSERT INTO `shopvoter` VALUES ('12', 'noah', '0', 'taste', '95');
+INSERT INTO `shopvoter` VALUES ('14', 'noah', '0', 'perCapita', '92');
+INSERT INTO `shopvoter` VALUES ('15', 'noah', '0', 'taste', '92');
 
 -- ----------------------------
 -- Table structure for `user`
@@ -168,7 +176,7 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster
