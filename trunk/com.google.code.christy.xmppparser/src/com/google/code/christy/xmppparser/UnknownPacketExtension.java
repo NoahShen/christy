@@ -72,6 +72,10 @@ public class UnknownPacketExtension implements PacketExtension
 	@Override
 	public String toXml()
 	{
+		if (content == null)
+		{
+			return "<" + getElementName() + " xmlns=\"" + getNamespace() + "\" />";
+		}
 		return content;
 	}
 

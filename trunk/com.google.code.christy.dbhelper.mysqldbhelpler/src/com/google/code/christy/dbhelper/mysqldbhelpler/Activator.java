@@ -9,6 +9,7 @@ import org.osgi.framework.ServiceRegistration;
 import com.google.code.christy.lib.ConnectionPool;
 import com.google.code.christy.sm.contactmgr.RosterItem;
 import com.google.code.christy.sm.contactmgr.RosterItemDbHelper;
+import com.google.code.christy.sm.privatexml.PrivateXmlDbHelper;
 import com.google.code.christy.sm.user.User;
 import com.google.code.christy.sm.user.UserDbHelper;
 import com.google.code.christy.xmpp.JID;
@@ -19,6 +20,7 @@ public class Activator implements BundleActivator
 	private ConnectionPool connPool;
 	private ServiceRegistration rosterItemMysqlDbHelperRegistration;
 	private ServiceRegistration userMysqlDbHelperRegistration;
+	private ServiceRegistration privateXmlMysqlDbHelperRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -38,6 +40,9 @@ public class Activator implements BundleActivator
 
 		UserMysqlDbHelper userMysqlDbHelper = new UserMysqlDbHelper(connPool);
 		userMysqlDbHelperRegistration = context.registerService(UserDbHelper.class.getName(), userMysqlDbHelper, null);
+		
+		PrivateXmlMysqlDbHelper privateXmlMysqlDbHelper = new PrivateXmlMysqlDbHelper(connPool);
+		privateXmlMysqlDbHelperRegistration = context.registerService(PrivateXmlDbHelper.class.getName(), privateXmlMysqlDbHelper, null);
 	}
 
 	/*
@@ -64,15 +69,20 @@ public class Activator implements BundleActivator
 			userMysqlDbHelperRegistration = null;
 		}
 		
+		if (privateXmlMysqlDbHelperRegistration != null)
+		{
+			privateXmlMysqlDbHelperRegistration.unregister();
+			privateXmlMysqlDbHelperRegistration = null;
+		}
 	}
 	
-	public static void main(String[] args) throws Exception
-	{
-		ConnectionPool connPool = new ConnectionPool("com.mysql.jdbc.Driver",
-							"jdbc:mysql://localhost/christy",
-							"root",
-							"123456");
-		connPool .createPool();
+//	public static void main(String[] args) throws Exception
+//	{
+//		ConnectionPool connPool = new ConnectionPool("com.mysql.jdbc.Driver",
+//							"jdbc:mysql://localhost/christy",
+//							"root",
+//							"123456");
+//		connPool .createPool();
 //		UserMysqlDbHelper userMysqlDbHelper = new UserMysqlDbHelper(connPool);
 		
 //		User user = new User();
@@ -105,5 +115,5 @@ public class Activator implements BundleActivator
 //		System.out.println(item);
 		
 //		rosterItemMysqlDbHelper.updateRosterItem(rosterItem);
-	}
+//	}
 }
