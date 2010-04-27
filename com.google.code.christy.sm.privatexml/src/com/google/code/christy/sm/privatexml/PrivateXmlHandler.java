@@ -86,7 +86,7 @@ public class PrivateXmlHandler implements SmHandler
 			}
 			return;
 		}
-		String username = userResource.getFullJid().getNodePreped();
+		String username = onlineUser.getNode();
 		Iq.Type type = iq.getType();
 		if (type == Iq.Type.set)
 		{

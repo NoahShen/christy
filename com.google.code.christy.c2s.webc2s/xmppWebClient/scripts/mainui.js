@@ -26,6 +26,7 @@ MainUI.init = function() {
 			"<li class=''><a href='#imservices'>IM</a></li>" +
 			"<li class=''><a href='#shopServices'>Shop</a></li>" +
 			"<li class=''><a href='#mapServices'>Map</a></li>" +
+			"<li class=''><a href='#personal'>Personal</a></li>" +
 	"</ul>");
 	
 	var appMenu = $("<div id='appMenu'><img id='appMenuImg' src='/resource/status/available.png'/></div>");
@@ -70,6 +71,8 @@ MainUI.init = function() {
 				ShopService.show();
 			} else if (action == "mapServices") {
 				MapService.show();
+			} else if (action  == "personal") {
+				Personal.show();
 			}
 			
 			
@@ -89,6 +92,7 @@ MainUI.init = function() {
 	ImService.init();
 	ShopService.init();
 	MapService.init();
+	Personal.init();
 	
 	ImService.show();
 }
@@ -566,13 +570,15 @@ function createContactJqObj(newContact) {
 		var contactJid = $(this).attr("contactJid");
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
-		var contact = conn.getContact(JID.createJID(contactJid));
-		var chatScrollHeader = $("#chat-scroller-header");
-		var chatPanel = $("#chat-panel");
-		createChatHtml(chatScrollHeader, chatPanel, true, {
-			jid: contactJid,
-			showName: contact.getShowName()
-		});
+		if (conn) {
+			var contact = conn.getContact(JID.createJID(contactJid));
+			var chatScrollHeader = $("#chat-scroller-header");
+			var chatPanel = $("#chat-panel");
+			createChatHtml(chatScrollHeader, chatPanel, true, {
+				jid: contactJid,
+				showName: contact.getShowName()
+			});
+		}
 		
 		
 	});
@@ -1472,3 +1478,128 @@ function mapFrameLoaded() {
 	$.layoutEngine(mapserviceTablayoutSettings);
 }
 // end of MapService
+
+
+// start of Personal
+
+Personal = {};
+Personal.init = function() {
+	var personal = $("<div id='personal'></div>");
+	
+	// personal tabs
+	var personalTop = $("<div id='personalTop'></div>");
+	// contact tab
+	var favorTab = $("<b id='favorTab' tabpanelid='personalFavor' class='marginpadding'></b>");
+	favorTab.attr("type", "favor");
+	favorTab.addClass("sexybutton");
+	favorTab.text($.i18n.prop("personal.favor", "收藏"));
+	personalTop.append(favorTab);
+	
+	
+	// tabs click event
+	personalTop.find("b:first").addClass("sexysimple sexyteal");
+	personalTop.find("b").click(function(){
+		$(this).addClass("sexysimple sexyteal").siblings("b").removeClass("sexysimple sexyteal");
+		var tabpanelid = $(this).attr("tabpanelid");
+		var tabpanel = $("#" + tabpanelid);
+		tabpanel.siblings().hide();
+		tabpanel.show();
+		
+		if (tabpanelid == "personalFavor") {
+			showPersonalFavor();
+		}
+	});
+	
+	personal.append(personalTop);
+	
+	var personalCenter = $("<div id='personalCenter'></div>");
+	
+	var favorPanel = $("<div id='personalFavor'></div>");
+	personalCenter.append(favorPanel);
+	
+	personal.append(personalCenter);
+	
+	$("#main").append(personal);}
+
+function showPersonalFavor() {
+	var privateXmlIq = new Iq(IqType.GET);
+	
+	var iqPrivateXml = new IqPrivateXml();
+	
+	var unknownEx = new UnknownExtension();
+	unknownEx.setElementName("storage");
+	unknownEx.setNamespace("storage:bookmarks");
+	iqPrivateXml.setUnknownPacketExtension(unknownEx);
+	
+	privateXmlIq.addPacketExtension(iqPrivateXml);
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	var conn = connectionMgr.getAllConnections()[0];
+	if (conn) {
+		conn.handleStanza({
+			filter: new PacketIdFilter(privateXmlIq.getStanzaId()),
+			timeout: Christy.loginTimeout,
+			handler: function(iqResponse) {
+				if (iqResponse.getType() == IqType.RESULT) {
+					var privateXml = iqResponse.getPacketExtension(IqPrivateXml.ELEMENTNAME, IqPrivateXml.NAMESPACE);
+					// TODO
+					alert(privateXml.toXml());
+				}
+			}
+		});
+		
+		conn.sendStanza(privateXmlIq);
+	}
+	
+}
+
+function createPersonalFavorShop(shopInfo) {
+	var shopInfoTable = $("<table shopId='" + shopInfo.id + "'>" +
+								"<tr>" +
+									"<td>" +
+										"<img src='" + shopInfo.imgSrc + "' width='50' height='50' />" +
+									"</td>" +
+									"<td>" +
+										"<div>" + shopInfo.name + " "+ shopInfo.hasCoupon + "</div>" +
+										"<div>" + shopInfo.overall.score + " "+ shopInfo.overall.perCapita + "</div>" +
+										"<div>" + shopInfo.street + "</div>" +
+									"</td>" +
+								"</tr>" +
+							"</table>");
+	shopInfoTable.click(function(){
+//		var shopId = $(this).attr("shopId");
+//		$.ajax({
+//			url: "/shop/",
+//			dataType: "json",
+//			cache: false,
+//			type: "get",
+//			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+//			data: {
+//				action: "getshopdetail",
+//				shopid: shopId
+//			},
+//			success: function(shopDetail){
+//				ShopService.currentShopDetail = shopDetail;
+//				showShopDetail(shopDetail);
+//			},
+//			error: function (xmlHttpRequest, textStatus, errorThrown) {
+//				
+//			},
+//			complete: function(xmlHttpRequest, textStatus) {
+//				
+//			}
+//		});
+
+	});
+	
+	return shopInfoTable;
+}
+
+Personal.show = function() {
+	var personal = $("#personal");
+	
+	personal.siblings().hide();
+	personal.show();
+}
+
+
+// end of Personal

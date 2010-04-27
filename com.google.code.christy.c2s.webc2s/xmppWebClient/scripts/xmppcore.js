@@ -241,15 +241,28 @@ PacketExtension = XmlStanza.extend({
 UnknownExtension = PacketExtension.extend({
 	init: function(xmlElement) {
 	    this._super();
-	    this.xmlElement = xmlElement;
+	    if (xmlElement) {
+	    	this.xmlElement = xmlElement;
+		    this.elementName = xmlElement.nodeName;
+		    this.namespace = xmlElement.getAttribute("xmlns");
+	    }
+	    
+	},
+	
+	setElementName: function(elementName) {
+		this.elementName = elementName;
 	},
 	
 	getElementName: function() {
-		return this.xmlElement.nodeName;
+		return this.elementName;
+	},
+	
+	setNamespace: function(namespace) {
+		this.namespace = namespace;
 	},
 	
 	getNamespace: function() {
-		return this.xmlElement.getAttribute("xmlns");
+		return this.namespace;
 	},
 	
 	generateXml: function(element) {
@@ -279,6 +292,11 @@ UnknownExtension = PacketExtension.extend({
 	},
 	
 	toXml: function() {
+		if (this.xmlElement == null) {
+			var xml = "";
+			xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\"/>";
+			return xml;
+		}
 		return this.generateXml(this.xmlElement);
 	}
 });
@@ -4603,7 +4621,12 @@ VCardExtensionParser = XmppParser.ExtensionParser.extend({
 				if ("TYPE" == elementName) {
 					card.setPhotoType(childEle2.firstChild.nodeValue);
 				} else if ("BINVAL" == elementName) {
-					card.setPhotoBinval(childEle2.firstChild.nodeValue);
+					// Firefox XML node 4k limit,
+					var s = "";
+					for(var j = 0; j < childEle2.childNodes.length; ++j) {
+						s += new String(childEle2.childNodes.item(j).nodeValue);
+					} 
+					card.setPhotoBinval(s);
 				}
 			}
 		}
@@ -4618,3 +4641,91 @@ VCardExtensionParser.NAMESPACE = "vcard-temp";
 
 var parser = XmppParser.getInstance();
 parser.addExtensionParser(new VCardExtensionParser());
+
+
+
+
+
+
+
+// start of IqPrivateXml
+IqPrivateXml = PacketExtension.extend({
+	init: function(){
+	},
+	
+	getElementName: function(){
+		return IqPrivateXml.ELEMENTNAME;
+	},
+	
+	getNamespace: function(){
+		return IqPrivateXml.NAMESPACE;
+	},
+	
+	/**
+	 * @return the unknownPacketExtension
+	 */
+	getUnknownPacketExtension: function() {
+		return this.unknownPacketExtension;
+	},
+
+	setUnknownPacketExtension: function(unknownPacketExtension) {
+		this.unknownPacketExtension = unknownPacketExtension;
+	},
+	
+	toXml: function() {
+		var xml = "";
+		xml += ("<" + this.getElementName() + " " + "xmlns=\"" + this.getNamespace() + "\"");
+		if (this.unknownPacketExtension != null) {
+			xml += ">";
+			xml += this.unknownPacketExtension.toXml();
+			xml += "</" + this.getElementName() + ">";
+		} else {
+			xml += "/>";
+		}
+		return xml;
+	}
+});
+
+IqPrivateXml.ELEMENTNAME = "query";
+IqPrivateXml.NAMESPACE = "jabber:iq:private";
+
+// end of IqPrivateXml
+
+
+// start of IqPrivateXmlParser
+
+IqPrivateXmlParser = XmppParser.ExtensionParser.extend({
+	init: function() {
+	},
+	
+	getElementName: function() {
+		return IqPrivateXmlParser.ELEMENTNAME
+	},
+	
+	getNamespace: function() {
+		return IqPrivateXmlParser.NAMESPACE;
+	},
+	
+	parseExtension: function(xmppParser, xmlElement) {
+		var privateXml = new IqPrivateXml();
+		var childNodes = xmlElement.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle = childNodes[i];
+			// ELEMENT_NODE
+			if (childEle.nodeType == 1) {
+				var unknownExtension = new UnknownExtension(childEle);
+				privateXml.setUnknownPacketExtension(unknownExtension);
+			}
+			
+		}
+		
+		return privateXml;
+	}
+});
+
+IqPrivateXmlParser.ELEMENTNAME = "query";
+IqPrivateXmlParser.NAMESPACE = "jabber:iq:private";
+// end of IqPrivateXmlParser
+
+var parser = XmppParser.getInstance();
+parser.addExtensionParser(new IqPrivateXmlParser());
