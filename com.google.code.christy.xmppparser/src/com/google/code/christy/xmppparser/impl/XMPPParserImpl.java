@@ -773,6 +773,7 @@ public class XMPPParserImpl implements XmppParser
 		
 		boolean done = false;
 		boolean hasContent = false;
+		String latestElement = elementName;
 		while (!done)
 		{
 			int eventType = parser.next();
@@ -781,6 +782,7 @@ public class XMPPParserImpl implements XmppParser
 			if (eventType == XmlPullParser.START_TAG)
 			{
 				hasContent = false;
+				latestElement = currentElement;
 				String prefix2 = parser.getPrefix();
 				String nspace2 = parser.getNamespace(null);
 				if (prefix2 != null)
@@ -816,7 +818,7 @@ public class XMPPParserImpl implements XmppParser
 			}
 			else if (eventType == XmlPullParser.END_TAG)
 			{
-				if (hasContent)
+				if (hasContent || !latestElement.equals(currentElement))
 				{
 					String prefix2 = parser.getPrefix();
 					if (prefix2 != null)

@@ -5,7 +5,6 @@ import com.google.code.christy.sm.SmHandler;
 import com.google.code.christy.sm.SmManager;
 import com.google.code.christy.sm.UserResource;
 import com.google.code.christy.xmpp.Iq;
-import com.google.code.christy.xmpp.JID;
 import com.google.code.christy.xmpp.Packet;
 import com.google.code.christy.xmpp.XmppError;
 import com.google.code.christy.xmppparser.UnknownPacketExtension;
@@ -42,17 +41,17 @@ public class PrivateXmlHandler implements SmHandler
 		PrivateXmlExtension privateXmlExtension = 
 			(PrivateXmlExtension) iq.getExtension(PrivateXmlExtension.ELEMENTNAME, PrivateXmlExtension.NAMESPACE);
 		
-		JID from = iq.getFrom();
-		
 		UnknownPacketExtension unknownX = privateXmlExtension.getUnknownPacketExtension();
-		if (unknownX == null || from == null)
+		if (unknownX == null)
 		{
 			try
 			{
 				Iq iqError = (Iq) iq.clone();
+				iqError.setType(Iq.Type.error);
 				iqError.setTo(userResource.getFullJid());
 				iqError.setFrom(null);
 				iqError.setError(new XmppError(XmppError.Condition.bad_request));
+				userResource.sendToSelfClient(iqError);
 			}
 			catch (CloneNotSupportedException e)
 			{
@@ -69,7 +68,25 @@ public class PrivateXmlHandler implements SmHandler
 		
 		
 		PrivateXmlDbHelper privateXmlDbHelper = privateXmlDbHelperTracker.getPrivateXmlDbHelper();
-		String username = from.getNodePreped();
+		if (privateXmlDbHelper == null)
+		{
+			try
+			{
+				Iq iqError = (Iq) iq.clone();
+				iqError.setType(Iq.Type.error);
+				iqError.setTo(userResource.getFullJid());
+				iqError.setFrom(null);
+				iqError.setError(new XmppError(XmppError.Condition.internal_server_error));
+				userResource.sendToSelfClient(iqError);
+			}
+			catch (CloneNotSupportedException e2)
+			{
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+			return;
+		}
+		String username = userResource.getFullJid().getNodePreped();
 		Iq.Type type = iq.getType();
 		if (type == Iq.Type.set)
 		{
@@ -96,6 +113,7 @@ public class PrivateXmlHandler implements SmHandler
 				try
 				{
 					Iq iqError = (Iq) iq.clone();
+					iqError.setType(Iq.Type.error);
 					iqError.setTo(userResource.getFullJid());
 					iqError.setFrom(null);
 					iqError.setError(new XmppError(XmppError.Condition.internal_server_error));
@@ -104,7 +122,7 @@ public class PrivateXmlHandler implements SmHandler
 				catch (CloneNotSupportedException e2)
 				{
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					e2.printStackTrace();
 				}
 				
 			}
@@ -125,7 +143,11 @@ public class PrivateXmlHandler implements SmHandler
 				PrivateXmlExtension privateXml = new PrivateXmlExtension();
 				
 				UnknownPacketExtension unknownExtension = new UnknownPacketExtension(elementName, namespace);
-				unknownExtension.setContent(entity.getStanzaXml());
+				if (entity != null)
+				{
+					unknownExtension.setContent(entity.getStanzaXml());
+				}
+				
 				
 				privateXml.setUnknownPacketExtension(unknownExtension);
 				
@@ -141,6 +163,7 @@ public class PrivateXmlHandler implements SmHandler
 				try
 				{
 					Iq iqError = (Iq) iq.clone();
+					iqError.setType(Iq.Type.error);
 					iqError.setTo(userResource.getFullJid());
 					iqError.setFrom(null);
 					iqError.setError(new XmppError(XmppError.Condition.internal_server_error));
