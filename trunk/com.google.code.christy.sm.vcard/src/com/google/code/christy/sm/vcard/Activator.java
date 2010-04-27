@@ -15,6 +15,7 @@ public class Activator implements BundleActivator
 	private ServiceRegistration vCardHanlderRegistration;
 	private ServiceRegistration vCardExtensionParserRegistration;
 	private ServiceRegistration vCardTempUpdateExtensionParserRegistration;
+	private VCardDbHelperTracker vCardDbHelperTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -31,7 +32,10 @@ public class Activator implements BundleActivator
 		vCardTempUpdateExtensionParserRegistration = 
 			context.registerService(ExtensionParser.class.getName(), vCardTempUpdateExtensionParser, null);
 		
-		VCardHanlder vCardHanlder = new VCardHanlder();
+		vCardDbHelperTracker = new VCardDbHelperTracker(context);
+		vCardDbHelperTracker.open();
+		
+		VCardHanlder vCardHanlder = new VCardHanlder(vCardDbHelperTracker);
 		vCardHanlderRegistration = context.registerService(SmHandler.class.getName(), vCardHanlder, null);
 	}
 
@@ -58,6 +62,12 @@ public class Activator implements BundleActivator
 		{
 			vCardHanlderRegistration.unregister();
 			vCardHanlderRegistration = null;
+		}
+		
+		if (vCardDbHelperTracker != null)
+		{
+			vCardDbHelperTracker.close();
+			vCardDbHelperTracker = null;
 		}
 	}
 

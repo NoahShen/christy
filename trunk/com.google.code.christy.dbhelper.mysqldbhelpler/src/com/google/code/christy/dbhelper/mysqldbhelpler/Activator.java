@@ -1,18 +1,15 @@
 package com.google.code.christy.dbhelper.mysqldbhelpler;
 
-import java.util.Arrays;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
 import com.google.code.christy.lib.ConnectionPool;
-import com.google.code.christy.sm.contactmgr.RosterItem;
 import com.google.code.christy.sm.contactmgr.RosterItemDbHelper;
 import com.google.code.christy.sm.privatexml.PrivateXmlDbHelper;
-import com.google.code.christy.sm.user.User;
 import com.google.code.christy.sm.user.UserDbHelper;
-import com.google.code.christy.xmpp.JID;
+import com.google.code.christy.sm.vcard.VCardDbHelper;
 
 public class Activator implements BundleActivator
 {
@@ -21,6 +18,7 @@ public class Activator implements BundleActivator
 	private ServiceRegistration rosterItemMysqlDbHelperRegistration;
 	private ServiceRegistration userMysqlDbHelperRegistration;
 	private ServiceRegistration privateXmlMysqlDbHelperRegistration;
+	private ServiceRegistration vCardMysqlDbHelperRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -43,6 +41,11 @@ public class Activator implements BundleActivator
 		
 		PrivateXmlMysqlDbHelper privateXmlMysqlDbHelper = new PrivateXmlMysqlDbHelper(connPool);
 		privateXmlMysqlDbHelperRegistration = context.registerService(PrivateXmlDbHelper.class.getName(), privateXmlMysqlDbHelper, null);
+		
+		VCardMysqlDbHelper vCardMysqlDbHelper = new VCardMysqlDbHelper(connPool);
+		vCardMysqlDbHelperRegistration = context.registerService(VCardDbHelper.class.getName(), vCardMysqlDbHelper, null);
+		
+		 
 	}
 
 	/*
@@ -73,6 +76,12 @@ public class Activator implements BundleActivator
 		{
 			privateXmlMysqlDbHelperRegistration.unregister();
 			privateXmlMysqlDbHelperRegistration = null;
+		}
+		
+		if (vCardMysqlDbHelperRegistration != null)
+		{
+			vCardMysqlDbHelperRegistration.unregister();
+			vCardMysqlDbHelperRegistration = null;
 		}
 	}
 	

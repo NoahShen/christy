@@ -7,9 +7,18 @@ import com.google.code.christy.sm.UserResource;
 import com.google.code.christy.xmpp.Iq;
 import com.google.code.christy.xmpp.Packet;
 import com.google.code.christy.xmpp.XmppError;
+import com.google.code.christy.xmppparser.UnknownPacketExtension;
 
 public class VCardHanlder implements SmHandler
 {
+	private VCardDbHelperTracker vCardDbHelperTracker;
+	
+	
+	public VCardHanlder(VCardDbHelperTracker cardDbHelperTracker)
+	{
+		super();
+		vCardDbHelperTracker = cardDbHelperTracker;
+	}
 
 	@Override
 	public boolean accept(SmManager smManager, OnlineUser onlineUser, Packet packet)
@@ -31,23 +40,116 @@ public class VCardHanlder implements SmHandler
 		Iq iq = (Iq) packet;
 		if (iq.getType() == Iq.Type.get)
 		{
+
+			VCardDbHelper vCardDbHelper = vCardDbHelperTracker.getVCardDbHelper();
+			if (vCardDbHelper == null)
+			{
+				try
+				{
+					Iq iqError = (Iq) iq.clone();
+					iqError.setType(Iq.Type.error);
+					iqError.setTo(userResource.getFullJid());
+					iqError.setFrom(null);
+					iqError.setError(new XmppError(XmppError.Condition.bad_request));
+					userResource.sendToSelfClient(iqError);
+				}
+				catch (CloneNotSupportedException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return;
+			}
 			
-			// TODO get vcard from db
+			String username = onlineUser.getNode();
 			
-			// TODO test code
-			Iq iqResponse = new Iq(Iq.Type.result);
-			iqResponse.setStanzaId(iq.getStanzaId());
-			iqResponse.setTo(userResource.getFullJid());
-			VCardPacketExtension vCard = new VCardPacketExtension();
-			vCard.setNickName("Noah");
-			vCard.setPhotoType("image/gif");
-			vCard.setPhotoBinval("R0lGODlhDwAPAKECAAAAzMzM/////wAAACwAAAAADwAPAAACIISPeQHsrZ5ModrLlN48CXF8m2iQ3YmmKqVlRtW4MLwWACH+H09wdGltaXplZCBieSBVbGVhZCBTbWFydFNhdmVyIQAAOw==");
-			iqResponse.addExtension(vCard);
-			userResource.sendToSelfClient(iqResponse);
+			try
+			{
+				VCardEntity vCardEntity = vCardDbHelper.getVCardEntity(username);
+				
+				Iq iqResponse = new Iq(Iq.Type.result);
+				iqResponse.setStanzaId(iq.getStanzaId());
+				iqResponse.setTo(userResource.getFullJid());
+				UnknownPacketExtension unknownEx = 
+						new UnknownPacketExtension(VCardPacketExtension.ELEMENTNAME, VCardPacketExtension.NAMESPACE);
+				if (vCardEntity != null)
+				{
+					unknownEx.setContent(vCardEntity.getVCardContent());
+				}
+				iqResponse.addExtension(unknownEx);
+				
+				userResource.sendToSelfClient(iqResponse);
+			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			
 		}
 		else if (iq.getType() == Iq.Type.set)
 		{
-			// TODO set vcard
+			VCardDbHelper vCardDbHelper = vCardDbHelperTracker.getVCardDbHelper();
+			if (vCardDbHelper == null)
+			{
+				try
+				{
+					Iq iqError = (Iq) iq.clone();
+					iqError.setType(Iq.Type.error);
+					iqError.setTo(userResource.getFullJid());
+					iqError.setFrom(null);
+					iqError.setError(new XmppError(XmppError.Condition.bad_request));
+					userResource.sendToSelfClient(iqError);
+				}
+				catch (CloneNotSupportedException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return;
+			}
+			
+			String username = onlineUser.getNode();
+			
+			VCardEntity vCardEntity = new VCardEntity();
+			vCardEntity.setUsername(username);
+			
+			VCardPacketExtension vCard = 
+				(VCardPacketExtension) iq.getExtension(VCardPacketExtension.ELEMENTNAME, VCardPacketExtension.NAMESPACE);			
+			
+			vCardEntity.setVCardContent(vCard.toXml());
+			try
+			{
+				vCardDbHelper.updateVCardEntity(vCardEntity);
+				
+				Iq iqResponse = new Iq(Iq.Type.result);
+				iqResponse.setStanzaId(iq.getStanzaId());
+				iqResponse.setTo(userResource.getFullJid());
+				
+				userResource.sendToSelfClient(iqResponse);
+			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				
+				try
+				{
+					Iq iqError = (Iq) iq.clone();
+					iqError.setType(Iq.Type.error);
+					iqError.setTo(userResource.getFullJid());
+					iqError.setFrom(null);
+					iqError.setError(new XmppError(XmppError.Condition.bad_request));
+					userResource.sendToSelfClient(iqError);
+				}
+				catch (CloneNotSupportedException e2)
+				{
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+			}
+			
 		}
 		else
 		{
