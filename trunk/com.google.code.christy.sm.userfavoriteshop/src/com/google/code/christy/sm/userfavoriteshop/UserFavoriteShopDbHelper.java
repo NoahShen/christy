@@ -5,11 +5,20 @@ public interface UserFavoriteShopDbHelper
 	/**
 	 * 
 	 * @param username
+	 * @param startIndex
+	 * @param max
 	 * @return
 	 * @throws Exception
 	 */
-	public UserFavoriteShopEntity[] getAllFavoriteShop(String username) throws Exception;
+	public UserFavoriteShopEntity[] getAllFavoriteShop(String username, int startIndex, int max) throws Exception;
 
+	/**
+	 * 
+	 * @param username
+	 * @return
+	 * @throws Exception
+	 */
+	public int getAllFavoriteShopCount(String username) throws Exception;
 	/**
 	 * 
 	 * @param username
