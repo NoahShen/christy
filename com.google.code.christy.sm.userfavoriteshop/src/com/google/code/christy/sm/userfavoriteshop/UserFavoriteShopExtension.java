@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.google.code.christy.xmpp.PacketExtension;
 import com.google.code.christy.xmpp.XmlStanza;
+import com.google.code.christy.xmpp.resultsetmgr.ResultSetExtension;
 
 
 public class UserFavoriteShopExtension implements PacketExtension
@@ -20,6 +21,8 @@ public class UserFavoriteShopExtension implements PacketExtension
 	public static final String NAMESPACE = "christy:shop:user:favoriteshop";
 	
 	private List<ShopItem> shopItems = new ArrayList<ShopItem>();
+	
+	private ResultSetExtension resultSetExtension;
 	
 	@Override
 	public String getElementName()
@@ -43,21 +46,36 @@ public class UserFavoriteShopExtension implements PacketExtension
 		shopItems.remove(item);
 	}
 	
-	public ShopItem[] getShopItems()
+	public List<ShopItem> getShopItems()
 	{
-		return shopItems.toArray(new ShopItem[]{});
+		return shopItems;
 	}
 	
+	/**
+	 * @return the resultSetExtension
+	 */
+	public ResultSetExtension getResultSetExtension()
+	{
+		return resultSetExtension;
+	}
+
+	/**
+	 * @param resultSetExtension the resultSetExtension to set
+	 */
+	public void setResultSetExtension(ResultSetExtension resultSetExtension)
+	{
+		this.resultSetExtension = resultSetExtension;
+	}
+
 	@Override
 	public String toXml()
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append("<" + getElementName() + " " + "xmlns=\"" + getNamespace() + "\"");
 		
-		if (shopItems.isEmpty())
+		if (shopItems.isEmpty() && resultSetExtension == null)
 		{
 			buf.append("/>");
-			
 		}
 		else
 		{
@@ -68,6 +86,10 @@ public class UserFavoriteShopExtension implements PacketExtension
 				buf.append(item.toXml());
 			}
 			
+			if (resultSetExtension != null)
+			{
+				buf.append(resultSetExtension.toXml());
+			}
 			buf.append("</" + getElementName() + ">");
 		}
 		

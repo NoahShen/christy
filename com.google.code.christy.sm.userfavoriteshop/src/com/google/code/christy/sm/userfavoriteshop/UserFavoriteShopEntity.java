@@ -2,6 +2,8 @@ package com.google.code.christy.sm.userfavoriteshop;
 
 public class UserFavoriteShopEntity
 {
+	private long id;
+	
 	private String username;
 	
 	private long shopId;
@@ -15,6 +17,22 @@ public class UserFavoriteShopEntity
 	public UserFavoriteShopEntity()
 	{
 		super();
+	}
+
+	/**
+	 * @return the id
+	 */
+	public long getId()
+	{
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(long id)
+	{
+		this.id = id;
 	}
 
 	public String getUsername()

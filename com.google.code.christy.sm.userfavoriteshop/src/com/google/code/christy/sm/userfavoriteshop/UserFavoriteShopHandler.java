@@ -1,5 +1,7 @@
 package com.google.code.christy.sm.userfavoriteshop;
 
+import java.util.List;
+
 import com.google.code.christy.sm.OnlineUser;
 import com.google.code.christy.sm.SmHandler;
 import com.google.code.christy.sm.SmManager;
@@ -8,6 +10,7 @@ import com.google.code.christy.sm.userfavoriteshop.UserFavoriteShopExtension.Sho
 import com.google.code.christy.xmpp.Iq;
 import com.google.code.christy.xmpp.Packet;
 import com.google.code.christy.xmpp.XmppError;
+import com.google.code.christy.xmpp.resultsetmgr.ResultSetExtension;
 
 public class UserFavoriteShopHandler implements SmHandler
 {
@@ -63,7 +66,7 @@ public class UserFavoriteShopHandler implements SmHandler
 		Iq.Type type = iq.getType();
 		if (type == Iq.Type.set)
 		{
-			ShopItem[] items = userFavoriteShopExtension.getShopItems();
+			List<ShopItem> items = userFavoriteShopExtension.getShopItems();
 			try
 			{
 				for (ShopItem item : items)
@@ -113,8 +116,24 @@ public class UserFavoriteShopHandler implements SmHandler
 			
 			try
 			{
+				int startIndex = 0;
+				int max = 10;
+				ResultSetExtension rsx = userFavoriteShopExtension.getResultSetExtension();
+				if (rsx != null)
+				{
+					if (rsx.getIndex() != Integer.MIN_VALUE)
+					{
+						startIndex = rsx.getIndex();
+					}
+					
+					if (rsx.getMax() != Integer.MIN_VALUE)
+					{
+						max = rsx.getMax();
+					}
+				}
 				UserFavoriteShopExtension extension = new UserFavoriteShopExtension();
-				UserFavoriteShopEntity[] entities = userFavoriteShopDbHelper.getAllFavoriteShop(username);
+				
+				UserFavoriteShopEntity[] entities = userFavoriteShopDbHelper.getAllFavoriteShop(username, startIndex, max);
 				for (UserFavoriteShopEntity entity :  entities)
 				{
 					ShopItem item = new ShopItem(entity.getShopId());
@@ -122,6 +141,22 @@ public class UserFavoriteShopHandler implements SmHandler
 					item.setStreet(entity.getStreet());
 					item.setTel(entity.getTel());
 					extension.addShopItem(item);
+				}
+				
+				if (rsx != null)
+				{
+					ResultSetExtension responseRsx = new ResultSetExtension();
+					responseRsx.setFirstIndex(startIndex);
+					if (entities.length != 0)
+					{
+						UserFavoriteShopEntity first = entities[0];
+						UserFavoriteShopEntity last = entities[entities.length - 1];
+						responseRsx.setFirst(String.valueOf(first.getId()));
+						responseRsx.setLast(String.valueOf(last.getId()));
+					}
+					int count = userFavoriteShopDbHelper.getAllFavoriteShopCount(username);
+					responseRsx.setCount(count);
+					extension.setResultSetExtension(responseRsx);
 				}
 				
 				Iq iqResponse = new Iq(Iq.Type.result);

@@ -13,8 +13,13 @@ import com.google.code.christy.sm.userfavoriteshop.UserFavoriteShopEntity;
 public class UserFavoriteShopMysqlDbHelper implements UserFavoriteShopDbHelper
 {
 	private ConnectionPool connectionPool;
-
-	private static final String GETFAVORITESHOP_SQL = "SELECT R.username as username, R.shopId as shopId, title, street, tel FROM (SELECT * FROM userfavoriteshop WHERE username = ?) R LEFT JOIN shop S ON R.shopId = S.shopId";
+	
+	private static final String GETCOUNTOFFAVORITESHOP_SQL = "SELECT count(*) FROM userfavoriteshop WHERE username = ?";
+	
+	private static final String GETFAVORITESHOP_SQL = "SELECT R.id as id, R.username as username, R.shopId as shopId, title, street, tel" +
+					" FROM (SELECT * FROM userfavoriteshop WHERE username = ?) R" +
+					" LEFT JOIN shop S ON R.shopId = S.shopId" +
+					" LIMIT ?, ?";
 
 	private static final String ADDFAVORITESHOP_SQL = "INSERT INTO userfavoriteshop VALUES (?, ?)";
 
@@ -51,7 +56,7 @@ public class UserFavoriteShopMysqlDbHelper implements UserFavoriteShopDbHelper
 	}
 
 	@Override
-	public UserFavoriteShopEntity[] getAllFavoriteShop(String username) throws Exception
+	public UserFavoriteShopEntity[] getAllFavoriteShop(String username, int startIndex, int max) throws Exception
 	{
 		Connection connection = null;
 		try
@@ -59,18 +64,22 @@ public class UserFavoriteShopMysqlDbHelper implements UserFavoriteShopDbHelper
 			connection = connectionPool.getConnection();
 			PreparedStatement preStat = connection.prepareStatement(GETFAVORITESHOP_SQL);
 			preStat.setString(1, username);
+			preStat.setInt(2, startIndex);
+			preStat.setInt(3, max);
 			ResultSet resultSet = preStat.executeQuery();
 			
 			List<UserFavoriteShopEntity> entities = new ArrayList<UserFavoriteShopEntity>();
 			while (resultSet.next())
 			{
 //				String username2 = resultSet.getString("username");
+				long id = resultSet.getLong("id");
 				long shopId = resultSet.getLong("shopId");
 				String name = resultSet.getString("title");
 				String street = resultSet.getString("street");
 				String tel = resultSet.getString("tel");
 				
 				UserFavoriteShopEntity entity = new UserFavoriteShopEntity();
+				entity.setId(id);
 				entity.setShopId(shopId);
 				entity.setUsername(username);
 				entity.setShopName(name);
@@ -81,6 +90,36 @@ public class UserFavoriteShopMysqlDbHelper implements UserFavoriteShopDbHelper
 			}
 			
 			return entities.toArray(new UserFavoriteShopEntity[]{});
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+	
+
+	@Override
+	public int getAllFavoriteShopCount(String username) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(GETCOUNTOFFAVORITESHOP_SQL);
+			preStat.setString(1, username);
+			ResultSet resultSet = preStat.executeQuery();
+			
+			if (resultSet.next())
+			{
+				int count = resultSet.getInt("count(*)");
+				return count;
+			}
+			
+			return 0;
 		}
 		finally
 		{
@@ -114,5 +153,6 @@ public class UserFavoriteShopMysqlDbHelper implements UserFavoriteShopDbHelper
 			
 		}
 	}
+
 
 }

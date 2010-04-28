@@ -8,6 +8,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import com.google.code.christy.sm.userfavoriteshop.UserFavoriteShopExtension;
 import com.google.code.christy.sm.userfavoriteshop.UserFavoriteShopExtension.ShopItem;
 import com.google.code.christy.xmpp.PacketExtension;
+import com.google.code.christy.xmpp.resultsetmgr.ResultSetExtension;
 import com.google.code.christy.xmppparser.ExtensionParser;
 import com.google.code.christy.xmppparser.XmppParser;
 
@@ -43,6 +44,16 @@ public class UserFavoriteShopExtensionParser implements ExtensionParser
 				if ("shop".equals(elementName))
 				{
 					extension.addShopItem(parseShopItem(parser));
+				}
+				else if (ResultSetExtension.ELEMENTNAME.equals(elementName))
+				{
+					ExtensionParser exParser = xmppParser.getExtensionParser(ResultSetExtension.ELEMENTNAME, ResultSetExtension.NAMESPACE);
+					if (exParser != null)
+					{
+						ResultSetExtension rsmx = (ResultSetExtension) exParser.parseExtension(parser, xmppParser);
+						extension.setResultSetExtension(rsmx);
+					}
+					xmppParser.parseParser(parser);
 				}
 			}
 			else if (eventType == XmlPullParser.END_TAG)
