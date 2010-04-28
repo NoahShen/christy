@@ -4644,10 +4644,6 @@ parser.addExtensionParser(new VCardExtensionParser());
 
 
 
-
-
-
-
 // start of IqPrivateXml
 IqPrivateXml = PacketExtension.extend({
 	init: function(){
@@ -4729,3 +4725,171 @@ IqPrivateXmlParser.NAMESPACE = "jabber:iq:private";
 
 var parser = XmppParser.getInstance();
 parser.addExtensionParser(new IqPrivateXmlParser());
+
+
+
+
+// start of IqUserFavoriteShop
+
+ShopItem = jClass.extend({
+	init: function(shopId){
+		this.shopId = shopId;
+	},
+
+	getShopId: function() {
+		return this.shopId;
+	},
+	
+	getAction: function() {
+		return this.action;
+	},
+	
+	setAction: function(action) {
+		this.action = action;
+	},
+
+	getShopName: function() {
+		return this.shopName;
+	},
+
+	setShopName: function(shopName) {
+		this.shopName = shopName;
+	},
+
+	getStreet: function() {
+		return this.street;
+	},
+	
+	setStreet: function(street) {
+		this.street = street;
+	},
+	
+	getTel: function() {
+		return this.tel;
+	},
+
+	setTel: function(tel) {
+		this.tel = tel;
+	},
+		
+	toXml: function(){
+		var xml = "";
+		xml += "<shop id=\"" + getShopId() + "\"";
+		if (this.getAction() != null) {
+			xml +=  " action=\"" + this.getAction() + "\"";
+		}
+		xml += ">";
+		
+		if (this.getShopName() != null) {
+			xml += "<name>" + getShopName() + "</name>";
+		}
+		
+		if (this.getStreet() != null) {
+			xml += "<street>" + this.getStreet() + "</street>";
+		}
+		
+		if (this.getTel() != null) {
+			xml += "<tel>" + getStreet() + "</tel>";
+		}
+		
+		xml += "</shop>";
+		return xml;
+	}
+});
+
+IqUserFavoriteShop = PacketExtension.extend({
+	init: function(){
+		this.shopItems = new Array();
+	},
+	
+	getElementName: function(){
+		return IqUserFavoriteShop.ELEMENTNAME;
+	},
+	
+	getNamespace: function(){
+		return IqUserFavoriteShop.NAMESPACE;
+	},
+	
+	addShopItem: function(item) {
+		this.shopItems.push(item);
+	},
+	
+	removeShopItem: function(item) {
+		for (var i =  0; i < this.shopItems.length; ++i) {
+			if (this.shopItems[i] == item) {
+				this.shopItems.splice(i,1);
+			}
+		}
+	},
+	
+	getShopItems: function() {
+		return this.shopItems;
+	},
+	
+	toXml: function() {
+		var xml = "";
+		xml += "<" + getElementName() + " " + "xmlns=\"" + getNamespace() + "\"";
+		
+		if (this.shopItems.length = 0) {
+			xml += "/>";
+			
+		} else {
+			xml += ">";
+
+			for (var i = 0; i < this.shopItems.length; ++i){			
+				xml += this.shopItems[i].toXml();
+			}
+			
+			buf.append("</" + getElementName() + ">");
+		}
+		
+		
+		return xml;
+	}
+});
+
+IqUserFavoriteShop.ELEMENTNAME = "shops";
+IqUserFavoriteShop.NAMESPACE = "christy:shop:user:favoriteshop";
+
+// end of IqUserFavoriteShop
+
+
+// start of IqUserFavoriteShopParser
+
+IqUserFavoriteShopParser = XmppParser.ExtensionParser.extend({
+	init: function() {
+	},
+	
+	getElementName: function() {
+		return IqPrivateXmlParser.ELEMENTNAME
+	},
+	
+	getNamespace: function() {
+		return IqPrivateXmlParser.NAMESPACE;
+	},
+	
+	parseExtension: function(xmppParser, xmlElement) {
+		var privateXml = new IqPrivateXml();
+		var childNodes = xmlElement.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle = childNodes[i];
+			// ELEMENT_NODE
+			if (childEle.nodeType == 1) {
+				var unknownExtension = new UnknownExtension(childEle);
+				privateXml.setUnknownPacketExtension(unknownExtension);
+			}
+			
+		}
+		
+		return privateXml;
+	}
+});
+
+IqPrivateXmlParser.ELEMENTNAME = "query";
+IqPrivateXmlParser.NAMESPACE = "jabber:iq:private";
+// end of IqUserFavoriteShopParser
+
+var parser = XmppParser.getInstance();
+parser.addExtensionParser(new IqUserFavoriteShopParser());
+
+
