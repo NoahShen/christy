@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-04-28 09:23:46
+Date: 2010-04-28 12:19:37
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -164,6 +164,22 @@ CREATE TABLE `user` (
 -- ----------------------------
 INSERT INTO `user` VALUES ('Noah', '123', '2010-04-10 14:29:55', '2010-04-10 14:30:27');
 INSERT INTO `user` VALUES ('Noah2', '123', '2010-04-12 20:30:42', '2010-04-12 20:30:51');
+
+-- ----------------------------
+-- Table structure for `userfavoriteshop`
+-- ----------------------------
+DROP TABLE IF EXISTS `userfavoriteshop`;
+CREATE TABLE `userfavoriteshop` (
+  `username` char(50) NOT NULL,
+  `shopId` int(20) NOT NULL,
+  PRIMARY KEY  (`username`,`shopId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of userfavoriteshop
+-- ----------------------------
+INSERT INTO `userfavoriteshop` VALUES ('noah', '0');
+INSERT INTO `userfavoriteshop` VALUES ('noah', '1');
 
 -- ----------------------------
 -- Table structure for `userroster`
