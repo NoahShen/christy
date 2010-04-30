@@ -738,8 +738,7 @@ public class XMPPParserImpl implements XmppParser
 	}
 	
 	@Override
-	public UnknownPacketExtension parseUnknownExtension(XmlPullParser parser, String elementName, String namespace) 
-														throws XmlPullParserException, IOException
+	public UnknownPacketExtension parseUnknownExtension(XmlPullParser parser, String elementName, String namespace) throws Exception
 	{
 		
 		UnknownPacketExtension packetX = new UnknownPacketExtension(elementName, namespace);
@@ -785,6 +784,17 @@ public class XMPPParserImpl implements XmppParser
 				latestElement = currentElement;
 				String prefix2 = parser.getPrefix();
 				String nspace2 = parser.getNamespace(null);
+				ExtensionParser xparser = getExtensionParser(currentElement, nspace2);
+				if (xparser != null)
+				{
+					PacketExtension packetx = xparser.parseExtension(parser, this);
+					if (packetx != null)
+					{
+						buf.append(packetx.toXml());
+					}
+					continue;
+				}
+				
 				if (prefix2 != null)
 				{
 					buf.append("<" + prefix2 + ":" + currentElement);

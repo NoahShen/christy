@@ -2490,9 +2490,9 @@ XmppParser = jClass.extend({
 			var packetExtension = extensionParser.parseExtension(this, extensionElem);
 			
 			//TOO 
-			if (window.console) {
-				window.console.log("ExtensionParser parse extension complete:" + packetExtension.toXml());
-			}
+//			if (window.console) {
+//				window.console.log("ExtensionParser parse extension complete:" + packetExtension.toXml());
+//			}
 			return packetExtension;
 			
 		} else {
@@ -2504,9 +2504,9 @@ XmppParser = jClass.extend({
 			var unknownExtension = new UnknownExtension(extensionElem);
 			
 			//TOO 
-			if (window.console) {
-				window.console.log("parseUnknownExtension complete:" + unknownExtension.toXml());
-			}
+//			if (window.console) {
+//				window.console.log("parseUnknownExtension complete:" + unknownExtension.toXml());
+//			}
 
 			return unknownExtension;
 		}

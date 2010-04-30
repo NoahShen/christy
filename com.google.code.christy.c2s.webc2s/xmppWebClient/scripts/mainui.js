@@ -1518,7 +1518,31 @@ Personal.init = function() {
 	
 	personal.append(personalCenter);
 	
-	$("#main").append(personal);}
+	var personalTopHeight = 40;
+	
+	personallayoutSettings = {
+		Name: "Main",
+        Dock: $.layoutEngine.DOCK.FILL,
+        EleID: "main",        
+        Children:[{
+			Name: "Fill",
+			Dock: $.layoutEngine.DOCK.FILL,
+	 		EleID: "personal",
+	 		Children:[{
+	 			Name: "Top2",
+				Dock: $.layoutEngine.DOCK.TOP,
+				EleID: "personalTop",
+				Height: personalTopHeight
+	 		},{
+	 			Name: "Fill2",
+				Dock: $.layoutEngine.DOCK.FILL,
+		 		EleID: "personalCenter"
+	 		}]
+		}]
+	};
+	
+	$("#main").append(personal);
+	$.layoutEngine(personallayoutSettings);}
 
 function showFavoriteShop() {
 	var favoriteShopPanel = $("#favoriteShopPanel");
@@ -1545,15 +1569,18 @@ function showFavoriteShop() {
 			handler: function(iqResponse) {
 				if (iqResponse.getType() == IqType.RESULT) {
 					var userFavoriteShop = iqResponse.getPacketExtension(IqUserFavoriteShop.ELEMENTNAME, IqUserFavoriteShop.NAMESPACE);
-					// TODO
-					alert(userFavoriteShop.toXml());
+					var shopItems = userFavoriteShop.getShopItems();
+					for (var i = 0; i < shopItems.length; ++i) {
+						var favoriteShopItemJqObj = createPersonalFavorShop(shopItems[i]);
+						favoriteShopPanel.append(favoriteShopItemJqObj);
+					}
+					
 				}
 			}
 		});
 		
 		conn.sendStanza(iq);
 	}
-	
 }
 
 function createPersonalFavorShop(shopInfo) {
@@ -1603,6 +1630,10 @@ Personal.show = function() {
 	
 	personal.siblings().hide();
 	personal.show();
+	
+	var personalTop = $("#personalTop");
+	personalTop.children(".sexysimple").click();
+	$.layoutEngine(personallayoutSettings);
 }
 
 
