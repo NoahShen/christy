@@ -1515,6 +1515,7 @@ Personal.init = function() {
 	
 	var favoriteShopPanel = $("<div id='favoriteShopPanel'></div>");
 	personalCenter.append(favoriteShopPanel);
+	personalCenter.append("<div id='favoriteShopPagination' class='pagination'></div>");
 	
 	personal.append(personalCenter);
 	
@@ -1550,12 +1551,17 @@ function showFavoriteShop() {
 		return;
 	}
 	
+	queryFavoriteShop(0, 5, true);
+	
+}
+
+function queryFavoriteShop(startIndex, max, updatePage) {
 	var iq = new Iq(IqType.GET);
 	
 	var userFavoriteShop = new IqUserFavoriteShop();
 	var resultSetExtension = new ResultSetExtension();
-	resultSetExtension.setIndex(0);
-	resultSetExtension.setMax(10);
+	resultSetExtension.setIndex(startIndex);
+	resultSetExtension.setMax(max);
 	userFavoriteShop.setResultSetExtension(resultSetExtension);
 	
 	iq.addPacketExtension(userFavoriteShop);
@@ -1570,12 +1576,28 @@ function showFavoriteShop() {
 				if (iqResponse.getType() == IqType.RESULT) {
 					var userFavoriteShop = iqResponse.getPacketExtension(IqUserFavoriteShop.ELEMENTNAME, IqUserFavoriteShop.NAMESPACE);
 					var shopItems = userFavoriteShop.getShopItems();
+					var favoriteShopPanel = $("#favoriteShopPanel");
+					favoriteShopPanel.empty();
 					for (var i = 0; i < shopItems.length; ++i) {
 						var favoriteShopItemJqObj = createPersonalFavorShop(shopItems[i]);
-						favoriteShopPanel.append(favoriteShopItemJqObj);
+						$("#favoriteShopPanel").append(favoriteShopItemJqObj);
 					}
 					
-				}
+					if (updatePage) {
+						var rsx = userFavoriteShop.getResultSetExtension();
+						var favoriteShopPagination = $("#favoriteShopPagination");
+						$("#favoriteShopPagination").pagination(rsx.getCount(), {
+							num_edge_entries: 1,
+							num_display_entries: 8,
+							items_per_page: 5,
+			                callback: function(page_id, jq) {
+								queryFavoriteShop(page_id * 5, 5, false);
+			                }
+		            	});
+		            	favoriteShopPagination.show();
+					}
+					
+				}				
 			}
 		});
 		
@@ -1583,16 +1605,13 @@ function showFavoriteShop() {
 	}
 }
 
-function createPersonalFavorShop(shopInfo) {
-	var shopInfoTable = $("<table shopId='" + shopInfo.id + "'>" +
+function createPersonalFavorShop(shopItem) {
+	var shopInfoTable = $("<table shopId='" + shopItem.getShopId() + "'>" +
 								"<tr>" +
 									"<td>" +
-										"<img src='" + shopInfo.imgSrc + "' width='50' height='50' />" +
-									"</td>" +
-									"<td>" +
-										"<div>" + shopInfo.name + " "+ shopInfo.hasCoupon + "</div>" +
-										"<div>" + shopInfo.overall.score + " "+ shopInfo.overall.perCapita + "</div>" +
-										"<div>" + shopInfo.street + "</div>" +
+										"<div>" + shopItem.getShopName() + "</div>" +
+										"<div>" + shopItem.getStreet() + "</div>" +
+										"<div>" + shopItem.getTel() + "</div>" +
 									"</td>" +
 								"</tr>" +
 							"</table>");

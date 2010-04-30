@@ -4804,7 +4804,7 @@ ResultSetExtension = PacketExtension.extend({
 		
 		if (this.getFirst()) {
 			xml += "<first";
-			if (this.firstIndex) {
+			if (this.firstIndex != null) {
 				xml += " index=\"" + this.getFirstIndex() + "\">";
 			} else {
 				xml += ">";
@@ -4816,7 +4816,7 @@ ResultSetExtension = PacketExtension.extend({
 			xml += "<last>" + this.getLast() + "</last>";
 		}
 		
-		if (this.getMax()) {
+		if (this.getMax() != null) {
 			xml += "<max>" + this.getMax() + "</max>";
 		}
 		
@@ -4824,11 +4824,11 @@ ResultSetExtension = PacketExtension.extend({
 			xml += "<after>" + this.getAfter() + "</after>";
 		}
 		
-		if (this.getCount()) {
+		if (this.getCount() != null) {
 			xml += "<count>" + this.getCount() + "</count>";
 		}
 		
-		if (this.getIndex()) {
+		if (this.getIndex() != null) {
 			xml += "<index>" + this.getIndex() + "</index>";
 		}
 		
@@ -4892,10 +4892,6 @@ ResultSetExtensionParser.NAMESPACE = "http://jabber.org/protocol/rsme";
 
 var parser = XmppParser.getInstance();
 parser.addExtensionParser(new ResultSetExtensionParser());
-
-
-
-
 
 
 
@@ -5007,9 +5003,9 @@ IqUserFavoriteShop = PacketExtension.extend({
 	
 	toXml: function() {
 		var xml = "";
-		xml += "<" + this.getElementName() + " " + "xmlns=\"" + this.getNamespace() + "\"";
+		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\"";
 		
-		if (this.shopItems.length = 0 && this.resultSetExtension == null) {
+		if (this.shopItems.length == 0 && this.resultSetExtension == null) {
 			xml += "/>";
 			
 		} else {
@@ -5044,11 +5040,11 @@ IqUserFavoriteShopParser = XmppParser.ExtensionParser.extend({
 	},
 	
 	getElementName: function() {
-		return IqPrivateXmlParser.ELEMENTNAME
+		return IqUserFavoriteShopParser.ELEMENTNAME
 	},
 	
 	getNamespace: function() {
-		return IqPrivateXmlParser.NAMESPACE;
+		return IqUserFavoriteShopParser.NAMESPACE;
 	},
 	
 	parseExtension: function(xmppParser, xmlElement) {
@@ -5060,12 +5056,13 @@ IqUserFavoriteShopParser = XmppParser.ExtensionParser.extend({
 			if (childEle.nodeType == 1) {
 				var elementName = childEle.nodeName;
 				if ("shop" == elementName) {
-					userFavoriteShop.addShopItem(this.parseShopItem(childEle));
+					var shopItem = this.parseShopItem(childEle);
+					userFavoriteShop.addShopItem(shopItem);
 				} else {
 					var extensionParser = xmppParser.getExtensionParser(ResultSetExtension.ELEMENTNAME, ResultSetExtension.NAMESPACE);
 					if (extensionParser) {
 						var resultSetX = extensionParser.parseExtension(xmppParser, childEle);
-						
+						userFavoriteShop.setResultSetExtension(resultSetX);
 					}
 				}
 			}
@@ -5078,18 +5075,18 @@ IqUserFavoriteShopParser = XmppParser.ExtensionParser.extend({
 		var action = shopItemElem.getAttribute("action");
 		var shopItem = new ShopItem(shopId);
 		shopItem.setAction(action);
-		var childNodes = xmlElement.childNodes;
+		var childNodes = shopItemElem.childNodes;
 		for (var i = 0; i < childNodes.length; ++i) {
 			var childEle = childNodes[i];
 			// ELEMENT_NODE
 			if (childEle.nodeType == 1) {
 				var elementName = childEle.nodeName;
 				if ("name" == elementName) {
-					shopItem.setShopName(childEle.firstChild.nodeValu);
+					shopItem.setShopName(childEle.firstChild.nodeValue);
 				} else if ("street" == elementName) {
-					shopItem.setStreet(childEle.firstChild.nodeValu);
+					shopItem.setStreet(childEle.firstChild.nodeValue);
 				} else if ("tel" == elementName) {
-					shopItem.setTel(childEle.firstChild.nodeValu);
+					shopItem.setTel(childEle.firstChild.nodeValue);
 				}
 			}
 		}
@@ -5103,5 +5100,4 @@ IqUserFavoriteShopParser.NAMESPACE = "christy:shop:user:favoriteshop";
 
 var parser = XmppParser.getInstance();
 parser.addExtensionParser(new IqUserFavoriteShopParser());
-
 
