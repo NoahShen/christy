@@ -1488,12 +1488,11 @@ Personal.init = function() {
 	
 	// personal tabs
 	var personalTop = $("<div id='personalTop'></div>");
-	// contact tab
-	var favorTab = $("<b id='favorTab' tabpanelid='personalFavor' class='marginpadding'></b>");
-	favorTab.attr("type", "favor");
-	favorTab.addClass("sexybutton");
-	favorTab.text($.i18n.prop("personal.favor", "收藏"));
-	personalTop.append(favorTab);
+	// favorShop tab
+	var favoriteShopTab = $("<b id='favoriteShop' tabpanelid='favoriteShopPanel' class='marginpadding'></b>");
+	favoriteShopTab.addClass("sexybutton");
+	favoriteShopTab.text($.i18n.prop("personal.favorite", "收藏"));
+	personalTop.append(favoriteShopTab);
 	
 	
 	// tabs click event
@@ -1505,8 +1504,8 @@ Personal.init = function() {
 		tabpanel.siblings().hide();
 		tabpanel.show();
 		
-		if (tabpanelid == "personalFavor") {
-			showPersonalFavor();
+		if (tabpanelid == "favoriteShopPanel") {
+			showFavoriteShop();
 		}
 	});
 	
@@ -1514,40 +1513,45 @@ Personal.init = function() {
 	
 	var personalCenter = $("<div id='personalCenter'></div>");
 	
-	var favorPanel = $("<div id='personalFavor'></div>");
-	personalCenter.append(favorPanel);
+	var favoriteShopPanel = $("<div id='favoriteShopPanel'></div>");
+	personalCenter.append(favoriteShopPanel);
 	
 	personal.append(personalCenter);
 	
 	$("#main").append(personal);}
 
-function showPersonalFavor() {
-	var privateXmlIq = new Iq(IqType.GET);
+function showFavoriteShop() {
+	var favoriteShopPanel = $("#favoriteShopPanel");
+	if (favoriteShopPanel.children().size() > 0) {
+		return;
+	}
 	
-	var iqPrivateXml = new IqPrivateXml();
+	var iq = new Iq(IqType.GET);
 	
-	var unknownEx = new UnknownExtension();
-	unknownEx.setElementName("storage");
-	unknownEx.setNamespace("storage:bookmarks");
-	iqPrivateXml.setUnknownPacketExtension(unknownEx);
+	var userFavoriteShop = new IqUserFavoriteShop();
+	var resultSetExtension = new ResultSetExtension();
+	resultSetExtension.setIndex(0);
+	resultSetExtension.setMax(10);
+	userFavoriteShop.setResultSetExtension(resultSetExtension);
 	
-	privateXmlIq.addPacketExtension(iqPrivateXml);
+	iq.addPacketExtension(userFavoriteShop);
+	
 	var connectionMgr = XmppConnectionMgr.getInstance();
 	var conn = connectionMgr.getAllConnections()[0];
 	if (conn) {
 		conn.handleStanza({
-			filter: new PacketIdFilter(privateXmlIq.getStanzaId()),
+			filter: new PacketIdFilter(iq.getStanzaId()),
 			timeout: Christy.loginTimeout,
 			handler: function(iqResponse) {
 				if (iqResponse.getType() == IqType.RESULT) {
-					var privateXml = iqResponse.getPacketExtension(IqPrivateXml.ELEMENTNAME, IqPrivateXml.NAMESPACE);
+					var userFavoriteShop = iqResponse.getPacketExtension(IqUserFavoriteShop.ELEMENTNAME, IqUserFavoriteShop.NAMESPACE);
 					// TODO
-					alert(privateXml.toXml());
+					alert(userFavoriteShop.toXml());
 				}
 			}
 		});
 		
-		conn.sendStanza(privateXmlIq);
+		conn.sendStanza(iq);
 	}
 	
 }
