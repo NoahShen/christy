@@ -50,7 +50,7 @@ $(document).ready(function() {
 			return;
 		}
 		
-		
+		disabledInputController(true);
 		var connecting = $.i18n.prop("login.connecting", "正在连接...");
 		$("#login_status").text(connecting);
 
@@ -130,8 +130,6 @@ $(document).ready(function() {
 			ver: "1.6",
 			wait: "60"
 		});
-		
-		disabledInputController(true);
 		
 		var logging_in = $.i18n.prop("login.logging_in", "正在登录...");
 		$("#login_status").text(logging_in);
