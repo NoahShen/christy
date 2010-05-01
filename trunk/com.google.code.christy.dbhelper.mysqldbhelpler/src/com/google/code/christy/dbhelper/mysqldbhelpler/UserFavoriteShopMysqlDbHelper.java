@@ -21,7 +21,7 @@ public class UserFavoriteShopMysqlDbHelper implements UserFavoriteShopDbHelper
 					" LEFT JOIN shop S ON R.shopId = S.shopId" +
 					" LIMIT ?, ?";
 
-	private static final String ADDFAVORITESHOP_SQL = "INSERT INTO userfavoriteshop VALUES (?, ?)";
+	private static final String ADDFAVORITESHOP_SQL = "INSERT INTO userfavoriteshop (username, shopId) VALUES (?, ?)";
 
 	private static final String REMOVEFAVORITESHOP_SQL = "DELETE FROM userfavoriteshop WHERE username = ? AND shopId = ?";
 

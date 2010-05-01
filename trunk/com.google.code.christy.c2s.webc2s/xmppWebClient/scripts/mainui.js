@@ -940,7 +940,6 @@ ShopService.init = function() {
 								"<td style='float:right;'>" +
 									"<button id='searchShop' style='margin-right:1cm;' class='sexybutton sexysimple sexymygray sexysmall'>Search Nearby</button>" +
 									"<button id='maplistShop' style='margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map List</button>" +
-									"<button id='favorButton' style='display:none;margin-right:5px;' class='sexybutton sexysimple sexymygray sexysmall'>Favor</button>" +
 									"<button id='commentShopButton' style='display:none;margin-right:5px;' class='sexybutton sexysimple sexymygray sexysmall'>Comment</button>" +
 									"<button id='showshopinmap' style='margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map</button>" +									
 								"</td>" +
@@ -1250,7 +1249,6 @@ function showShopDetail(shopDetail) {
 	
 	var shopDetailJqObj = $("#shopdetail");
 	shopDetailJqObj.empty();
-	shopDetailJqObj.attr("title", "上海1号私藏菜");
 	var baseInfo = shopDetail.basicInfo;
 	var overall = shopDetail.overall;
 	var shopBaseInfo = $("<table shopId='" + baseInfo.id + "'>" +
@@ -1259,13 +1257,42 @@ function showShopDetail(shopDetail) {
 									"<img src='" + baseInfo.imgSrc + "' width='50' height='50' />" +
 								"</td>" +
 								"<td>" +
-									"<div>" + baseInfo.name + " "+ baseInfo.hasCoupon + "</div>" +
+									"<div>" + baseInfo.name + " "+ baseInfo.hasCoupon + 
+										"<button>收藏</button>" +
+									"</div>" +
 									"<div>" + overall.score + " "+ overall.perCapita + "</div>" +
 									"<span>Service:" + overall.service + "</span>" + 
 									"<span>Taste:" + overall.taste + "</span>" + 
 								"</td>" +
 							"</tr>" +
 						"</table>");
+	
+	shopBaseInfo.find("button").click(function(){
+		var iq = new Iq(IqType.SET);
+	
+		var userFavoriteShop = new IqUserFavoriteShop();
+		var item = new ShopItem(baseInfo.id);
+		item.setAction("add");
+		userFavoriteShop.addShopItem(item);
+		iq.addPacketExtension(userFavoriteShop);
+		
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			conn.handleStanza({
+				filter: new PacketIdFilter(iq.getStanzaId()),
+				timeout: Christy.loginTimeout,
+				handler: function(iqResponse) {
+					if (iqResponse.getType() == IqType.RESULT) {
+						alert($.i18n.prop("personal.favoriteSuccess", "收藏成功!"))
+					}				
+				}
+			});
+			
+			conn.sendStanza(iq);
+		}
+	});
+	
 	shopDetailJqObj.append(shopBaseInfo);
 
 	var contact = $("<table>" +
@@ -1310,11 +1337,9 @@ function showShopDetail(shopDetail) {
 	shopDetailJqObj.show();
 	
 	var showInMap = $("#showshopinmap");
-	var favorButton = $("#favorButton");
 	var commentShopButton = $("#commentShopButton");
 	showInMap.siblings().hide();
 	showInMap.show();
-	favorButton.show();
 	commentShopButton.show();
 	
 	$.layoutEngine(shopserviceTablayoutSettings);
@@ -1334,6 +1359,12 @@ function showShopSearchPanel() {
 
 function showShopListPanel() {
 	var shopList = $("#shoplist");
+	
+	if (shopList.children("div:first").children().size() == 0) {
+		$("#back").click();
+		return;
+	}
+	
 	shopList.siblings().hide();
 	shopList.show();
 	
@@ -1356,9 +1387,6 @@ function showShopDetailPanel() {
 	
 	var commentShopButton = $("#commentShopButton");
 	commentShopButton.show();
-	
-	var favorButton = $("#favorButton");
-	favorButton.show();
 	
 	$.layoutEngine(shopserviceTablayoutSettings);
 }
@@ -1514,8 +1542,10 @@ Personal.init = function() {
 	var personalCenter = $("<div id='personalCenter'></div>");
 	
 	var favoriteShopPanel = $("<div id='favoriteShopPanel'></div>");
+	favoriteShopPanel.append("<div id='favoriteShopPagination' class='pagination'></div>");
+	
 	personalCenter.append(favoriteShopPanel);
-	personalCenter.append("<div id='favoriteShopPagination' class='pagination'></div>");
+	
 	
 	personal.append(personalCenter);
 	
@@ -1542,12 +1572,34 @@ Personal.init = function() {
 		}]
 	};
 	
+	personalFavoriteShoplayoutSettings = {
+		Name: "Main",
+        Dock: $.layoutEngine.DOCK.FILL,
+        EleID: "main",        
+        Children:[{
+			Name: "Fill",
+			Dock: $.layoutEngine.DOCK.FILL,
+	 		EleID: "personal",
+	 		Children:[{
+	 			Name: "Top2",
+				Dock: $.layoutEngine.DOCK.TOP,
+				EleID: "personalTop",
+				Height: personalTopHeight
+	 		},{
+	 			Name: "Fill2",
+				Dock: $.layoutEngine.DOCK.FILL,
+		 		EleID: "personalCenter"
+	 		}]
+		}]
+	};
+	
 	$("#main").append(personal);
 	$.layoutEngine(personallayoutSettings);}
 
 function showFavoriteShop() {
 	var favoriteShopPanel = $("#favoriteShopPanel");
-	if (favoriteShopPanel.children().size() > 0) {
+	if (favoriteShopPanel.children().size() > 1) {
+		$.layoutEngine(personallayoutSettings);
 		return;
 	}
 	
@@ -1577,16 +1629,22 @@ function queryFavoriteShop(startIndex, max, updatePage) {
 					var userFavoriteShop = iqResponse.getPacketExtension(IqUserFavoriteShop.ELEMENTNAME, IqUserFavoriteShop.NAMESPACE);
 					var shopItems = userFavoriteShop.getShopItems();
 					var favoriteShopPanel = $("#favoriteShopPanel");
-					favoriteShopPanel.empty();
+					favoriteShopPanel.children("table").remove();
 					for (var i = 0; i < shopItems.length; ++i) {
 						var favoriteShopItemJqObj = createPersonalFavorShop(shopItems[i]);
-						$("#favoriteShopPanel").append(favoriteShopItemJqObj);
+						var lastTable = favoriteShopPanel.children("table:last");
+						if (lastTable[0]) {
+							favoriteShopItemJqObj.insertAfter(lastTable);
+						} else {
+							favoriteShopItemJqObj.insertBefore(favoriteShopPanel.children("div:first"));
+						}
+						
 					}
 					
 					if (updatePage) {
 						var rsx = userFavoriteShop.getResultSetExtension();
 						var favoriteShopPagination = $("#favoriteShopPagination");
-						$("#favoriteShopPagination").pagination(rsx.getCount(), {
+						favoriteShopPagination.pagination(rsx.getCount(), {
 							num_edge_entries: 1,
 							num_display_entries: 8,
 							items_per_page: 5,
@@ -1594,9 +1652,8 @@ function queryFavoriteShop(startIndex, max, updatePage) {
 								queryFavoriteShop(page_id * 5, 5, false);
 			                }
 		            	});
-		            	favoriteShopPagination.show();
 					}
-					
+					$.layoutEngine(personallayoutSettings);
 				}				
 			}
 		});
@@ -1606,40 +1663,72 @@ function queryFavoriteShop(startIndex, max, updatePage) {
 }
 
 function createPersonalFavorShop(shopItem) {
-	var shopInfoTable = $("<table shopId='" + shopItem.getShopId() + "'>" +
+	var shopInfoTable = $("<table shopId='" + shopItem.getShopId() + "' style='width:100%;border-bottom:1px solid gray;'>" +
 								"<tr>" +
 									"<td>" +
-										"<div>" + shopItem.getShopName() + "</div>" +
-										"<div>" + shopItem.getStreet() + "</div>" +
+										"<div>" + shopItem.getShopName() + " " + shopItem.getStreet() +"</div>" +
 										"<div>" + shopItem.getTel() + "</div>" +
+									"</td>" +
+									"<td style='float:right'>" +
+										"<button>删除</button>" +
 									"</td>" +
 								"</tr>" +
 							"</table>");
-	shopInfoTable.click(function(){
-//		var shopId = $(this).attr("shopId");
-//		$.ajax({
-//			url: "/shop/",
-//			dataType: "json",
-//			cache: false,
-//			type: "get",
-//			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-//			data: {
-//				action: "getshopdetail",
-//				shopid: shopId
-//			},
-//			success: function(shopDetail){
-//				ShopService.currentShopDetail = shopDetail;
-//				showShopDetail(shopDetail);
-//			},
-//			error: function (xmlHttpRequest, textStatus, errorThrown) {
-//				
-//			},
-//			complete: function(xmlHttpRequest, textStatus) {
-//				
-//			}
-//		});
+	shopInfoTable.find("td:first").click(function(){
+		var shopId = shopItem.getShopId();
+		$.ajax({
+			url: "/shop/",
+			dataType: "json",
+			cache: false,
+			type: "get",
+			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+			data: {
+				action: "getshopdetail",
+				shopid: shopId
+			},
+			success: function(shopDetail){
+				ShopService.currentShopDetail = shopDetail;
+				showShopDetail(shopDetail);
+				ShopService.show();
+			},
+			error: function (xmlHttpRequest, textStatus, errorThrown) {
+				
+			},
+			complete: function(xmlHttpRequest, textStatus) {
+				
+			}
+		});
 
 	});
+	
+	shopInfoTable.find("button").click(function(){
+		var iq = new Iq(IqType.SET);
+		var userFavoriteShop = new IqUserFavoriteShop();
+		
+		var item = new ShopItem(shopItem.getShopId());
+		item.setAction("remove");
+		userFavoriteShop.addShopItem(item);
+		
+		iq.addPacketExtension(userFavoriteShop);
+		
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			conn.handleStanza({
+				filter: new PacketIdFilter(iq.getStanzaId()),
+				timeout: Christy.loginTimeout,
+				handler: function(iqResponse) {
+					if (iqResponse.getType() == IqType.RESULT) {
+						$("#favoriteShopPanel").children("table").remove();
+						showFavoriteShop();
+					}
+				}
+			});
+			
+			conn.sendStanza(iq);
+		}
+	});
+	
 	
 	return shopInfoTable;
 }
