@@ -39,6 +39,7 @@ MainUI.init = function() {
 	
 	$("body").append(appMenu);
 	$("body").append(appMenuItems);
+	
 	$("body").append(mainDiv);
 	
 	$.layoutEngine(layoutSettings);
@@ -160,6 +161,13 @@ ImService.init = function() {
 	chatTab.text($.i18n.prop("imservices.chat", "聊天"));
 	imTop.append(chatTab);
 	
+	var contactInfoTab =  $("<b id='contactInfoTab' class='marginpadding'></b>");
+	// contactInfo tab
+	contactInfoTab.attr("type", "contactInfo");
+	contactInfoTab.addClass("sexybutton");
+	contactInfoTab.text($.i18n.prop("imservices.contactInfo", "联系人资料"));
+	imTop.append(contactInfoTab);
+	
 	// tabs click event
 	imTop.find("b:first").addClass("sexysimple sexyteal");
 	imTop.find("b").click(function(){
@@ -178,7 +186,13 @@ ImService.init = function() {
 			$.layoutEngine(imContactlayoutSettings);
 		} else if (type == "chat") {
 			$.layoutEngine(imChatlayoutSettings);
-			$("#chat-scroller-header").find("span:first").click();
+			var chatHeader = $("#chat-scroller-header");
+			var selectedPanel = chatHeader.children(".selected");
+			if (selectedPanel[0]) {
+				selectedPanel.click();
+			} else {
+				chatHeader.find("span:first").click();
+			}
 		}
 	});
 
@@ -233,28 +247,106 @@ ImService.init = function() {
 	userinfo.append(statusMenu);
 	userinfo.append(userinfotable);
 	
+	imCenter.append(userinfo);
 	
 	var contactlist = $("<div id='contactlist'></div>");
 	contactlist.attr("type", "contact");
 	
+	imCenter.append(contactlist);
 	// start of chat html
 	
 	var chatScrollHeader = $("<div id='chat-scroller-header'></div>");
 	chatScrollHeader.attr("type", "chat");
+	
+	imCenter.append(chatScrollHeader);
 	
 	var chatScrollBody = $("<div id='chat-scroller-body'></div>");
 	chatScrollBody.attr("type", "chat");
 	
 	var chatPanel = $("<div id='chat-panel'></div>");	
 	chatScrollBody.append(chatPanel);
-	
-	
-	imCenter.append(userinfo);
-	imCenter.append(contactlist);
-	
-	imCenter.append(chatScrollHeader);
+
 	imCenter.append(chatScrollBody);
 	
+	var contactInfoPanel = $("<table class='marginpadding'>" +
+								"<tbody>" +
+									"<tr>" +
+										"<td>" +
+											"<img id='contactInfoImg' src='/resource/userface.bmp' width='50' height='50' />" + 
+										"</td>" +
+										"<td>" +
+											"<table style='padding-left:5px'>" +
+												"<tbody>" +
+													"<tr>" +
+														"<td>" +
+															"<span id='contactInfoJid'>Noah@example.com</span>" +
+															"<a href='javascript:void(0);' style='margin-left:10px;'>" + 
+																$.i18n.prop("imservices.action.deleteContact", "删除") + 
+															"</a>" +
+														"</td>" +
+													"</tr>" +
+													"<tr style='height:30px;'>" +
+														"<td>" +
+															"<label id='contactInfoName'>" + 
+																$.i18n.prop("imservices.nickame", "备注名：") + 
+															"</label>" +
+															"<input id='contactNickName' type='text' />" +
+														"</td>" +
+													"</tr>" +
+												"</tbody>" +
+											"</table>" +
+										"</td>" +
+									"</tr>" +
+									"<tr>" +
+										"<td colspan='2'>" +
+											"<input id='unsubscribedContactCheckbox' name='unsubscribedContactCheckbox' type='checkbox'/>" +
+											"<label id='unsubscribedContact' for='unsubscribedContactCheckbox'>" + 
+												$.i18n.prop("imservices.unsubscribed", "对其不可见") + 
+											"</label>" +
+										"</td>" +
+									"</tr>" +
+									"<tr>" +
+										"<td colspan='2'>" +
+											"<table>" +
+												"<tr>" +
+													"<td>" +
+														"<label id='contactGroup' for='contactGroupSelect'>" + 
+															$.i18n.prop("imservices.groupName", "组名：") + 
+														"</label>" +
+													"</td>" +
+													"<td>" +
+														"<input id='contactGroupSelect' name='contactGroupSelect' type='text'/>" +
+													"</td>" +
+												"</tr>" +
+//												"<tr>" +
+//													"<td></td>" +
+//													"<td>" +
+//														"<select multiple='multiple' size='3'>" +
+//															"<option value ='volvo'>Volvo</option>" +
+//															"<option value ='saab'>Saab</option>" +
+//															"<option value='opel'>Opel</option>" +
+//															"<option value='audi'>Audi</option>" +
+//														"</select>" +
+//													"</td>" +
+//												"</tr>" +
+											"</table>" +
+										"</td>" +
+									"</tr>" +
+									"<tr>" +
+										"<td/>" +
+										"<td style='float:right;'>" +
+											"<button id='saveContactInfo'>" +
+												$.i18n.prop("imservices.action.saveContactInfo", "保存") + 
+											"</button>" +
+											"<button id='closeContactInfo'>" +
+												$.i18n.prop("imservices.action.closeContactInfo", "关闭") + 
+											"</button>" +
+										"</td>" +
+									"</tr>" +
+								"</tbody>" +
+							"</table>");
+	contactInfoPanel.attr("type", "contactInfo");
+	imCenter.append(contactInfoPanel);
 	
 	var imTopHeight = 40;
 	
@@ -537,7 +629,7 @@ function createContactJqObj(newContact) {
 	var newContactJqObj = $("<div>" +
 								"<table style='width:100%;'>" +
 									"<tr>" +
-										"<td >" +
+										"<td>" +
 											"<img status-img='true' src='/resource/status/unavailable.png'/>" +
 										"</td>" +
 										"<td style='width:100%;'>" +
@@ -554,7 +646,7 @@ function createContactJqObj(newContact) {
 												"</tr>" +
 											"</table>" + 
 										"</td>" +
-										"<td>" +
+										"<td contactJid='" + newBareJid.toPrepedBareJID() + "'>" +
 											"<img src='/resource/statusmenu.png'/>" +
 										"</td>" +
 									"<tr/>" +
@@ -566,7 +658,9 @@ function createContactJqObj(newContact) {
 	newContactJqObj.attr("contactJid", newBareJid.toPrepedBareJID());
 	newContactJqObj.attr("statusCode", 0);
 	
-	newContactJqObj.click(function(){
+	var tdFirst = newContactJqObj.find("td:first");
+	
+	var clickFunc = function(){
 		var contactJid = $(this).attr("contactJid");
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
@@ -578,9 +672,37 @@ function createContactJqObj(newContact) {
 				jid: contactJid,
 				showName: contact.getShowName()
 			});
+		}		
+	};
+	tdFirst.click(clickFunc);
+	tdFirst.next().click(clickFunc);
+	
+	tdFirst.next().next().click(function(){
+		var iq = new Iq(IqType.GET);
+		
+		var jid = $(this).attr("contactJid");
+		
+		var vCard = new IqVCard();
+		iq.setTo(JID.createJID(jid));
+		iq.addPacketExtension(vCard);
+		
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			conn.handleStanza({
+				filter: new PacketIdFilter(iq.getStanzaId()),
+				timeout: Christy.loginTimeout,
+				handler: function(iqResponse) {
+					if (iqResponse.getType() == IqType.RESULT) {
+						alert("test");
+					} else {
+						alert($.i18n.prop("imservices.getvcardFailed", "获取失败！"));
+					}
+				}
+			});
+			
+			conn.sendStanza(iq);
 		}
-		
-		
 	});
 	
 	return newContactJqObj;
@@ -1284,8 +1406,10 @@ function showShopDetail(shopDetail) {
 				timeout: Christy.loginTimeout,
 				handler: function(iqResponse) {
 					if (iqResponse.getType() == IqType.RESULT) {
-						alert($.i18n.prop("personal.favoriteSuccess", "收藏成功!"))
-					}				
+						alert($.i18n.prop("personal.favoriteSuccess", "收藏成功!"));
+					} else {
+						alert($.i18n.prop("personal.favoriteFailed", "收藏失败!"));
+					}
 				}
 			});
 			

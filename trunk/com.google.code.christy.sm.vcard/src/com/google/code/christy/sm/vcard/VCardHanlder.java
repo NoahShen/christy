@@ -1,10 +1,12 @@
 package com.google.code.christy.sm.vcard;
 
+import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.sm.OnlineUser;
 import com.google.code.christy.sm.SmHandler;
 import com.google.code.christy.sm.SmManager;
 import com.google.code.christy.sm.UserResource;
 import com.google.code.christy.xmpp.Iq;
+import com.google.code.christy.xmpp.JID;
 import com.google.code.christy.xmpp.Packet;
 import com.google.code.christy.xmpp.XmppError;
 import com.google.code.christy.xmppparser.UnknownPacketExtension;
@@ -40,7 +42,18 @@ public class VCardHanlder implements SmHandler
 		Iq iq = (Iq) packet;
 		if (iq.getType() == Iq.Type.get)
 		{
-
+			String username = onlineUser.getNode();
+			JID to = iq.getTo();
+			if (to != null)
+			{
+				if (!username.equals(to.getNode()))
+				{
+					userResource.sendToOtherUser(iq);
+					return;
+				}
+				
+			}
+			
 			VCardDbHelper vCardDbHelper = vCardDbHelperTracker.getVCardDbHelper();
 			if (vCardDbHelper == null)
 			{
@@ -61,7 +74,7 @@ public class VCardHanlder implements SmHandler
 				return;
 			}
 			
-			String username = onlineUser.getNode();
+			
 			
 			try
 			{
@@ -173,8 +186,90 @@ public class VCardHanlder implements SmHandler
 	@Override
 	public void handleOtherUserPacket(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Packet packet)
 	{
-		// TODO Auto-generated method stub
+		Iq iq = (Iq) packet;
+		if (iq.getType() == Iq.Type.get)
+		{
+			JID to = iq.getTo();
+			JID from = iq.getFrom();
+			if (from == null)
+			{
+				return;
+			}
+			if (to == null)
+			{
+				return;
+			}
+			
+			VCardDbHelper vCardDbHelper = vCardDbHelperTracker.getVCardDbHelper();
+			if (vCardDbHelper == null)
+			{
+				try
+				{
+					
+					Iq iqError = (Iq) iq.clone();
+					iqError.setTo(from);
+					iqError.setType(Iq.Type.error);
+					iqError.setFrom(to);
+					iqError.setError(new XmppError(XmppError.Condition.bad_request));
+					RouteMessage routeMessage = new RouteMessage(smManager.getName());
+					routeMessage.setXmlStanza(iqError);
+					
+					if (from.getDomain().equals(smManager.getDomain()))
+					{
+						String toUserNode = from.getNode();
+						routeMessage.setToUserNode(toUserNode);
+					}
+					smManager.sendToRouter(routeMessage);
+				}
+				catch (CloneNotSupportedException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return;
+			}
+			
+			
+			
+			try
+			{
+				VCardEntity vCardEntity = vCardDbHelper.getVCardEntity(to.getNode());
+				
+				Iq iqResponse = new Iq(Iq.Type.result);
+				iqResponse.setStanzaId(iq.getStanzaId());
+				iqResponse.setTo(from);
+				iqResponse.setFrom(to);
+				UnknownPacketExtension unknownEx = 
+						new UnknownPacketExtension(VCardPacketExtension.ELEMENTNAME, VCardPacketExtension.NAMESPACE);
+				if (vCardEntity != null)
+				{
+					unknownEx.setContent(vCardEntity.getVCardContent());
+				}
+				iqResponse.addExtension(unknownEx);
+				
+				RouteMessage routeMessage = new RouteMessage(smManager.getName());
+				routeMessage.setXmlStanza(iqResponse);
+				if (from.getDomain().equals(smManager.getDomain()))
+				{
+					String toUserNode = from.getNode();
+					routeMessage.setToUserNode(toUserNode);
+				}
+				smManager.sendToRouter(routeMessage);
+			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
+		}
+		else if (iq.getType() == Iq.Type.result)
+		{
+			if (userResource != null)
+			{
+				userResource.sendToSelfClient(iq);
+			}
+		}
 	}
 
 	@Override
