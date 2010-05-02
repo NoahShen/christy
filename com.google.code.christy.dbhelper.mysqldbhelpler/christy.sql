@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50083
 File Encoding         : 65001
 
-Date: 2010-04-28 23:12:34
+Date: 2010-05-02 22:12:23
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -157,7 +157,7 @@ CREATE TABLE `user` (
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of user
@@ -174,13 +174,18 @@ CREATE TABLE `userfavoriteshop` (
   `username` char(50) NOT NULL,
   `shopId` int(20) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userfavoriteshop
 -- ----------------------------
 INSERT INTO `userfavoriteshop` VALUES ('1', 'noah', '0');
-INSERT INTO `userfavoriteshop` VALUES ('2', 'noah', '1');
+INSERT INTO `userfavoriteshop` VALUES ('3', 'noah', '2');
+INSERT INTO `userfavoriteshop` VALUES ('4', 'noah', '3');
+INSERT INTO `userfavoriteshop` VALUES ('5', 'noah', '4');
+INSERT INTO `userfavoriteshop` VALUES ('6', 'noah', '5');
+INSERT INTO `userfavoriteshop` VALUES ('7', 'noah', '6');
+INSERT INTO `userfavoriteshop` VALUES ('8', 'noah', '1');
 
 -- ----------------------------
 -- Table structure for `userroster`
@@ -199,10 +204,10 @@ CREATE TABLE `userroster` (
 -- ----------------------------
 -- Records of userroster
 -- ----------------------------
-INSERT INTO `userroster` VALUES ('2', 'Noah', 'Noah2@example.com', 'NoahNickName', null, 'both');
-INSERT INTO `userroster` VALUES ('3', 'Noah', 'Noah3@example.com', 'NoahNickName34444', null, 'none');
-INSERT INTO `userroster` VALUES ('4', 'Noah2', 'Noah@example.com', 'Noah', null, 'both');
-INSERT INTO `userroster` VALUES ('5', 'Noah2', 'Noah3@example.com', 'Noah3', null, 'both');
+INSERT INTO `userroster` VALUES ('2', 'noah', 'Noah2@example.com', 'NoahNickName8787', null, 'both');
+INSERT INTO `userroster` VALUES ('3', 'noah', 'Noah3@example.com', null, null, 'both');
+INSERT INTO `userroster` VALUES ('4', 'noah2', 'Noah@example.com', 'Noah', null, 'both');
+INSERT INTO `userroster` VALUES ('5', 'noah2', 'Noah3@example.com', 'Noah3', null, 'both');
 
 -- ----------------------------
 -- Table structure for `userrostergroup`
@@ -217,10 +222,7 @@ CREATE TABLE `userrostergroup` (
 -- ----------------------------
 -- Records of userrostergroup
 -- ----------------------------
-INSERT INTO `userrostergroup` VALUES ('2', 'group1');
-INSERT INTO `userrostergroup` VALUES ('2', 'group2');
-INSERT INTO `userrostergroup` VALUES ('3', 'group111');
-INSERT INTO `userrostergroup` VALUES ('3', 'group555');
+INSERT INTO `userrostergroup` VALUES ('2', '组1');
 
 -- ----------------------------
 -- Table structure for `uservcard`
