@@ -31,8 +31,9 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 	private static final String GETONEROSTERITEM_SQL = "SELECT * FROM (SELECT * FROM userroster WHERE userroster.username = ? AND userroster.jid = ?) R" +
 							" LEFT JOIN userrostergroup G ON R.rosterId = G.rosterId";
 	
-	private static final String REMOVEROSTERITEM_SQL = "DELETE userroster, userrostergroup FROM userroster, userrostergroup" +
-							" WHERE userroster.username = ? AND userroster.jid = ? AND userroster.rosterID = userrostergroup.rosterID";
+	private static final String REMOVEROSTERITEM_SQL = "DELETE userroster, userrostergroup FROM userroster" +
+							" LEFT JOIN userrostergroup ON userroster.rosterID = userrostergroup.rosterID" +
+							" WHERE userroster.username=? AND userroster.jid=?";
 	
 	private static final String UPDATEROSTERITEM_SQL = "UPDATE userroster SET subscription = ?, name = ?, ask = ? WHERE username = ? AND jid = ?";
 	

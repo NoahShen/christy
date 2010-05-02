@@ -614,7 +614,11 @@ public class ContactManager
 				newrosterItem.setRosterJID(item.getJid());
 				newrosterItem.setNickname(item.getName());
 				newrosterItem.setGroups(item.getGroupNames());
-				newrosterItem.setSubscription(RosterItem.Subscription.valueOf(item.getSubscription().name()));
+				if (item.getSubscription() != null)
+				{
+					newrosterItem.setSubscription(RosterItem.Subscription.valueOf(item.getSubscription().name()));
+				}
+				
 				if (item.getAsk() != null)
 				{
 					newrosterItem.setAsk(RosterItem.Ask.valueOf(item.getAsk().toString()));
@@ -1060,7 +1064,11 @@ public class ContactManager
 			else
 			{
 				oldRosterItem.setNickname(rosterItem.getNickname());
-				oldRosterItem.setSubscription(rosterItem.getSubscription());
+				if (rosterItem.getSubscription() != null)
+				{
+					oldRosterItem.setSubscription(rosterItem.getSubscription());
+				}
+				
 				oldRosterItem.setAsk(rosterItem.getAsk());
 				
 				oldRosterItem.setGroups(rosterItem.getGroups());

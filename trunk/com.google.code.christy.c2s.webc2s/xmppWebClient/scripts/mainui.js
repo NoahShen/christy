@@ -166,6 +166,7 @@ ImService.init = function() {
 	contactInfoTab.attr("type", "contactInfo");
 	contactInfoTab.addClass("sexybutton");
 	contactInfoTab.text($.i18n.prop("imservices.contactInfo", "联系人资料"));
+	contactInfoTab.hide();
 	imTop.append(contactInfoTab);
 	
 	// tabs click event
@@ -268,7 +269,7 @@ ImService.init = function() {
 
 	imCenter.append(chatScrollBody);
 	
-	var contactInfoPanel = $("<table class='marginpadding'>" +
+	var contactInfoPanel = $("<table id='contactInfoPanel'class='marginpadding'>" +
 								"<tbody>" +
 									"<tr>" +
 										"<td>" +
@@ -297,14 +298,14 @@ ImService.init = function() {
 											"</table>" +
 										"</td>" +
 									"</tr>" +
-									"<tr>" +
-										"<td colspan='2'>" +
-											"<input id='unsubscribedContactCheckbox' name='unsubscribedContactCheckbox' type='checkbox'/>" +
-											"<label id='unsubscribedContact' for='unsubscribedContactCheckbox'>" + 
-												$.i18n.prop("imservices.unsubscribed", "对其不可见") + 
-											"</label>" +
-										"</td>" +
-									"</tr>" +
+//									"<tr>" +
+//										"<td colspan='2'>" +
+//											"<input id='unsubscribedContactCheckbox' name='unsubscribedContactCheckbox' type='checkbox'/>" +
+//											"<label id='unsubscribedContact' for='unsubscribedContactCheckbox'>" + 
+//												$.i18n.prop("imservices.unsubscribed", "对其不可见") + 
+//											"</label>" +
+//										"</td>" +
+//									"</tr>" +
 									"<tr>" +
 										"<td colspan='2'>" +
 											"<table>" +
@@ -315,20 +316,9 @@ ImService.init = function() {
 														"</label>" +
 													"</td>" +
 													"<td>" +
-														"<input id='contactGroupSelect' name='contactGroupSelect' type='text'/>" +
+														"<input id='contactInfoGroup' name='contactInfoGroup' type='text'/>" +
 													"</td>" +
 												"</tr>" +
-//												"<tr>" +
-//													"<td></td>" +
-//													"<td>" +
-//														"<select multiple='multiple' size='3'>" +
-//															"<option value ='volvo'>Volvo</option>" +
-//															"<option value ='saab'>Saab</option>" +
-//															"<option value='opel'>Opel</option>" +
-//															"<option value='audi'>Audi</option>" +
-//														"</select>" +
-//													"</td>" +
-//												"</tr>" +
 											"</table>" +
 										"</td>" +
 									"</tr>" +
@@ -346,6 +336,93 @@ ImService.init = function() {
 								"</tbody>" +
 							"</table>");
 	contactInfoPanel.attr("type", "contactInfo");
+	contactInfoPanel.find("button:first").click(function(){
+		var contactJidStr = $("#contactInfoJid").text();
+		var iq = new Iq(IqType.SET);
+		var iqRoster = new IqRoster();
+		
+		var nickName = $("#contactNickName").val();
+		var iqRosterItem = new IqRosterItem(JID.createJID(contactJidStr), nickName);
+		iqRosterItem.addGroup($("#contactInfoGroup").val());
+		iqRoster.addRosterItem(iqRosterItem);
+		
+		iq.addPacketExtension(iqRoster);
+		
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			conn.handleStanza({
+				filter: new PacketIdFilter(iq.getStanzaId()),
+				timeout: Christy.loginTimeout,
+				handler: function(iqResponse) {
+					if (iqResponse.getType() == IqType.RESULT) {
+						alert($.i18n.prop("imservices.updateContactSuccess", "更新成功！"));
+						contactTab.click();
+						contactInfoTab.hide();
+					} else {
+						alert($.i18n.prop("imservices.updateContactFailed", "更新失败！"));
+					}
+				},
+				timeoutHandler: function() {
+					alert($.i18n.prop("imservices.updateContactFailed", "更新失败！"));
+				}
+			});
+			
+			conn.sendStanza(iq);
+			
+			
+		}
+		
+	});
+	
+	contactInfoPanel.find("button:last").click(function(){
+		contactTab.click();
+		contactInfoTab.hide();
+	});
+	
+	contactInfoPanel.find("a").click(function(){
+		
+		if (!confirm($.i18n.prop("imservices.confirmRemoveContact", "确认删除？"))) {
+			return;
+		}
+		
+		var contactJidStr = $("#contactInfoJid").text();
+		var iq = new Iq(IqType.SET);
+		var iqRoster = new IqRoster();
+
+		var iqRosterItem = new IqRosterItem(JID.createJID(contactJidStr), null);
+		iqRosterItem.setSubscription(IqRosterSubscription.remove);
+		iqRoster.addRosterItem(iqRosterItem);
+		
+		iq.addPacketExtension(iqRoster);
+		
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			conn.handleStanza({
+				filter: new PacketIdFilter(iq.getStanzaId()),
+				timeout: Christy.loginTimeout,
+				handler: function(iqResponse) {
+					if (iqResponse.getType() == IqType.RESULT) {
+						alert($.i18n.prop("imservices.removeContactSuccess", "删除成功！"));
+						contactTab.click();
+						contactInfoTab.hide();
+					} else {
+						alert($.i18n.prop("imservices.removeContactFailed", "删除失败！"));
+					}
+				},
+				timeoutHandler: function() {
+					alert($.i18n.prop("imservices.removeContactFailed", "删除失败！"));
+				}
+			});
+			
+			conn.sendStanza(iq);
+			
+			
+		}
+		
+	});
+	
 	imCenter.append(contactInfoPanel);
 	
 	var imTopHeight = 40;
@@ -550,9 +627,9 @@ ImService.init = function() {
 			var eventType = event.eventType;
 			if (eventType == ConnectionEventType.ContactUpdated
 				|| eventType == ConnectionEventType.ContactStatusChanged) {
-				updateContact(contactlist, contact);
+				updateContact(contactlist, contact, false);
 			} else if (eventType == ConnectionEventType.ContactRemoved) {
-				removeContact(contactlist, contact);
+				updateContact(contactlist, contact, true);
 			} else if (eventType == ConnectionEventType.ChatCreated) {
 				var connection = event.connection;
 				var bareJID = event.chat.bareJID;
@@ -694,7 +771,8 @@ function createContactJqObj(newContact) {
 				timeout: Christy.loginTimeout,
 				handler: function(iqResponse) {
 					if (iqResponse.getType() == IqType.RESULT) {
-						alert("test");
+						var contact = conn.getContact(JID.createJID(jid));
+						showContactInfo(contact, iqResponse);
 					} else {
 						alert($.i18n.prop("imservices.getvcardFailed", "获取失败！"));
 					}
@@ -708,9 +786,35 @@ function createContactJqObj(newContact) {
 	return newContactJqObj;
 }
 
+function showContactInfo(contact, iqResponse) {
+	var vCard = iqResponse.getPacketExtension(IqVCard.ELEMENTNAME, IqVCard.NAMESPACE);
+	$("#contactInfoJid").text(contact.getBareJid().toBareJID());
+	
+	$("#contactNickName").val(contact.getNickname());
+	
+	var rosterItem = contact.getRosterItem();
+	var subscription = rosterItem.getSubscription();
+	var unsubscribedContactCheckbox = $("#unsubscribedContactCheckbox");
+	unsubscribedContactCheckbox.attr("checked", false);
+	if (subscription == IqRosterSubscription.from
+		|| subscription == IqRosterSubscription.both) {
+		unsubscribedContactCheckbox.attr("checked", false);
+	} else if (subscription == IqRosterSubscription.to) {
+		unsubscribedContactCheckbox.attr("checked", true);
+	} else {
+		unsubscribedContactCheckbox.attr("disabled", true);
+	}
+	
+	var groupName = contact.getGroups()[0];
+	$("#contactInfoGroup").val(groupName);
+	
+	var contactInfoTab = $("#contactInfoTab");
+	contactInfoTab.show();
+	contactInfoTab.click();
+}
 
 
-function updateContact(contactlistJqObj, contact) {
+function updateContact(contactlistJqObj, contact, remove) {
 	var bareJid = contact.getBareJid();
 	var contactJqObj = contactlistJqObj.find("div[contactjid='" + bareJid.toPrepedBareJID() + "']");
 	
@@ -722,76 +826,78 @@ function updateContact(contactlistJqObj, contact) {
 	
 	contactJqObj.remove();
 	
-	contactJqObj = createContactJqObj(contact);
-
-	var statusImgSrc = null;
-	var statusMessage = null;
-	if (contact.isResourceAvailable()) {
-		var userResource = contact.getMaxPriorityResource();
-		var presence = userResource.currentPresence;
+	if (!remove) {
 		
-		var statusInfo = getStatusInfo(presence);
-		contactJqObj.attr("statusCode", statusInfo.statusCode);
-		statusImgSrc = statusInfo.imgPath;
-		statusMessage = statusInfo.statusMessage;
-		
-		if (presence.getUserStatus() != null) {
-			statusMessage = presence.getUserStatus();
-		}
-	} else {
-		statusImgSrc = "/resource/status/unavailable.png";
-		statusMessage = $.i18n.prop("imservices.status.unavailable", "离线");
-		contactJqObj.attr("statusCode", 0);
-	}
+		contactJqObj = createContactJqObj(contact);
 	
-	var statusImg = contactJqObj.find("img[status-img]");
-	statusImg.attr("src", statusImgSrc);
-	
-	var showName = (contact.getNickname()) ? contact.getNickname() : bareJid.toBareJID();
-	var showNameJqObj = contactJqObj.find("div[showname]");
-	showNameJqObj.text(showName);
-	
-	var statusMessageJqObj = contactJqObj.find("div[status-message]");
-	statusMessageJqObj.text(statusMessage);
-	
-	var groupNames = contact.getGroups();
-	if (contact.getGroups().length == 0) {
-		groupNames[0] = "general";
-	}
-	
-	//add contact to group
-	for (j = 0; j < groupNames.length; ++j) {
-		var groupName = groupNames[j];
-		
-		var groupJqObj = contactlistJqObj.find("div[groupname='" + groupName + "']");
-		if (groupJqObj.length == 0) {
-			groupJqObj = addGroup(contactlistJqObj, groupName);
-		}
-		var inserted = false;
-		var contacts = groupJqObj.children("[contactjid]");
-		$.each(contacts, function(index, value) {		
-			var oldContactJqObj = $(value);
-			var oldContactStatusCode = oldContactJqObj.attr("statusCode");
-			var contactStatusCode = contactJqObj.attr("statusCode");
+		var statusImgSrc = null;
+		var statusMessage = null;
+		if (contact.isResourceAvailable()) {
+			var userResource = contact.getMaxPriorityResource();
+			var presence = userResource.currentPresence;
 			
-			if (contactStatusCode > oldContactStatusCode) {
-				contactJqObj.clone(true).insertBefore(oldContactJqObj);
-				inserted = true;
-				return false;
-			} else if (contactStatusCode == oldContactStatusCode) {
-				var oldBareJid = oldContactJqObj.attr("contactJid");
-				if (bareJid.toPrepedBareJID() < oldBareJid) {
+			var statusInfo = getStatusInfo(presence);
+			contactJqObj.attr("statusCode", statusInfo.statusCode);
+			statusImgSrc = statusInfo.imgPath;
+			statusMessage = statusInfo.statusMessage;
+			
+			if (presence.getUserStatus() != null) {
+				statusMessage = presence.getUserStatus();
+			}
+		} else {
+			statusImgSrc = "/resource/status/unavailable.png";
+			statusMessage = $.i18n.prop("imservices.status.unavailable", "离线");
+			contactJqObj.attr("statusCode", 0);
+		}
+		
+		var statusImg = contactJqObj.find("img[status-img]");
+		statusImg.attr("src", statusImgSrc);
+		
+		var showName = (contact.getNickname()) ? contact.getNickname() : bareJid.toBareJID();
+		var showNameJqObj = contactJqObj.find("div[showname]");
+		showNameJqObj.text(showName);
+		
+		var statusMessageJqObj = contactJqObj.find("div[status-message]");
+		statusMessageJqObj.text(statusMessage);
+		
+		var groupNames = contact.getGroups().slice(0);
+		if (groupNames.length == 0) {
+			groupNames[0] = "general";
+		}
+		
+		//add contact to group
+		for (j = 0; j < groupNames.length; ++j) {
+			var groupName = groupNames[j];
+			
+			var groupJqObj = contactlistJqObj.find("div[groupname='" + groupName + "']");
+			if (groupJqObj.length == 0) {
+				groupJqObj = addGroup(contactlistJqObj, groupName);
+			}
+			var inserted = false;
+			var contacts = groupJqObj.children("[contactjid]");
+			$.each(contacts, function(index, value) {		
+				var oldContactJqObj = $(value);
+				var oldContactStatusCode = oldContactJqObj.attr("statusCode");
+				var contactStatusCode = contactJqObj.attr("statusCode");
+				
+				if (contactStatusCode > oldContactStatusCode) {
 					contactJqObj.clone(true).insertBefore(oldContactJqObj);
 					inserted = true;
 					return false;
+				} else if (contactStatusCode == oldContactStatusCode) {
+					var oldBareJid = oldContactJqObj.attr("contactJid");
+					if (bareJid.toPrepedBareJID() < oldBareJid) {
+						contactJqObj.clone(true).insertBefore(oldContactJqObj);
+						inserted = true;
+						return false;
+					}
 				}
-			}
-		});
-		if (!inserted) {
-			groupJqObj.append(contactJqObj.clone(true));
-		}	
+			});
+			if (!inserted) {
+				groupJqObj.append(contactJqObj.clone(true));
+			}	
+		}
 	}
-	
 	//update group
 	var groupJqObjs = contactlistJqObj.children("[groupname]");
 	$.each(groupJqObjs, function(index, value) {		
@@ -853,13 +959,6 @@ function addGroup(contactlistJqObj, groupName) {
 		contactlistJqObj.append(newGroupJqObj);
 	}
 	return newGroupJqObj;
-}
-
-function removeContact(contactlistJqObj, contact) {
-	var bareJid = contact.getBareJid();
-	var contactEl = contactlistJqObj.children("div[contactJid='" + bareJid.toPrepedBareJID() + "']");
-	var contactJqObj = $(contactEl);
-	contactJqObj.remove();
 }
 
 function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo) {
@@ -981,10 +1080,7 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 				if (messageArea.is(":visible")) {
 					scrollToWindowBottom();
 				}
-				
-				
 			}
-			
 		};
 		controlBar.find("input").keypress(function(event) {
 			if (event.keyCode == 13) {
