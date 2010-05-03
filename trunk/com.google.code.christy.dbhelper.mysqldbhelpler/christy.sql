@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50083
 File Encoding         : 65001
 
-Date: 2010-05-02 22:12:23
+Date: 2010-05-03 22:44:07
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -63,6 +63,10 @@ CREATE TABLE `shop` (
   `tel` varchar(20) NOT NULL,
   `longitude` double NOT NULL,
   `latitude` double NOT NULL,
+  `longZone` char(10) NOT NULL,
+  `latZone` char(5) NOT NULL,
+  `easting` int(20) NOT NULL,
+  `northing` int(20) NOT NULL,
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`shopId`)
@@ -71,16 +75,16 @@ CREATE TABLE `shop` (
 -- ----------------------------
 -- Records of shop
 -- ----------------------------
-INSERT INTO `shop` VALUES ('0', 'ENoah', 'food::localcuisine ', '上海1号私藏菜', '私藏菜比私房菜更多一点点“藏”的意思，有“酒香不怕巷子深”的傲气，正合了中国人爱追根究底的惯常。所以对于私藏变为公众皆知的秘密也就理所当然，无数的欲说还休。\r\n   老上海的韵味一边敛一边放。老式台灯、桌案、杨州漆器、铁质鸟笼、欧式沙发、回纹走廊等等，尽数着婉约复古的气息，美食暖胃，缓如流水。\r\n   上海1号私藏菜是以本帮菜、海派菜为主打，每一道菜都是玩过花样儿的。即使冠着简单寻常的名字，厨师们却下了无数的心思在里面，让时尚上海人的健康饮食观念贯彻得更透，浓油赤酱皆改作了清爽耐品，许多烹饪秘方私家独创，精致耐品，故名之“私藏菜”。\r\n   细碟精巧的手撕豇豆藏着淡淡芥末味，毫无疑问地手工制作；老弄堂红烧肉的选材更是讲究，只用野猪与家猪杂交的第五代猪肉；火山石器烧裙翅用功深，滋补功效好，中看中吃', '/resource/hongshaorou.jpg', '静安区', '南京西路1856号', '021-51501177', '121.443297', '31.221891', '2010-04-18 10:29:22', '2010-04-22 11:04:11');
-INSERT INTO `shop` VALUES ('1', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:31:15');
-INSERT INTO `shop` VALUES ('2', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:32:23');
-INSERT INTO `shop` VALUES ('3', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:32:29');
-INSERT INTO `shop` VALUES ('4', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:32:34');
-INSERT INTO `shop` VALUES ('5', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:32:46');
-INSERT INTO `shop` VALUES ('6', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:32:53');
-INSERT INTO `shop` VALUES ('7', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:32:57');
-INSERT INTO `shop` VALUES ('8', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:33:05');
-INSERT INTO `shop` VALUES ('9', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.44326', '31.221891', '2010-04-22 17:31:05', '2010-04-22 17:33:10');
+INSERT INTO `shop` VALUES ('0', 'ENoah', 'food::localcuisine ', '上海1号私藏菜', '私藏菜比私房菜更多一点点“藏”的意思，有“酒香不怕巷子深”的傲气，正合了中国人爱追根究底的惯常。所以对于私藏变为公众皆知的秘密也就理所当然，无数的欲说还休。\r\n   老上海的韵味一边敛一边放。老式台灯、桌案、杨州漆器、铁质鸟笼、欧式沙发、回纹走廊等等，尽数着婉约复古的气息，美食暖胃，缓如流水。\r\n   上海1号私藏菜是以本帮菜、海派菜为主打，每一道菜都是玩过花样儿的。即使冠着简单寻常的名字，厨师们却下了无数的心思在里面，让时尚上海人的健康饮食观念贯彻得更透，浓油赤酱皆改作了清爽耐品，许多烹饪秘方私家独创，精致耐品，故名之“私藏菜”。\r\n   细碟精巧的手撕豇豆藏着淡淡芥末味，毫无疑问地手工制作；老弄堂红烧肉的选材更是讲究，只用野猪与家猪杂交的第五代猪肉；火山石器烧裙翅用功深，滋补功效好，中看中吃', '/resource/hongshaorou.jpg', '静安区', '南京西路1856号', '021-51501177', '121.443297', '31.221891', '51', 'R', '351724', '3455237', '2010-04-18 10:29:22', '2010-05-03 09:17:53');
+INSERT INTO `shop` VALUES ('1', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.4481', '31.22422', '51', 'R', '352185', '3455489', '2010-04-22 17:31:05', '2010-05-03 09:19:14');
+INSERT INTO `shop` VALUES ('2', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.4481', '31.22422', '51', 'R', '352185', '3455489', '2010-04-22 17:31:05', '2010-05-03 09:20:14');
+INSERT INTO `shop` VALUES ('3', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.4481', '31.22422', '51', 'R', '352185', '3455489', '2010-04-22 17:31:05', '2010-05-03 09:20:17');
+INSERT INTO `shop` VALUES ('4', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.4481', '31.22422', '51', 'R', '352185', '3455489', '2010-04-22 17:31:05', '2010-05-03 09:20:21');
+INSERT INTO `shop` VALUES ('5', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.4481', '31.22422', '51', 'R', '352185', '3455489', '2010-04-22 17:31:05', '2010-05-03 09:20:24');
+INSERT INTO `shop` VALUES ('6', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.4481', '31.22422', '51', 'R', '352185', '3455489', '2010-04-22 17:31:05', '2010-05-03 09:20:27');
+INSERT INTO `shop` VALUES ('7', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.4481', '31.22422', '51', 'R', '352185', '3455489', '2010-04-22 17:31:05', '2010-05-03 09:20:30');
+INSERT INTO `shop` VALUES ('8', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.4481', '31.22422', '51', 'R', '352185', '3455489', '2010-04-22 17:31:05', '2010-05-03 09:20:33');
+INSERT INTO `shop` VALUES ('9', 'ENoah', 'food::localcuisine', '吃饭2', '吃饭的地方', '/resource/hongshaorou.jpg', '黄浦区', '某某路某某号', '021-13245678', '121.4481', '31.22422', '51', 'R', '352185', '3455489', '2010-04-22 17:31:05', '2010-05-03 09:20:36');
 
 -- ----------------------------
 -- Table structure for `shopcomment`

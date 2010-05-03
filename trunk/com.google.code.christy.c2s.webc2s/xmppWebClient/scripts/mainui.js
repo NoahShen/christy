@@ -9,8 +9,6 @@ MainUI.init = function() {
 		"width": "100%",
 		"height": "100%"
 	});
-
-	
 	
 	var layoutSettings = {
 		Name: "Main",
@@ -79,12 +77,17 @@ MainUI.init = function() {
 			
 		}
 	);
-
+	
+	var geoLocIntervalId = setInterval(updateLoc, 10 * 1000);
+	
 	var connectionMgr = XmppConnectionMgr.getInstance();
 	connectionMgr.addConnectionListener([
 			ConnectionEventType.ConnectionClosed
 		],
 		function(event) {
+			if (geoLocIntervalId) {
+				clearInterval(geoLocIntervalId);
+			}
 			appMenu.children("img").attr("src", "/resource/status/unavailable.png");
 			alert($.i18n.prop("app.connectionClosed", "连接已断开"));
 		}
@@ -96,6 +99,31 @@ MainUI.init = function() {
 	Personal.init();
 	
 	ImService.show();
+}
+
+function updateLoc() {
+	GeoUtils.getCurrentPosition(function(p) {
+		var lat = p.coords.latitude;
+		var lon = p.coords.longitude;
+		
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			var currentP = conn.currentPresence;
+			var geoLocExtension = new GeoLocExtension();
+			geoLocExtension.setType(GeoLocType.LATLON);
+			geoLocExtension.setLat(lat);
+			geoLocExtension.setLon(lon);
+			
+			currentP.removePacketExtension(GeoLocExtension.ELEMENTNAME, GeoLocExtension.NAMESPACE);
+			currentP.addPacketExtension(geoLocExtension);
+			conn.changeStatus(currentP);
+		}
+		
+	}, 
+	function(){
+		
+	}, false);		
 }
 
 MainUI.addAppEventInfo = function(eventInfo) {
@@ -298,14 +326,6 @@ ImService.init = function() {
 											"</table>" +
 										"</td>" +
 									"</tr>" +
-//									"<tr>" +
-//										"<td colspan='2'>" +
-//											"<input id='unsubscribedContactCheckbox' name='unsubscribedContactCheckbox' type='checkbox'/>" +
-//											"<label id='unsubscribedContact' for='unsubscribedContactCheckbox'>" + 
-//												$.i18n.prop("imservices.unsubscribed", "对其不可见") + 
-//											"</label>" +
-//										"</td>" +
-//									"</tr>" +
 									"<tr>" +
 										"<td colspan='2'>" +
 											"<table>" +
@@ -324,13 +344,15 @@ ImService.init = function() {
 									"</tr>" +
 									"<tr>" +
 										"<td/>" +
-										"<td style='float:right;'>" +
-											"<button id='saveContactInfo'>" +
-												$.i18n.prop("imservices.action.saveContactInfo", "保存") + 
-											"</button>" +
-											"<button id='closeContactInfo'>" +
-												$.i18n.prop("imservices.action.closeContactInfo", "关闭") + 
-											"</button>" +
+										"<td>" +
+											"<div style='float:right;'>" +
+												"<button id='saveContactInfo'>" +
+													$.i18n.prop("imservices.action.saveContactInfo", "保存") + 
+												"</button>" +
+												"<button id='closeContactInfo'>" +
+													$.i18n.prop("imservices.action.closeContactInfo", "关闭") + 
+												"</button>" +
+											"</div>" +
 										"</td>" +
 									"</tr>" +
 								"</tbody>" +
@@ -527,7 +549,8 @@ ImService.init = function() {
 			var statusMess = $("#user-status-message");
 			if (statusMess.attr("emptyStatus") == "false") {
 				presence.setUserStatus(statusMess.text());
-			} 
+			}
+
 			conn.changeStatus(presence);
 			var statusInfo = getStatusInfo(presence);
 			$("#user-status-img").attr("src", statusInfo.imgPath);
@@ -574,7 +597,7 @@ ImService.init = function() {
 				$(this).blur();
 			}
 		});
-		inputStatusMessage.bind("blur", function(){
+		inputStatusMessage.bind("blur", function() {
 			statusMessage.empty();
 			statusMessageVal = $(this).val();
 			var connectionMgr = XmppConnectionMgr.getInstance();
@@ -1089,8 +1112,6 @@ function createChatHtml(chatScrollHeader, chatPanel, showChatPanel, contactInfo)
 		});
 		controlBar.find("button:last").click(sendMessageAction);
 
-	
-//		contactChatPanel.append(controlBar);
 		chatPanel.append(contactChatPanel);
 	}
 	
@@ -1155,11 +1176,13 @@ ShopService.init = function() {
 								"<td style='width:33%;'>" +
 									"<div id='shopTitle'>Search</div>" +
 								"</td>" +
-								"<td style='float:right;'>" +
+								"<td>" +
+									"<div style='float:right;'>" +
 									"<button id='searchShop' style='margin-right:1cm;' class='sexybutton sexysimple sexymygray sexysmall'>Search Nearby</button>" +
 									"<button id='maplistShop' style='margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map List</button>" +
 									"<button id='commentShopButton' style='display:none;margin-right:5px;' class='sexybutton sexysimple sexymygray sexysmall'>Comment</button>" +
 									"<button id='showshopinmap' style='margin-right:1cm;display:none;' class='sexybutton sexysimple sexymygray sexysmall'>Map</button>" +									
+									"</div>" +
 								"</td>" +
 							"</tr>" +
 						"</table>");
@@ -1197,7 +1220,6 @@ ShopService.init = function() {
 	shopSearch.append(popularArea);	
 	shopCenter.append(shopSearch);	
 
-	
 	var shopList = $("<div id='shoplist' title='Search Result' class='marginpadding' style='display:none;'>" +
 						"<div></div>" +
 						"<div id='pagination' class='pagination'></div>" +
@@ -1240,8 +1262,7 @@ ShopService.init = function() {
 							"</tr>" +
 						"</table>");
 	shopCenter.append(commentShop);
-	
-	
+
 	shopserviceTablayoutSettings = {
 		Name: "Main",
         Dock: $.layoutEngine.DOCK.FILL,
@@ -1261,7 +1282,6 @@ ShopService.init = function() {
 		 		EleID: "shopCenter"
 			}]
 		}]
-        
 	};
 	
 	
@@ -1285,18 +1305,15 @@ ShopService.init = function() {
 			}
 			$.layoutEngine(shopserviceTablayoutSettings);
 		}
-		
 	});
 	
 	$("#searchShop").click(function() {
 		var shopList = $("#shoplist");
 		$(shopList.children()[0]).empty();
 		
-		getCurrentPosition(function(p) {
-			
+		GeoUtils.getCurrentPosition(function(p) {
 			searchShopsByLoc(shopList, p, 1, 5, true);
-			
-		}, function(){});		
+		}, function(){}, true);		
 		
 		$("#shopTitle").text(shopList.attr("title"));
 		shopList.siblings().hide();
@@ -1338,8 +1355,8 @@ function createShopInfo(shopInfo) {
 										"<img src='" + shopInfo.imgSrc + "' width='50' height='50' />" +
 									"</td>" +
 									"<td>" +
-										"<div>" + shopInfo.name + " "+ shopInfo.hasCoupon + "</div>" +
-										"<div>" + shopInfo.overall.score + " "+ shopInfo.overall.perCapita + "</div>" +
+										"<div>" + shopInfo.name + "</div>" +
+										"<div>" + shopInfo.tel + "</div>" +
 										"<div>" + shopInfo.street + "</div>" +
 									"</td>" +
 								"</tr>" +
@@ -1612,7 +1629,6 @@ function showShopDetailPanel() {
 }
 
 function searchShopsByLoc(shopList, p, page, count, updatePage) {
-	
 	$.ajax({
 		url: "/shop/",
 		dataType: "json",
@@ -1621,8 +1637,8 @@ function searchShopsByLoc(shopList, p, page, count, updatePage) {
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 		data: {
 			action: "search",
-			latitude: p.coords.latitude,
-			longitude: p.coords.longitude,
+			easting: p.easting,
+			northing: p.northing,
 			page: page,
 			count: count
 		},
@@ -1663,8 +1679,7 @@ function searchShopsByLoc(shopList, p, page, count, updatePage) {
 MapService = {};
 MapService.init = function() {
 	var mapServices = $("<div id='mapservices'></div>");
-	
-	
+
 	var controlBar = $("<table id='mapControlbar' style='width:100%;'>" +
 							"<tr>" +
 								"<td style='width:50%;'>" +
@@ -1706,6 +1721,46 @@ MapService.init = function() {
 		}]  
 	};
 	$.layoutEngine(mapserviceTablayoutSettings);
+	
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	connectionMgr.addConnectionListener([
+			ConnectionEventType.ContactRemoved,
+			ConnectionEventType.ContactStatusChanged
+		],
+		function(event) {
+			var contact = event.contact;
+			var bareJid = contact.getBareJid();
+			var markerId = bareJid.toBareJID();
+			if (!MapService.containMapMarker(markerId)) {
+				return;
+			}
+			var eventType = event.eventType;
+			if (eventType == ConnectionEventType.ContactStatusChanged) {
+				if (contact.isResourceAvailable()) {
+					var userResource = contact.getMaxPriorityResource();
+					var presence = userResource.currentPresence;
+					var geolocX = presence.getPacketExtension(GeoLocExtension.ELEMENTNAME, GeoLocExtension.NAMESPACE);
+					if (geolocX && geolocX.getType() == GeoLocType.LATLON) {
+						var lat = geolocX.getLat();
+						var lon = geolocX.getLon();
+						
+						var marker = {
+		    				id: markerId,
+		    				positions: [{
+		    					lat: lat,
+		    					lon: lon
+		    				}]
+		    			};
+						MapService.updateMapMarker(marker);
+					}					
+				} else {
+					MapService.removeMapMarker(markerId);
+				}
+			} else if (eventType == ConnectionEventType.ContactRemoved) {
+				MapService.removeMapMarker(markerId);
+			}
+		}
+	);
 }
 
 
@@ -1724,6 +1779,26 @@ MapService.show = function() {
 
 function mapFrameLoaded() {
 	$.layoutEngine(mapserviceTablayoutSettings);
+}
+
+MapService.containMapMarker = function (markerId) {
+	var mapcanvas = $("#mapcanvas");
+	if (mapcanvas.attr("src")) {
+		mapcanvas[0].contentWindow.containMapMarker(markerId);
+	}
+}
+
+MapService.updateMapMarker = function (marker) {
+	var mapcanvas = $("#mapcanvas");
+	if (mapcanvas.attr("src")) {
+		mapcanvas[0].contentWindow.updateMapMarker(marker);
+	}
+}
+MapService.removeMapMarker = function (markerId) {
+	var mapcanvas = $("#mapcanvas");
+	if (mapcanvas.attr("src")) {
+		mapcanvas[0].contentWindow.removeMapMarker(markerId);
+	}
 }
 // end of MapService
 

@@ -7,14 +7,92 @@
 		<script src="http://ditu.google.cn/maps?file=api&amp;v=2&amp;key=ABQIAAAAuzpWr51oR6m775odTgrhPBRLUID8NVLvYeDqXkvBcrE-43D1dhSyFbDwbsFOkuD9d7IapFvF4TXz4g&sensor=false" type="text/javascript"></script>
 -->
 		<script>
+		
+			markers = {};
+			map = null;
 			function initialize() {
 				if (GBrowserIsCompatible()) {
-	        		var map = new GMap2(document.getElementById("map_canvas"));
+	        		map = new GMap2(document.getElementById("map_canvas"));
 	        		map.setCenter(new GLatLng(31.230708, 121.472916), 13);
-	        		window.parent.mapFrameLoaded();
+	        		var customUI = map.getDefaultUI();
+			        customUI.maptypes.hybrid = false;
+			        map.setUI(customUI);
+	        		
+	        		if (window.parent.mapFrameLoaded) {
+	        			window.parent.mapFrameLoaded();
+	        		}
+	        		
+	        		// TODO test
+	        		/*
+	        		for (var i = 0; i < 10; ++i) {
+	        			var marker = {
+	        				id: i + "a",
+	        				positions: [{
+	        					lat: 31.230708,
+	        					lon: 121.472916
+	        				}]
+	        			};
+	        			updateMapMarker(marker);
+	        		}
+	        		
+	        		for (var j = 0; j < 10; ++j) {
+	        			var marker = {
+	        				id: j + "a",
+	        				positions: [{
+	        					lat: 31.230708,
+	        					lon: 121.572916
+	        				}]
+	        			};
+	        			updateMapMarker(marker);
+	        		}
+	        		*/
 	      		}
 	    	}
 			
+			function updateMapMarker(marker) {
+				var markerId = marker.id;
+				var oldMarkerWrapper = markers[markerId];
+				if (oldMarkerWrapper) {
+					removeMapMarker(oldMarkerWrapper.id);
+				}
+				if (marker.positions && marker.positions.length > 0) {
+					var markerWrapper = {
+						id: markerId,
+						gmarkers: new Array()
+					};
+					for (var i = 0; i < marker.positions.length; ++i) {
+						var p = marker.positions[i];
+						var gmarker = new GMarker(new GLatLng(p.lat, p.lon));
+						if (map) {
+							map.addOverlay(gmarker);
+						}
+						markerWrapper.gmarkers.push(gmarker);
+					}
+					markers[markerId] = markerWrapper;
+				}
+				
+			}
+			
+			function removeMapMarker(markerId) {
+				var markerWrapper = markers[markerId];
+				if (markerWrapper) {
+					for (var j = 0; j < markerWrapper.gmarkers.length; ++j) {
+						var gmarker = markerWrapper.gmarkers[j];
+						if (map) {
+							map.removeOverlay(gmarker);
+						}
+					}
+				}
+				delete markers[markerId];
+			}
+			
+			function containMapMarker(markerId) {
+				var markerWrapper = markers[markerId];
+				if (markerWrapper) {
+					return true;
+				}
+				return false;
+			}
 		</script>
 	</head>
 	<body onload="initialize()" onunload="GUnload()">

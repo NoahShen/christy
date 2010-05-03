@@ -227,6 +227,7 @@ function sessionBindedSuccess() {
 					"lib/jquerycontextmenu/jquery.contextMenu.js",
 					"lib/jquery_pagination/pagination.css",
 					"lib/jquery_pagination/jquery.pagination.js",
+					"geoutils.js",
 					"mainui.css",
 					"mainui.js"
 				];
@@ -372,33 +373,3 @@ Cookies.getCookieVal = function(offset){
    }
    return unescape(document.cookie.substring(offset, endstr));
 };
-
-
-function getCurrentPosition(success_callback, error_callback) {
-	
-	// TODO test code
-	var p = {};
-	p.coords = {};
-	p.coords.latitude = 31.221891;
-	p.coords.longitude = 121.443297;
-	
-	success_callback(p);
-	return;
-	// test code
-	
-	if (typeof (geo_position_js) == "undefined") {
-		$.include(["lib/geo.js"], function(){
-			if(geo_position_js.init()){
-				geo_position_js.getCurrentPosition(success_callback,error_callback,{enableHighAccuracy:true});
-			} else {
-				alert("geo unavailable");
-			}
-		});
-	} else {
-		if(geo_position_js.init()){
-			geo_position_js.getCurrentPosition(success_callback,error_callback,{enableHighAccuracy:true});
-		} else {
-			alert("geo unavailable");
-		}
-	}
-}

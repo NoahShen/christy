@@ -177,8 +177,8 @@ public class ShopServlet extends HttpServlet
 
 	private void handleSearch(HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
-		String latitudeStr = req.getParameter("latitude");
-		String longitudeStr = req.getParameter("longitude");
+		String eastingStr = req.getParameter("easting");
+		String northingStr = req.getParameter("northing");
 		
 		String pageStr = req.getParameter("page");
 		String countStr = req.getParameter("count");
@@ -186,22 +186,21 @@ public class ShopServlet extends HttpServlet
 		int page = pageStr == null ?  1 : Integer.parseInt(pageStr);
 		int count = countStr == null ?  10 : Integer.parseInt(countStr);
 		
-		double latitude = Double.parseDouble(latitudeStr);
-		double longitude = Double.parseDouble(longitudeStr);
+		int easting = Integer.parseInt(eastingStr);
+		int northing = Integer.parseInt(northingStr);
 		
 		try
 		{
-			Shop[] shops = shopDbhelper.getAllShopWithOverall();
-			List<Shop> nearShops = checkDistance(shops, longitude, latitude);
+			Shop[] shops = shopDbhelper.getShopByLoc(easting, northing, 10);
 			
 			List<Shop> resultShops = new ArrayList<Shop>();
 			
 			int start = (page -1) * count;
-			if (start <= nearShops.size() -1)
+			if (start <= shops.length -1)
 			{
-				for (int i = start; i < nearShops.size() && resultShops.size() < count; ++start,++i)
+				for (int i = start; i < shops.length && resultShops.size() < count; ++start,++i)
 				{
-					resultShops.add(nearShops.get(i));
+					resultShops.add(shops[i]);
 				}
 			}
 			
@@ -215,16 +214,7 @@ public class ShopServlet extends HttpServlet
 					jsonObj.put("id", s.getShopId());
 					jsonObj.put("name", s.getTitle());
 					jsonObj.put("imgSrc", s.getShopImg());
-					jsonObj.put("hasCoupon", false);
-					
-					JSONObject overall = new JSONObject();
-					for (Map.Entry<String, String> entry : s.getShopOverall().entrySet())
-					{
-						overall.put(entry.getKey(), entry.getValue());
-					}
-					jsonObj.put("overall", overall);
-					
-					
+					jsonObj.put("tel", s.getTel());
 					jsonObj.put("street", s.getStreet());
 					array.put(jsonObj);
 				}
@@ -235,7 +225,7 @@ public class ShopServlet extends HttpServlet
 				}
 				
 			}
-			resultJsonObj.put("total", nearShops.size());
+			resultJsonObj.put("total", shops.length);
 			resultJsonObj.put("shops", array);
 			resp.getWriter().write(resultJsonObj.toString());
 			
@@ -249,25 +239,6 @@ public class ShopServlet extends HttpServlet
 		
 		
 		
-	}
-
-	private List<Shop> checkDistance(Shop[] shops, double longitude, double latitude)
-	{
-		List<Shop> nearShops = new ArrayList<Shop>();
-		for (Shop shop : shops)
-		{
-			
-			double distance = GeoUtils.distanceOfTwoPoints(longitude, latitude, 
-								shop.getLongitude(), shop.getLatitude(),
-								GeoUtils.GaussSphere.WGS84);
-
-			if (distance <= 10 * 1000)
-			{
-				nearShops.add(shop);
-			}
-		}
-		
-		return nearShops;
 	}
 
 	@Override
