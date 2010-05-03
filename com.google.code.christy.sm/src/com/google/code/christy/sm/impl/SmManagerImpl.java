@@ -605,7 +605,11 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 					String c2sName = res.getRelatedC2s();
 					if (!c2sSessionNames.contains(c2sName))
 					{
-						res.logOut();
+						Presence presence = new Presence(Presence.Type.unavailable);
+						RouteMessage message = new RouteMessage(c2sName, res.getStreamId());
+						message.setToUserNode(user.getNode());
+						message.setXmlStanza(presence);
+						handleRoute(message, null);
 					}
 				}
 			}

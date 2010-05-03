@@ -6,6 +6,7 @@ package com.google.code.christy.shopactivityservice;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +39,9 @@ public class ShopDbhelper
 	
 	private static final String ADDSHOPVOTER_SQL = "INSERT INTO shopvoter (username, shopId, itemName, value) VALUES (?, ?, ?, ?)";
 
+	private static final String GETSHOPBYLOC = "SELECT *, SQRT(POW(? - easting, 2) + POW(? - northing, 2)) AS distance" +
+						" FROM shop HAVING distance<=(? * 1000) ORDER BY distance";
+	
 	public ShopDbhelper(ConnectionPool connectionPool)
 	{
 		super();
@@ -226,13 +230,62 @@ public class ShopDbhelper
 						comment.setShopId(id);
 						shop.addComment(comment);
 					}
-					
-					
-					
-					
 				}
 			}
 			return shop;
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+	
+	public Shop[] getShopByLoc(int easting, int northing, int distance) throws SQLException
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(GETSHOPBYLOC);
+			preStat.setInt(1, easting);
+			preStat.setInt(2, northing);
+			preStat.setInt(3, distance);
+			ResultSet shopResSet = preStat.executeQuery();
+			List<Shop> shops = new ArrayList<Shop>();
+			while (shopResSet.next()) 
+			{
+				long id = shopResSet.getLong("shopId");
+				String eusername = shopResSet.getString("enterpriseUser");
+				String type = shopResSet.getString("type");
+				String title = shopResSet.getString("title");
+				String content = shopResSet.getString("content");
+				String shopImg = shopResSet.getString("shopImg");
+				String district = shopResSet.getString("district");
+				String street = shopResSet.getString("street");
+				String tel = shopResSet.getString("tel");
+				double longitude = shopResSet.getDouble("longitude");
+				double latitude = shopResSet.getDouble("latitude");
+				
+				Shop shop = new Shop();
+				shop.setShopId(id);
+				shop.setEusername(eusername);
+				shop.setType(type);
+				shop.setTitle(title);
+				shop.setContent(content);
+				shop.setShopImg(shopImg);
+				shop.setDistrict(district);
+				shop.setStreet(street);
+				shop.setTel(tel);
+				shop.setLatitude(latitude);
+				shop.setLongitude(longitude);
+				
+				shops.add(shop);
+			}
+			return shops.toArray(new Shop[]{});
 		}
 		finally
 		{

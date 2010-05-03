@@ -459,9 +459,11 @@ Packet = AbstractXmlStanza.extend({
 		this.packetExtensions.push(extension);
 	},
 	
-	removePacketExtension: function(extension) {
+	removePacketExtension: function(elementName, namespace) {
 		for (var i = 0; i < this.packetExtensions.length; ++i) {
-			if (this.packetExtensions[i] == exten) {
+			var extension = this.packetExtensions[i];
+			if (extension.getElementName() == elementName
+				 && extension.getNamespace() == namespace) {
 				this.packetExtensions.splice(i,1);
 				break;
 			}
@@ -5100,4 +5102,135 @@ IqUserFavoriteShopParser.NAMESPACE = "christy:shop:user:favoriteshop";
 
 var parser = XmppParser.getInstance();
 parser.addExtensionParser(new IqUserFavoriteShopParser());
+
+
+
+
+// start of GeoLoc
+GeoLocType = {
+	UTM: "UTM",
+	LATLON: "LATLON"
+};
+GeoLocExtension = PacketExtension.extend({
+	init: function(){
+	},
+	
+	getElementName: function(){
+		return GeoLocExtension.ELEMENTNAME;
+	},
+	
+	getNamespace: function(){
+		return GeoLocExtension.NAMESPACE;
+	},
+	
+	getType: function() {
+		return this.type;
+	},
+	
+	setType: function(type) {
+		this.type = type;
+	},
+	
+	setEasting: function(easting) {
+		this.easting = easting;
+	},
+	
+	getEasting: function() {
+		return this.easting;
+	},
+	
+	setNorthing: function(northing) {
+		this.northing = northing;
+	},
+	
+	getNorthing: function() {
+		return this.northing;
+	},
+	
+	setLat: function(lat) {
+		this.lat = lat;
+	},
+	
+	getLat: function() {
+		return this.lat;
+	},
+	
+	setLon: function(lon) {
+		this.lon = lon;
+	},
+	
+	getLon: function() {
+		return this.lon;
+	},
+	
+	toXml: function() {
+		var xml = "";
+		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\">";
+		if (this.getType() == GeoLocType.UTM) {
+			xml += "<utm easting=\"" + this.getEasting() + "\" northing=\"" + this.getNorthing() + "\"/>";
+		} else if (this.getType() == GeoLocType.LATLON) {
+			xml += "<latlon lat=\"" + this.getLat() + "\" lon=\"" + this.getLon() + "\"/>";
+		}
+		
+		xml += "</" + this.getElementName() + ">";
+		
+		return xml;
+	}
+});
+
+GeoLocExtension.ELEMENTNAME = "geoloc";
+GeoLocExtension.NAMESPACE = "christy:geo:loc";
+
+// end of GeoLocExtension
+
+
+// start of GeoLocExtensionParser
+
+GeoLocExtensionParser = XmppParser.ExtensionParser.extend({
+	init: function() {
+	},
+	
+	getElementName: function() {
+		return GeoLocExtensionParser.ELEMENTNAME
+	},
+	
+	getNamespace: function() {
+		return GeoLocExtensionParser.NAMESPACE;
+	},
+	
+	parseExtension: function(xmppParser, xmlElement) {
+		var geoLocExtension = new GeoLocExtension();
+		var childNodes = xmlElement.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle = childNodes[i];
+			// ELEMENT_NODE
+			if (childEle.nodeType == 1) {
+				var elementName = childEle.nodeName;
+				if ("utm" == elementName) {
+					var easting = childEle.getAttribute("easting");
+					var northing = childEle.getAttribute("northing");
+					geoLocExtension.setType(GeoLocType.UTM);
+					geoLocExtension.setEasting(easting);
+					geoLocExtension.setNorthing(northing);
+				} else if ("latlon" == elementName) {
+					var lat = childEle.getAttribute("lat");
+					var lon = childEle.getAttribute("lon");
+					geoLocExtension.setType(GeoLocType.LATLON);
+					geoLocExtension.setLat(lat);
+					geoLocExtension.setLon(lon);
+				}
+			}
+		}
+		return geoLocExtension;
+	}
+});
+
+
+GeoLocExtensionParser.ELEMENTNAME = "geoloc";
+GeoLocExtensionParser.NAMESPACE = "christy:geo:loc";
+
+// end of GeoLocExtensionParser
+
+var parser = XmppParser.getInstance();
+parser.addExtensionParser(new GeoLocExtensionParser());
 

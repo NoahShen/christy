@@ -26,7 +26,11 @@ public class Shop
 	private double latitude;
 	
 	private double longitude;
-
+	
+	private int easting;
+	
+	private int northing;
+	
 	private Map<String, String> shopOverall = new HashMap<String, String>();
 	
 	private Map<Long, ShopComment> comments = new HashMap<Long, ShopComment>();
@@ -210,6 +214,38 @@ public class Shop
 	public void setLongitude(double longitude)
 	{
 		this.longitude = longitude;
+	}
+
+	/**
+	 * @return the easting
+	 */
+	public int getEasting()
+	{
+		return easting;
+	}
+
+	/**
+	 * @return the northing
+	 */
+	public int getNorthing()
+	{
+		return northing;
+	}
+
+	/**
+	 * @param easting the easting to set
+	 */
+	public void setEasting(int easting)
+	{
+		this.easting = easting;
+	}
+
+	/**
+	 * @param northing the northing to set
+	 */
+	public void setNorthing(int northing)
+	{
+		this.northing = northing;
 	}
 
 	public void addOverall(String name, String value)
