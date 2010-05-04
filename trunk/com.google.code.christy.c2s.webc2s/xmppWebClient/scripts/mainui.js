@@ -724,7 +724,7 @@ function createContactJqObj(newContact) {
 	
 	var newBareJid = newContact.getBareJid();
 	
-	var showName = (newContact.getNickname()) ? newContact.getNickname() : newBareJid.toBareJID();
+	var showName = newContact.getShowName();
 	var statusMessage = $.i18n.prop("imservices.status.unavailable", "离线");
 	var newContactJqObj = $("<div>" +
 								"<table style='width:100%;'>" +
@@ -912,7 +912,7 @@ function updateContact(contactlistJqObj, contact, remove) {
 		var statusImg = contactJqObj.find("img[status-img]");
 		statusImg.attr("src", statusImgSrc);
 		
-		var showName = (contact.getNickname()) ? contact.getNickname() : bareJid.toBareJID();
+		var showName = contact.getShowName();
 		var showNameJqObj = contactJqObj.find("div[showname]");
 		showNameJqObj.text(showName);
 		
@@ -981,8 +981,7 @@ function updateContact(contactlistJqObj, contact, remove) {
 		}
 	});
 		
-	if (addContact 
-		&& $("#contactlist").is(":visible")) {
+	if (addContact && $("#contactlist").is(":visible")) {
 		$.layoutEngine(imContactlayoutSettings);
 	}
 	
@@ -1726,7 +1725,26 @@ MapService.init = function() {
 								"</td>" +
 							"</tr>" +
 						"</table>");
-						
+	controlBar.find("button:first").click(function(){
+		var mapcanvas = $("#mapcanvas");
+		mapcanvas.show();
+		
+		var mapItems = $("#mapItems");
+		mapItems.hide();
+		
+		$.layoutEngine(mapserviceTablayoutSettings);
+	});
+	
+	controlBar.find("button:last").click(function(){
+		var mapcanvas = $("#mapcanvas");
+		mapcanvas.hide();
+		
+		var mapItems = $("#mapItems");
+		mapItems.show();
+		
+		$.layoutEngine(mapItemslayoutSettings);
+	});
+	
 	mapServices.append(controlBar);
 	
 	var mapcanvas = $("<iframe id='mapcanvas' name='mapcanvas' width='100%' height='100%' scrolling='no' frameborder='0'>" +
@@ -1791,7 +1809,7 @@ MapService.init = function() {
 		function(event) {
 			var contact = event.contact;
 			var bareJid = contact.getBareJid();
-			var itemId = bareJid.toBareJID();
+			var itemId = bareJid.toPrepedBareJID();
 			var mapItem = MapService.mapItems[itemId];
 			if (mapItem && mapItem.isShow) {
 				var eventType = event.eventType;
@@ -1806,6 +1824,7 @@ MapService.init = function() {
 							
 							var mapItem = {
 			    				id: itemId,
+			    				title: contact.getShowName(),
 			    				isShow: true,
 			    				positions: [{
 			    					lat: lat,
@@ -1847,6 +1866,18 @@ MapService.show = function() {
 }
 
 function mapFrameLoaded() {
+	var mapcanvas = $("#mapcanvas");
+	for (var key in MapService.mapItems) {
+		var mapItem = MapService.mapItems[key];
+		if (mapItem.isShow) {
+			var marker = {
+				id: mapItem.id,
+				title: mapItem.title,
+				positions: mapItem.positions
+			};
+			mapcanvas[0].contentWindow.updateMapMarker(marker);
+		}
+	}
 	$.layoutEngine(mapserviceTablayoutSettings);
 }
 
@@ -1885,9 +1916,9 @@ MapService.updateMapItem = function (mapItem) {
 				title: mapItem.title,
 				positions: mapItem.positions
 			};
-			mapcanvas[0].contentWindow.updateMapItem(marker);
+			mapcanvas[0].contentWindow.updateMapMarker(marker);
 		} else {
-			mapcanvas[0].contentWindow.removeMapItem(mapItem.id);
+			mapcanvas[0].contentWindow.removeMapMarker(mapItem.id);
 		}
 		
 	}
