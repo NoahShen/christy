@@ -749,6 +749,9 @@ function createContactJqObj(newContact) {
 										"<td contactJid='" + newBareJid.toPrepedBareJID() + "'>" +
 											"<img src='/resource/statusmenu.png'/>" +
 										"</td>" +
+										"<td contactJid='" + newBareJid.toPrepedBareJID() + "'>" +
+											"<img src='/resource/ajax-loader2.gif'/>" +
+										"</td>" +
 									"<tr/>" +
 								"</table>" +
 							"</div>");
@@ -777,7 +780,8 @@ function createContactJqObj(newContact) {
 	tdFirst.click(clickFunc);
 	tdFirst.next().click(clickFunc);
 	
-	tdFirst.next().next().click(function(){
+	var contactInfoButton = tdFirst.next().next();
+	contactInfoButton.click(function(){
 		var iq = new Iq(IqType.GET);
 		
 		var jid = $(this).attr("contactJid");
@@ -806,6 +810,38 @@ function createContactJqObj(newContact) {
 		}
 	});
 	
+	var locButton = contactInfoButton.next();
+	locButton.click(function(){
+		var jid = $(this).attr("contactJid");
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		var contact = conn.getContact(JID.createJID(jid));
+		if (contact.isResourceAvailable()) {
+			var userResource = contact.getMaxPriorityResource();
+			var presence = userResource.currentPresence;
+			var geolocX = presence.getPacketExtension(GeoLocExtension.ELEMENTNAME, GeoLocExtension.NAMESPACE);
+			if (geolocX && geolocX.getType() == GeoLocType.LATLON) {
+				var lat = geolocX.getLat();
+				var lon = geolocX.getLon();
+				
+				var mapItem = {
+    				id: jid,
+    				title: contact.getShowName(),
+    				isShow: true,
+    				positions: [{
+    					lat: lat,
+    					lon: lon
+    				}]
+    			};
+				MapService.updateMapItem(mapItem);
+				MapService.show();
+			}					
+		} else {
+			MapService.removeMapItem(jid);
+		}
+		
+		
+	});
 	return newContactJqObj;
 }
 
@@ -1693,9 +1729,13 @@ MapService.init = function() {
 						
 	mapServices.append(controlBar);
 	
-	var map = $("<iframe id='mapcanvas' name='mapcanvas' width='100%' height='100%' scrolling='no' frameborder='0'>" +
+	var mapcanvas = $("<iframe id='mapcanvas' name='mapcanvas' width='100%' height='100%' scrolling='no' frameborder='0'>" +
 					"</iframe>");
-	mapServices.append(map);		
+	mapServices.append(mapcanvas);
+	
+	var mapItems = $("<div id='mapItems'></div>");
+	mapItems.hide();
+	mapServices.append(mapItems);
 	
 	$("#main").append(mapServices);
 	mapServices.hide();
@@ -1720,6 +1760,27 @@ MapService.init = function() {
 			}]
 		}]  
 	};
+	
+	mapItemslayoutSettings = {
+		Name: "Main",
+        Dock: $.layoutEngine.DOCK.FILL,
+        EleID: "main",
+		Children:[{
+			Name: "Top",
+			Dock: $.layoutEngine.DOCK.FILL,
+			EleID: "mapservices",
+			Children:[{
+	 			Name: "Top2",
+				Dock: $.layoutEngine.DOCK.TOP,
+				EleID: "mapControlbar",
+				Height: 30
+			}, {
+				Name: "Fill2",
+				Dock: $.layoutEngine.DOCK.FILL,
+		 		EleID: "mapItems"
+			}]
+		}]  
+	};
 	$.layoutEngine(mapserviceTablayoutSettings);
 	
 	var connectionMgr = XmppConnectionMgr.getInstance();
@@ -1730,35 +1791,37 @@ MapService.init = function() {
 		function(event) {
 			var contact = event.contact;
 			var bareJid = contact.getBareJid();
-			var markerId = bareJid.toBareJID();
-			if (!MapService.containMapMarker(markerId)) {
-				return;
-			}
-			var eventType = event.eventType;
-			if (eventType == ConnectionEventType.ContactStatusChanged) {
-				if (contact.isResourceAvailable()) {
-					var userResource = contact.getMaxPriorityResource();
-					var presence = userResource.currentPresence;
-					var geolocX = presence.getPacketExtension(GeoLocExtension.ELEMENTNAME, GeoLocExtension.NAMESPACE);
-					if (geolocX && geolocX.getType() == GeoLocType.LATLON) {
-						var lat = geolocX.getLat();
-						var lon = geolocX.getLon();
-						
-						var marker = {
-		    				id: markerId,
-		    				positions: [{
-		    					lat: lat,
-		    					lon: lon
-		    				}]
-		    			};
-						MapService.updateMapMarker(marker);
-					}					
-				} else {
-					MapService.removeMapMarker(markerId);
+			var itemId = bareJid.toBareJID();
+			var mapItem = MapService.mapItems[itemId];
+			if (mapItem && mapItem.isShow) {
+				var eventType = event.eventType;
+				if (eventType == ConnectionEventType.ContactStatusChanged) {
+					if (contact.isResourceAvailable()) {
+						var userResource = contact.getMaxPriorityResource();
+						var presence = userResource.currentPresence;
+						var geolocX = presence.getPacketExtension(GeoLocExtension.ELEMENTNAME, GeoLocExtension.NAMESPACE);
+						if (geolocX && geolocX.getType() == GeoLocType.LATLON) {
+							var lat = geolocX.getLat();
+							var lon = geolocX.getLon();
+							
+							var mapItem = {
+			    				id: itemId,
+			    				isShow: true,
+			    				positions: [{
+			    					lat: lat,
+			    					lon: lon
+			    				}]
+			    			};
+							MapService.updateMapItem(mapItem);
+						}					
+					} else {
+						MapService.removeMapItem(markerId);
+					}
+				} else if (eventType == ConnectionEventType.ContactRemoved) {
+					MapService.removeMapItem(markerId);
 				}
-			} else if (eventType == ConnectionEventType.ContactRemoved) {
-				MapService.removeMapMarker(markerId);
 			}
+			
 		}
 	);
 }
@@ -1774,30 +1837,67 @@ MapService.show = function() {
 	
 	mapServices.siblings().hide();
 	mapServices.show();
-	$.layoutEngine(mapserviceTablayoutSettings);
+	
+	var mapItems =  $("#mapItems");
+	if (mapcanvas.is(":visible")) {
+		$.layoutEngine(mapserviceTablayoutSettings);
+	} else if (mapItems.is(":visible")) {
+		$.layoutEngine(mapItemslayoutSettings);
+	}
 }
 
 function mapFrameLoaded() {
 	$.layoutEngine(mapserviceTablayoutSettings);
 }
 
-MapService.containMapMarker = function (markerId) {
+MapService.mapItems= {};
+
+MapService.containMapItem = function (mapItemId) {
+	var mapcanvas = $("#mapcanvas");
+	var mapItem = MapService.mapItems[mapItemId];
+	if (mapItem) {
+		return true;
+	}
+	return false;
+}
+
+MapService.updateMapItem = function (mapItem) {
+	var mapItemId = mapItem.id;	
+	MapService.mapItems[mapItemId] = mapItem;
+	
+	var mapItems = $("#mapItems");
+	var itemDiv = mapItems.children("div[mapItem='" + mapItemId + "']");
+	if (itemDiv.size() == 0) {
+		itemDiv = $("<div mapItem=" + mapItemId + ">" + 
+						"<input id='" + mapItem.id + "-mapItem' name='" + mapItem.id + "-mapItem' type='checkbox' checked='checked'/>" +
+						"<label id='" + mapItem.id + "-mapItemLabel' for='" + mapItem.id + "-mapItem'>" + mapItem.title + "</label>" +
+						"<button id=''>删除</button>" +
+					"</div>");
+		mapItems.append(itemDiv);
+	}
+	
+
 	var mapcanvas = $("#mapcanvas");
 	if (mapcanvas.attr("src")) {
-		mapcanvas[0].contentWindow.containMapMarker(markerId);
+		if (mapItem.isShow) {
+			var marker = {
+				id: mapItem.id,
+				title: mapItem.title,
+				positions: mapItem.positions
+			};
+			mapcanvas[0].contentWindow.updateMapItem(marker);
+		} else {
+			mapcanvas[0].contentWindow.removeMapItem(mapItem.id);
+		}
+		
 	}
 }
 
-MapService.updateMapMarker = function (marker) {
+MapService.removeMapItem = function (mapItemId) {
+	delete MapService.mapItems[mapItemId];
 	var mapcanvas = $("#mapcanvas");
 	if (mapcanvas.attr("src")) {
-		mapcanvas[0].contentWindow.updateMapMarker(marker);
-	}
-}
-MapService.removeMapMarker = function (markerId) {
-	var mapcanvas = $("#mapcanvas");
-	if (mapcanvas.attr("src")) {
-		mapcanvas[0].contentWindow.removeMapMarker(markerId);
+		mapcanvas[0].contentWindow.removeMapMarker(mapItemId);
 	}
 }
 // end of MapService
