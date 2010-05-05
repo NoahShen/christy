@@ -1904,6 +1904,18 @@ MapService.updateMapItem = function (mapItem) {
 						"<label id='" + mapItem.id + "-mapItemLabel' for='" + mapItem.id + "-mapItem'>" + mapItem.title + "</label>" +
 						"<button id=''>删除</button>" +
 					"</div>");
+		itemDiv.children("input").click(function(){
+			var checkbox = $(this);
+			var mapItem = MapService.mapItems[mapItemId];
+			if (mapItem) {
+				mapItem.isShow = (checkbox.attr("checked") == true);
+				MapService.updateMapItem(mapItem);
+			}
+		});
+		itemDiv.children("button").click(function(){
+			MapService.removeMapItem(mapItemId);
+			itemDiv.remove();
+		});
 		mapItems.append(itemDiv);
 	}
 	
