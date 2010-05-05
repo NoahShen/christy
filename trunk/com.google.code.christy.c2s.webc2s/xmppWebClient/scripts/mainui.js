@@ -1834,10 +1834,10 @@ MapService.init = function() {
 							MapService.updateMapItem(mapItem);
 						}					
 					} else {
-						MapService.removeMapItem(markerId);
+						MapService.removeMapItem(itemId);
 					}
 				} else if (eventType == ConnectionEventType.ContactRemoved) {
-					MapService.removeMapItem(markerId);
+					MapService.removeMapItem(itemId);
 				}
 			}
 			
