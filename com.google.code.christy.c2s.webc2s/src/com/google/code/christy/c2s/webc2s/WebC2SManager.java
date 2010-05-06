@@ -4,6 +4,7 @@
 package com.google.code.christy.c2s.webc2s;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
@@ -34,6 +35,8 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.FileResource;
+import org.eclipse.jetty.webapp.WebAppContext;
 import org.osgi.framework.ServiceReference;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
@@ -311,9 +314,20 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
 		server.setHandler(contexts);
 
-		ResourceHandler resource_handler = new ResourceHandler();
-		resource_handler.setWelcomeFiles(new String[] { "index.html" });
-		resource_handler.setResourceBase(getResourceBase());
+//		ResourceHandler resource_handler = new ResourceHandler();
+//		resource_handler.setWelcomeFiles(new String[] { "index.html" });
+//		resource_handler.setResourceBase(getResourceBase());
+		
+		WebAppContext appContext = new WebAppContext();
+		appContext.setContextPath("/");
+		
+		File file = new File(getResourceBase());
+		FileResource fr = new FileResource(file.toURI().toURL());
+		appContext.setWelcomeFiles(new String[] { "index.html" });
+		appContext.setBaseResource(fr);
+		
+		String appPath = System.getProperty("appPath");
+		appContext.setDefaultsDescriptor(appPath + "/webdefault.xml");
 		
 		Map<String, ServletContextHandler> servletHandlers = new LinkedHashMap<String, ServletContextHandler>();
 		
@@ -348,7 +362,8 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			handlers.addHandler(contextHandler);
 		}
 		
-		handlers.addHandler(resource_handler);
+//		handlers.addHandler(resource_handler);
+		handlers.addHandler(appContext);
 		handlers.addHandler(new DefaultHandler());
 		server.setHandler(handlers);
 		server.start();
