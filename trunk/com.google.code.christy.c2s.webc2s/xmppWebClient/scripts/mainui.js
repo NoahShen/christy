@@ -90,6 +90,7 @@ MainUI.init = function() {
 			}
 			appMenu.children("img").attr("src", "/resource/status/unavailable.png");
 			alert($.i18n.prop("app.connectionClosed", "连接已断开"));
+			window.location.reload();
 		}
 	);
 	
