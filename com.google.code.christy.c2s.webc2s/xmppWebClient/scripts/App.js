@@ -23,6 +23,7 @@ $(document).ready(function() {
 //	});
 //	return;
 	
+	disabledInputController(false);
 	var cookiesUsername = Cookies.get("username");
 	if (cookiesUsername) {
 		$("#username").val(cookiesUsername);
@@ -51,8 +52,9 @@ $(document).ready(function() {
 		
 		disabledInputController(true);
 		var connecting = $.i18n.prop("login.connecting", "正在连接...");
+		$("#login_status").css("color", "black");
 		$("#login_status").text(connecting);
-
+		
 		$.include(["lib/jClass.js", "xmpputils.js", "xmppcore.js"], function(){
 			var connectionMgr = XmppConnectionMgr.getInstance();
 			var listener = function(event){

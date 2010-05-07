@@ -4662,20 +4662,20 @@ IqPrivateXml = PacketExtension.extend({
 	/**
 	 * @return the unknownPacketExtension
 	 */
-	getUnknownPacketExtension: function() {
-		return this.unknownPacketExtension;
+	getPacketExtension: function() {
+		return this.packetExtension;
 	},
 
-	setUnknownPacketExtension: function(unknownPacketExtension) {
-		this.unknownPacketExtension = unknownPacketExtension;
+	setPacketExtension: function(packetExtension) {
+		this.packetExtension = packetExtension;
 	},
 	
 	toXml: function() {
 		var xml = "";
 		xml += ("<" + this.getElementName() + " " + "xmlns=\"" + this.getNamespace() + "\"");
-		if (this.unknownPacketExtension != null) {
+		if (this.packetExtension != null) {
 			xml += ">";
-			xml += this.unknownPacketExtension.toXml();
+			xml += this.packetExtension.toXml();
 			xml += "</" + this.getElementName() + ">";
 		} else {
 			xml += "/>";
@@ -4711,8 +4711,16 @@ IqPrivateXmlParser = XmppParser.ExtensionParser.extend({
 			var childEle = childNodes[i];
 			// ELEMENT_NODE
 			if (childEle.nodeType == 1) {
-				var unknownExtension = new UnknownExtension(childEle);
-				privateXml.setUnknownPacketExtension(unknownExtension);
+				var elementName = childEle.nodeName;
+				var namespace = childEle.getAttribute("xmlns");
+				var extensionParser = xmppParser.getExtensionParser(elementName, namespace);
+				var packetExtension = null;
+				if (extensionParser != null) {
+					packetExtension = extensionParser.parseExtension(xmppParser, childEle);					
+				} else {
+					packetExtension = new UnknownExtension(childEle);
+				}
+				privateXml.setPacketExtension(packetExtension);
 			}
 			
 		}
@@ -5234,3 +5242,89 @@ GeoLocExtensionParser.NAMESPACE = "christy:geo:loc";
 var parser = XmppParser.getInstance();
 parser.addExtensionParser(new GeoLocExtensionParser());
 
+
+
+
+
+
+
+
+
+
+// start of Preferences
+
+PreferencesExtension = PacketExtension.extend({
+	init: function(){
+	},
+	
+	getElementName: function(){
+		return PreferencesExtension.ELEMENTNAME;
+	},
+	
+	getNamespace: function(){
+		return PreferencesExtension.NAMESPACE;
+	},
+	
+	setShareLoc: function(shareLoc) {
+		this.shareLoc = shareLoc;
+	},
+	
+	isShareLoc: function() {
+		return this.shareLoc;
+	},
+	
+	toXml: function() {
+		var xml = "";
+		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\">";
+		xml += "<shareloc>" + (this.isShareLoc() == true) + "</shareloc>";
+		xml += "</" + this.getElementName() + ">";
+		
+		return xml;
+	}
+});
+
+PreferencesExtension.ELEMENTNAME = "preference";
+PreferencesExtension.NAMESPACE = "christy:user:preference";
+
+// end of GeoLocExtension
+
+
+// start of GeoLocExtensionParser
+
+PreferencesExtensionParser = XmppParser.ExtensionParser.extend({
+	init: function() {
+	},
+	
+	getElementName: function() {
+		return PreferencesExtensionParser.ELEMENTNAME
+	},
+	
+	getNamespace: function() {
+		return PreferencesExtensionParser.NAMESPACE;
+	},
+	
+	parseExtension: function(xmppParser, xmlElement) {
+		var preferencesExtension = new PreferencesExtension();
+		var childNodes = xmlElement.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle = childNodes[i];
+			// ELEMENT_NODE
+			if (childEle.nodeType == 1) {
+				var elementName = childEle.nodeName;
+				if ("shareloc" == elementName) {
+					preferencesExtension.setShareLoc(childEle.firstChild.nodeValue == "true");
+				}
+			}
+		}
+		return preferencesExtension;
+	}
+});
+
+
+PreferencesExtensionParser.ELEMENTNAME = "preference";
+PreferencesExtensionParser.NAMESPACE = "christy:user:preference";
+
+// end of Preferences
+
+var parser = XmppParser.getInstance();
+parser.addExtensionParser(new PreferencesExtensionParser());
