@@ -4,10 +4,10 @@
 package com.google.code.christy.c2s.webc2s;
 
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,12 +31,11 @@ import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.resource.FileResource;
-import org.eclipse.jetty.webapp.WebAppContext;
 import org.osgi.framework.ServiceReference;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
@@ -312,22 +311,24 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		server = new Server(getWebclientPort());
 
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
-		server.setHandler(contexts);
-
-//		ResourceHandler resource_handler = new ResourceHandler();
-//		resource_handler.setWelcomeFiles(new String[] { "index.html" });
-//		resource_handler.setResourceBase(getResourceBase());
 		
-		WebAppContext appContext = new WebAppContext();
-		appContext.setContextPath("/");
+		ServletContextHandler resourceServletContext = new ServletContextHandler(contexts, "/", ServletContextHandler.SESSIONS);
 		
-		File file = new File(getResourceBase());
-		FileResource fr = new FileResource(file.toURI().toURL());
-		appContext.setWelcomeFiles(new String[] { "index.html" });
-		appContext.setBaseResource(fr);
+		DefaultServlet ds = new DefaultServlet();
+		resourceServletContext.addServlet(new ServletHolder(ds), "/");
 		
-		String appPath = System.getProperty("appPath");
-		appContext.setDefaultsDescriptor(appPath + "/webdefault.xml");
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("org.eclipse.jetty.servlet.Default.resourceBase", getResourceBase());
+		
+		resourceServletContext.setInitParams(params);
+		
+		FilterHolder fHolder = new FilterHolder(org.eclipse.jetty.servlets.GzipFilter.class);
+		fHolder.setName("compress");
+		
+		resourceServletContext.addFilter(fHolder, "*.js", FilterMapping.ALL);
+		resourceServletContext.addFilter(fHolder, "*.css", FilterMapping.ALL);
+		resourceServletContext.addFilter(fHolder, "*.html", FilterMapping.ALL);
+		
 		
 		Map<String, ServletContextHandler> servletHandlers = new LinkedHashMap<String, ServletContextHandler>();
 		
@@ -354,18 +355,8 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			contextHandler.addServlet(new ServletHolder(servlet), pathSpec);
 		}
 		
-		
-		HandlerList handlers = new HandlerList();
-		
-		for (ServletContextHandler contextHandler : servletHandlers.values())
-		{
-			handlers.addHandler(contextHandler);
-		}
-		
-//		handlers.addHandler(resource_handler);
-		handlers.addHandler(appContext);
-		handlers.addHandler(new DefaultHandler());
-		server.setHandler(handlers);
+		contexts.addHandler(new DefaultHandler());
+		server.setHandler(contexts);
 		server.start();
 		
 		sessionMonitor.setStop(false);
