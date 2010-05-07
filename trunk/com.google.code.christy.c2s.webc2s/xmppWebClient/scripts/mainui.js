@@ -25,6 +25,8 @@ MainUI.init = function() {
 			"<li class=''><a href='#shopServices'>Shop</a></li>" +
 			"<li class=''><a href='#mapServices'>Map</a></li>" +
 			"<li class=''><a href='#personal'>Personal</a></li>" +
+			"<li class=''><a href='#preferences'>Preferences</a></li>" +
+			"<li class='separator'><a href='#quit'>Quit</a></li>" +
 	"</ul>");
 	
 	var appMenu = $("<div id='appMenu'><img id='appMenuImg' src='/resource/status/available.png'/></div>");
@@ -72,6 +74,15 @@ MainUI.init = function() {
 				MapService.show();
 			} else if (action  == "personal") {
 				Personal.show();
+			} else if (action == "preferences") {
+				Preferences.show();
+			} else if (action  == "quit") {
+				var connectionMgr = XmppConnectionMgr.getInstance();
+				var conn = connectionMgr.getAllConnections()[0];
+				if (conn) {
+					MainUI.userClose = true;
+					conn.close();
+				}
 			}
 			
 			
@@ -89,7 +100,10 @@ MainUI.init = function() {
 				clearInterval(geoLocIntervalId);
 			}
 			appMenu.children("img").attr("src", "/resource/status/unavailable.png");
-			alert($.i18n.prop("app.connectionClosed", "连接已断开"));
+			if (!MainUI.userClose) {
+				alert($.i18n.prop("app.connectionClosed", "连接已断开"));
+			}
+			
 			window.location.reload();
 		}
 	);
@@ -98,6 +112,7 @@ MainUI.init = function() {
 	ShopService.init();
 	MapService.init();
 	Personal.init();
+	Preferences.init();
 	
 	ImService.show();
 }
@@ -2185,3 +2200,119 @@ Personal.show = function() {
 
 
 // end of Personal
+
+
+// start of Preferences
+Preferences = {};
+Preferences.init = function() {
+	var preferences = $("<div id='preferences'>" +
+							"<table>" +
+								"<tr>" +
+									"<td>" +
+										"<input id='shareloc' name='shareloc' type='checkbox' checked='checked'/>" +
+										"<label id='shareloc_label' for='shareloc'>" +
+											$.i18n.prop("preferences.shareLoc", "共享位置信息") +
+										"</label>" +
+									"</td>"+
+								"</tr>" +
+								"<tr>" +
+									"<td>" +
+										"<div style='float:right;'>" +
+											"<button id='savePreferences'>" +
+												$.i18n.prop("preferences.savePreferences", "保存") + 
+											"</button>" +
+										"</div>" +
+									"</td>"+
+								"</tr>" +
+							"</table>" +
+						"</div>");
+						
+	preferences.find("button").click(function(){
+		var iq = new Iq(IqType.SET);
+	
+		var privateXml = new IqPrivateXml();
+		var preferencesExtension = new PreferencesExtension();
+		var checkbox = $("#shareloc");
+		preferencesExtension.setShareLoc(checkbox.attr("checked") == true);
+		
+		privateXml.setPacketExtension(preferencesExtension);
+		iq.addPacketExtension(privateXml);
+		
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			conn.handleStanza({
+				filter: new PacketIdFilter(iq.getStanzaId()),
+				timeout: Christy.loginTimeout,
+				handler: function(iqResponse) {
+					if (iqResponse.getType() == IqType.RESULT) {
+						alert($.i18n.prop("preferences.saveSuccess", "保存成功！"));
+					} else {
+						alert($.i18n.prop("preferences.saveFailed", "保存失败！"));
+					}			
+				},
+				timeoutHandler: function() {
+					alert($.i18n.prop("preferences.saveFailed", "保存失败！"));
+				}
+			});
+			conn.sendStanza(iq);
+		}
+		
+	});
+	
+	preferenceslayoutSettings = {
+		Name: "Main",
+        Dock: $.layoutEngine.DOCK.FILL,
+        EleID: "main",        
+        Children:[{
+			Name: "Fill",
+			Dock: $.layoutEngine.DOCK.FILL,
+	 		EleID: "preferences"
+		}]
+	};
+	
+	$("#main").append(preferences);
+}
+
+Preferences.show = function() {
+	
+	var preferences = $("#preferences");
+	preferences.siblings().hide();
+	preferences.show();
+	
+	$.layoutEngine(preferenceslayoutSettings);
+	
+	var iq = new Iq(IqType.GET);
+	
+	var privateXml = new IqPrivateXml();
+	var preferencesExtension = new PreferencesExtension();
+	privateXml.setPacketExtension(preferencesExtension);
+	iq.addPacketExtension(privateXml);
+	
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	var conn = connectionMgr.getAllConnections()[0];
+	if (conn) {
+		conn.handleStanza({
+			filter: new PacketIdFilter(iq.getStanzaId()),
+			timeout: Christy.loginTimeout,
+			handler: function(iqResponse) {
+				if (iqResponse.getType() == IqType.RESULT) {
+					var privateXmlX = iqResponse.getPacketExtension(IqPrivateXml.ELEMENTNAME, IqPrivateXml.NAMESPACE);
+					if (privateXmlX) {
+						var preferencesX = privateXmlX.getPacketExtension();
+						if (preferencesX) {
+							var checkbox = $("#shareloc");
+							checkbox.attr("checked", (preferencesX.isShareLoc() == true));
+						}
+					}
+					
+				}				
+			}
+		});
+		
+		conn.sendStanza(iq);
+	}
+	
+	
+}
+// end of Preferences
