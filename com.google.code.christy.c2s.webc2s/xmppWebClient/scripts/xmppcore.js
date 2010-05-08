@@ -5276,7 +5276,10 @@ PreferencesExtension = PacketExtension.extend({
 	toXml: function() {
 		var xml = "";
 		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\">";
-		xml += "<shareloc>" + (this.isShareLoc() == true) + "</shareloc>";
+		if (this.isShareLoc() != null) {
+			xml += "<shareloc>" + (this.isShareLoc() == true) + "</shareloc>";
+		}
+		
 		xml += "</" + this.getElementName() + ">";
 		
 		return xml;
