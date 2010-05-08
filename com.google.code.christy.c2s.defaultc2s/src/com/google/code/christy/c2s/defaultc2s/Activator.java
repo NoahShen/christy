@@ -101,7 +101,9 @@ public class Activator implements BundleActivator
 		
 		defaultC2sController = new DefaultC2sController(c2sManager);
 		// TODO
-//		defaultC2sController.start();
+		defaultC2sController.start();
+		
+		
 		c2sManagerRegistration = context.registerService(C2SManager.class.getName(), c2sManager, null);
 		
 		// TODO

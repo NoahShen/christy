@@ -7,6 +7,7 @@ import org.osgi.framework.BundleContext;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.sm.contactmgr.OfflineSubscribeMsgDbHelperTracker;
 import com.google.code.christy.sm.contactmgr.RosterItemDbHelperTracker;
+import com.google.code.christy.sm.controller.SmController;
 import com.google.code.christy.sm.impl.RouteMessageParserServiceTracker;
 import com.google.code.christy.sm.impl.SmHandlerServiceTracker;
 import com.google.code.christy.sm.impl.SmManagerImpl;
@@ -25,6 +26,7 @@ public class Activator implements BundleActivator
 	private OfflineSubscribeMsgDbHelperTracker offlineSubscribeMsgDbHelperTracker;
 	private UserDbHelperTracker userDbHelperTracker;
 	private LoggerServiceTracker loggerServiceTracker;
+	private SmController routerController;
 
 	/*
 	 * (non-Javadoc)
@@ -66,6 +68,10 @@ public class Activator implements BundleActivator
 					offlineSubscribeMsgDbHelperTracker,
 					userDbHelperTracker,
 					loggerServiceTracker);
+		
+		routerController = new SmController(smManager);
+		routerController.start();
+		
 		
 		// TODO
 		smManager.setName("sm_1");
@@ -128,6 +134,12 @@ public class Activator implements BundleActivator
 		{
 			loggerServiceTracker.close();
 			loggerServiceTracker = null;
+		}
+		
+		if (routerController != null)
+		{
+			routerController.stop();
+			routerController = null;
 		}
 	}
 
