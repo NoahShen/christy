@@ -89,15 +89,25 @@ MainUI.init = function() {
 		}
 	);
 	
-	var geoLocIntervalId = setInterval(updateLoc, 10 * 1000);
+	Preferences.addItemChangedListener({
+		preferenceNames: ["shareLoc"],
+		handler: function(oldValue, newValue) {
+			if (newValue == true) {
+				MainUI.geoLocIntervalId = setInterval(updateLoc, 10 * 1000);
+			} else {
+				clearInterval(MainUI.geoLocIntervalId);
+			}
+		}
+	});
+	
 	
 	var connectionMgr = XmppConnectionMgr.getInstance();
 	connectionMgr.addConnectionListener([
 			ConnectionEventType.ConnectionClosed
 		],
 		function(event) {
-			if (geoLocIntervalId) {
-				clearInterval(geoLocIntervalId);
+			if (MainUI.geoLocIntervalId) {
+				clearInterval(MainUI.geoLocIntervalId);
 			}
 			appMenu.children("img").attr("src", "/resource/status/unavailable.png");
 			if (!MainUI.userClose) {
@@ -724,6 +734,8 @@ ImService.init = function() {
 		
 		conn.sendStanza(vCardIq);
 	}
+	
+	Preferences.updatePreferences(false);
 }
 
 ImService.show = function() {
@@ -2185,7 +2197,7 @@ function createPersonalFavorShop(shopItem) {
 	
 	
 	return shopInfoTable;
-}
+};
 
 Personal.show = function() {
 	var personal = $("#personal");
@@ -2196,7 +2208,7 @@ Personal.show = function() {
 	var personalTop = $("#personalTop");
 	personalTop.children(".sexysimple").click();
 	$.layoutEngine(personallayoutSettings);
-}
+};
 
 
 // end of Personal
@@ -2204,6 +2216,51 @@ Personal.show = function() {
 
 // start of Preferences
 Preferences = {};
+
+Preferences.setPreferenceItem = function(preferenceName, value) {
+	var oldValue = Preferences.preferencesItems[preferenceName];
+	if (oldValue != value) {
+		Preferences.preferencesItems[preferenceName] = value;
+		Preferences.fireItemChangedListener(preferenceName, oldValue, value);
+	}
+}
+
+Preferences.getPreferenceItem = function(preferenceName) {
+	return Preferences.preferencesItems[preferenceName];
+}
+
+Preferences.preferencesItems = {};
+Preferences.preferencesItems['shareLoc'] = false;
+Preferences.itemChangedListeners = [];
+Preferences.addItemChangedListener = function(listener) {
+	if (!isArray(listener.preferenceNames)) {
+		listener.preferenceNames = [listener.preferenceNames];
+	}
+	
+	Preferences.itemChangedListeners.push(listener);
+};
+
+Preferences.removeItemChangedListener = function(listener) {
+	var listeners = Preferences.itemChangedListeners;
+	for (var i = 0; i < listeners.length; ++i){
+		if (listeners[i] == listener){
+			listeners.splice(i,1);
+			break;
+		}
+	}
+};
+
+Preferences.fireItemChangedListener = function(preferenceName, oldValue, newValue) {
+	var listeners = Preferences.itemChangedListeners;
+	for (var i = 0; i < listeners.length; ++i){
+		var l = listeners[i];
+		if (l.preferenceNames.contains(preferenceName)){
+			l.handler(oldValue, newValue);
+			break;
+		}
+	}
+};
+
 Preferences.init = function() {
 	var preferences = $("<div id='preferences'>" +
 							"<table>" +
@@ -2232,6 +2289,7 @@ Preferences.init = function() {
 	
 		var privateXml = new IqPrivateXml();
 		var preferencesExtension = new PreferencesExtension();
+		
 		var checkbox = $("#shareloc");
 		preferencesExtension.setShareLoc(checkbox.attr("checked") == true);
 		
@@ -2247,6 +2305,8 @@ Preferences.init = function() {
 				handler: function(iqResponse) {
 					if (iqResponse.getType() == IqType.RESULT) {
 						alert($.i18n.prop("preferences.saveSuccess", "保存成功！"));
+						
+						Preferences.setPreferenceItem("shareLoc", (checkbox.attr("checked") == true));	
 					} else {
 						alert($.i18n.prop("preferences.saveFailed", "保存失败！"));
 					}			
@@ -2272,16 +2332,9 @@ Preferences.init = function() {
 	};
 	
 	$("#main").append(preferences);
-}
+};
 
-Preferences.show = function() {
-	
-	var preferences = $("#preferences");
-	preferences.siblings().hide();
-	preferences.show();
-	
-	$.layoutEngine(preferenceslayoutSettings);
-	
+Preferences.updatePreferences = function(updateUI) {
 	var iq = new Iq(IqType.GET);
 	
 	var privateXml = new IqPrivateXml();
@@ -2301,8 +2354,13 @@ Preferences.show = function() {
 					if (privateXmlX) {
 						var preferencesX = privateXmlX.getPacketExtension();
 						if (preferencesX) {
-							var checkbox = $("#shareloc");
-							checkbox.attr("checked", (preferencesX.isShareLoc() == true));
+							var newValue = (preferencesX.isShareLoc() == true);
+							Preferences.setPreferenceItem("shareLoc", newValue);
+							if (updateUI) {
+								Preferences.updatePreferencesUI(preferencesX);
+							}
+							
+							
 						}
 					}
 					
@@ -2312,7 +2370,26 @@ Preferences.show = function() {
 		
 		conn.sendStanza(iq);
 	}
-	
-	
 }
+
+Preferences.updatePreferencesUI = function(preferencesX) {
+	var value = (preferencesX.isShareLoc() == true);				
+	var checkbox = $("#shareloc");
+	checkbox.attr("checked", value);
+	
+};
+
+Preferences.show = function() {
+	
+	var preferences = $("#preferences");
+	preferences.siblings().hide();
+	preferences.show();
+	
+	Preferences.updatePreferences(true);
+	
+	$.layoutEngine(preferenceslayoutSettings);
+	
+	
+	
+};
 // end of Preferences
