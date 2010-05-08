@@ -24,12 +24,29 @@ Bundle-ClassPath: bin/,
  lib/mysql-connector-java-5.0.5-bin.jar,
  lib/jetty-servlets-7.0.1.v20091125.jar,
  lib/jetty-webapp-7.0.1.v20091125.jar,
- lib/jetty-xml-7.0.1.v20091125.jar
+ lib/jetty-xml-7.0.1.v20091125.jar,
+ lib/hessian-4.0.6.jar
 Bundle-Activator: com.google.code.christy.lib.Activator
 Bundle-Vendor: Noah
 Import-Package: org.osgi.framework;version="1.3.0"
 Eclipse-LazyStart: true
-Export-Package: com.db4o,
+Export-Package: com.caucho.burlap.client,
+ com.caucho.burlap.io,
+ com.caucho.burlap.server,
+ com.caucho.hessian,
+ com.caucho.hessian.client,
+ com.caucho.hessian.io,
+ com.caucho.hessian.jmx,
+ com.caucho.hessian.micro,
+ com.caucho.hessian.mux,
+ com.caucho.hessian.security,
+ com.caucho.hessian.server,
+ com.caucho.hessian.util,
+ com.caucho.services.client,
+ com.caucho.services.message,
+ com.caucho.services.name,
+ com.caucho.services.server,
+ com.db4o,
  com.db4o.activation,
  com.db4o.cluster,
  com.db4o.collections,

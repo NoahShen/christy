@@ -1,4 +1,4 @@
-package com.google.code.christy.c2s.webc2s.controller;
+package com.google.code.christy.router.controller;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,21 +9,21 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import com.caucho.hessian.server.HessianServlet;
-import com.google.code.christy.c2s.webc2s.WebC2SManager;
 import com.google.code.christy.lib.ServerController;
+import com.google.code.christy.router.impl.RouterManagerImpl;
 
-public class WebC2sController
+public class RouterController
 {
-	private WebC2SManager webc2sManager;
+	private RouterManagerImpl routerManager;
 	
 	private Server server;
 
-	private int port = 7777;
+	private int port = 7676;
 	
-	public WebC2sController(WebC2SManager webc2sManager)
+	public RouterController(RouterManagerImpl routerManager)
 	{
 		super();
-		this.webc2sManager = webc2sManager;
+		this.routerManager = routerManager;
 	}
 	
 	public int getPort()
@@ -44,13 +44,13 @@ public class WebC2sController
 		
 		ServletContextHandler hessianServletContext = new ServletContextHandler(contexts, "/", ServletContextHandler.SESSIONS);
 		
-		WebC2sControllerServlet controllerServlet = new WebC2sControllerServlet();
+		RouterControllerServlet controllerServlet = new RouterControllerServlet();
 		ServletHolder sh = new ServletHolder(controllerServlet);
 		sh.setName("HessianServlet");
 		hessianServletContext.addServlet(sh, "/hessianController");
 		
 		Map<String, String> params = new HashMap<String, String>();
-		params.put("home-class", WebC2sControllerServlet.class.getName());
+		params.put("home-class", RouterControllerServlet.class.getName());
 		params.put("home-api", ServerController.class.getName());
 		
 		hessianServletContext.setInitParams(params);
@@ -68,35 +68,32 @@ public class WebC2sController
 		}
 	}
 	
-	private class WebC2sControllerServlet extends HessianServlet implements ServerController
+	private class RouterControllerServlet extends HessianServlet implements ServerController
 	{
 
 		/**
 		 * 
 		 */
-		private static final long serialVersionUID = 6938050325203554038L;
+		private static final long serialVersionUID = 4556979994208220730L;
 
 		@Override
 		public Map<String, Object> getServerInfo()
 		{
 			Map<String, Object> serverInfo = new HashMap<String, Object>();
 			
-			serverInfo.put("started", webc2sManager.isStarted());
-			serverInfo.put("clientLimit", webc2sManager.getClientLimit());
-			serverInfo.put("domain", webc2sManager.getDomain());
-			serverInfo.put("name", webc2sManager.getName());
-			serverInfo.put("routerIp", webc2sManager.getRouterIp());
-			serverInfo.put("routerPassword", webc2sManager.getRouterPassword());
-			serverInfo.put("routerPort", webc2sManager.getRouterPort());
-			serverInfo.put("webClientPort", webc2sManager.getWebclientPort());
-			serverInfo.put("sessionCount", webc2sManager.getSessionCount());
+			serverInfo.put("started", routerManager.isStarted());
+			serverInfo.put("c2sLimit", routerManager.getC2sLimit());
+			serverInfo.put("c2sPort", routerManager.getC2sPort());
+			serverInfo.put("smLimit", routerManager.getSmLimit());
+			serverInfo.put("smPort", routerManager.getSmPort());
+			serverInfo.put("domain", routerManager.getDomain());
 			return serverInfo;
 		}
 
 		@Override
 		public void stopServer()
 		{
-			webc2sManager.exit();
+			routerManager.exit();
 		}
 		
 	}

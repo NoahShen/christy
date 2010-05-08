@@ -401,11 +401,19 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			throw new OpenStreamException("stream duplication");
 		}
 		clientSessions.put(clientSession.getStreamId(), clientSession);
+		if (loggerServiceTracker.isDebugEnabled())
+		{
+			loggerServiceTracker.debug("add xmpp session:[" + clientSession.getUsername() + ":" + clientSession.getStreamId() + "]");
+		}
 	}
 	
 	void removeClientSession(ClientSessionImpl clientSession)
 	{
 		clientSessions.remove(clientSession.getStreamId());
+		if (loggerServiceTracker.isDebugEnabled())
+		{
+			loggerServiceTracker.debug("remove xmpp session:[" + clientSession.getUsername() + ":" + clientSession.getStreamId() + "]");
+		}
 	}
 	
 
@@ -840,7 +848,7 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
 			if (clientSession != null)
 			{
-				clientSessions.remove(clientSession.getStreamId());
+				removeClientSession(clientSession);
 				session.setAttachment(null);
 			}
 			
@@ -854,7 +862,8 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 			
 			clientSession.write(responseStream);
 			
-			if (supportedType == ChristyStreamFeature.SupportedType.afterConnected)
+			ClientSessionImpl.Status  status = clientSession.getStatus();
+			if (status != ClientSessionImpl.Status.authenticated)
 			{
 				clientSession.setStatus(ClientSessionImpl.Status.connected);
 			}
@@ -905,17 +914,15 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		{
 			ClientSessionImpl clientSession = (ClientSessionImpl) session.getAttachment();
 			
-			if (!clientSession.containsProperty("sessionCleared"))
-			{
-				RouteMessage routeMessage = new RouteMessage(getName(), clientSession.getStreamId());
-				routeMessage.setToUserNode(clientSession.getUsername());
-				routeMessage.setCloseStream(true);
-				routerSession.write(routeMessage.toXml());
-			}
-			
-
 			if (clientSession != null)
 			{
+				if (!clientSession.containsProperty("sessionCleared"))
+				{
+					RouteMessage routeMessage = new RouteMessage(getName(), clientSession.getStreamId());
+					routeMessage.setToUserNode(clientSession.getUsername());
+					routeMessage.setCloseStream(true);
+					routerSession.write(routeMessage.toXml());
+				}
 				clientSession.close();
 			}
 			loggerServiceTracker.debug("session" + session + ": sessionClosed:\n");

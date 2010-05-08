@@ -92,8 +92,8 @@ public class Activator implements BundleActivator
 
 		c2sManagerRegistration = context.registerService(C2SManager.class.getName(), c2sManager, null);
 
-//		webc2sController = new WebC2sController(c2sManager);
-//		webc2sController.start();
+		webc2sController = new WebC2sController(c2sManager);
+		webc2sController.start();
 		
 		// TODO
 		c2sManager.setName("c2s_web1");

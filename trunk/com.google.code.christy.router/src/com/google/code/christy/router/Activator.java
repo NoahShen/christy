@@ -5,6 +5,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 import com.google.code.christy.log.LoggerServiceTracker;
+import com.google.code.christy.router.controller.RouterController;
 import com.google.code.christy.router.impl.RouteMessageParserServiceTracker;
 import com.google.code.christy.router.impl.RouterManagerImpl;
 import com.google.code.christy.router.impl.RouterToSmInterceptorServiceTracker;
@@ -18,6 +19,7 @@ public class Activator implements BundleActivator
 	private RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker;
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	private LoggerServiceTracker loggerServiceTracker;
+	private RouterController routerController;
 
 	/*
 	 * (non-Javadoc)
@@ -39,11 +41,14 @@ public class Activator implements BundleActivator
 		loggerServiceTracker = new LoggerServiceTracker(context);
 		loggerServiceTracker.open();
 		
-		RouterManager rm = new RouterManagerImpl(routerToSmMessageDispatcherTracker, 
+		RouterManagerImpl rm = new RouterManagerImpl(routerToSmMessageDispatcherTracker, 
 											routerToSmInterceptorServiceTracker,
 											routeMessageParserServiceTracker,
 											loggerServiceTracker);
-
+		
+		routerController = new RouterController(rm);
+		routerController.start();
+		
 		// TODO test code
 		rm.setDomain("example.com");
 		rm.registerSmModule("sm_1", "md5password");
@@ -82,6 +87,12 @@ public class Activator implements BundleActivator
 		{
 			loggerServiceTracker.close();
 			loggerServiceTracker = null;
+		}
+		
+		if (routerController != null) 
+		{
+			routerController.stop();
+			routerController = null;
 		}
 	}
 
