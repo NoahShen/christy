@@ -11,17 +11,8 @@ $(document).ready(function() {
 	$.ImportBasePath = "/scripts/";
 	
 	// TODO test code
-//	sessionBindedSuccess();
-//	$.i18n.properties({
-//	    name: "i18n",
-//	    path: "/i18n/",
-//	    mode: "map",
-//	    language:"zh_CN",
-//	    callback: function() {
-//
-//	    }
-//	});
-//	return;
+	sessionBindedSuccess2();
+	return;
 	
 	disabledInputController(false);
 	var cookiesUsername = Cookies.get("username");
@@ -262,7 +253,58 @@ function sessionBindedSuccess() {
 	loadFile();
 }
 
+function sessionBindedSuccess2() {
+	$("#loginDiv").remove();
+	
+	var progressBar = $("<div style='position:fixed;top:10px;left:10px;'>" +
+							"<div>Loading...</div>" +
+							"<div class='progressbar'>" +
+								"<div style='width:0%;' class='bar'></div>" +
+							"</div>" +
+						"</div>");
+	
+	$("body").append(progressBar);
+	
+	var files = [
+					// TODO start of test code
+					"lib/jClass.js", 
+					"xmpputils.js", 
+					"xmppcore.js",
+					// TODO end of test code
+					
+					"component/tab/ui.tab.style.css",
+					"component/tab/ui.tab.js",
+					"main.css",
+					"main.js"
+				];
+	
+	var currentIndex = 0;
 
+	var loadFile = function() {
+		$.include(files[currentIndex], function(){
+			++currentIndex;
+//			progressBar.find(".bar").css("width", (currentIndex / files.length) * 100 + "%");
+			progressBar.find(".bar").animate({
+						width: (currentIndex / files.length) * 100 + "%"
+					}, 
+					100,
+					"swing", 
+					function() {
+						if (currentIndex < files.length) {
+							loadFile();
+						} else {
+							progressBar.hide();
+							Main.init();
+						}
+					}
+			);
+			
+			
+			
+		});
+	}
+	loadFile();
+}
 
 
 /*******utils**********/
