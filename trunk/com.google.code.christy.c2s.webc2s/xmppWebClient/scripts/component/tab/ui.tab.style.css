@@ -1,0 +1,44 @@
+/** 清浮动 **/
+.clearfix:after{
+    content:".";
+    display:block;
+    height:0;
+    clear:both;
+    visibility:hidden;
+}
+
+.clearfix{
+    display:inline-block;
+}
+
+/* Hides from IE-mac \*/
+* html .clearfix{
+    height:1%;
+}
+
+.clearfix{
+    display:block;
+}
+.ui-tab-container{
+	width:100%;
+}
+.ui-tab-container div{
+	list-style:none;
+}
+.ui-tab-container div u{
+	float:left;
+	cursor:pointer;
+	margin-top:3px;
+	text-align:center;
+	text-decoration:none;
+	width:24.9%;
+}
+.ui-tab-container div u.ui-tab-active{
+	background:#99FFCC;
+	margin-bottom:-1px;
+	border-bottom:1px solid #fff;
+}
+.ui-tab-container div u.ui-tab-disable{
+	background:#ff0000;
+
+}

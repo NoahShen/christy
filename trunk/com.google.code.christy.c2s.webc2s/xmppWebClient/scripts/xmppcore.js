@@ -1,7 +1,7 @@
 Christy = {};
 Christy.requestUrl = "webclient/JHB.do";
 Christy.loginTimeout = 30 * 1000; // 30 sec
-Christy.intervalTime = 1 * 1000; //0.5 sec
+Christy.intervalTime = 1 * 1000; //1 sec
 ////////////start of JID
 
 JID = jClass.extend({
