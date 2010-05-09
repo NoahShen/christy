@@ -68,13 +68,13 @@ Main.init = function() {
 	var tabs = $("<div id='tabs'>" +
  					"<div class='ui-tab-container'>" +
  						"<div class='clearfix'>" +
- 							"<u>" + $.i18n.prop("tabs.contact", "联系人") + "</u>" +
+ 							"<u class='ui-tab-active'>" + $.i18n.prop("tabs.contact", "联系人") + "</u>" +
 							"<u>" + $.i18n.prop("tabs.around", "附近") + "</u>" +
 							"<u>" + $.i18n.prop("tabs.map", "地图") + "</u>" +
 							"<u>" + $.i18n.prop("tabs.profile", "资料") + "</u>" +
  						"</div>" +
  						"<div>" +
- 							"<div id='contact' class='ui-tab-content ui-tab-active'>" +
+ 							"<div id='im' class='ui-tab-content ui-tab-active'>" +
  							"</div>" +
 	 						"<div id='around' class='ui-tab-content' style='display:none'>" +
 	 							"<p>content2</p>" +
@@ -139,10 +139,36 @@ Main.init = function() {
 
 IM = {};
 IM.init = function() {
-	var contactPanel = $("#contact");
+	var imPanel = $("#im");
+	
+	var contactPanel = $("<div id='contact'></div>");
+	
+	var activeChat = $("<div id='activeChat'></div>");
+	var activeLabel = $("<div id='activeLabel'>" + 
+							$.i18n.prop("contact.chating", "正在聊天") + "(0)" +
+						"</div>");
+	activeChat.append(activeLabel);
+	
+	var activeChatItems = $("<div id='activeChatItems'></div>");
+	activeChat.append(activeChatItems);
+	
+	activeLabel.click(function(){
+		if (activeChatItems.is(":visible")) {
+			activeChatItems.hide();
+		} else {
+			activeChatItems.show();
+		}
+	});
+	contactPanel.append(activeChat);
 	
 	var contactlist = $("<div id='contactlist'></div>");
 	contactPanel.append(contactlist);
+	imPanel.append(contactPanel);
+	
+	
+	
+	var chatPanel = $("<div id='chatPanel'></div>");
+	imPanel.append(chatPanel);
 };
 
 IM.updateContact = function(contact, remove) {
@@ -339,13 +365,24 @@ IM.createContactJqObj = function(newContact) {
 		var conn = connectionMgr.getAllConnections()[0];
 		if (conn) {
 			var contact = conn.getContact(newBareJid);
-			var chatScrollHeader = $("#chat-scroller-header");
-			var chatPanel = $("#chat-panel");
-			createChatHtml(chatScrollHeader, chatPanel, true, {
-				jid: newBareJid.toPrepedBareJID(),
-				showName: contact.getShowName()
-			});
-		}		
+			var contactChatPanel = IM.createChatPanel(contact);
+			var chatPanel = $("#chatPanel");
+			chatPanel.siblings().hide();
+			chatPanel.show();
+			contactChatPanel.siblings().hide();
+			contactChatPanel.show();
+		}
+		
+		// TODO test code
+		var rosterItem = new IqRosterItem(JID.createJID("Noah1@example.com"), "Noah1NickName");
+   		var contact2 = new XmppContact(rosterItem);
+		var contactChatPanel = IM.createChatPanel(contact2);
+		var chatPanel = $("#chatPanel");
+		chatPanel.siblings().hide();
+		chatPanel.show();
+		contactChatPanel.siblings().hide();
+		contactChatPanel.show();
+		
 	};
 	tdFirst.click(clickFunc);
 	tdFirst.next().click(clickFunc);
@@ -414,7 +451,72 @@ IM.createContactJqObj = function(newContact) {
 	return newContactJqObj;
 };
 
-
+IM.createChatPanel = function(contact){
+	var chatPanel = $("#chatPanel");
+	var jid = contact.getBareJid();
+	var jidStr = jid.toPrepedBareJID();
+	
+	var contactChatPanel = chatPanel.children("div[chatContactJid='" + jidStr + "']");
+	if (contactChatPanel[0]) {
+		return contactChatPanel;
+	}
+	contactChatPanel = $("<div chatContactJid='" + jidStr + "' style='display:none;'>" +
+									"<table style='width:100%;'>" +
+										"<tr>" +
+											"<td style='text-align:center;'>" +
+												contact.getShowName() +
+											"</td>" +
+										"</tr>" +
+										"<tr style='height:100%;'>" +
+											"<td style='padding-left:7px;'>" +
+												"<div messagearea='1' style='width:100%;height:100%;word-break:break-all;'></div>" +
+											"</td>" +
+										"</tr>" +
+										"<tr>" +
+											"<td>" +
+												"<table style='margin-left:10px;'>" +
+													"<tr>" +
+														"<td>" +
+															"<input id='backToList' type='button' value='返回'/>" +
+														"</td>" +
+														"<td style='width:100%;'>" +
+															"<input type='text' style='width:100%;'/>" +
+														"</td>" +
+														"<td>" +
+															"<input id='sendMessage' type='button' value='"+ $.i18n.prop("chatPanel.send", "发送") + "' />" + 
+														"</td>" +
+													"</tr>" +
+												"</table>" +
+											"</td>" +
+										"</tr>" +
+									"</table>" +
+								"</div>");
+	
+	contactChatPanel.find("#backToList").click(function(){
+		var contactPanel = $("#contact");
+		contactPanel.siblings().hide();
+		contactPanel.show();
+	});
+	
+	chatPanel.append(contactChatPanel);
+	
+	var activeChatItem = $("<div></div>",{
+		activeChatJid: jidStr,
+		text: contact.getShowName(),
+		click: function() {
+			chatPanel.siblings().hide();
+			chatPanel.show();
+			contactChatPanel.siblings().hide();
+			contactChatPanel.show();
+		}
+	});
+	
+	var activeChatItems = $("#activeChatItems");
+	activeChatItems.append(activeChatItem);
+	$("#activeLabel").text($.i18n.prop("contact.chating", "正在聊天") + "(" + activeChatItems.size() + ")");
+	
+	return contactChatPanel;
+};
 
 IM.getStatusInfo = function(presence) {
 	var imgPath = "/resource/status/unavailable.png";
