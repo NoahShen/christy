@@ -19,12 +19,15 @@
 .clearfix{
     display:block;
 }
+
 .ui-tab-container{
 	width:100%;
 }
-.ui-tab-container div{
-	list-style:none;
+
+.ui-tab-container > div{
+	margin-bottom:10px;
 }
+
 .ui-tab-container div u{
 	float:left;
 	cursor:pointer;

@@ -19,7 +19,7 @@ Main.init = function() {
 									"<div id='userJid'>Noah@example.com</div>" +
 								"</td>" +
 								"<td>" +
-									"<div id='search'>" + $.i18n.prop("topBar.search", "搜索") + "</div>" +
+									"<div id='sys'>" + $.i18n.prop("topBar.sys", "搜索") + "</div>" +
 								"</td>" +
 							"</tr>" +
 						"</table>" +
@@ -34,7 +34,7 @@ Main.init = function() {
 							"<table>" +
 								"<tr>" +
 									"<td style='width:100%;'>" +
-										"<input id='statusMessage' type='text' style='width:100%'/>" +
+										"<input id='statusMessage' type='text'/>" +
 									"</td>" +
 									"<td>" +
 										"<input id='changeStatus' type='button' value='" + $.i18n.prop("statusContainer.update", "更新") + "'/>" +
@@ -69,17 +69,14 @@ Main.init = function() {
  					"<div class='ui-tab-container'>" +
  						"<div class='clearfix'>" +
  							"<u class='ui-tab-active'>" + $.i18n.prop("tabs.contact", "联系人") + "</u>" +
-							"<u>" + $.i18n.prop("tabs.around", "附近") + "</u>" +
+							"<u>" + $.i18n.prop("tabs.search", "搜索") + "</u>" +
 							"<u>" + $.i18n.prop("tabs.map", "地图") + "</u>" +
 							"<u>" + $.i18n.prop("tabs.profile", "资料") + "</u>" +
  						"</div>" +
  						"<div>" +
  							"<div id='im' class='ui-tab-content ui-tab-active'>" +
  							"</div>" +
-	 						"<div id='around' class='ui-tab-content' style='display:none'>" +
-	 							"<p>content2</p>" +
-	 							"<p>content2</p>" +
-	 							"<p>content2</p>" +
+	 						"<div id='search' class='ui-tab-content' style='display:none'>" +
 	 						"</div>" +
 	 						"<div id='map' class='ui-tab-content' style='display:none'>" +
 	 							"<p>content3</p>" +
@@ -115,6 +112,7 @@ Main.init = function() {
     });
     
     IM.init();
+    Search.init();
     
     // TODO test code
     var rosterItem = new IqRosterItem(JID.createJID("Noah1@example.com"), "Noah1NickName");
@@ -219,7 +217,7 @@ IM.updateContact = function(contact, remove) {
 			var presence = userResource.currentPresence;
 			
 			var statusInfo = IM.getStatusInfo(presence);
-			contactJqObj.attr("statusCode", statusInfo.statusCode);
+			contactJqObj.attr("statuscode", statusInfo.statusCode);
 			statusImgSrc = statusInfo.imgPath;
 			statusMessage = statusInfo.statusMessage;
 			
@@ -229,17 +227,17 @@ IM.updateContact = function(contact, remove) {
 		} else {
 			statusImgSrc = "/resource/status/unavailable.png";
 			statusMessage = $.i18n.prop("imservices.status.unavailable", "离线");
-			contactJqObj.attr("statusCode", 0);
+			contactJqObj.attr("statuscode", 0);
 		}
 		
-		var statusImg = contactJqObj.find("img[statusImg]");
-		statusImg.attr("src", statusImgSrc);
+		var statusImg = contactJqObj.find("div[statusimg]");
+		statusImg.css("background-image", "url(" + statusImgSrc + ")");
 		
 		var showName = contact.getShowName();
-		var showNameJqObj = contactJqObj.find("div[showName]");
+		var showNameJqObj = contactJqObj.find("div[showname]");
 		showNameJqObj.text(showName);
 		
-		var statusMessageJqObj = contactJqObj.find("div[statusMessage]");
+		var statusMessageJqObj = contactJqObj.find("div[statusmessage]");
 		statusMessageJqObj.text(statusMessage);
 		
 		var groupNames = contact.getGroups();
@@ -259,7 +257,7 @@ IM.updateContact = function(contact, remove) {
 	$.each(groupJqObjs, function(index, value) {		
 		var groupJqObj = $(value);
 		//remove emtpy group
-		var contacts = groupJqObj.children("[contactJid]");
+		var contacts = groupJqObj.children("[contactjid]");
 		if (contacts.length == 0) {
 			groupJqObj.remove();
 		} else {
@@ -267,12 +265,12 @@ IM.updateContact = function(contact, remove) {
 			var onlineCount = 0;
 			$.each(contacts, function(index, valueContact) {		
 				var groupContact = $(valueContact);
-				var status = groupContact.attr("statusCode");
+				var status = groupContact.attr("statuscode");
 				if (status > 0) {
 					++onlineCount;
 				}
 			});
-			var groupN = groupJqObj.attr("displayName");
+			var groupN = groupJqObj.attr("displayname");
 			groupJqObj.children(":first").text(groupN + "(" + onlineCount + "/" + contacts.length + ")");
 			
 		}
@@ -287,18 +285,18 @@ IM.addContact2Group = function( contactlistJqObj, contactJqObj, groupName, displ
 		groupJqObj = IM.addGroup(contactlistJqObj, groupName, displayName);
 	}
 	var inserted = false;
-	var contacts = groupJqObj.children("[contactJid]");
+	var contacts = groupJqObj.children("[contactjid]");
 	$.each(contacts, function(index, value) {		
 		var oldContactJqObj = $(value);
-		var oldContactStatusCode = oldContactJqObj.attr("statusCode");
-		var contactStatusCode = contactJqObj.attr("statusCode");
+		var oldContactStatusCode = oldContactJqObj.attr("statuscode");
+		var contactStatusCode = contactJqObj.attr("statuscode");
 		
 		if (contactStatusCode > oldContactStatusCode) {
 			contactJqObj.clone(true).insertBefore(oldContactJqObj);
 			inserted = true;
 			return false;
 		} else if (contactStatusCode == oldContactStatusCode) {
-			var oldBareJid = oldContactJqObj.attr("contactJid");
+			var oldBareJid = oldContactJqObj.attr("contactjid");
 			if (bareJid.toPrepedBareJID() < oldBareJid) {
 				contactJqObj.clone(true).insertBefore(oldContactJqObj);
 				inserted = true;
@@ -312,12 +310,12 @@ IM.addContact2Group = function( contactlistJqObj, contactJqObj, groupName, displ
 };
 
 IM.addGroup = function(contactlistJqObj, groupName, displayName) {
-	var newGroupJqObj = $("<div></div>").attr("groupname", groupName).attr("displayName", displayName);
+	var newGroupJqObj = $("<div></div>").attr("groupname", groupName).attr("displayname", displayName);
 	var groupLabel = $("<div id='" + groupName + "-label' class='contactGroup'></div>").text(displayName);
 	
 	newGroupJqObj.append(groupLabel);
 	groupLabel.click(function(){
-		var groupContacts = newGroupJqObj.children("[contactJid]");
+		var groupContacts = newGroupJqObj.children("[contactjid]");
 		if (groupContacts.is(":visible")) {
 			groupContacts.hide();
 		} else {
@@ -350,22 +348,21 @@ IM.createContactJqObj = function(newContact) {
 	var newContactJqObj = $("<div>" +
 								"<table style='width:100%;'>" +
 									"<tr>" +
-										"<td>" +
-											"<img statusImg='true' src='/resource/status/unavailable.png'/>" +
-										"</td>" +
 										"<td style='width:100%;'>" +
-											"<table>" +
-												"<tr>" +
-													"<td>" +
-														"<div showName='1'>" + showName + "</div>" +
-													"</td>" +
-												"</tr>" +
-												"<tr>" +
-													"<td>" +
-														"<div statusMessage='1'>" + statusMessage + "</div>" +
-													"</td>" +
-												"</tr>" +
-											"</table>" + 
+											"<div statusimg='1'>" +
+												"<table>" +
+													"<tr>" +
+														"<td>" +
+															"<div showname='1'>" + showName + "</div>" +
+														"</td>" +
+													"</tr>" +
+													"<tr>" +
+														"<td>" +
+															"<div statusmessage='1'>" + statusMessage + "</div>" +
+														"</td>" +
+													"</tr>" +
+												"</table>" + 
+											"</div>" +
 										"</td>" +
 										"<td>" +
 											"<img src='/resource/statusmenu.png'/>" +
@@ -379,12 +376,11 @@ IM.createContactJqObj = function(newContact) {
 							
 
 	
-	newContactJqObj.attr("contactJid", newBareJid.toPrepedBareJID());
-	newContactJqObj.attr("statusCode", 0);
+	newContactJqObj.attr("contactjid", newBareJid.toPrepedBareJID());
+	newContactJqObj.attr("statuscode", 0);
 	
 	var tdFirst = newContactJqObj.find("td:first");
-	
-	var clickFunc = function(){
+	tdFirst.click(function(){
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
 		if (conn) {
@@ -406,9 +402,8 @@ IM.createContactJqObj = function(newContact) {
 		chatPanel.show();
 		contactChatPanel.siblings().hide();
 		contactChatPanel.show();
-	};
-	tdFirst.click(clickFunc);
-	tdFirst.next().click(clickFunc);
+	});
+	
 	
 	var contactInfoButton = tdFirst.next().next();
 	contactInfoButton.click(function(){
@@ -521,7 +516,7 @@ IM.createChatPanel = function(contact){
 															"<input id='backToList' type='button' value='返回'/>" +
 														"</td>" +
 														"<td style='width:100%;'>" +
-															"<input type='text' style='width:100%;'/>" +
+															"<input type='text'/>" +
 														"</td>" +
 														"<td>" +
 															"<input id='sendMessage' type='button' value='"+ $.i18n.prop("chatPanel.send", "发送") + "' />" + 
@@ -592,4 +587,98 @@ IM.getStatusInfo = function(presence) {
 				statusCode: statusCode};
 	
 	
+};
+
+Search = {};
+Search.init = function() {
+	var searchPanel = $("#search");
+	
+	var searchNavigation = $("<div>" +
+								"<table style='width:100%;'>" +
+									"<tr style='text-align:center;'>" +
+										"<td>" +
+											"<input id='searchBack' type='button' value='" + $.i18n.prop("search.navigation.back", "返回") + "'/>" +
+										"</td>" +
+										"<td>" +
+											"<div id='searchTitle'>Search Title</div>" +
+										"</td>" +
+										"<td>" +
+											"<input id='button1' type='button' value='Button'/>" +
+										"</td>" +
+									"</tr>" +
+								"</table>" +
+							"</div>");
+	
+	searchNavigation.find("#searchBack").click(function() {
+		var currentSearchPanel = $("#searchInnerPanel > div:visible");
+		var prevPanel = currentSearchPanel.prev();
+		if (prevPanel[0]) {
+			prevPanel.siblings().hide();
+			prevPanel.show();
+		}
+	});
+	
+	searchNavigation.hide();
+	
+	searchPanel.append(searchNavigation);
+	
+	var searchInnerPanel = $("<div id='searchInnerPanel'></div>");
+	
+	var searchInput = $("<div id='searchInput'>" +
+							"<div>" +
+								"<table>" +
+									"<tr>" +
+										"<td>" +
+											"<input id='searchByLoc' type='button' value='" + $.i18n.prop("search.searchInput.searchByLoc", "搜索指定位置") + "'/>" +
+										"</td>" +
+										"<td style='width:100%;'>" +
+											"<input type='text' style='margin-right:0.1cm;'/>" +
+										"</td>" +
+										"<td>" +
+											"<input id='doSearch' type='button' value='" + $.i18n.prop("search.searchInput.doSearch", "搜索") + "'/>" +
+										"</td>" +
+									"</tr>" +
+								"</table>" +								
+							"</div>" +
+							"<table id='searchType' style='width:100%;'>" +
+								"<tr>" +
+									"<td>" +
+										"<div id='restaurant' class='forward'>" +
+											$.i18n.prop("search.searchType.restaurant", "餐馆") + 
+										"</div>" +
+									"</td>" +
+								"</tr>" +
+								"<tr>" +
+									"<td>" +
+										"<div id='hotel' class='forward'>" +
+											$.i18n.prop("search.searchType.hotel", "宾馆") + 
+										"</div>" + 
+									"</td>" +
+								"</tr>" +
+								"<tr>" +
+									"<td>" +
+										"<div id='bar_cafe' class='forward'>" +
+											$.i18n.prop("search.searchType.bar_cafe", "酒吧/咖啡厅") + 
+										"</div>" + 
+									"</td>" +
+								"</tr>" +
+								"<tr>" +
+									"<td>" +
+										"<div id='market' class='forward'>" +
+											$.i18n.prop("search.searchType.market", "商场/超市") + 
+										"</div>" + 
+									"</td>" +
+								"</tr>" +
+							"</table>" + 
+						"</div>");
+	
+	searchInput.find("#searchType div").click(function() {
+		var typeJqObj = $(this);
+		
+	});
+	
+	searchInnerPanel.append(searchInput);
+	
+	
+	searchPanel.append(searchInnerPanel);
 };

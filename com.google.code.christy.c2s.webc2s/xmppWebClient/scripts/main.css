@@ -29,16 +29,28 @@ body,div{
 	background:#66FF33;
 	
 }
+div[statusimg] {
+	background-image: url(/resource/status/unavailable.png);
+	background-repeat:no-repeat;
+	background-position:left;
+	padding-left:20px;
+}
 
-div[statusMessage] {
+div[statusmessage] {
 	font-size: x-small;
 	color: gray;
 }
-
 
 div[messagearea] {
 	width:100%;
 	height:100%;
 	word-break:break-all;
 	overflow-y:auto;
+}
+
+.forward {
+	background-image: url(/resource/status/available.png);
+	background-repeat:no-repeat;
+	background-position:right;
+	width:100%;
 }
