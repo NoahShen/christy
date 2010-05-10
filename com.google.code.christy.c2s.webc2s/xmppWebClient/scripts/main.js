@@ -136,6 +136,25 @@ Main.init = function() {
     
     
 };
+Main.getPageHeight = function() {
+	if($.browser.msie) {
+		return document.compatMode == "CSS1Compat"? 
+			document.documentElement.clientHeight :
+			document.body.clientHeight;
+	} else {
+		return self.innerHeight;
+	}	
+};
+
+Main.getPageWidth = function() {
+	if($.browser.msie){
+		return document.compatMode == "CSS1Compat"? 
+				document.documentElement.clientWidth :
+				document.body.clientWidth;
+	} else {
+		return self.innerWidth;
+	}
+}; 
 
 IM = {};
 IM.init = function() {
@@ -169,6 +188,11 @@ IM.init = function() {
 	
 	var chatPanel = $("<div id='chatPanel'></div>");
 	imPanel.append(chatPanel);
+	
+	//adjustment message area
+	$(window).resize(function(){
+		$("#chatPanel [messagearea]").height(IM.getMessageContentHeight());
+	});
 };
 
 IM.updateContact = function(contact, remove) {
@@ -382,7 +406,6 @@ IM.createContactJqObj = function(newContact) {
 		chatPanel.show();
 		contactChatPanel.siblings().hide();
 		contactChatPanel.show();
-		
 	};
 	tdFirst.click(clickFunc);
 	tdFirst.next().click(clickFunc);
@@ -451,6 +474,20 @@ IM.createContactJqObj = function(newContact) {
 	return newContactJqObj;
 };
 
+IM.CHAT_TITLE_HEIGHT = 20;
+IM.INPUT_BAR_HEIGHT = 20;
+
+IM.getMessageContentHeight = function(){
+	var pageHeight = Main.getPageHeight();
+	var topBarHeight = $("#topBar").height();
+	var tabsBarHeight = $("#tabs .clearfix").height();
+	
+	var contentHeight = pageHeight - topBarHeight - tabsBarHeight - IM.CHAT_TITLE_HEIGHT - IM.INPUT_BAR_HEIGHT;
+	
+	// 30px adjustment
+	return contentHeight - 40;
+};
+
 IM.createChatPanel = function(contact){
 	var chatPanel = $("#chatPanel");
 	var jid = contact.getBareJid();
@@ -460,19 +497,23 @@ IM.createChatPanel = function(contact){
 	if (contactChatPanel[0]) {
 		return contactChatPanel;
 	}
+
+	
+	var contentHeight = IM.getMessageContentHeight();
+	
 	contactChatPanel = $("<div chatContactJid='" + jidStr + "' style='display:none;'>" +
 									"<table style='width:100%;'>" +
-										"<tr>" +
+										"<tr style='height:" + IM.CHAT_TITLE_HEIGHT + "px;'>" +
 											"<td style='text-align:center;'>" +
 												contact.getShowName() +
 											"</td>" +
 										"</tr>" +
-										"<tr style='height:100%;'>" +
+										"<tr messagearea='1' style='height:" + contentHeight + ";'>" +
 											"<td style='padding-left:7px;'>" +
-												"<div messagearea='1' style='width:100%;height:100%;word-break:break-all;'></div>" +
+												"<div messagearea='1' style='height:" + contentHeight + ";'></div>" +
 											"</td>" +
 										"</tr>" +
-										"<tr>" +
+										"<tr style='height:" + IM.INPUT_BAR_HEIGHT + "px;'>" +
 											"<td>" +
 												"<table style='margin-left:10px;'>" +
 													"<tr>" +
