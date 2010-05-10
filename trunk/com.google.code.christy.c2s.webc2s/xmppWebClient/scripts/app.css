@@ -9,6 +9,7 @@ input[type="text"] {
 	border-radius: 9px; /* css 3 */
 	-moz-border-radius: 9px;  /* mozilla */
   	-webkit-border-radius: 9px;  /* webkit */
+  	width:100%;
 }
 
 input[type="password"] {
