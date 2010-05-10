@@ -19,7 +19,7 @@ Main.init = function() {
 									"<div id='userJid'>Noah@example.com</div>" +
 								"</td>" +
 								"<td>" +
-									"<div id='sys'>" + $.i18n.prop("topBar.sys", "搜索") + "</div>" +
+									"<div id='sys'>" + $.i18n.prop("topBar.sys", "系统") + "</div>" +
 								"</td>" +
 							"</tr>" +
 						"</table>" +
@@ -79,14 +79,8 @@ Main.init = function() {
 	 						"<div id='search' class='ui-tab-content' style='display:none'>" +
 	 						"</div>" +
 	 						"<div id='map' class='ui-tab-content' style='display:none'>" +
-	 							"<p>content3</p>" +
-	 							"<p>content3</p>" +
-	 							"<p>content3</p>" +
 	 						"</div>" +
 	 						"<div id='profile' class='ui-tab-content' style='display:none'>" +
-	 							"<p>content4</p>" +
-	 							"<p>content4</p>" +
-	 							"<p>content4</p>" +
 	 						"</div>" +
  						"</div>" +
  					"</div>" +
@@ -100,20 +94,35 @@ Main.init = function() {
         tabList:"#tabs .ui-tab-container div u",
         contentList:"#tabs .ui-tab-container .ui-tab-content",
         showType:"fade",
-        callBackStartEvent:function(index){
+        callBackStartEvent:function(index) {
 //            alert(index);
         },
-        callBackHideEvent:function(index){
+        callBackHideEvent:function(index) {
 //            alert("hideEvent"+index);
         },
-        callBackShowEvent:function(index){
-//            alert("showEvent"+index);
+        callBackShowEvent:function(index) {
+        	//init map
+			if (index == 2) {
+				var mapCanvas = $("#mapCanvas");
+				if (!mapCanvas.attr("src")) {
+					mapCanvas.attr("src", "/mapcanvas.html");
+				}
+				
+			}
         }
     });
     
     IM.init();
     Search.init();
+    Map.init();
+    Profile.init();
     
+    //adjustment message area
+	$(window).resize(function(){
+		$("#chatPanel [messagearea]").height(IM.getMessageContentHeight());
+		$("#mapCanvas").height(Map.getMapCanvasHeight());
+	});
+	
     // TODO test code
     var rosterItem = new IqRosterItem(JID.createJID("Noah1@example.com"), "Noah1NickName");
     var contact1 = new XmppContact(rosterItem);
@@ -187,10 +196,6 @@ IM.init = function() {
 	var chatPanel = $("<div id='chatPanel'></div>");
 	imPanel.append(chatPanel);
 	
-	//adjustment message area
-	$(window).resize(function(){
-		$("#chatPanel [messagearea]").height(IM.getMessageContentHeight());
-	});
 };
 
 IM.updateContact = function(contact, remove) {
@@ -470,7 +475,7 @@ IM.createContactJqObj = function(newContact) {
 };
 
 IM.CHAT_TITLE_HEIGHT = 20;
-IM.INPUT_BAR_HEIGHT = 20;
+IM.INPUT_BAR_HEIGHT = 22;
 
 IM.getMessageContentHeight = function(){
 	var pageHeight = Main.getPageHeight();
@@ -480,7 +485,7 @@ IM.getMessageContentHeight = function(){
 	var contentHeight = pageHeight - topBarHeight - tabsBarHeight - IM.CHAT_TITLE_HEIGHT - IM.INPUT_BAR_HEIGHT;
 	
 	// 30px adjustment
-	return contentHeight - 40;
+	return contentHeight - 30;
 };
 
 IM.createChatPanel = function(contact){
@@ -681,4 +686,80 @@ Search.init = function() {
 	
 	
 	searchPanel.append(searchInnerPanel);
+};
+
+Map = {};
+Map.MAP_CONTROLBAR_HEIGHT = 20
+Map.init = function() {
+	var mapPanel = $("#map");
+	
+	var mapControlbar = $("<div id='mapControlbar' style='width:" + Map.MAP_CONTROLBAR_HEIGHT + "px;'>" +
+								"<input type='button' style='float:left;margin-left:0.2cm;' value='" + $.i18n.prop("map.mapControlBar.mapItems", "地图项") + "'/>" +
+							"</div>");
+	mapPanel.append(mapControlbar);
+	
+	var mapCanvas = $("<iframe id='mapCanvas' name='mapCanvas' width='100%' height='" + Map.getMapCanvasHeight() + "'scrolling='no' frameborder='0' />");
+	
+	mapPanel.append(mapCanvas);
+};
+
+Map.getMapCanvasHeight = function(){
+	var pageHeight = Main.getPageHeight();
+	var topBarHeight = $("#topBar").height();
+	var tabsBarHeight = $("#tabs .clearfix").height();
+	
+	var canvasHeigh = pageHeight - topBarHeight - tabsBarHeight - Map.MAP_CONTROLBAR_HEIGHT;
+	
+	// 10px adjustment
+	return canvasHeigh - 10;
+};
+
+Map.mapFrameLoaded = function() {
+	var mapCanvas = $("#mapCanvas");
+//	for (var key in MapService.mapItems) {
+//		var mapItem = MapService.mapItems[key];
+//		if (mapItem.isShow) {
+//			var marker = {
+//				id: mapItem.id,
+//				title: mapItem.title,
+//				positions: mapItem.positions
+//			};
+//			mapcanvas[0].contentWindow.updateMapMarker(marker);
+//		}
+//	}
+};
+
+Profile = {};
+Profile.init = function() {
+	var profile = $("#profile");
+	
+	var profileTabs = $("<div id='profileTabs'>" +
+		 					"<div class='profile-ui-tab-container'>" +
+		 						"<div class='clearfix'>" +
+		 							"<u class='profile-ui-tab-active'>" + $.i18n.prop("profile.tabs.favorite", "收藏") + "</u>" +
+		 						"</div>" +
+		 						"<div>" +
+		 							"<div id='favorite' class='profile-ui-tab-content profile-ui-tab-active'>" +
+		 							"</div>" +
+		 						"</div>" +
+		 					"</div>" +
+		 				"</div>");
+		 				
+	profile.append(profileTabs);
+	
+	Profile.tabs = new $.fn.tab({
+        tabList:"#profileTabs .profile-ui-tab-container div u",
+        contentList:"#profileTabs .profile-ui-tab-container .profile-ui-tab-content",
+        showType:"fade",
+        callBackStartEvent:function(index) {
+//            alert(index);
+        },
+        callBackHideEvent:function(index) {
+//            alert("hideEvent"+index);
+        },
+        callBackShowEvent:function(index) {
+
+        }
+    });
+    
 };
