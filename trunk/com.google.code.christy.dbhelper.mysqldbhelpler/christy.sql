@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50083
 File Encoding         : 65001
 
-Date: 2010-05-07 23:00:59
+Date: 2010-05-10 21:27:05
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -46,7 +46,7 @@ CREATE TABLE `privatedata` (
 -- Records of privatedata
 -- ----------------------------
 INSERT INTO `privatedata` VALUES ('noah', '[storage][storage:bookmarks]', '<storage xmlns=\"storage:bookmarks\">\n<conference autojoin=\"false\" name=\"name\" jid=\"conference.example.com\">\n<nick>Noah</nick>\n<password>password</password>\n</conference>\n<url url=\"http://www.google.com.hk\" name=\"google HK\"/>\n</storage>');
-INSERT INTO `privatedata` VALUES ('noah', '[preference][christy:user:preference]', '<preference xmlns=\"christy:user:preference\"><shareloc>true</shareloc></preference>');
+INSERT INTO `privatedata` VALUES ('noah', '[preference][christy:user:preference]', '<preference xmlns=\"christy:user:preference\"><shareloc>false</shareloc></preference>');
 
 -- ----------------------------
 -- Table structure for `shop`
