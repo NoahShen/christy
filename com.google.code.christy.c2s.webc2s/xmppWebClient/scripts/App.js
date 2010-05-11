@@ -11,8 +11,8 @@ $(document).ready(function() {
 	$.ImportBasePath = "/scripts/";
 	
 	// TODO test code
-	sessionBindedSuccess2();
-	return;
+//	sessionBindedSuccess2();
+//	return;
 	
 	disabledInputController(false);
 	var cookiesUsername = Cookies.get("username");
@@ -84,7 +84,8 @@ $(document).ready(function() {
 				loginFailed = true;
 			} else if (type == ConnectionEventType.SessionBinded) {
 				loginStatus = $.i18n.prop("login.sessionbinded", "会话已绑定...");
-				sessionBindedSuccess();
+				// TODO
+				sessionBindedSuccess2();
 				connectionMgr.removeConnectionListener(lognListener);
 			} else if (type == ConnectionEventType.BindSessionFailed) {
 				loginStatus = $.i18n.prop("login.bindsessionfailed", "会话绑定失败...");
@@ -173,17 +174,6 @@ $(document).ready(function() {
 //	    }
 //	});
 	
-	var layoutSettings = {
-		Name: "Login",
-        Dock: $.layoutEngine.DOCK.FILL,
-        EleID: "loginDiv",        
-        Children:[{
-			Name: "Fill",
-			Dock: $.layoutEngine.DOCK.FILL,
-	 		EleID: "loginDiv"
-		}]
-	};
-	$.layoutEngine(layoutSettings);
 });
 
 function disabledInputController(bool) {
@@ -267,9 +257,9 @@ function sessionBindedSuccess2() {
 	
 	var files = [
 					// TODO start of test code
-					"lib/jClass.js", 
-					"xmpputils.js", 
-					"xmppcore.js",
+//					"lib/jClass.js", 
+//					"xmpputils.js", 
+//					"xmppcore.js",
 					// TODO end of test code
 					
 					"component/tab/ui.tab.style.css",

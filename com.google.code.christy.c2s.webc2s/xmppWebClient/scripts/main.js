@@ -13,7 +13,7 @@ Main.init = function() {
 						"<table style='width:100%;'>" +
 							"<tr style='text-align:center;'>" +
 								"<td>" +
-									"<div id='userStatus'>" + $.i18n.prop("topBar.status", "状态") + "</div>" +
+									"<div id='userStatus'><div>" + $.i18n.prop("topBar.status", "状态") + "</div></div>" +
 								"</td>" +
 								"<td>" +
 									"<div id='userJid'>Noah@example.com</div>" +
@@ -25,11 +25,10 @@ Main.init = function() {
 						"</table>" +
 						"<div id='statusitemsContainer' class='status-items-container' style='display:none;'>" +
 							"<div id='statusItems' class='status-items'>" +
-								"<div class='selected'>" + $.i18n.prop("statusContainer.status.available", "在线") + "</div>" +
-								"<div>" + $.i18n.prop("status.away", "离开") + "</div>" +
-								"<div>" + $.i18n.prop("status.chat", "空闲") + "</div>" +
-								"<div>" + $.i18n.prop("status.dnd", "忙碌") + "</div>" +
-								"<div>" + $.i18n.prop("status.xa", "离开") + "</div>" +
+								"<div presenceshow='" + PresenceShow.AVAILABLE + "' class='available selected'><div>" + $.i18n.prop("statusContainer.status.available", "在线") + "</div></div>" +
+								"<div presenceshow='" + PresenceShow.AWAY + "' class='away'><div>" + $.i18n.prop("status.away", "离开") + "</div></div>" +
+								"<div presenceshow='" + PresenceShow.CHAT + "' class='chat'><div>" + $.i18n.prop("status.chat", "空闲") + "</div></div>" +
+								"<div presenceshow='" + PresenceShow.DND + "' class='dnd'><div>" + $.i18n.prop("status.dnd", "忙碌") + "</div></div>" +
 							"</div>" +
 							"<table>" +
 								"<tr>" +
@@ -58,7 +57,27 @@ Main.init = function() {
 		}
 	});
 	
-	topBar.find("#statusItems div").click(function(){
+	topBar.find("#changeStatus").click(function(){
+		var show = $("#statusItems > .selected").attr("presenceshow");		
+		
+		var presence = new Presence(PresenceType.AVAILABLE);
+		presence.setShow(show);
+		
+		var statusMessage = $("#statusMessage");
+		var mess = statusMessage.val();
+		if (mess && mess != "") {
+			presence.setUserStatus(mess);
+		}
+		
+		conn.changeStatus(presence);
+		
+		var statusInfo = IM.getStatusInfo(presence);
+		$("#userStatus").css("background-image", "url(" + statusInfo.imgPath + ")");
+		
+		$("#userStatus").click();
+	});
+	
+	topBar.find("#statusItems > div").click(function(){
 		var statusItem = $(this);
 		statusItem.siblings().removeClass("selected");
 		statusItem.addClass("selected");
@@ -107,7 +126,6 @@ Main.init = function() {
 				if (!mapCanvas.attr("src")) {
 					mapCanvas.attr("src", "/mapcanvas.html");
 				}
-				
 			}
         }
     });
@@ -117,29 +135,106 @@ Main.init = function() {
     Map.init();
     Profile.init();
     
+    
     //adjustment message area
 	$(window).resize(function(){
 		$("#chatPanel [messagearea]").height(IM.getMessageContentHeight());
 		$("#mapCanvas").height(Map.getMapCanvasHeight());
 	});
 	
-    // TODO test code
-    var rosterItem = new IqRosterItem(JID.createJID("Noah1@example.com"), "Noah1NickName");
-    var contact1 = new XmppContact(rosterItem);
-    /**
-	 * Resource {
-	 * 	resource: resource
-	 * 	oldPresence: oldPresence
-	 * 	currentPresence: currentPresence
-	 * }
-	 */
-	userResource = {
-		resource: "Res",
-		currentPresence: new Presence(PresenceType.AVAILABLE)
-	}
-	contact1.addResource(userResource);
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	connectionMgr.addConnectionListener([
+			ConnectionEventType.ContactUpdated,
+			ConnectionEventType.ContactRemoved,
+			ConnectionEventType.ContactStatusChanged,
+			ConnectionEventType.ChatCreated,
+			ConnectionEventType.ConnectionClosed
+		],
+		
+		function(event) {
+			var contact = event.contact;
+			var eventType = event.eventType;
+			if (eventType == ConnectionEventType.ContactUpdated
+				|| eventType == ConnectionEventType.ContactStatusChanged) {
+				IM.updateContact(contact, false);
+			} else if (eventType == ConnectionEventType.ContactRemoved) {
+				IM.updateContact(contact, true);
+			} else if (eventType == ConnectionEventType.ChatCreated) {
+				var connection = event.connection;
+				var bareJID = event.chat.bareJID;
+				var contact = connection.getContact(bareJID);
+				
+				if (contact) {
+					var contactChatPanel = IM.createChatPanel(contact);
+				}
+				
+			} else if (eventType == ConnectionEventType.ConnectionClosed) {
+				if (Main.geoLocIntervalId) {
+					clearInterval(Main.geoLocIntervalId);
+				}
+				if (!Main.userClose) {
+					alert($.i18n.prop("app.connectionClosed", "连接已断开"));
+				}
+				window.location.reload();
+			}
+		}
+	);
 	
-    IM.updateContact(contact1, false);
+	var conn = connectionMgr.getAllConnections()[0];
+	if (conn) {
+		conn.queryRoster();
+		if (conn.initPresence) {
+			conn.changeStatus(conn.initPresence);
+			var imgPathAndStatusMess = IM.getStatusInfo(conn.initPresence);
+
+			$("#userStatus").css("background-image", "url(" + imgPathAndStatusMess.imgPath + ")");
+			var statusMessage = imgPathAndStatusMess.statusMessage;
+			if (conn.initPresence.getUserStatus() != null) {
+				statusMessage = conn.initPresence.getUserStatus();
+			}
+			$("#statusMessage").text(statusMessage);
+			
+		}
+		$("#userJid").text(conn.getJid().toBareJID());
+//		
+//		var vCardIq = new Iq(IqType.GET);
+//		vCardIq.setTo(new JID(conn.getJid().getNode(), conn.getJid().getDomain(), null));
+//		vCardIq.addPacketExtension(new IqVCard());
+//		conn.handleStanza({
+//			filter: new PacketIdFilter(vCardIq.getStanzaId()),
+//			timeout: Christy.loginTimeout,
+//			handler: function(iqResponse) {
+//				if (iqResponse.getType() == IqType.RESULT) {
+//					var vCard = iqResponse.getPacketExtension(IqVCard.ELEMENTNAME, IqVCard.NAMESPACE);
+//					if (vCard.getNickName()) {
+//						$("#userinfo-username").text(vCard.getNickName());
+//					}
+//					if (vCard.hasPhoto()) {
+//						$("#userphoto").attr("src", "data:" + vCard.getPhotoType() + ";base64," + vCard.getPhotoBinval());
+//					}
+//				}
+//			}
+//		});
+//		
+//		conn.sendStanza(vCardIq);
+	}
+    // TODO test code
+//    var rosterItem = new IqRosterItem(JID.createJID("Noah1@example.com"), "Noah1NickName");
+//    var contact1 = new XmppContact(rosterItem);
+//    /**
+//	 * Resource {
+//	 * 	resource: resource
+//	 * 	oldPresence: oldPresence
+//	 * 	currentPresence: currentPresence
+//	 * }
+//	 */
+//	userResource = {
+//		resource: "Res",
+//		currentPresence: new Presence(PresenceType.AVAILABLE)
+//	}
+//	contact1.addResource(userResource);
+//	
+//    IM.updateContact(contact1, false);
     
     
 };
@@ -397,16 +492,6 @@ IM.createContactJqObj = function(newContact) {
 			contactChatPanel.siblings().hide();
 			contactChatPanel.show();
 		}
-		
-		// TODO test code
-		var rosterItem = new IqRosterItem(JID.createJID("Noah1@example.com"), "Noah1NickName");
-   		var contact2 = new XmppContact(rosterItem);
-		var contactChatPanel = IM.createChatPanel(contact2);
-		var chatPanel = $("#chatPanel");
-		chatPanel.siblings().hide();
-		chatPanel.show();
-		contactChatPanel.siblings().hide();
-		contactChatPanel.show();
 	});
 	
 	
