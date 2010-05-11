@@ -5,7 +5,7 @@ body,div{
 }
 
 #main > div {
-	margin: 0px 7px 0px 7px
+	margin:0px 7px 0px 7px
 }
 
 .status-menu-active {
@@ -25,16 +25,50 @@ body,div{
 	cursor:pointer;
 }
 
-.status-items .selected{
-	background:#66FF33;
-	
+.status-items div div{
+	padding-left:15px;
 }
+
+.status-items div{
+	background-repeat:no-repeat;
+	background-position:left;
+}
+
+
+.status-items .available{
+	background-image:url(/resource/status/available.png);
+}
+.status-items .away{
+	background-image:url(/resource/status/away.png);
+}
+.status-items .chat{
+	background-image:url(/resource/status/chat.png);
+}
+.status-items .dnd{
+	background-image:url(/resource/status/dnd.png);
+}
+
+.status-items .selected{
+	background-color:#66FF33;
+}
+
 div[statusimg] {
-	background-image: url(/resource/status/unavailable.png);
+	background-image:url(/resource/status/unavailable.png);
 	background-repeat:no-repeat;
 	background-position:left;
 	padding-left:20px;
 }
+
+#userStatus {
+	background-image:url(/resource/status/unavailable.png);
+	background-repeat:no-repeat;
+	background-position:left;
+}
+
+#userStatus div{
+	padding-left:20px;
+}
+
 
 div[statusmessage] {
 	font-size: x-small;
