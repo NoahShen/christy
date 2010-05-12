@@ -1,72 +1,72 @@
 body,div{
-	margin:0;
-	padding:0;
-	font-szie:15pt;
+	margin: 0;
+	padding: 0;
+	font-szie: 15pt;
 }
 
 #main > div {
-	margin:0px 7px 0px 7px
+	margin: 0px 7px 0px 7px
 }
 
 .status-menu-active {
-	background:#99FFCC
+	background: #99FFCC
 }
 
 .status-items-container {
-	background:#EAEAEA none repeat scroll 0 0;
-	border:1px solid #CCCCCC;
-	padding:10px;
+	background: #EAEAEA none repeat scroll 0 0;
+	border: 1px solid #CCCCCC;
+	padding: 10px;
 }
 
 .status-items {
-	background:white none repeat scroll 0 0;
-	border:1px solid #CCCCCC;
-	padding:4px;
-	cursor:pointer;
+	background: white none repeat scroll 0 0;
+	border: 1px solid #CCCCCC;
+	padding: 4px;
+	cursor: pointer;
 }
 
 .status-items div div{
-	padding-left:15px;
+	padding-left: 15px;
 }
 
 .status-items div{
-	background-repeat:no-repeat;
-	background-position:left;
+	background-repeat: no-repeat;
+	background-position: left;
 }
 
 
 .status-items .available{
-	background-image:url(/resource/status/available.png);
+	background-image: url(/resource/status/available.png);
 }
 .status-items .away{
-	background-image:url(/resource/status/away.png);
+	background-image: url(/resource/status/away.png);
 }
 .status-items .chat{
-	background-image:url(/resource/status/chat.png);
+	background-image: url(/resource/status/chat.png);
 }
 .status-items .dnd{
-	background-image:url(/resource/status/dnd.png);
+	background-image: url(/resource/status/dnd.png);
 }
 
 .status-items .selected{
-	background-color:#66FF33;
+	background-color: #66FF33;
 }
 
 div[statusimg] {
-	background-image:url(/resource/status/unavailable.png);
-	background-repeat:no-repeat;
-	background-position:left;
-	padding-left:20px;
+	background-image: url(/resource/status/unavailable.png);
+	background-repeat: no-repeat;
+	background-position: left;
+	padding-left: 20px;
 }
 
 #userStatus {
-	background-image:url(/resource/status/unavailable.png);
-	background-repeat:no-repeat;
-	background-position:left;
+	background-image: url(/resource/status/unavailable.png);
+	background-repeat: no-repeat;
+	background-position: left;
 }
 
 #userStatus div{
-	padding-left:20px;
+	padding-left: 20px;
 }
 
 
@@ -76,10 +76,10 @@ div[statusmessage] {
 }
 
 div[messagearea] {
-	width:100%;
-	height:100%;
-	word-break:break-all;
-	overflow-y:auto;
+	width: 100%;
+	height: 100%;
+	word-break: break-all;
+	overflow-y: auto;
 }
 
 .contactMessage {
@@ -93,7 +93,17 @@ div[messagearea] {
 
 .forward {
 	background-image: url(/resource/status/available.png);
-	background-repeat:no-repeat;
-	background-position:right;
-	width:100%;
+	background-repeat: no-repeat;
+	background-position: right;
+	width: 100%;
+}
+
+#addContact {
+	background-image: url(/resource/status/available.png);
+	background-repeat: no-repeat;
+	background-position: center;
+	width: 18px;
+	height: 18px;
+	position: absolute;
+	right: 12px;
 }

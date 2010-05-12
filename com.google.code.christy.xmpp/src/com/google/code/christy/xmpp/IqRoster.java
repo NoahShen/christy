@@ -343,7 +343,11 @@ public class IqRoster implements PacketExtension
 			buf.append(">");
 			for (String groupName : groupNames)
 			{
-				buf.append("<group>").append(StringUtils.escapeForXML(groupName)).append("</group>");
+				if (groupName != null && !groupName.isEmpty())
+				{
+					buf.append("<group>").append(StringUtils.escapeForXML(groupName)).append("</group>");
+				}
+				
 			}
 			buf.append("</item>");
 			return buf.toString();

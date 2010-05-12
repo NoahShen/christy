@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50083
 File Encoding         : 65001
 
-Date: 2010-05-10 21:27:05
+Date: 2010-05-12 23:10:48
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -204,7 +204,7 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster
@@ -213,6 +213,10 @@ INSERT INTO `userroster` VALUES ('2', 'noah', 'Noah2@example.com', 'NoahNickName
 INSERT INTO `userroster` VALUES ('3', 'noah', 'Noah3@example.com', null, null, 'both');
 INSERT INTO `userroster` VALUES ('4', 'noah2', 'Noah@example.com', 'Noah', null, 'both');
 INSERT INTO `userroster` VALUES ('5', 'noah2', 'Noah3@example.com', 'Noah3', null, 'both');
+INSERT INTO `userroster` VALUES ('6', 'noah', 'Noah4@example.com', null, 'subscribe', 'none');
+INSERT INTO `userroster` VALUES ('7', 'noah', 'Noah5@example.com', null, 'subscribe', 'none');
+INSERT INTO `userroster` VALUES ('8', 'noah', 'Noah6@example.com', null, 'subscribe', 'none');
+INSERT INTO `userroster` VALUES ('9', 'noah', 'Noah7@example.com', null, 'subscribe', 'none');
 
 -- ----------------------------
 -- Table structure for `userrostergroup`

@@ -140,7 +140,11 @@ public class RosterItem implements Serializable
 	
 	public void addGroup(String group)
 	{
-		this.groups.add(group);
+		if (group != null)
+		{
+			this.groups.add(group);
+		}
+		
 	}
 
 	@Override

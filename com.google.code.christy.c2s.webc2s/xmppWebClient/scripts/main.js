@@ -1,3 +1,9 @@
+MainUtils = {}
+MainUtils.JIDPattern = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+MainUtils.verifyJid = function(jidStr) {
+	return MainUtils.JIDPattern.test(jidStr);
+};
+
 Main = {};
 Main.init = function() {
 	var mainDiv = $("<div id='main'></div>").css({
@@ -300,6 +306,60 @@ IM.init = function() {
 	
 	var contactPanel = $("<div id='contact'></div>");
 	
+	var addContact = $("<div id='addContact'></div>");
+	addContact.click(function() {
+		var jidStr = prompt($.i18n.prop("contact.inputJid", "请输入JID："));
+		if (jidStr) {
+			if (!MainUtils.verifyJid(jidStr)) {
+				alert($.i18n.prop("contact.jidError", "格式错误！"));
+				return;
+			}
+			
+			var connectionMgr = XmppConnectionMgr.getInstance();
+			var conn = connectionMgr.getAllConnections()[0];
+			if (conn) {
+				var jid = JID.createJID(jidStr);
+				var contact = conn.getContact(jid);
+				if (contact) {
+					return;
+				}
+				
+				var iq = new Iq(IqType.SET);
+				var iqRoster = new IqRoster();
+		
+				var iqRosterItem = new IqRosterItem(jid, null);
+				iqRoster.addRosterItem(iqRosterItem);
+				
+				iq.addPacketExtension(iqRoster);
+				
+				conn.handleStanza({
+					filter: new PacketIdFilter(iq.getStanzaId()),
+					timeout: Christy.loginTimeout,
+					handler: function(iqResponse) {
+						if (iqResponse.getType() == IqType.RESULT) {
+							alert($.i18n.prop("contact.addContactSuccess", "添加成功！"));
+							$("#contactInfoBack").click();
+						} else {
+							alert($.i18n.prop("contact.addContactFailed ", "添加失败！"));
+						}
+					},
+					timeoutHandler: function() {
+						alert($.i18n.prop("contact.addContactFailed ", "添加失败！"));
+					}
+				});
+				
+				conn.sendStanza(iq);
+				
+				var presence = new Presence(PresenceType.SUBSCRIBE);
+				presence.setTo(jid);
+				conn.sendStanza(presence);
+			}
+		}
+	});
+	
+	contactPanel.append(addContact);
+	
+	
 	var activeChat = $("<div id='activeChat'></div>");
 	var activeLabel = $("<div id='activeLabel'>" + 
 							$.i18n.prop("contact.chating", "正在聊天") + "(0)" +
@@ -460,7 +520,7 @@ IM.addContact2Group = function( contactlistJqObj, contactJqObj, groupName, displ
 			return false;
 		} else if (contactStatusCode == oldContactStatusCode) {
 			var oldBareJid = oldContactJqObj.attr("contactjid");
-			if (bareJid.toPrepedBareJID() < oldBareJid) {
+			if (contactJqObj.attr("contactjid") < oldBareJid) {
 				contactJqObj.clone(true).insertBefore(oldContactJqObj);
 				inserted = true;
 				return false;
@@ -580,9 +640,6 @@ IM.showContactInfo = function(contact) {
 	var contactInfo = $("<div style='text-align:center;'>" +
 							"<div>" +
 								"<span id='contactInfoJid'>" + userJidStr + "</span>" +
-								"<a href='javascript:void(0);' style='margin-left:10px;'>" + 
-									$.i18n.prop("contact.deleteContact", "删除") + 
-								"</a>" +
 							"</div>" +
 							"<div>" +
 								"<table align='center'>" +
@@ -611,8 +668,11 @@ IM.showContactInfo = function(contact) {
 							"<div>" +
 								"<input id='saveContactInfo' type='button' value='" + $.i18n.prop("contact.saveContactInfo", "保存") + "'>" +
 							"</div>" +
+							"<div>" +
+								"<input id='deleteContact' type='button' value='" + $.i18n.prop("contact.deleteContact", "删除") + "'>" +
+							"</div>" +
 						"</div>");
-	contactInfo.find("a").click(function(){
+	contactInfo.find("#deleteContact").click(function(){
 		if (!confirm($.i18n.prop("contact.confirmRemoveContact", "确认删除？"))) {
 			return;
 		}
