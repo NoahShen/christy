@@ -82,6 +82,15 @@ div[messagearea] {
 	overflow-y:auto;
 }
 
+.contactMessage {
+	color: blue;
+}
+
+.myMessage {
+	color: red;
+}
+
+
 .forward {
 	background-image: url(/resource/status/available.png);
 	background-repeat:no-repeat;

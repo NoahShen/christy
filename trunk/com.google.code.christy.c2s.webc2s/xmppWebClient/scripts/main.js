@@ -148,7 +148,9 @@ Main.init = function() {
 			ConnectionEventType.ContactRemoved,
 			ConnectionEventType.ContactStatusChanged,
 			ConnectionEventType.ChatCreated,
-			ConnectionEventType.ConnectionClosed
+			ConnectionEventType.ChatRemoved,
+			ConnectionEventType.ConnectionClosed,
+			ConnectionEventType.MessageReceived
 		],
 		
 		function(event) {
@@ -176,7 +178,41 @@ Main.init = function() {
 					alert($.i18n.prop("app.connectionClosed", "连接已断开"));
 				}
 				window.location.reload();
+			} else if (eventType == ConnectionEventType.MessageReceived) {
+				var eventChat = event.chat;
+				var conn = event.connection;
+				var contact = conn.getContact(eventChat.bareJID);
+				var showName = contact.getShowName();
+				var message = event.stanza;
+				
+				var messageArea = $("#chatPanel >" +
+										" div[chatcontactjid='" + 
+											eventChat.bareJID.toPrepedBareJID() + 
+										"']" +
+										" div[messagearea]");
+				messageArea.append("<div class='contactMessage'>" + showName + ":" + message.getBody() + "</div>");
+				var messageAreaElem = messageArea[0];
+				messageAreaElem.scrollTop = messageAreaElem.scrollHeight;
+	
+//				if (!contactChatPanel.is(":visible")) {
+//					chatPanelTab.addClass("hasNewMessage");
+//					MainUI.addAppEventInfo({
+//						eventId: StringUtils.hash(eventChat.bareJID.toPrepedBareJID(), "md5"),
+//						eventName: showName,
+//						handler: function() {
+//							$("#chat-tab").click();
+//							chatPanelTab.click();
+//						}
+//					});
+//				}
+			} else if (eventType == ConnectionEventType.ChatRemoved) {
+				var connection = event.connection;
+				var bareJID = event.chat.bareJID;
+				var contact = connection.getContact(bareJID);
+				IM.removeChatPanel(contact);
 			}
+			
+			
 		}
 	);
 	
@@ -289,7 +325,34 @@ IM.init = function() {
 	
 	
 	var chatPanel = $("<div id='chatPanel'></div>");
+	chatPanel.hide();
 	imPanel.append(chatPanel);
+	
+	var contactInfoPanel = $("<div id='contactInfoPanel'></div>");
+	
+	var contactInfoBar = $("<div>" +
+								"<table>" +
+									"<tr>" +
+										"<td>" +
+											"<div style='float:left;'>" +
+												"<input id='contactInfoBack' type='button' value='" + $.i18n.prop("contact.closeContactInfo", "关闭") + "'>" +
+											"</div>" +
+										"</td>" +
+									"</tr>" +
+								"</table>" +
+							"</div>");
+							
+	contactInfoBar.find("#contactInfoBack").click(function(){
+		contactInfoBar.siblings().remove();
+		
+		contactPanel.siblings().hide();
+		contactPanel.show();
+	});
+	
+	contactInfoPanel.append(contactInfoBar);
+	contactInfoPanel.hide();
+	
+	imPanel.append(contactInfoPanel);
 	
 };
 
@@ -411,7 +474,8 @@ IM.addContact2Group = function( contactlistJqObj, contactJqObj, groupName, displ
 
 IM.addGroup = function(contactlistJqObj, groupName, displayName) {
 	var newGroupJqObj = $("<div></div>").attr("groupname", groupName).attr("displayname", displayName);
-	var groupLabel = $("<div id='" + groupName + "-label' class='contactGroup'></div>").text(displayName);
+	var groupLabel = $("<div id='" + groupName + "-label' class='contactGroup'></div>");
+	groupLabel.text(displayName);
 	
 	newGroupJqObj.append(groupLabel);
 	groupLabel.click(function(){
@@ -475,8 +539,8 @@ IM.createContactJqObj = function(newContact) {
 							"</div>");
 							
 
-	
-	newContactJqObj.attr("contactjid", newBareJid.toPrepedBareJID());
+	var jidStr = newBareJid.toPrepedBareJID();
+	newContactJqObj.attr("contactjid", jidStr);
 	newContactJqObj.attr("statuscode", 0);
 	
 	var tdFirst = newContactJqObj.find("td:first");
@@ -484,23 +548,84 @@ IM.createContactJqObj = function(newContact) {
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
 		if (conn) {
-			var contact = conn.getContact(newBareJid);
-			var contactChatPanel = IM.createChatPanel(contact);
+			var chat = conn.createChat(newBareJid, null);
 			var chatPanel = $("#chatPanel");
 			chatPanel.siblings().hide();
 			chatPanel.show();
+			var contactChatPanel = chatPanel.children("div[chatcontactjid='" + jidStr + "']");
 			contactChatPanel.siblings().hide();
 			contactChatPanel.show();
 		}
 	});
 	
 	
-	var contactInfoButton = tdFirst.next().next();
+	var contactInfoButton = tdFirst.next();
 	contactInfoButton.click(function(){
-		var iq = new Iq(IqType.GET);		
-		var vCard = new IqVCard();
-		iq.setTo(newBareJid);
-		iq.addPacketExtension(vCard);
+		var contactInfoPanel = $("#contactInfoPanel");
+		contactInfoPanel.siblings().hide();
+		contactInfoPanel.show();
+		IM.showContactInfo(newContact);
+	});
+	
+	return newContactJqObj;
+};
+
+IM.showContactInfo = function(contact) {
+	var contactInfoPanel = $("#contactInfoPanel");
+	
+	var userJidStr = contact.getBareJid().toPrepedBareJID();
+	var nickname = contact.getNickname() ? contact.getNickname() : "";
+	var groupName = contact.getGroups()[0] ? contact.getGroups()[0] : "";
+		
+	var contactInfo = $("<div style='text-align:center;'>" +
+							"<div>" +
+								"<span id='contactInfoJid'>" + userJidStr + "</span>" +
+								"<a href='javascript:void(0);' style='margin-left:10px;'>" + 
+									$.i18n.prop("contact.deleteContact", "删除") + 
+								"</a>" +
+							"</div>" +
+							"<div>" +
+								"<table align='center'>" +
+									"<tr>" +
+										"<td>" +
+											"<div>" + 
+												$.i18n.prop("contact.nickname", "备注名：") + 
+											"</div>" +
+										"</td>" +
+										"<td>" +
+											"<input id='contactNickName' type='text' value='" + nickname + "'/>" +
+										"</td>" +
+									"</tr>" +
+									"<tr>" +
+										"<td>" +
+											"<div>" + 
+												$.i18n.prop("contact.groupName", "组名：") + 
+											"</div>" +
+										"</td>" +
+										"<td>" +
+											"<input id='contactInfoGroup' name='contactInfoGroup' type='text' value='" + groupName + "'/>" +
+										"</td>" +
+									"</tr>" +
+								"</table>" +
+							"</div>" +
+							"<div>" +
+								"<input id='saveContactInfo' type='button' value='" + $.i18n.prop("contact.saveContactInfo", "保存") + "'>" +
+							"</div>" +
+						"</div>");
+	contactInfo.find("a").click(function(){
+		if (!confirm($.i18n.prop("contact.confirmRemoveContact", "确认删除？"))) {
+			return;
+		}
+		
+		var contactJidStr = $("#contactInfoJid").text();
+		var iq = new Iq(IqType.SET);
+		var iqRoster = new IqRoster();
+
+		var iqRosterItem = new IqRosterItem(contact.getBareJid(), null);
+		iqRosterItem.setSubscription(IqRosterSubscription.remove);
+		iqRoster.addRosterItem(iqRosterItem);
+		
+		iq.addPacketExtension(iqRoster);
 		
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
@@ -510,53 +635,62 @@ IM.createContactJqObj = function(newContact) {
 				timeout: Christy.loginTimeout,
 				handler: function(iqResponse) {
 					if (iqResponse.getType() == IqType.RESULT) {
-						var contact = conn.getContact(newBareJid);
-						showContactInfo(contact, iqResponse);
+						alert($.i18n.prop("contact.removeContactSuccess", "删除成功！"));
+						$("#contactInfoBack").click();
 					} else {
-						alert($.i18n.prop("imservices.getvcardFailed", "获取失败！"));
+						alert($.i18n.prop("contact.removeContactFailed", "删除失败！"));
 					}
+				},
+				timeoutHandler: function() {
+					alert($.i18n.prop("contact.removeContactFailed", "删除失败！"));
 				}
 			});
 			
 			conn.sendStanza(iq);
+			
+			
 		}
 	});
 	
-	var locButton = contactInfoButton.next();
-	locButton.click(function(){
+	contactInfo.find("#saveContactInfo").click(function(){
+		var contactJidStr = $("#contactInfoJid").text();
+		var iq = new Iq(IqType.SET);
+		var iqRoster = new IqRoster();
+		
+		var nickName = $("#contactNickName").val();
+		var iqRosterItem = new IqRosterItem(contact.getBareJid(), nickName);
+		var group = $("#contactInfoGroup").val();
+		if (group && group != "") {
+			iqRosterItem.addGroup(group);
+		}
+		
+		iqRoster.addRosterItem(iqRosterItem);
+		
+		iq.addPacketExtension(iqRoster);
+		
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
 		if (conn) {
-			var contact = conn.getContact(newBareJid);
-			if (contact.isResourceAvailable()) {
-				var userResource = contact.getMaxPriorityResource();
-				var presence = userResource.currentPresence;
-				var geolocX = presence.getPacketExtension(GeoLocExtension.ELEMENTNAME, GeoLocExtension.NAMESPACE);
-				if (geolocX && geolocX.getType() == GeoLocType.LATLON) {
-					var lat = geolocX.getLat();
-					var lon = geolocX.getLon();
-					
-					var mapItem = {
-	    				id: newBareJid.toPrepedBareJID(),
-	    				title: contact.getShowName(),
-	    				isShow: true,
-	    				positions: [{
-	    					lat: lat,
-	    					lon: lon
-	    				}]
-	    			};
-					MapService.updateMapItem(mapItem);
-					MapService.show();
-				}					
-			} else {
-				MapService.removeMapItem(newBareJid.toPrepedBareJID());
-			}
+			conn.handleStanza({
+				filter: new PacketIdFilter(iq.getStanzaId()),
+				timeout: Christy.loginTimeout,
+				handler: function(iqResponse) {
+					if (iqResponse.getType() == IqType.RESULT) {
+						alert($.i18n.prop("contact.updateContactSuccess", "更新成功！"));
+						$("#contactInfoBack").click();
+					} else {
+						alert($.i18n.prop("contact.updateContactFailed", "更新失败！"));
+					}
+				},
+				timeoutHandler: function() {
+					alert($.i18n.prop("contact.updateContactFailed", "更新失败！"));
+				}
+			});
+			conn.sendStanza(iq);
 		}
-		
-		
-		
 	});
-	return newContactJqObj;
+	
+	contactInfoPanel.append(contactInfo);
 };
 
 IM.CHAT_TITLE_HEIGHT = 20;
@@ -574,11 +708,10 @@ IM.getMessageContentHeight = function(){
 };
 
 IM.createChatPanel = function(contact){
-	var chatPanel = $("#chatPanel");
 	var jid = contact.getBareJid();
 	var jidStr = jid.toPrepedBareJID();
-	
-	var contactChatPanel = chatPanel.children("div[chatContactJid='" + jidStr + "']");
+	var chatPanel = $("#chatPanel");
+	var contactChatPanel = chatPanel.children("div[chatcontactjid='" + jidStr + "']");
 	if (contactChatPanel[0]) {
 		return contactChatPanel;
 	}
@@ -586,7 +719,7 @@ IM.createChatPanel = function(contact){
 	
 	var contentHeight = IM.getMessageContentHeight();
 	
-	contactChatPanel = $("<div chatContactJid='" + jidStr + "' style='display:none;'>" +
+	contactChatPanel = $("<div chatcontactjid='" + jidStr + "' style='display:none;'>" +
 									"<table style='width:100%;'>" +
 										"<tr style='height:" + IM.CHAT_TITLE_HEIGHT + "px;'>" +
 											"<td style='text-align:center;'>" +
@@ -606,7 +739,7 @@ IM.createChatPanel = function(contact){
 															"<input id='backToList' type='button' value='返回'/>" +
 														"</td>" +
 														"<td style='width:100%;'>" +
-															"<input type='text'/>" +
+															"<input inputfield='1' type='text'/>" +
 														"</td>" +
 														"<td>" +
 															"<input id='sendMessage' type='button' value='"+ $.i18n.prop("chatPanel.send", "发送") + "' />" + 
@@ -624,24 +757,82 @@ IM.createChatPanel = function(contact){
 		contactPanel.show();
 	});
 	
-	chatPanel.append(contactChatPanel);
-	
-	var activeChatItem = $("<div></div>",{
-		activeChatJid: jidStr,
-		text: contact.getShowName(),
-		click: function() {
-			chatPanel.siblings().hide();
-			chatPanel.show();
-			contactChatPanel.siblings().hide();
-			contactChatPanel.show();
+	var sendMessageAction = function() {
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			var chat = conn.getChat(jid, false);
+			if (chat) {
+				var inputField = contactChatPanel.find("input[inputfield]");
+				var text = inputField.val();
+				if (text && text != "") {
+					conn.sendChatText(chat, text);
+					
+					var messageArea = contactChatPanel.find("div[messagearea]");
+					messageArea.append("<div class='myMessage'>" + $.i18n.prop("contact.chating.isaid", "我") + ":" + text + "</div>");
+					inputField.val("");
+				}
+			}
+		}
+	};
+	contactChatPanel.find("#sendMessage").click(sendMessageAction);
+	var inputField = contactChatPanel.find("input[inputfield]");
+	inputField.keypress(function(event) {
+		if (event.keyCode == 13) {
+			sendMessageAction();
 		}
 	});
+		
+	chatPanel.append(contactChatPanel);
+	
+	var activeChatItem = $("<div activechatjid='" + jidStr + "'>" +
+								"<table style='width:100%;'>" +
+									"<tr>" +
+										"<td style='width:100%;'>" +
+											"<div>" +
+												contact.getShowName() + 
+											"</div>" +
+										"</td>" +
+										"<td>" +
+											"关闭" +
+										"</td>" +
+									"<tr/>" +
+								"</table>" +
+							"</div>");
 	
 	var activeChatItems = $("#activeChatItems");
 	activeChatItems.append(activeChatItem);
-	$("#activeLabel").text($.i18n.prop("contact.chating", "正在聊天") + "(" + activeChatItems.size() + ")");
+	$("#activeLabel").text($.i18n.prop("contact.chating", "正在聊天") + "(" + activeChatItems.children().size() + ")");
+	
+	activeChatItem.find("td:first").click(function(){
+		chatPanel.siblings().hide();
+		chatPanel.show();
+		contactChatPanel.siblings().hide();
+		contactChatPanel.show();
+	});
+	
+	activeChatItem.find("td:last").click(function(){
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			conn.removeChat(jid);
+		}
+	});
 	
 	return contactChatPanel;
+};
+
+IM.removeChatPanel = function(contact) {
+	var jid = contact.getBareJid();
+	var jidStr = jid.toPrepedBareJID();
+	var chatPanel = $("#chatPanel");
+	var contactChatPanel = chatPanel.children("div[chatcontactjid='" + jidStr + "']");
+	contactChatPanel.remove();
+	
+	var activeChatItems = $("#activeChatItems");
+	var activeItem = activeChatItems.find("div[activechatjid='" + jidStr + "']");
+	activeItem.remove();
+	$("#activeLabel").text($.i18n.prop("contact.chating", "正在聊天") + "(" + activeChatItems.children().size() + ")");
 };
 
 IM.getStatusInfo = function(presence) {

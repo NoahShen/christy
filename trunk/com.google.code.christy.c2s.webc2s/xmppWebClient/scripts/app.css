@@ -1,8 +1,3 @@
-.marginpadding {
-	margin:2px;
-	padding:10px;
-}
-
 input[type="text"] {
 	padding:3px;
 	border:#ccc 1px solid;
