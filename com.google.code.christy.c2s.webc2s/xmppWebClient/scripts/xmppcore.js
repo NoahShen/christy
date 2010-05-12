@@ -1176,7 +1176,7 @@ IqRosterItem = XmlStanza.extend({
 	},
 	
 	addGroup: function(group){
-		if (this.groups != null){
+		if (this.groups != null && group && group != ""){
 			this.groups.push(group);
 		}
 	},
@@ -2578,7 +2578,10 @@ XmppParser = jClass.extend({
 			var childElem = childNodes[i];
 			var elementName = childElem.nodeName;
 			if ("group" == elementName) {
-				iqRosterItem.addGroup(childElem.firstChild == null ? null : childElem.firstChild.nodeValue);
+				if (childElem.firstChild != null ) {
+					iqRosterItem.addGroup(childElem.firstChild.nodeValue);
+				}
+				
 			}
 		}
 
