@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : connection
-Source Server Version : 50022
+Source Server         : christy
+Source Server Version : 50083
 Source Host           : localhost:3306
 Source Database       : christy
 
 Target Server Type    : MYSQL
-Target Server Version : 50022
+Target Server Version : 50083
 File Encoding         : 65001
 
-Date: 2010-05-13 18:42:03
+Date: 2010-05-13 23:07:57
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -100,7 +100,7 @@ CREATE TABLE `shopcomment` (
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`commentId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopcomment
@@ -140,7 +140,7 @@ CREATE TABLE `shopvoter` (
   `itemName` varchar(50) NOT NULL,
   `value` int(11) NOT NULL,
   PRIMARY KEY  (`voterId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopvoter
@@ -179,7 +179,7 @@ CREATE TABLE `userfavoriteshop` (
   `username` char(50) NOT NULL,
   `shopId` int(20) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userfavoriteshop
@@ -204,14 +204,14 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster
 -- ----------------------------
-INSERT INTO `userroster` VALUES ('2', 'noah', 'Noah2@example.com', 'NoahNickName8787', null, 'none');
+INSERT INTO `userroster` VALUES ('22', 'noah', 'noah2@example.com', null, null, 'both');
 INSERT INTO `userroster` VALUES ('3', 'noah', 'Noah3@example.com', null, null, 'both');
-INSERT INTO `userroster` VALUES ('12', 'noah2', 'noah@example.com', null, 'subscribe', 'none');
+INSERT INTO `userroster` VALUES ('25', 'noah2', 'noah@example.com', null, null, 'both');
 INSERT INTO `userroster` VALUES ('5', 'noah2', 'Noah3@example.com', 'Noah3', null, 'both');
 INSERT INTO `userroster` VALUES ('6', 'noah', 'Noah4@example.com', null, 'subscribe', 'none');
 INSERT INTO `userroster` VALUES ('7', 'noah', 'Noah5@example.com', null, 'subscribe', 'none');
@@ -219,6 +219,7 @@ INSERT INTO `userroster` VALUES ('8', 'noah', 'Noah6@example.com', null, 'subscr
 INSERT INTO `userroster` VALUES ('9', 'noah', 'Noah7@example.com', null, 'subscribe', 'none');
 INSERT INTO `userroster` VALUES ('10', 'noah', 'Noah8@example.com', null, 'subscribe', 'none');
 INSERT INTO `userroster` VALUES ('11', 'noah', 'Noah9@example.com', null, 'subscribe', 'none');
+INSERT INTO `userroster` VALUES ('20', 'noah', 'Noah10@example.com', null, 'subscribe', 'none');
 
 -- ----------------------------
 -- Table structure for `userrostergroup`
@@ -233,7 +234,6 @@ CREATE TABLE `userrostergroup` (
 -- ----------------------------
 -- Records of userrostergroup
 -- ----------------------------
-INSERT INTO `userrostergroup` VALUES ('2', '组1');
 
 -- ----------------------------
 -- Table structure for `uservcard`

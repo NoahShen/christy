@@ -12,6 +12,12 @@ body,div{
 	background: #99FFCC
 }
 
+.sys-panel-container {
+	background: #EAEAEA none repeat scroll 0 0;
+	border: 5px solid #CCCCCC;
+	padding: 10px;
+}
+
 .status-items-container {
 	background: #EAEAEA none repeat scroll 0 0;
 	border: 1px solid #CCCCCC;
