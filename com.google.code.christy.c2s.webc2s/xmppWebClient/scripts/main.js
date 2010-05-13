@@ -4,7 +4,39 @@ MainUtils.verifyJid = function(jidStr) {
 	return MainUtils.JIDPattern.test(jidStr);
 };
 
+MainUtils.cloneObj = function(myObj) {
+    if(typeof(myObj) != 'object'){
+    	return myObj;
+    }
+    if(myObj == null) {
+    	return myObj;
+    }
+    var myNewObj = new Object(); 
+    for(var i in myObj) {
+    	myNewObj[i] = MainUtils.cloneObj(myObj[i]);
+    }
+    return myNewObj;
+};
+
 Main = {};
+Main.notifyOpts = { 
+    message: "", 
+    fadeIn: 700, 
+    fadeOut: 700, 
+    timeout: 2000, 
+    showOverlay: false, 
+    centerY: false,
+    centerX: false,
+    css: {
+        top: "0px",
+        left: "0px",
+        width: "100%",
+        border: "none", 
+        padding: "5px", 
+        backgroundColor: "#000",
+        color: "#fff" 
+    } 
+};
 Main.init = function() {
 	var mainDiv = $("<div id='main'></div>").css({
 		"position":"absolute",
@@ -12,7 +44,7 @@ Main.init = function() {
 		"left":"0px",
 		"width": "100%",
 		"height": "100%",
-		"z-index": "9999"
+		"z-index": "778"
 	});
 	
 	var topBar = $("<div id='topBar'>" +
@@ -47,19 +79,29 @@ Main.init = function() {
 								"</tr>" +
 							"</table>" +
 						"</div>" +
+						"<div id='sysPanel' style='display:none;'>" +
+						"</div>" +
 					"</div>");
 	
 	topBar.find("#userStatus").click(function(){
 		var userStatus = $(this);
 		var statusitemsContainer = $("#statusitemsContainer");
 		if (statusitemsContainer.is(":visible")) {
-			userStatus.removeClass("status-menu-active");
+			userStatus.removeClass("menu-active");
 			statusitemsContainer.slideUp("fast");
 		} else {
-			userStatus.addClass("status-menu-active");
-			statusitemsContainer.slideDown("fast");
+			var sysPanel = $("#sysPanel");
+			if (sysPanel.is(":visible")) {
+				$("#sys").removeClass("menu-active");
+				sysPanel.slideUp("fast", function(){
+					userStatus.addClass("menu-active");
+					statusitemsContainer.slideDown("fast");
+				});
+				return;
+			}
 			
-			// TODO reset status
+			userStatus.addClass("menu-active");
+			statusitemsContainer.slideDown("fast");
 		}
 	});
 	
@@ -88,6 +130,52 @@ Main.init = function() {
 		statusItem.siblings().removeClass("selected");
 		statusItem.addClass("selected");
 	});
+	
+		
+	var sysPanel = topBar.find("#sysPanel");
+	sysPanel.sysPanel({
+		panelAdded: function (panel) {
+			$("#sys").text($.i18n.prop("topBar.sys", "系统") + 
+							"(" + sysPanel.getPanelCount() + ")");
+		},
+		panelRemoved: function (panel) {
+			var text = $.i18n.prop("topBar.sys", "系统");
+			var count = sysPanel.getPanelCount();
+			
+			var sys = $("#sys");
+			if (count == 0) {
+				sys.removeClass("menu-active");
+				sysPanel.slideUp("fast");
+			} else {
+				text += "(" + count + ")";
+			}
+			sys.text(text);
+		}
+	});
+	
+	topBar.find("#sys").click(function(){
+		var sys = $(this);
+		if (sysPanel.getPanelCount() == 0) {
+			return;
+		}
+		if (sysPanel.is(":visible")) {
+			sys.removeClass("menu-active");
+			sysPanel.slideUp("fast");
+		} else {
+			var statusitemsContainer = $("#statusitemsContainer");
+			if (statusitemsContainer.is(":visible")) {
+				$("#userStatus").removeClass("menu-active");
+				statusitemsContainer.slideUp("fast", function(){
+					sys.addClass("menu-active");
+					sysPanel.slideDown("fast");
+				});
+				return;
+			}
+			sys.addClass("menu-active");
+			sysPanel.slideDown("fast");
+		}
+	});
+	
 	mainDiv.append(topBar);
 	
 	var tabs = $("<div id='tabs'>" +
@@ -156,7 +244,8 @@ Main.init = function() {
 			ConnectionEventType.ChatCreated,
 			ConnectionEventType.ChatRemoved,
 			ConnectionEventType.ConnectionClosed,
-			ConnectionEventType.MessageReceived
+			ConnectionEventType.MessageReceived,
+			ConnectionEventType.ContactSubscribeMe
 		],
 		
 		function(event) {
@@ -181,9 +270,26 @@ Main.init = function() {
 					clearInterval(Main.geoLocIntervalId);
 				}
 				if (!Main.userClose) {
-					alert($.i18n.prop("app.connectionClosed", "连接已断开"));
+					var inputField = $("<div>" +
+								"<div>" +
+									$.i18n.prop("app.connectionClosed", "连接已断开") +
+								"</div>" +
+								"<div>" +
+									"<input id='ok' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+										$.i18n.prop("button.ok", "确定") + 
+									"'/>" +
+								"</div>" +
+							"</div>");
+					inputField.find("#ok").click(function() {
+						$.unblockUI();
+						window.location.reload();
+					});
+					
+					$.blockUI({
+						message: inputField
+					});
 				}
-				window.location.reload();
+				
 			} else if (eventType == ConnectionEventType.MessageReceived) {
 				var eventChat = event.chat;
 				var conn = event.connection;
@@ -196,7 +302,7 @@ Main.init = function() {
 											eventChat.bareJID.toPrepedBareJID() + 
 										"']" +
 										" div[messagearea]");
-				messageArea.append("<div class='contactMessage'>" + showName + ":" + message.getBody() + "</div>");
+				messageArea.append("<div class='contact-message'>" + showName + ":" + message.getBody() + "</div>");
 				var messageAreaElem = messageArea[0];
 				messageAreaElem.scrollTop = messageAreaElem.scrollHeight;
 	
@@ -216,6 +322,13 @@ Main.init = function() {
 				var bareJID = event.chat.bareJID;
 				var contact = connection.getContact(bareJID);
 				IM.removeChatPanel(contact);
+			} else if (eventType == ConnectionEventType.ContactSubscribeMe) {
+				var connection = event.connection;
+				var presence = event.stanza;
+				
+				var from = presence.getFrom();
+				// TODO
+				alert(from.toBareJID());
 			}
 			
 			
@@ -308,53 +421,94 @@ IM.init = function() {
 	
 	var addContact = $("<div id='addContact'></div>");
 	addContact.click(function() {
-		var jidStr = prompt($.i18n.prop("contact.inputJid", "请输入JID："));
-		if (jidStr) {
-			if (!MainUtils.verifyJid(jidStr)) {
-				alert($.i18n.prop("contact.jidError", "格式错误！"));
-				return;
-			}
-			
-			var connectionMgr = XmppConnectionMgr.getInstance();
-			var conn = connectionMgr.getAllConnections()[0];
-			if (conn) {
-				var jid = JID.createJID(jidStr);
-				var contact = conn.getContact(jid);
-				if (contact) {
+		
+		var inputField = $("<div>" +
+								"<div>" +
+									$.i18n.prop("contact.inputJid", "请输入JID：") +
+								"</div>" +
+								"<div>" +
+									"<input id='userJid' type='text' style='margin: 2px 0px 2px 0px' />" +
+								"</div>" +
+								"<div>" +
+									"<input id='ok' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+										$.i18n.prop("button.ok", "确定") + 
+									"'/>" +
+									"<input id='cancel' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+										$.i18n.prop("button.cancel", "取消") + 
+									"'/>" +
+								"</div>" +
+							"</div>");
+		
+		inputField.find("#ok").click(function() {
+			var jidStr = inputField.find("#userJid").val();
+			if (jidStr) {
+				if (!MainUtils.verifyJid(jidStr)) {
+					var opts = MainUtils.cloneObj(Main.notifyOpts);
+					opts.message = $.i18n.prop("contact.jidError", "格式错误！");
+					opts.css.backgroundColor = "red";
+					$.blockUI(opts); 
 					return;
 				}
 				
-				var iq = new Iq(IqType.SET);
-				var iqRoster = new IqRoster();
-		
-				var iqRosterItem = new IqRosterItem(jid, null);
-				iqRoster.addRosterItem(iqRosterItem);
-				
-				iq.addPacketExtension(iqRoster);
-				
-				conn.handleStanza({
-					filter: new PacketIdFilter(iq.getStanzaId()),
-					timeout: Christy.loginTimeout,
-					handler: function(iqResponse) {
-						if (iqResponse.getType() == IqType.RESULT) {
-							alert($.i18n.prop("contact.addContactSuccess", "添加成功！"));
-							$("#contactInfoBack").click();
-						} else {
-							alert($.i18n.prop("contact.addContactFailed ", "添加失败！"));
-						}
-					},
-					timeoutHandler: function() {
-						alert($.i18n.prop("contact.addContactFailed ", "添加失败！"));
+				var connectionMgr = XmppConnectionMgr.getInstance();
+				var conn = connectionMgr.getAllConnections()[0];
+				if (conn) {
+					var jid = JID.createJID(jidStr);
+					var contact = conn.getContact(jid);
+					if (contact) {
+						return;
 					}
-				});
-				
-				conn.sendStanza(iq);
-				
-				var presence = new Presence(PresenceType.SUBSCRIBE);
-				presence.setTo(jid);
-				conn.sendStanza(presence);
+					
+					var iq = new Iq(IqType.SET);
+					var iqRoster = new IqRoster();
+			
+					var iqRosterItem = new IqRosterItem(jid, null);
+					iqRoster.addRosterItem(iqRosterItem);
+					
+					iq.addPacketExtension(iqRoster);
+					
+					conn.handleStanza({
+						filter: new PacketIdFilter(iq.getStanzaId()),
+						timeout: Christy.loginTimeout,
+						handler: function(iqResponse) {
+							if (iqResponse.getType() == IqType.RESULT) {
+								var opts = MainUtils.cloneObj(Main.notifyOpts);
+								opts.message = $.i18n.prop("contact.addContactSuccess", "添加成功！");
+								$.blockUI(opts); 
+			        
+								$("#contactInfoBack").click();
+							} else {
+								var opts = MainUtils.cloneObj(Main.notifyOpts);
+								opts.message = $.i18n.prop("contact.addContactFailed ", "添加失败！");
+								opts.css.backgroundColor = "red";
+								$.blockUI(opts);
+							}
+						},
+						timeoutHandler: function() {
+							var opts = MainUtils.cloneObj(Main.notifyOpts);
+							opts.message = $.i18n.prop("contact.addContactFailed ", "添加失败！");
+							opts.css.backgroundColor = "red";
+							$.blockUI(opts); 
+						}
+					});
+					
+					conn.sendStanza(iq);
+					
+					var presence = new Presence(PresenceType.SUBSCRIBE);
+					presence.setTo(jid);
+					conn.sendStanza(presence);
+				}
 			}
-		}
+			$.unblockUI();
+		});
+		
+		inputField.find("#cancel").click(function() {
+			$.unblockUI();
+		});
+		
+		$.blockUI({
+			message: inputField
+		});		
 	});
 	
 	contactPanel.append(addContact);
@@ -695,14 +849,22 @@ IM.showContactInfo = function(contact) {
 				timeout: Christy.loginTimeout,
 				handler: function(iqResponse) {
 					if (iqResponse.getType() == IqType.RESULT) {
-						alert($.i18n.prop("contact.removeContactSuccess", "删除成功！"));
+						var opts = MainUtils.cloneObj(Main.notifyOpts);
+						opts.message = $.i18n.prop("contact.removeContactSuccess", "删除成功！");
+						$.blockUI(opts);
 						$("#contactInfoBack").click();
 					} else {
-						alert($.i18n.prop("contact.removeContactFailed", "删除失败！"));
+						var opts = MainUtils.cloneObj(Main.notifyOpts);
+						opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
+						opts.css.backgroundColor = "red";
+						$.blockUI(opts); 
 					}
 				},
 				timeoutHandler: function() {
-					alert($.i18n.prop("contact.removeContactFailed", "删除失败！"));
+					var opts = MainUtils.cloneObj(Main.notifyOpts);
+					opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
+					opts.css.backgroundColor = "red";
+					$.blockUI(opts); 
 				}
 			});
 			
@@ -736,14 +898,23 @@ IM.showContactInfo = function(contact) {
 				timeout: Christy.loginTimeout,
 				handler: function(iqResponse) {
 					if (iqResponse.getType() == IqType.RESULT) {
-						alert($.i18n.prop("contact.updateContactSuccess", "更新成功！"));
+						var opts = MainUtils.cloneObj(Main.notifyOpts);
+						opts.message = $.i18n.prop("contact.updateContactSuccess", "更新成功！");
+						$.blockUI(opts); 
+								
 						$("#contactInfoBack").click();
 					} else {
-						alert($.i18n.prop("contact.updateContactFailed", "更新失败！"));
+						var opts = MainUtils.cloneObj(Main.notifyOpts);
+						opts.message = $.i18n.prop("contact.updateContactFailed", "更新失败！");
+						opts.css.backgroundColor = "red";
+						$.blockUI(opts);
 					}
 				},
 				timeoutHandler: function() {
-					alert($.i18n.prop("contact.updateContactFailed", "更新失败！"));
+					var opts = MainUtils.cloneObj(Main.notifyOpts);
+					opts.message = $.i18n.prop("contact.updateContactFailed", "更新失败！");
+					opts.css.backgroundColor = "red";
+					$.blockUI(opts);
 				}
 			});
 			conn.sendStanza(iq);
@@ -829,7 +1000,7 @@ IM.createChatPanel = function(contact){
 					conn.sendChatText(chat, text);
 					
 					var messageArea = contactChatPanel.find("div[messagearea]");
-					messageArea.append("<div class='myMessage'>" + $.i18n.prop("contact.chating.isaid", "我") + ":" + text + "</div>");
+					messageArea.append("<div class='my-message'>" + $.i18n.prop("contact.chating.isaid", "我") + ":" + text + "</div>");
 					inputField.val("");
 				}
 			}
