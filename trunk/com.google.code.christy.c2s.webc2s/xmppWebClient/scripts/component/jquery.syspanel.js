@@ -45,7 +45,7 @@
 			var prevNext = $("<div></div>")
 									.addClass("prevNext");
 			var prev = $("<span></span>")
-							.html("<");
+							.text("<");
 			prev.click(function(){
 				var messagepanel = content.find(".messagepanel");
 				var currentPanel = messagepanel.children("div:visible");
@@ -55,15 +55,10 @@
 					prevPanel.show();
 				}
 			});
-			
 			prevNext.append(prev);
 			
-			var separator = $("<span></span>")
-								.html("|");
-			prevNext.append(separator);
-			
 			var next = $("<span></span>")
-							.html(">");
+							.text(">");
 			next.click(function(){
 				var messagepanel = content.find(".messagepanel");
 				var currentPanel = messagepanel.children("div:visible");
@@ -92,6 +87,21 @@
 			}
 		},
 		
+		removePanel: function(panel) {
+			var nextShowPanel = panel.next();
+				if (!nextShowPanel[0]) {
+					nextShowPanel = panel.prev();
+				}
+				panel.remove();
+				
+				nextShowPanel.siblings().hide();
+				nextShowPanel.show();
+				
+				if (defaultOpts.panelRemoved) {
+					defaultOpts.panelRemoved(panel);
+				}
+			
+		},
 		getPanelCount: function() {
 			var messagepanel = $(this).find(".messagepanel");
 			return messagepanel.children().size();

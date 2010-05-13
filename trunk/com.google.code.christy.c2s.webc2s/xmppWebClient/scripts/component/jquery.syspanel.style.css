@@ -7,7 +7,7 @@
 
 .syspanel .syspanel-close {
 	font-family: Arial;
-	font-size: 12px;
+	font-size: 16px;
 	font-weight: bold;
 	cursor: pointer;
 	text-align: right;
@@ -20,7 +20,7 @@
 
 .syspanel .prevNext {
 	font-family: Arial;
-	font-size: 12px;
+	font-size: 16px;
 	font-weight: bold;
 	cursor: pointer;
 	right: 6px;
@@ -28,5 +28,5 @@
 }
 
 .syspanel .prevNext span{
-	margin: 2px 1px 2px 1px;
+	margin: 2px 7px 2px 7px;
 }

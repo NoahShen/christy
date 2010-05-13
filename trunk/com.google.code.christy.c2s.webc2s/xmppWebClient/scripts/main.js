@@ -79,7 +79,7 @@ Main.init = function() {
 								"</tr>" +
 							"</table>" +
 						"</div>" +
-						"<div id='sysPanel' style='display:none;'>" +
+						"<div id='sysPanel' class='sys-panel-container' style='display:none;'>" +
 						"</div>" +
 					"</div>");
 	
@@ -326,9 +326,42 @@ Main.init = function() {
 				var connection = event.connection;
 				var presence = event.stanza;
 				
-				var from = presence.getFrom();
-				// TODO
-				alert(from.toBareJID());
+				var from = presence.getFrom();				
+				var userSubscribeMe = $("<div style='text-align:center;'>" +
+											"<div>" +
+												from.toBareJID() + $.i18n.prop("contact.wantToAddMe", "想要添加您为联系人") +
+											"</div>" +
+											"<div>" +
+												"<input id='add_Checkbox' name='add_Checkbox' type='checkbox' style='margin: 2px 0px 2px 0px' checked='checked'/>" +
+												"<label id='add_Label' for='add_Checkbox'>" + 
+													$.i18n.prop("contact.addAsContact", "添加对方为联系人") + 
+												"</label>" +
+											"</div>" +
+											"<div>" +
+												"<input id='ok' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+													$.i18n.prop("contact.accept", "接受") + 
+												"'/>" +
+												"<input id='cancel' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+													$.i18n.prop("contact.reject", "拒绝") + 
+												"'/>" +
+											"</div>" +
+										"</div>");
+				userSubscribeMe.find("#ok").click(function() {
+					var presence = new Presence(PresenceType.SUBSCRIBED);
+					presence.setTo(from);
+					
+					connection.sendStanza(presence);					
+					if (userSubscribeMe.find("#add_Checkbox").attr("checked") == true) {
+						IM.addJIDAsContact(from);
+					}
+					sysPanel.removePanel(userSubscribeMe);
+				});
+				
+				userSubscribeMe.find("#cancel").click(function() {
+					sysPanel.removePanel(userSubscribeMe);
+				});
+				
+				sysPanel.addPanel(userSubscribeMe);
 			}
 			
 			
@@ -449,55 +482,7 @@ IM.init = function() {
 					$.blockUI(opts); 
 					return;
 				}
-				
-				var connectionMgr = XmppConnectionMgr.getInstance();
-				var conn = connectionMgr.getAllConnections()[0];
-				if (conn) {
-					var jid = JID.createJID(jidStr);
-					var contact = conn.getContact(jid);
-					if (contact) {
-						return;
-					}
-					
-					var iq = new Iq(IqType.SET);
-					var iqRoster = new IqRoster();
-			
-					var iqRosterItem = new IqRosterItem(jid, null);
-					iqRoster.addRosterItem(iqRosterItem);
-					
-					iq.addPacketExtension(iqRoster);
-					
-					conn.handleStanza({
-						filter: new PacketIdFilter(iq.getStanzaId()),
-						timeout: Christy.loginTimeout,
-						handler: function(iqResponse) {
-							if (iqResponse.getType() == IqType.RESULT) {
-								var opts = MainUtils.cloneObj(Main.notifyOpts);
-								opts.message = $.i18n.prop("contact.addContactSuccess", "添加成功！");
-								$.blockUI(opts); 
-			        
-								$("#contactInfoBack").click();
-							} else {
-								var opts = MainUtils.cloneObj(Main.notifyOpts);
-								opts.message = $.i18n.prop("contact.addContactFailed ", "添加失败！");
-								opts.css.backgroundColor = "red";
-								$.blockUI(opts);
-							}
-						},
-						timeoutHandler: function() {
-							var opts = MainUtils.cloneObj(Main.notifyOpts);
-							opts.message = $.i18n.prop("contact.addContactFailed ", "添加失败！");
-							opts.css.backgroundColor = "red";
-							$.blockUI(opts); 
-						}
-					});
-					
-					conn.sendStanza(iq);
-					
-					var presence = new Presence(PresenceType.SUBSCRIBE);
-					presence.setTo(jid);
-					conn.sendStanza(presence);
-				}
+				IM.addJIDAsContact(JID.createJID(jidStr));
 			}
 			$.unblockUI();
 		});
@@ -515,7 +500,7 @@ IM.init = function() {
 	
 	
 	var activeChat = $("<div id='activeChat'></div>");
-	var activeLabel = $("<div id='activeLabel'>" + 
+	var activeLabel = $("<div id='activeLabel' opened='1'>" + 
 							$.i18n.prop("contact.chating", "正在聊天") + "(0)" +
 						"</div>");
 	activeChat.append(activeLabel);
@@ -524,10 +509,13 @@ IM.init = function() {
 	activeChat.append(activeChatItems);
 	
 	activeLabel.click(function(){
-		if (activeChatItems.is(":visible")) {
+		var opened = activeLabel.attr("opened");
+		if (opened == "1") {
 			activeChatItems.hide();
+			activeLabel.attr("opened", 0);
 		} else {
 			activeChatItems.show();
+			activeLabel.attr("opened", 1);
 		}
 	});
 	contactPanel.append(activeChat);
@@ -568,6 +556,65 @@ IM.init = function() {
 	
 	imPanel.append(contactInfoPanel);
 	
+};
+
+IM.addJIDAsContact = function(jid) {
+		
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	var conn = connectionMgr.getAllConnections()[0];
+	if (conn) {
+		var contact = conn.getContact(jid);
+		if (contact) {
+			var rosterItem = contact.getRosterItem();
+			var subs = rosterItem.getSubscription();
+			if (subs == IqRosterSubscription.none
+				|| subs == IqRosterSubscription.from) {
+				var presence = new Presence(PresenceType.SUBSCRIBE);
+				presence.setTo(jid);
+				conn.sendStanza(presence);
+			}
+			return;
+		}
+		
+		var iq = new Iq(IqType.SET);
+		var iqRoster = new IqRoster();
+	
+		var iqRosterItem = new IqRosterItem(jid, null);
+		iqRoster.addRosterItem(iqRosterItem);
+		
+		iq.addPacketExtension(iqRoster);
+		
+		conn.handleStanza({
+			filter: new PacketIdFilter(iq.getStanzaId()),
+			timeout: Christy.loginTimeout,
+			handler: function(iqResponse) {
+				if (iqResponse.getType() == IqType.RESULT) {
+					var opts = MainUtils.cloneObj(Main.notifyOpts);
+					opts.message = $.i18n.prop("contact.addContactSuccess", "添加成功！");
+					$.blockUI(opts); 
+	    
+					$("#contactInfoBack").click();
+				} else {
+					var opts = MainUtils.cloneObj(Main.notifyOpts);
+					opts.message = $.i18n.prop("contact.addContactFailed ", "添加失败！");
+					opts.css.backgroundColor = "red";
+					$.blockUI(opts);
+				}
+			},
+			timeoutHandler: function() {
+				var opts = MainUtils.cloneObj(Main.notifyOpts);
+				opts.message = $.i18n.prop("contact.addContactFailed ", "添加失败！");
+				opts.css.backgroundColor = "red";
+				$.blockUI(opts); 
+			}
+		});
+		
+		conn.sendStanza(iq);
+		
+		var presence = new Presence(PresenceType.SUBSCRIBE);
+		presence.setTo(jid);
+		conn.sendStanza(presence);
+	}
 };
 
 IM.updateContact = function(contact, remove) {
@@ -661,6 +708,11 @@ IM.addContact2Group = function( contactlistJqObj, contactJqObj, groupName, displ
 	if (groupJqObj.length == 0) {
 		groupJqObj = IM.addGroup(contactlistJqObj, groupName, displayName);
 	}
+	
+	if (groupJqObj.find(".contactGroup").attr("opened") == "0") {
+		contactJqObj.hide();
+	}
+	
 	var inserted = false;
 	var contacts = groupJqObj.children("[contactjid]");
 	$.each(contacts, function(index, value) {		
@@ -688,17 +740,21 @@ IM.addContact2Group = function( contactlistJqObj, contactJqObj, groupName, displ
 
 IM.addGroup = function(contactlistJqObj, groupName, displayName) {
 	var newGroupJqObj = $("<div></div>").attr("groupname", groupName).attr("displayname", displayName);
-	var groupLabel = $("<div id='" + groupName + "-label' class='contactGroup'></div>");
+	var groupLabel = $("<div id='" + groupName + "-label' class='contactGroup' opened='1'></div>");
 	groupLabel.text(displayName);
 	
 	newGroupJqObj.append(groupLabel);
 	groupLabel.click(function(){
 		var groupContacts = newGroupJqObj.children("[contactjid]");
-		if (groupContacts.is(":visible")) {
+		var opened = groupLabel.attr("opened");
+		if (opened == "1") {
 			groupContacts.hide();
+			groupLabel.attr("opened", 0)
 		} else {
 			groupContacts.show();
+			groupLabel.attr("opened", 1)
 		}
+		
 	});
 	
 	var inserted = false;
@@ -1031,9 +1087,15 @@ IM.createChatPanel = function(contact){
 								"</table>" +
 							"</div>");
 	
+	var activeLabel = $("#activeLabel");
+	if (activeLabel.attr("opened") == "0") {
+		activeChatItem.hide();
+	}
+	
 	var activeChatItems = $("#activeChatItems");
 	activeChatItems.append(activeChatItem);
-	$("#activeLabel").text($.i18n.prop("contact.chating", "正在聊天") + "(" + activeChatItems.children().size() + ")");
+	
+	activeLabel.text($.i18n.prop("contact.chating", "正在聊天") + "(" + activeChatItems.children().size() + ")");
 	
 	activeChatItem.find("td:first").click(function(){
 		chatPanel.siblings().hide();
