@@ -264,6 +264,9 @@ function sessionBindedSuccess2() {
 					
 					"component/tab/ui.tab.style.css",
 					"component/tab/ui.tab.js",
+					"component/jquery.syspanel.style.css",
+					"component/jquery.syspanel.js",
+					"lib/jquery.blockUI.js",
 					"main.css",
 					"main.js"
 				];

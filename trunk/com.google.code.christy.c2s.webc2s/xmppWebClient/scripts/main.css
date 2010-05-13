@@ -8,7 +8,7 @@ body,div{
 	margin: 0px 7px 0px 7px
 }
 
-.status-menu-active {
+.menu-active {
 	background: #99FFCC
 }
 
@@ -79,14 +79,15 @@ div[messagearea] {
 	width: 100%;
 	height: 100%;
 	word-break: break-all;
+	word-wrap: break-word;
 	overflow-y: auto;
 }
 
-.contactMessage {
+.contact-message {
 	color: blue;
 }
 
-.myMessage {
+.my-message {
 	color: red;
 }
 
@@ -107,3 +108,5 @@ div[messagearea] {
 	position: absolute;
 	right: 12px;
 }
+
+

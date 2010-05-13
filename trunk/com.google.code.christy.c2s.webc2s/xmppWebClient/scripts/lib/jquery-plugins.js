@@ -335,12 +335,6 @@ function unescapeUnicode(str) {
 						ext: null,
 						tag: defaultTag
 					};
-					
-//					return {
-//						filename: m[1],
-//						ext: null,
-//						tag: null
-//					};
 				}
 				else {
 					return {

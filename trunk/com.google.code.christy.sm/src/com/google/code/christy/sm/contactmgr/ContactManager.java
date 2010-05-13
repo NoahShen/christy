@@ -358,8 +358,11 @@ public class ContactManager
 			iqRoster = getIqRoster(node);
 			IqRoster.Item oldItem = iqRoster.getRosterItem(bareJID);
 			IqRoster.Ask ask = oldItem.getAsk();
+			IqRoster.Subscription subs = oldItem.getSubscription();
 			// check ask
-			if (ask == null)
+			if (ask == null && 
+				(subs == IqRoster.Subscription.none 
+					|| subs == IqRoster.Subscription.from))
 			{
 
 				RosterItemDbHelper rosterItemDbHelper = rosterItemDbHelperTracker.getRosterItemDbHelper();
