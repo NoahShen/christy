@@ -237,8 +237,17 @@ Main.init = function() {
 //            alert("hideEvent"+index);
         },
         callBackShowEvent:function(index) {
+        	
+        	if (index == 0) {
+        		var chatPanel = $("#chatPanel");
+        		var jidStr = chatPanel.children("div:visible").attr("chatcontactjid");
+        		if (jidStr) {
+        			IM.showChatPanel(JID.createJID(jidStr));
+        		}
+        		
+        	}
         	//init map
-			if (index == 2) {
+			else if (index == 2) {
 				var mapCanvas = $("#mapCanvas");
 				if (!mapCanvas.attr("src")) {
 					mapCanvas.attr("src", "/mapcanvas.html");
@@ -835,6 +844,9 @@ IM.createContactJqObj = function(newContact) {
 };
 
 IM.showChatPanel = function(newBareJid) {
+	if (newBareJid == null) {
+		return;
+	}
 	var connectionMgr = XmppConnectionMgr.getInstance();
 	var conn = connectionMgr.getAllConnections()[0];
 	if (conn) {
