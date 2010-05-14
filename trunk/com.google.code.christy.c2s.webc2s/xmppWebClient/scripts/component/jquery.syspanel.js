@@ -11,6 +11,8 @@
 			}
 			var panel = $(this).addClass("syspanel");
 			
+			var sysMessageContainer = $("<div id='sysMessageContainer'></div>");
+			
 			var content = $("<div>" +
 								"<table>" +
 									"<tr>" +
@@ -40,7 +42,7 @@
 				}
 			});	
 			
-			panel.append(content);
+			sysMessageContainer.append(content);
 			
 			var prevNext = $("<div></div>")
 									.addClass("prevNext");
@@ -70,7 +72,9 @@
 			});
 			prevNext.append(next);
 			
-			panel.append(prevNext);
+			sysMessageContainer.append(prevNext);
+			
+			panel.append(sysMessageContainer);
 		},
 		
 		addPanel: function(newPanel) {
