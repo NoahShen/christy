@@ -80,6 +80,13 @@ Main.init = function() {
 							"</table>" +
 						"</div>" +
 						"<div id='sysPanel' class='sys-panel-container' style='display:none;'>" +
+							"<div id='preferences' style='display:none;'>" +
+								"<div>" +
+									"<div style='text-align:center;'>" +
+										"<input id='exit' type='button' value='" + $.i18n.prop("preferences.exit", "退出") + "'/>" +
+									"</div>" +
+								"</div>" +
+							"</div>" +
 						"</div>" +
 					"</div>");
 	
@@ -88,20 +95,20 @@ Main.init = function() {
 		var statusitemsContainer = $("#statusitemsContainer");
 		if (statusitemsContainer.is(":visible")) {
 			userStatus.removeClass("menu-active");
-			statusitemsContainer.slideUp("fast");
+			statusitemsContainer.slideUp("fast", Main.updatePanelSize);
 		} else {
 			var sysPanel = $("#sysPanel");
 			if (sysPanel.is(":visible")) {
 				$("#sys").removeClass("menu-active");
 				sysPanel.slideUp("fast", function(){
 					userStatus.addClass("menu-active");
-					statusitemsContainer.slideDown("fast");
+					statusitemsContainer.slideDown("fast", Main.updatePanelSize);
 				});
 				return;
 			}
 			
 			userStatus.addClass("menu-active");
-			statusitemsContainer.slideDown("fast");
+			statusitemsContainer.slideDown("fast", Main.updatePanelSize);
 		}
 	});
 	
@@ -145,7 +152,7 @@ Main.init = function() {
 			var sys = $("#sys");
 			if (count == 0) {
 				sys.removeClass("menu-active");
-				sysPanel.slideUp("fast");
+				sysPanel.slideUp("fast", Main.updatePanelSize);
 			} else {
 				text += "(" + count + ")";
 			}
@@ -156,23 +163,39 @@ Main.init = function() {
 	topBar.find("#sys").click(function(){
 		var sys = $(this);
 		if (sysPanel.getPanelCount() == 0) {
-			return;
+			var prefPanel = sysPanel.find("#preferences");
+			prefPanel.siblings().hide();
+			prefPanel.show();
+		} else {
+			var sysMessageContainer = sysPanel.find("#sysMessageContainer");
+			sysMessageContainer.siblings().hide();
+			sysMessageContainer.show();
 		}
+		
 		if (sysPanel.is(":visible")) {
 			sys.removeClass("menu-active");
-			sysPanel.slideUp("fast");
+			sysPanel.slideUp("fast", Main.updatePanelSize);
 		} else {
 			var statusitemsContainer = $("#statusitemsContainer");
 			if (statusitemsContainer.is(":visible")) {
 				$("#userStatus").removeClass("menu-active");
 				statusitemsContainer.slideUp("fast", function(){
 					sys.addClass("menu-active");
-					sysPanel.slideDown("fast");
+					sysPanel.slideDown("fast", Main.updatePanelSize);
 				});
 				return;
 			}
 			sys.addClass("menu-active");
-			sysPanel.slideDown("fast");
+			sysPanel.slideDown("fast", Main.updatePanelSize);
+		}
+	});
+	
+	topBar.find("#exit").click(function() {
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			Main.userClose = true;
+			conn.close();
 		}
 	});
 	
@@ -181,10 +204,10 @@ Main.init = function() {
 	var tabs = $("<div id='tabs'>" +
  					"<div class='ui-tab-container'>" +
  						"<div class='clearfix'>" +
- 							"<u class='ui-tab-active'>" + $.i18n.prop("tabs.contact", "联系人") + "</u>" +
-							"<u>" + $.i18n.prop("tabs.search", "搜索") + "</u>" +
-							"<u>" + $.i18n.prop("tabs.map", "地图") + "</u>" +
-							"<u>" + $.i18n.prop("tabs.profile", "资料") + "</u>" +
+ 							"<u id='contactTab' class='ui-tab-active'>" + $.i18n.prop("tabs.contact", "联系人") + "<span id='unreadCount'><span></u>" +
+							"<u id='searchTab'>" + $.i18n.prop("tabs.search", "搜索") + "</u>" +
+							"<u id='mapTab'>" + $.i18n.prop("tabs.map", "地图") + "</u>" +
+							"<u id='profileTab'>" + $.i18n.prop("tabs.profile", "资料") + "</u>" +
  						"</div>" +
  						"<div>" +
  							"<div id='im' class='ui-tab-content ui-tab-active'>" +
@@ -232,8 +255,7 @@ Main.init = function() {
     
     //adjustment message area
 	$(window).resize(function(){
-		$("#chatPanel [messagearea]").height(IM.getMessageContentHeight());
-		$("#mapCanvas").height(Map.getMapCanvasHeight());
+		Main.updatePanelSize();
 	});
 	
 	var connectionMgr = XmppConnectionMgr.getInstance();
@@ -288,35 +310,12 @@ Main.init = function() {
 					$.blockUI({
 						message: inputField
 					});
+					return;
 				}
+				window.location.reload();
 				
 			} else if (eventType == ConnectionEventType.MessageReceived) {
-				var eventChat = event.chat;
-				var conn = event.connection;
-				var contact = conn.getContact(eventChat.bareJID);
-				var showName = contact.getShowName();
-				var message = event.stanza;
-				
-				var messageArea = $("#chatPanel >" +
-										" div[chatcontactjid='" + 
-											eventChat.bareJID.toPrepedBareJID() + 
-										"']" +
-										" div[messagearea]");
-				messageArea.append("<div class='contact-message'>" + showName + ":" + message.getBody() + "</div>");
-				var messageAreaElem = messageArea[0];
-				messageAreaElem.scrollTop = messageAreaElem.scrollHeight;
-	
-//				if (!contactChatPanel.is(":visible")) {
-//					chatPanelTab.addClass("hasNewMessage");
-//					MainUI.addAppEventInfo({
-//						eventId: StringUtils.hash(eventChat.bareJID.toPrepedBareJID(), "md5"),
-//						eventName: showName,
-//						handler: function() {
-//							$("#chat-tab").click();
-//							chatPanelTab.click();
-//						}
-//					});
-//				}
+				IM.messageReceived(event);
 			} else if (eventType == ConnectionEventType.ChatRemoved) {
 				var connection = event.connection;
 				var bareJID = event.chat.bareJID;
@@ -426,6 +425,11 @@ Main.init = function() {
     
     
 };
+Main.updatePanelSize = function() {
+	$("#chatPanel [messagearea]").height(IM.getMessageContentHeight());
+	$("#mapCanvas").height(Map.getMapCanvasHeight());
+};
+
 Main.getPageHeight = function() {
 	if($.browser.msie) {
 		return document.compatMode == "CSS1Compat"? 
@@ -815,17 +819,7 @@ IM.createContactJqObj = function(newContact) {
 	
 	var tdFirst = newContactJqObj.find("td:first");
 	tdFirst.click(function(){
-		var connectionMgr = XmppConnectionMgr.getInstance();
-		var conn = connectionMgr.getAllConnections()[0];
-		if (conn) {
-			var chat = conn.createChat(newBareJid, null);
-			var chatPanel = $("#chatPanel");
-			chatPanel.siblings().hide();
-			chatPanel.show();
-			var contactChatPanel = chatPanel.children("div[chatcontactjid='" + jidStr + "']");
-			contactChatPanel.siblings().hide();
-			contactChatPanel.show();
-		}
+		IM.showChatPanel(newBareJid);
 	});
 	
 	
@@ -838,6 +832,23 @@ IM.createContactJqObj = function(newContact) {
 	});
 	
 	return newContactJqObj;
+};
+
+IM.showChatPanel = function(newBareJid) {
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	var conn = connectionMgr.getAllConnections()[0];
+	if (conn) {
+		var chat = conn.createChat(newBareJid, null);
+		var chatPanel = $("#chatPanel");
+		chatPanel.siblings().hide();
+		chatPanel.show();
+		var contactChatPanel = chatPanel.children("div[chatcontactjid='" + newBareJid.toPrepedBareJID() + "']");
+		contactChatPanel.removeAttr("unread");
+		contactChatPanel.siblings().hide();
+		contactChatPanel.show();
+		
+		IM.updateUnreadMessage();
+	}
 };
 
 IM.showContactInfo = function(contact) {
@@ -1057,6 +1068,8 @@ IM.createChatPanel = function(contact){
 					
 					var messageArea = contactChatPanel.find("div[messagearea]");
 					messageArea.append("<div class='my-message'>" + $.i18n.prop("contact.chating.isaid", "我") + ":" + text + "</div>");
+					var messageAreaElem = messageArea[0];
+					messageAreaElem.scrollTop = messageAreaElem.scrollHeight;
 					inputField.val("");
 				}
 			}
@@ -1076,9 +1089,11 @@ IM.createChatPanel = function(contact){
 								"<table style='width:100%;'>" +
 									"<tr>" +
 										"<td style='width:100%;'>" +
-											"<div>" +
+											"<span>" +
 												contact.getShowName() + 
-											"</div>" +
+											"</span>" +
+											"<span>" +
+											"</span>" +
 										"</td>" +
 										"<td>" +
 											"关闭" +
@@ -1098,10 +1113,7 @@ IM.createChatPanel = function(contact){
 	activeLabel.text($.i18n.prop("contact.chating", "正在聊天") + "(" + activeChatItems.children().size() + ")");
 	
 	activeChatItem.find("td:first").click(function(){
-		chatPanel.siblings().hide();
-		chatPanel.show();
-		contactChatPanel.siblings().hide();
-		contactChatPanel.show();
+		IM.showChatPanel(jid);
 	});
 	
 	activeChatItem.find("td:last").click(function(){
@@ -1126,6 +1138,7 @@ IM.removeChatPanel = function(contact) {
 	var activeItem = activeChatItems.find("div[activechatjid='" + jidStr + "']");
 	activeItem.remove();
 	$("#activeLabel").text($.i18n.prop("contact.chating", "正在聊天") + "(" + activeChatItems.children().size() + ")");
+	IM.updateUnreadMessage();
 };
 
 IM.getStatusInfo = function(presence) {
@@ -1161,6 +1174,67 @@ IM.getStatusInfo = function(presence) {
 				statusCode: statusCode};
 	
 	
+};
+
+IM.messageReceived = function(event) {
+	var eventChat = event.chat;
+	var conn = event.connection;
+	var contact = conn.getContact(eventChat.bareJID);
+	var showName = contact.getShowName();
+	var message = event.stanza;
+	
+	var jidStr = eventChat.bareJID.toPrepedBareJID();
+	var chatPanel = $("#chatPanel > div[chatcontactjid='" + jidStr + "']");
+	var messageArea =  chatPanel.find("div[messagearea]");
+	
+	messageArea.append("<div class='contact-message'>" + showName + ":" + message.getBody() + "</div>");
+	var messageAreaElem = messageArea[0];
+	messageAreaElem.scrollTop = messageAreaElem.scrollHeight;
+	
+	if (!chatPanel.is(":visible")) {
+		var unread = chatPanel.attr("unread");
+		if (unread == null) {
+			unread = 0;
+		}
+		var i = parseInt(unread) + 1;
+		chatPanel.attr("unread", i);
+		
+		IM.updateUnreadMessage();
+	}
+};
+
+IM.updateUnreadMessage = function() {
+	
+	var count = 0;
+	var chatPanel = $("#chatPanel");
+	var activeChatItems = $("#activeChatItems");
+	var chatPanels = chatPanel.children();
+	$.each(chatPanels, function(index, value) {
+		var panel = $(value);
+		var jidStr = panel.attr("chatcontactjid");
+		var activeChat = activeChatItems.find("div[activechatjid='" + jidStr + "']");
+		var unread = panel.attr("unread");
+		if (unread) {
+			activeChat.find("span:last").text("(" + unread + ")");
+			activeChat.find("td:first").addClass("activechat-unread")
+			count += parseInt(unread);
+		} else {
+			activeChat.find("span:last").text("");
+			activeChat.find("td:first").removeClass("activechat-unread");
+		}
+	});
+	
+	var contactTab = $("#contactTab");
+	var unreadCount = $("#unreadCount");
+
+	if (count > 0) {
+		unreadCount.text("(" + count + ")");
+		contactTab.addClass("contact-tab-unread");
+	} else {
+		unreadCount.text("");
+		contactTab.removeClass("contact-tab-unread");
+	}
+		
 };
 
 Search = {};

@@ -58,6 +58,13 @@ body,div{
 	background-color: #66FF33;
 }
 
+.contact-tab-unread {
+	font-weight: bold;
+}
+
+.activechat-unread {
+	font-weight: bold;
+}
 div[statusimg] {
 	background-image: url(/resource/status/unavailable.png);
 	background-repeat: no-repeat;
