@@ -261,11 +261,12 @@ function sessionBindedSuccess2() {
 //					"xmpputils.js", 
 //					"xmppcore.js",
 					// TODO end of test code
-					
 					"component/tab/ui.tab.style.css",
 					"component/tab/ui.tab.js",
 					"component/jquery.syspanel.style.css",
 					"component/jquery.syspanel.js",
+					"component/jquery.pagination.style.css",
+					"component/jquery.pagination.js",
 					"lib/jquery.blockUI.js",
 					"main.css",
 					"main.js"

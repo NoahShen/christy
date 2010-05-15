@@ -1,18 +1,9 @@
 input[type="text"] {
-	padding:3px;
-	border:#ccc 1px solid;
-	border-radius: 9px; /* css 3 */
-	-moz-border-radius: 9px;  /* mozilla */
-  	-webkit-border-radius: 9px;  /* webkit */
   	width:100%;
 }
 
 input[type="password"] {
-	padding:3px;
-	border:#ccc 1px solid;
-	border-radius: 9px; /* css 3 */
-	-moz-border-radius: 9px;  /* mozilla */
-  	-webkit-border-radius: 9px;  /* webkit */
+	width:100%;
 }
 
 .sexybutton.sexysimple.sexymygray { background-color: #999999; }
