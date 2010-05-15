@@ -27,6 +27,7 @@ Main.notifyOpts = {
     showOverlay: false, 
     centerY: false,
     centerX: false,
+    applyPlatformOpacityRules: false,
     css: {
         top: "0px",
         left: "0px",
@@ -317,7 +318,8 @@ Main.init = function() {
 					});
 					
 					$.blockUI({
-						message: inputField
+						message: inputField,
+						applyPlatformOpacityRules: false
 					});
 					return;
 				}
@@ -505,7 +507,8 @@ IM.init = function() {
 		});
 		
 		$.blockUI({
-			message: inputField
+			message: inputField,
+			applyPlatformOpacityRules: false
 		});		
 	});
 	
@@ -906,51 +909,70 @@ IM.showContactInfo = function(contact) {
 							"</div>" +
 						"</div>");
 	contactInfo.find("#deleteContact").click(function(){
-		if (!confirm($.i18n.prop("contact.confirmRemoveContact", "确认删除？"))) {
-			return;
-		}
-		
-		var contactJidStr = $("#contactInfoJid").text();
-		var iq = new Iq(IqType.SET);
-		var iqRoster = new IqRoster();
-
-		var iqRosterItem = new IqRosterItem(contact.getBareJid(), null);
-		iqRosterItem.setSubscription(IqRosterSubscription.remove);
-		iqRoster.addRosterItem(iqRosterItem);
-		
-		iq.addPacketExtension(iqRoster);
-		
-		var connectionMgr = XmppConnectionMgr.getInstance();
-		var conn = connectionMgr.getAllConnections()[0];
-		if (conn) {
-			conn.handleStanza({
-				filter: new PacketIdFilter(iq.getStanzaId()),
-				timeout: Christy.loginTimeout,
-				handler: function(iqResponse) {
-					if (iqResponse.getType() == IqType.RESULT) {
-						var opts = MainUtils.cloneObj(Main.notifyOpts);
-						opts.message = $.i18n.prop("contact.removeContactSuccess", "删除成功！");
-						$.blockUI(opts);
-						$("#contactInfoBack").click();
-					} else {
+		var inputField = $("<div>" +
+								"<div>" +
+									$.i18n.prop("contact.confirmRemoveContact", "确认删除？") +
+								"</div>" +
+								"<div>" +
+									"<input id='ok' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+										$.i18n.prop("button.ok", "确定") + 
+									"'/>" +
+									"<input id='cancel' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+										$.i18n.prop("button.cancel", "取消") + 
+									"'/>" +
+								"</div>" +
+							"</div>");
+		inputField.find("#ok").click(function() {
+			var contactJidStr = $("#contactInfoJid").text();
+			var iq = new Iq(IqType.SET);
+			var iqRoster = new IqRoster();
+	
+			var iqRosterItem = new IqRosterItem(contact.getBareJid(), null);
+			iqRosterItem.setSubscription(IqRosterSubscription.remove);
+			iqRoster.addRosterItem(iqRosterItem);
+			
+			iq.addPacketExtension(iqRoster);
+			
+			var connectionMgr = XmppConnectionMgr.getInstance();
+			var conn = connectionMgr.getAllConnections()[0];
+			if (conn) {
+				conn.handleStanza({
+					filter: new PacketIdFilter(iq.getStanzaId()),
+					timeout: Christy.loginTimeout,
+					handler: function(iqResponse) {
+						if (iqResponse.getType() == IqType.RESULT) {
+							var opts = MainUtils.cloneObj(Main.notifyOpts);
+							opts.message = $.i18n.prop("contact.removeContactSuccess", "删除成功！");
+							$.blockUI(opts);
+							$("#contactInfoBack").click();
+						} else {
+							var opts = MainUtils.cloneObj(Main.notifyOpts);
+							opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
+							opts.css.backgroundColor = "red";
+							$.blockUI(opts); 
+						}
+					},
+					timeoutHandler: function() {
 						var opts = MainUtils.cloneObj(Main.notifyOpts);
 						opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
 						opts.css.backgroundColor = "red";
 						$.blockUI(opts); 
 					}
-				},
-				timeoutHandler: function() {
-					var opts = MainUtils.cloneObj(Main.notifyOpts);
-					opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
-					opts.css.backgroundColor = "red";
-					$.blockUI(opts); 
-				}
-			});
-			
-			conn.sendStanza(iq);
-			
-			
-		}
+				});
+				conn.sendStanza(iq);
+			}
+			$.unblockUI();
+		});
+		
+		inputField.find("#cancel").click(function() {
+			$.unblockUI();
+		});
+		
+		$.blockUI({
+			message: inputField,
+			applyPlatformOpacityRules: false
+		});	
+		
 	});
 	
 	contactInfo.find("#saveContactInfo").click(function(){
@@ -1334,11 +1356,29 @@ Search.init = function() {
 	
 	searchInput.find("#searchType div").click(function() {
 		var typeJqObj = $(this);
+		var type = typeJqObj.attr("id");
+		
 		
 	});
 	
 	searchInnerPanel.append(searchInput);
 	
+	var shopResult = $("<div id='shopResultContainer'></div>");
+	shopResult.hide();
+	
+	var controlBar = $("<div id='shopControlBar'></div>");
+//	var pagination = new $.fn.Pagination({
+//		renderTo: controlBar,
+//		total: 10,
+//		current: 1,
+//		onChanged: function(page) {
+//			alert(page);
+//		}
+//	});
+	
+	shopResult.append(controlBar);
+	
+	searchInnerPanel.append(shopResult);
 	
 	searchPanel.append(searchInnerPanel);
 };
