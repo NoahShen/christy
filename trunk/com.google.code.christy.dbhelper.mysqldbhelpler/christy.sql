@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : connection
-Source Server Version : 50022
+Source Server         : christy
+Source Server Version : 50083
 Source Host           : localhost:3306
 Source Database       : christy
 
 Target Server Type    : MYSQL
-Target Server Version : 50022
+Target Server Version : 50083
 File Encoding         : 65001
 
-Date: 2010-05-14 11:49:35
+Date: 2010-05-16 23:22:51
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -100,7 +100,7 @@ CREATE TABLE `shopcomment` (
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`commentId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopcomment
@@ -109,6 +109,7 @@ INSERT INTO `shopcomment` VALUES ('1', '0', 'noah', '90', '早就听说这家的
 INSERT INTO `shopcomment` VALUES ('2', '0', 'noah2', '95', '很奇怪的一家店，11点过去，刚开门的时候，居然就排队，排队的都是5、60的老人。诺大的店堂，居然只有非常小的电梯可以上去，一次也就6个人。中午的午市的火山石器烧裙翅吃口不错，才43，的确是特色了。下次有机会来吃点心', '2010-04-22 14:05:46', '2010-04-25 19:57:27');
 INSERT INTO `shopcomment` VALUES ('6', '0', 'noah', '91', '9090', '2010-04-25 21:01:02', '2010-04-25 21:01:02');
 INSERT INTO `shopcomment` VALUES ('7', '0', 'noah', '92', '9292', '2010-04-25 21:23:04', '2010-04-25 21:23:04');
+INSERT INTO `shopcomment` VALUES ('8', '0', 'noah', '12', 'content', '2010-05-16 21:08:59', '2010-05-16 21:08:59');
 
 -- ----------------------------
 -- Table structure for `shopoverall`
@@ -140,7 +141,7 @@ CREATE TABLE `shopvoter` (
   `itemName` varchar(50) NOT NULL,
   `value` int(11) NOT NULL,
   PRIMARY KEY  (`voterId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopvoter
@@ -151,6 +152,9 @@ INSERT INTO `shopvoter` VALUES ('11', 'noah', '0', 'perCapita', '92');
 INSERT INTO `shopvoter` VALUES ('12', 'noah', '0', 'taste', '95');
 INSERT INTO `shopvoter` VALUES ('14', 'noah', '0', 'perCapita', '92');
 INSERT INTO `shopvoter` VALUES ('15', 'noah', '0', 'taste', '92');
+INSERT INTO `shopvoter` VALUES ('16', 'noah', '0', 'service', '3');
+INSERT INTO `shopvoter` VALUES ('17', 'noah', '0', 'perCapita', '43');
+INSERT INTO `shopvoter` VALUES ('18', 'noah', '0', 'taste', '3');
 
 -- ----------------------------
 -- Table structure for `user`
@@ -179,7 +183,7 @@ CREATE TABLE `userfavoriteshop` (
   `username` char(50) NOT NULL,
   `shopId` int(20) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userfavoriteshop
@@ -204,21 +208,20 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster
 -- ----------------------------
 INSERT INTO `userroster` VALUES ('22', 'noah', 'noah2@example.com', null, null, 'both');
 INSERT INTO `userroster` VALUES ('3', 'noah', 'Noah3@example.com', null, null, 'both');
-INSERT INTO `userroster` VALUES ('27', 'noah2', 'noah@example.com', null, null, 'both');
+INSERT INTO `userroster` VALUES ('25', 'noah2', 'noah@example.com', null, null, 'both');
 INSERT INTO `userroster` VALUES ('5', 'noah2', 'Noah3@example.com', 'Noah3', null, 'both');
 INSERT INTO `userroster` VALUES ('6', 'noah', 'Noah4@example.com', null, 'subscribe', 'none');
 INSERT INTO `userroster` VALUES ('7', 'noah', 'Noah5@example.com', null, 'subscribe', 'none');
 INSERT INTO `userroster` VALUES ('8', 'noah', 'Noah6@example.com', null, 'subscribe', 'none');
 INSERT INTO `userroster` VALUES ('9', 'noah', 'Noah7@example.com', null, 'subscribe', 'none');
 INSERT INTO `userroster` VALUES ('10', 'noah', 'Noah8@example.com', null, 'subscribe', 'none');
-INSERT INTO `userroster` VALUES ('11', 'noah', 'Noah9@example.com', null, 'subscribe', 'none');
 INSERT INTO `userroster` VALUES ('20', 'noah', 'Noah10@example.com', null, 'subscribe', 'none');
 
 -- ----------------------------
