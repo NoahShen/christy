@@ -6,7 +6,6 @@ package com.google.code.christy.shopactivityservice;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,12 +27,10 @@ public class ShopDbhelper
 	private static final String GETALLSHOPWITHOVERALL_SQL = "SELECT * FROM shop LEFT JOIN shopoverall O ON O.shopId = shop.shopId";
 	
 	private static final String GETSHOPDETAIL_SQL = "SELECT R.shopId, R.enterpriseUser, R.type, R.title, R.content, R.shopImg, R.district, R.street, R.tel, R.longitude, R.latitude," +
-							" O.itemName, O.itemValue," +
-							" C.commentId, C.username, C.score, C.content AS commentContent, C.modificationDate as commentMoDate FROM" +
+							" O.itemName, O.itemValue" +
+							" FROM" +
 							" (SELECT * FROM shop WHERE shopId = ?) R" +
-							" LEFT JOIN shopoverall O ON O.shopId = R.shopId" +
-							" LEFT JOIN shopcomment C ON C.shopId = R.shopId" +
-							" ORDER BY C.modificationDate DESC";
+							" LEFT JOIN shopoverall O ON O.shopId = R.shopId";
 	
 	private static final String ADDSHOPCOMMENT_SQL = "INSERT INTO shopcomment (shopId, username, score, content, creationDate) VALUES (?, ?, ?, ?, NOW())";
 	
@@ -41,6 +38,8 @@ public class ShopDbhelper
 
 	private static final String GETSHOPBYLOC = "SELECT *, SQRT(POW(? - easting, 2) + POW(? - northing, 2)) AS distance" +
 						" FROM shop HAVING distance<=(? * 1000) ORDER BY distance";
+	
+	private static final String GETSHOPCOOMENTS_SQL = "SELECT *  FROM shopcomment WHERE shopId = ? ORDER BY modificationDate DESC LIMIT ?, ?";
 	
 	public ShopDbhelper(ConnectionPool connectionPool)
 	{
@@ -212,24 +211,24 @@ public class ShopDbhelper
 					{
 						shop.addOverall(itemName, itemValue);
 					}
-					
-					Integer commentId = (Integer) shopResSet.getObject("commentId");
-					if (commentId != null && !shop.containComment(commentId.longValue()))
-					{
-						String username = shopResSet.getString("username");
-						int score = shopResSet.getInt("score");
-						String commentContent = shopResSet.getString("commentContent");
-						Timestamp timestamp = shopResSet.getTimestamp("commentMoDate");
-						
-						ShopComment comment = new ShopComment();
-						comment.setCommentId(commentId.longValue());
-						comment.setContent(commentContent);
-						comment.setLasModitDate(timestamp.getTime());
-						comment.setScore(score);
-						comment.setUsername(username);
-						comment.setShopId(id);
-						shop.addComment(comment);
-					}
+//					
+//					Integer commentId = (Integer) shopResSet.getObject("commentId");
+//					if (commentId != null && !shop.containComment(commentId.longValue()))
+//					{
+//						String username = shopResSet.getString("username");
+//						int score = shopResSet.getInt("score");
+//						String commentContent = shopResSet.getString("commentContent");
+//						Timestamp timestamp = shopResSet.getTimestamp("commentMoDate");
+//						
+//						ShopComment comment = new ShopComment();
+//						comment.setCommentId(commentId.longValue());
+//						comment.setContent(commentContent);
+//						comment.setLasModitDate(timestamp.getTime());
+//						comment.setScore(score);
+//						comment.setUsername(username);
+//						comment.setShopId(id);
+//						shop.addComment(comment);
+//					}
 				}
 			}
 			return shop;
@@ -244,7 +243,7 @@ public class ShopDbhelper
 		}
 	}
 	
-	public Shop[] getShopByLoc(int easting, int northing, int distance) throws SQLException
+	public Shop[] getShopByLoc(int easting, int northing, int distance) throws Exception
 	{
 		Connection connection = null;
 		try
@@ -330,6 +329,45 @@ public class ShopDbhelper
 			if (connection != null)
 			{
 				connection.setAutoCommit(true);
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+	
+	public ShopComment[] getShopComments(long shopId, int page, int count) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(GETSHOPCOOMENTS_SQL);
+			preStat.setLong(1, shopId);
+			preStat.setInt(2, (page - 1) * count);
+			preStat.setInt(3, count);
+			ResultSet commentsResSet = preStat.executeQuery();
+
+			List<ShopComment> comments = new ArrayList<ShopComment>();
+			
+			while (commentsResSet.next()) 
+			{
+				ShopComment comment = new ShopComment();
+				comment.setShopId(commentsResSet.getLong("shopId"));
+				comment.setCommentId(commentsResSet.getLong("commentId"));
+				comment.setContent(commentsResSet.getString("content"));
+				comment.setUsername(commentsResSet.getString("username"));
+				comment.setScore(commentsResSet.getInt("score"));
+				Timestamp timestamp = commentsResSet.getTimestamp("modificationDate");
+				comment.setLasModitDate(timestamp.getTime());
+				
+				comments.add(comment);
+			}
+			return comments.toArray(new ShopComment[]{});
+		}
+		finally
+		{
+			if (connection != null)
+			{
 				connectionPool.returnConnection(connection);
 			}
 			

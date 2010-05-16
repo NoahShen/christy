@@ -58,6 +58,45 @@ public class ShopServlet extends HttpServlet
 		{
 			handleSubmitComment(req, resp);
 		}
+		else if ("getshopcomments".equals(action))
+		{
+			handleGetShopcomments(req, resp);
+		}
+	}
+
+	private void handleGetShopcomments(HttpServletRequest req, HttpServletResponse resp)
+	{
+		String shopId = req.getParameter("shopid");
+		
+		String pageStr = req.getParameter("page");
+		String countStr = req.getParameter("count");
+		
+		int page = pageStr == null ?  1 : Integer.parseInt(pageStr);
+		int count = countStr == null ?  10 : Integer.parseInt(countStr);
+		
+		try
+		{
+			ShopComment comments[] = shopDbhelper.getShopComments(Long.parseLong(shopId), page, count);
+			
+			JSONArray commentsJson = new JSONArray();
+			
+			for (ShopComment comment : comments)
+			{
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("username", comment.getUsername());
+				jsonObj.put("score", comment.getScore());
+				jsonObj.put("time", comment.getLasModitDate());
+				jsonObj.put("content", comment.getContent());
+				commentsJson.put(jsonObj);
+			}
+			
+			resp.getWriter().write(commentsJson.toString());
+		}
+		catch (Exception e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 
 	private void handleSubmitComment(HttpServletRequest req, HttpServletResponse resp) throws IOException
@@ -78,7 +117,7 @@ public class ShopServlet extends HttpServlet
 			String[] itemNameValue = commentItem.split(":");
 			String itemName = itemNameValue[0];
 			String itemValue = itemNameValue[1];
-			if ("shopScore".equals(itemName))
+			if ("score".equals(itemName))
 			{
 				shopComment.setScore(Integer.parseInt(itemValue));
 			}
@@ -148,20 +187,6 @@ public class ShopServlet extends HttpServlet
 			jsonObj.put("basicInfo", basicInfo);
 			
 			jsonObj.put("intro", shop.getContent());
-			
-			JSONArray comments = new JSONArray();
-			
-			for (ShopComment shopComment: shop.getComments().values())
-			{
-				JSONObject comment = new JSONObject();
-				comment.put("username", shopComment.getUsername());
-				comment.put("time", shopComment.getLasModitDate());
-				comment.put("score", shopComment.getScore());
-				comment.put("content", shopComment.getContent());
-				comments.put(comment);
-			}
-
-			jsonObj.put("comments", comments);
 			
 			resp.getWriter().write(jsonObj.toString());
 				
