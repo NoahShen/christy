@@ -49,8 +49,8 @@ Main.init = function() {
 	});
 	
 	var topBar = $("<div id='topBar'>" +
-						"<table style='width:100%;'>" +
-							"<tr style='text-align:center;'>" +
+						"<table style='width:100%;text-align:center;'>" +
+							"<tr>" +
 								"<td>" +
 									"<div id='userStatus'><div>" + $.i18n.prop("topBar.status", "状态") + "</div></div>" +
 								"</td>" +
@@ -1359,28 +1359,382 @@ Search.init = function() {
 		var type = typeJqObj.attr("id");
 		
 		
+		GeoUtils.getCurrentPosition(function(p) {
+			Search.searchShopsByLoc(p, 1, 5, type, true);
+		}, function(){}, true);		
 	});
 	
 	searchInnerPanel.append(searchInput);
 	
-	var shopResult = $("<div id='shopResultContainer'></div>");
-	shopResult.hide();
 	
-	var controlBar = $("<div id='shopControlBar'></div>");
-//	var pagination = new $.fn.Pagination({
-//		renderTo: controlBar,
-//		total: 10,
-//		current: 1,
-//		onChanged: function(page) {
-//			alert(page);
-//		}
-//	});
+	var shopResultContainer = $("<div id='shopResultContainer'></div>");
+	shopResultContainer.hide();
 	
-	shopResult.append(controlBar);
+	var shopResultBar = $("<div id='shopResultBar'></div>");
 	
-	searchInnerPanel.append(shopResult);
+	var backToSearchInput = $("<input id='backToSearchInput' type='button' value='" + $.i18n.prop("search.back", "返回") + "'/>");
+	backToSearchInput.click(function() {
+		searchInput.siblings().hide();
+		searchInput.show();
+	});
+	
+	shopResultBar.append(backToSearchInput);
+	
+	shopResultContainer.append(shopResultBar);
+	
+	var shopResult = $("<div id='shopResult'></div>");
+	shopResultContainer.append(shopResult);
+
+	searchInnerPanel.append(shopResultContainer);
+	
+	var shopDetail = $("<div id='shopDetail'></div>");
+	shopDetail.hide();
+	
+	var shopDetailBar = $("<div id='shopDetailBar'>" +
+							"<table style='width:100%;text-align:center;'>" +
+								"<tr>" +
+									"<td>" +
+										"<input id='backToShopResultInput' type='button' value='" + $.i18n.prop("search.back", "返回") + "'/>" + 
+									"</td>" +
+									"<td>" +
+										"<div id='shopName'></div>" +
+									"</td>" +
+									"<td>" +
+										"<input id='commentOnShop' type='button' value='" + $.i18n.prop("search.shopDetail.comment", "评论") + "'/>" + 
+									"</td>" +
+								"</tr>" +
+							"</table>" +
+							"</div>");
+							
+	shopDetailBar.find("#backToShopResultInput").click(function() {
+		shopResultContainer.siblings().hide();
+		shopResultContainer.show();
+	});
+	shopDetailBar.find("#commentOnShop").click(function() {
+		Search.showShopComment();
+	});
+	
+	shopDetail.append(shopDetailBar);
+	
+	var shopDetailPanel = $("<div id='shopDetailPanel'></div>");
+	shopDetail.append(shopDetailPanel);
+	searchInnerPanel.append(shopDetail);
+	
+	var commentOnShop = $("<div id='commentOnShop'></div>");
+	commentOnShop.hide();
+	
+	var commentOnShopBar = $("<div id='commentOnShopBar'>" +
+								"<table style='width:100%;text-align:center;'>" +
+									"<tr>" +
+										"<td>" +
+											"<input id='backToShopDetailInput' type='button' value='" + $.i18n.prop("search.back", "返回") + "'/>" + 
+										"</td>" +
+										"<td>" +
+											"<div id='shopNameComment'></div>" +
+										"</td>" +
+										"<td>" +
+											"<input id='submintShopComment' type='button' value='" + $.i18n.prop("search.shopDetail.comment", "评论") + "'/>" + 
+										"</td>" +
+									"</tr>" +
+								"</table>" +
+							"</div>");
+	commentOnShopBar.find("#backToShopDetailInput").click(function() {
+		shopDetail.siblings().hide();
+		shopDetail.show();
+	});
+	
+	commentOnShopBar.find("#submintShopComment").click(function() {
+		
+	});
+	
+	commentOnShop.append(commentOnShopBar);
+	
+	var commentOnShopPanel = $("<div id='commentOnShopPanel'></div>");
+	commentOnShop.append(commentOnShopPanel);
+	
+	
+	searchInnerPanel.append(commentOnShop);
 	
 	searchPanel.append(searchInnerPanel);
+};
+
+
+Search.showShopComment = function(shopId) {
+	var detail = Search.currentShopDetail;
+	if (detail == null) {
+		return;
+	}
+	var commentOnShopPanel = $("#commentOnShopPanel");
+	commentOnShopPanel.empty();
+
+	var overall = detail.overall;
+	if (overall) {
+		var shopCommentItems = $("<div id='shopCommentItems'></div>");
+		var i = 1;
+		for(var key in overall) {
+			if ("score" != key) {
+				shopCommentItems.append("<span>" +
+											"<span>" + $.i18n.prop("search.shopDetail.restaurant." + key, "项目：") + "</span>" +
+											"<input item='" + key + "' type='text' size='7'/>" +
+										"</span>");
+				if (i != 0 && i % 2 == 0) {
+					shopCommentItems.append("<br/>");
+				}
+				++i;
+			}
+		}
+		commentOnShopPanel.append(shopCommentItems);
+	}
+
+	commentOnShopPanel.find("input").text("");
+		
+	var shopNameComment = $("#shopNameComment");
+	shopNameComment.text(detail.basicInfo.name);
+	
+	var commentOnShop = $("#commentOnShop");
+	commentOnShop.siblings().hide();
+	commentOnShop.show();
+
+	
+};
+
+Search.searchShopsByLoc = function(p, page, count, type, updatePage) {
+	$.ajax({
+		url: "/shop/",
+		dataType: "json",
+		cache: false,
+		type: "get",
+		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+		data: {
+			action: "search",
+			type: type,
+			easting: p.easting,
+			northing: p.northing,
+			page: page,
+			count: count
+		},
+		success: function(searchResult){
+			Search.currentResult = searchResult;
+			var shopResult = $("#shopResult");
+			shopResult.empty();
+			
+			var shops = searchResult.shops;
+			for (var i = 0; i < shops.length; ++i) {
+				var shopPanel = Search.createShopInfo(shops[i]);
+				shopResult.append(shopPanel);
+			}
+			
+			var shopResultContainer = $("#shopResultContainer");
+			shopResultContainer.siblings().hide();
+			shopResultContainer.show();
+			
+			if (updatePage) {				
+				var shopPagination = shopResultContainer.children("#shopPagination");
+				if (shopPagination.size() == 0) {
+					var shopPagination = $("<div id='shopPagination'></div>");
+					shopResultContainer.append(shopPagination)
+				}
+				
+				var pagination = new $.fn.Pagination({
+						renderTo: shopPagination,
+						total: Math.ceil(searchResult.total / count),
+						current: 1,
+						onChanged: function(page) {
+							Search.searchShopsByLoc(p, page, count, type, false);
+						}
+				});
+			}
+		},
+		error: function (xmlHttpRequest, textStatus, errorThrown) {
+			
+		},
+		complete: function(xmlHttpRequest, textStatus) {
+			
+		}
+	});
+	
+};
+
+
+Search.createShopInfo = function(shopInfo) {
+	var shopInfoPanel = $("<div shopId='" + shopInfo.id + "'>" +
+								"<table>" +
+									"<tr>" +
+										"<td>" +
+											"<img src='" + shopInfo.imgSrc + "' width='50' height='50' />" +
+										"</td>" +
+										"<td>" +
+											"<div>" + shopInfo.name + "</div>" +
+											"<div>" + shopInfo.tel + "</div>" +
+											"<div>" + shopInfo.street + "</div>" +
+										"</td>" +
+									"</tr>" +
+								"</table>" +
+							"</div>");
+	shopInfoPanel.click(function(){
+		var shopId = $(this).attr("shopId");
+		$.ajax({
+			url: "/shop/",
+			dataType: "json",
+			cache: false,
+			type: "get",
+			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+			data: {
+				action: "getshopdetail",
+				shopid: shopId
+			},
+			success: function(shopDetail){
+				Search.currentShopDetail = shopDetail;
+				Search.showShopDetail(shopDetail);
+			},
+			error: function (xmlHttpRequest, textStatus, errorThrown) {
+				
+			},
+			complete: function(xmlHttpRequest, textStatus) {
+				
+			}
+		});
+
+	});
+	
+	return shopInfoPanel;
+};
+
+
+Search.showShopDetail = function(shopDetail) {
+	Search.currentShopDetail = shopDetail;
+	var shopDetailPanel = $("#shopDetailPanel");
+	shopDetailPanel.empty();
+	
+	var baseInfo = shopDetail.basicInfo;
+	var overall = shopDetail.overall;
+	
+	var shopBaseInfo = $("<div shopId='" + baseInfo.id + "'>" +
+							"<table>" +
+								"<tr>" +
+									"<td>" +
+										"<img src='" + baseInfo.imgSrc + "' width='50' height='50' />" +
+									"</td>" +
+									"<td>" +
+										"<div>" +
+											"<span>" + baseInfo.name + "</span>" +
+											"<span>"+ baseInfo.hasCoupon + "</span>" +
+											"<input id='adddFavorite' type='button' value='" +
+												$.i18n.prop("search.shopDetail.adddFavorite", "收藏") + 
+											"' />" +
+										"</div>" +
+										"<div>" +
+											"<span>" + 
+												$.i18n.prop("search.shopDetail.restaurant.score", "总分：") + 
+												overall.score + 
+											"</span>" +
+											"<span>" + 
+												$.i18n.prop("search.shopDetail.restaurant.perCapita", "人均：") + 
+												overall.perCapita + 
+											"</span>" +
+										"</div>" +
+										"<span>" + 
+											$.i18n.prop("search.shopDetail.restaurant.service", "服务：") + 
+											overall.service + 
+										"</span>" +
+										"<span>" + 
+											$.i18n.prop("search.shopDetail.restaurant.taste", "口味：") + 
+											overall.taste + 
+										"</span>" +
+									"</td>" +
+								"</tr>" +
+							"</table>" +
+						"</div>");
+	
+	shopBaseInfo.find("#adddFavorite").click(function(){
+		var iq = new Iq(IqType.SET);
+	
+		var userFavoriteShop = new IqUserFavoriteShop();
+		var item = new ShopItem(baseInfo.id);
+		item.setAction("add");
+		userFavoriteShop.addShopItem(item);
+		iq.addPacketExtension(userFavoriteShop);
+		
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			conn.handleStanza({
+				filter: new PacketIdFilter(iq.getStanzaId()),
+				timeout: Christy.loginTimeout,
+				handler: function(iqResponse) {
+					var opts = MainUtils.cloneObj(Main.notifyOpts);
+					if (iqResponse.getType() == IqType.RESULT) {
+						opts.message = $.i18n.prop("personal.favoriteSuccess", "收藏成功!");
+					} else {
+						opts.message = $.i18n.prop("personal.favoriteFailed", "收藏失败!");
+						opts.css.backgroundColor = "red";
+					}
+					$.blockUI(opts); 
+				}
+			});
+			
+			conn.sendStanza(iq);
+		}
+	});
+	
+	shopDetailPanel.append(shopBaseInfo);
+
+	var contactIntro = $("<table>" +
+						"<tr>" +
+							"<td style='word-break:break-all;'>" +
+								"<div>" +
+									$.i18n.prop("search.shopDetail.address", "地址：") +
+									baseInfo.addr + 
+								"</div>" +
+								"<div>" +
+									$.i18n.prop("search.shopDetail.tel", "电话：") +
+									baseInfo.phone + 
+								"</div>" +
+							"</td>" +
+						"</tr>" +
+						"<tr>" +
+							"<td style='word-break:break-all;'>" +
+								shopDetail.intro +
+							"</td>" +
+						"</tr>" +
+					"</table>");
+					
+	shopDetailPanel.append(contactIntro);
+	
+	shopDetailPanel.append("<br/>");
+	
+	var comms = shopDetail.comments;
+	var commsJqObj = $("<div></div>");
+	for (i = 0; i < comms.length; ++i) {
+		var onecomment = comms[i];
+		commsJqObj.append("<table>" +
+								"<tr>" +
+									"<td>" + onecomment.username + "</td>" +
+									"<td>" + new Date(onecomment.time).format("yyyy-MM-dd hh:mm:ss") + "</td>" +
+								"</tr>" +
+								"<tr>" +
+									"<td colspan='2'>" +
+										"<div>" +
+											$.i18n.prop("search.shopDetail.restaurant.score", "总分：") +
+											onecomment.score + 
+										"</div>" + 
+									"</td>" +
+								"</tr>" +
+								"<tr>" +
+									"<td colspan='2'>" +
+										"<div>" + onecomment.content + "</div>" +
+									"</td>" +
+								"</tr>" +
+							"</table>");
+	}
+	
+	$("#shopName").text(baseInfo.name);
+	shopDetailPanel.append(commsJqObj);
+	
+	var shopDetail = $("#shopDetail");
+	shopDetail.siblings().hide();
+	shopDetail.show();
+
 };
 
 Map = {};

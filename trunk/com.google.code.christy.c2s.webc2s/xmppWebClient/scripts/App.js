@@ -267,6 +267,7 @@ function sessionBindedSuccess2() {
 					"component/jquery.syspanel.js",
 					"component/jquery.pagination.style.css",
 					"component/jquery.pagination.js",
+					"geoutils.js",
 					"lib/jquery.blockUI.js",
 					"main.css",
 					"main.js"
