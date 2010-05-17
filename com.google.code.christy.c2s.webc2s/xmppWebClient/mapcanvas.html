@@ -65,6 +65,9 @@
 						var gmarker = new GMarker(new GLatLng(p.lat, p.lon));
 						if (map) {
 							map.addOverlay(gmarker);
+							GEvent.addListener(gmarker, "click", function() {
+								gmarker.openInfoWindowHtml(p.message);
+							});
 						}
 						markerWrapper.gmarkers.push(gmarker);
 					}
