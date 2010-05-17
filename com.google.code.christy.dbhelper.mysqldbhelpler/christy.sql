@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50083
 File Encoding         : 65001
 
-Date: 2010-05-16 23:22:51
+Date: 2010-05-17 20:54:07
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -191,7 +191,6 @@ CREATE TABLE `userfavoriteshop` (
 INSERT INTO `userfavoriteshop` VALUES ('1', 'noah', '0');
 INSERT INTO `userfavoriteshop` VALUES ('3', 'noah', '2');
 INSERT INTO `userfavoriteshop` VALUES ('4', 'noah', '3');
-INSERT INTO `userfavoriteshop` VALUES ('5', 'noah', '4');
 INSERT INTO `userfavoriteshop` VALUES ('6', 'noah', '5');
 INSERT INTO `userfavoriteshop` VALUES ('7', 'noah', '6');
 INSERT INTO `userfavoriteshop` VALUES ('8', 'noah', '1');
