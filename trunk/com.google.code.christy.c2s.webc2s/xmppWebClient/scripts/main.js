@@ -1896,15 +1896,30 @@ Map = {};
 Map.MAP_CONTROLBAR_HEIGHT = 20
 Map.init = function() {
 	var mapPanel = $("#map");
+	var mapTabs = $("<div id='mapTabs'>" +
+						"<div class='ui-tab-container'>" +
+							"<div class='clearfix'>" +
+								"<u id='mapCanvasContainer' class='ui-tab-active'>" + $.i18n.prop("map.tabs.map", "地图") + "</u>" +
+								"<u id='mapItems'>" + $.i18n.prop("map.tabs.mapItems", "地图项") + "</u>" +
+							"</div>" +
+							"<div>" +
+								"<div id='mapCanvasPanel' class='ui-tab-content ui-tab-active'>" +
+									"<iframe id='mapCanvas' name='mapCanvas' width='100%' height='" + Map.getMapCanvasHeight() + "'scrolling='no' frameborder='0' />" +
+								"</div>" +
+		 						"<div id='mapItemsPanel' class='ui-tab-content' style='display:none'>" +
+		 						"</div>" +
+							"</div>" +
+						"</div>" +
+					"</div>");
 	
-	var mapControlbar = $("<div id='mapControlbar' style='width:" + Map.MAP_CONTROLBAR_HEIGHT + "px;'>" +
-								"<input type='button' style='float:left;margin-left:0.2cm;' value='" + $.i18n.prop("map.mapControlBar.mapItems", "地图项") + "'/>" +
-							"</div>");
-	mapPanel.append(mapControlbar);
-	
-	var mapCanvas = $("<iframe id='mapCanvas' name='mapCanvas' width='100%' height='" + Map.getMapCanvasHeight() + "'scrolling='no' frameborder='0' />");
-	
-	mapPanel.append(mapCanvas);
+	mapPanel.append(mapTabs);
+					
+	Map.tabs = new $.fn.tab({
+        tabList:"#mapTabs .ui-tab-container div u",
+        contentList:"#mapTabs .ui-tab-container .ui-tab-content",
+        showType:"fade"
+    });
+
 };
 
 Map.getMapCanvasHeight = function(){
@@ -1920,18 +1935,97 @@ Map.getMapCanvasHeight = function(){
 
 Map.mapFrameLoaded = function() {
 	var mapCanvas = $("#mapCanvas");
-//	for (var key in MapService.mapItems) {
-//		var mapItem = MapService.mapItems[key];
-//		if (mapItem.isShow) {
-//			var marker = {
-//				id: mapItem.id,
-//				title: mapItem.title,
-//				positions: mapItem.positions
-//			};
-//			mapcanvas[0].contentWindow.updateMapMarker(marker);
-//		}
-//	}
+	for (var key in Map.mapItems) {
+		var mapItem = Map.mapItems[key];
+		if (mapItem.isShow) {
+			var marker = {
+				id: mapItem.id,
+				title: mapItem.title,
+				positions: mapItem.positions
+			};
+			mapcanvas[0].contentWindow.updateMapMarker(marker);
+		}
+	}
 };
+//var mapItem = {
+//	id: itemId,
+//	title: "title",
+//	isShow: true,
+//	closeable: true
+//	positions: [{
+//		lat: lat,
+//		lon: lon
+//	}]
+//};
+Map.mapItems= {};
+
+Map.containMapItem = function (mapItemId) {
+	var mapItem = Map.mapItems[mapItemId];
+	if (mapItem) {
+		return true;
+	}
+	return false;
+}
+
+Map.updateMapItem = function (mapItem) {
+	var mapItemId = mapItem.id;	
+	Map.mapItems[mapItemId] = mapItem;
+	
+	var mapItemsPanel = $("#mapItemsPanel");
+	var itemDiv = mapItemsPanel.children("div[mapItem='" + mapItemId + "']");
+	if (itemDiv.size() == 0) {
+		var closeInput = "";
+		if (mapItem.closeable) {
+			closeInput = "<input type='button' value='" + $.i18n.prop("map.mapItems.remove", "删除") + "'/>";
+		}
+		itemDiv = $("<div mapItem='" + mapItemId + "'>" + 
+						"<input id='" + mapItem.id + "-mapItem' name='" + mapItem.id + "-mapItem' type='checkbox' checked='checked'/>" +
+						"<label id='" + mapItem.id + "-mapItemLabel' for='" + mapItem.id + "-mapItem'>" + mapItem.title + "</label>" +
+						closeInput +
+					"</div>");
+		itemDiv.children("input:first").click(function() {
+			var checkbox = $(this);
+			var mapItem = Map.mapItems[mapItemId];
+			if (mapItem) {
+				mapItem.isShow = (checkbox.attr("checked") == true);
+				Map.updateMapItem(mapItem);
+			}
+		});
+		
+		if (mapItem.closeable) {
+			itemDiv.children("input:last").click(function(){
+				Map.removeMapItem(mapItemId);
+				itemDiv.remove();
+			});
+		}
+		
+		mapItemsPanel.append(itemDiv);
+	}
+	
+
+	var mapcanvas = $("#mapcanvas");
+	if (mapcanvas.attr("src")) {
+		if (mapItem.isShow) {
+			var marker = {
+				id: mapItem.id,
+				title: mapItem.title,
+				positions: mapItem.positions.slice(0)
+			};
+			mapcanvas[0].contentWindow.updateMapMarker(marker);
+		} else {
+			mapcanvas[0].contentWindow.removeMapMarker(mapItem.id);
+		}
+		
+	}
+}
+
+Map.removeMapItem = function (mapItemId) {
+	delete Map.mapItems[mapItemId];
+	var mapcanvas = $("#mapcanvas");
+	if (mapcanvas.attr("src")) {
+		mapcanvas[0].contentWindow.removeMapMarker(mapItemId);
+	}
+}
 
 Profile = {};
 Profile.init = function() {

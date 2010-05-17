@@ -36,8 +36,10 @@ public class ShopDbhelper
 	
 	private static final String ADDSHOPVOTER_SQL = "INSERT INTO shopvoter (username, shopId, itemName, value) VALUES (?, ?, ?, ?)";
 
-	private static final String GETSHOPBYLOC = "SELECT *, SQRT(POW(? - easting, 2) + POW(? - northing, 2)) AS distance" +
-						" FROM shop HAVING distance<=(? * 1000) ORDER BY distance";
+	private static final String GETSHOPBYLOC_SQL = "SELECT *, SQRT(POW(? - easting, 2) + POW(? - northing, 2)) AS distance" +
+						" FROM shop WHERE type= ? HAVING distance<=(? * 1000) ORDER BY distance LIMIT ?, ?";
+	
+	private static final String GETSHOPBYLOCCOUNT_SQL = "SELECT COUNT(*) FROM (SELECT shopId, SQRT(POW(? - easting, 2) + POW(? - northing, 2)) AS distance FROM shop WHERE type= ? HAVING distance<=(? * 1000)) R";
 	
 	private static final String GETSHOPCOOMENTS_SQL = "SELECT *  FROM shopcomment WHERE shopId = ? ORDER BY modificationDate DESC LIMIT ?, ?";
 	
@@ -243,16 +245,20 @@ public class ShopDbhelper
 		}
 	}
 	
-	public Shop[] getShopByLoc(int easting, int northing, int distance) throws Exception
+	public Object[] getShopByLoc(String shopType, int easting, int northing, int distance, int page, int count) throws Exception
 	{
 		Connection connection = null;
+		Object[] returnValue = new Object[2];
 		try
 		{
 			connection = connectionPool.getConnection();
-			PreparedStatement preStat = connection.prepareStatement(GETSHOPBYLOC);
+			PreparedStatement preStat = connection.prepareStatement(GETSHOPBYLOC_SQL);
 			preStat.setInt(1, easting);
 			preStat.setInt(2, northing);
-			preStat.setInt(3, distance);
+			preStat.setString(3, shopType);
+			preStat.setInt(4, distance);
+			preStat.setInt(5, (page - 1) * count);
+			preStat.setInt(6, count);
 			ResultSet shopResSet = preStat.executeQuery();
 			List<Shop> shops = new ArrayList<Shop>();
 			while (shopResSet.next()) 
@@ -284,7 +290,21 @@ public class ShopDbhelper
 				
 				shops.add(shop);
 			}
-			return shops.toArray(new Shop[]{});
+			
+			PreparedStatement preStat2 = connection.prepareStatement(GETSHOPBYLOCCOUNT_SQL);
+			preStat2.setInt(1, easting);
+			preStat2.setInt(2, northing);
+			preStat2.setString(3, shopType);
+			preStat2.setInt(4, distance);
+			ResultSet shopResSet2 = preStat2.executeQuery();
+			if (shopResSet2.next()) 
+			{
+				int countResult = shopResSet2.getInt("COUNT(*)");
+				returnValue[0] = countResult;
+			}
+			
+			returnValue[1] = shops.toArray(new Shop[]{});
+			return returnValue;
 		}
 		finally
 		{
