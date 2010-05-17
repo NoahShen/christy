@@ -213,11 +213,11 @@ Main.init = function() {
  						"<div>" +
  							"<div id='im' class='ui-tab-content ui-tab-active'>" +
  							"</div>" +
-	 						"<div id='search' class='ui-tab-content' style='display:none'>" +
+	 						"<div id='search' class='ui-tab-content'>" +
 	 						"</div>" +
-	 						"<div id='map' class='ui-tab-content' style='display:none'>" +
+	 						"<div id='map' class='ui-tab-content'>" +
 	 						"</div>" +
-	 						"<div id='profile' class='ui-tab-content' style='display:none'>" +
+	 						"<div id='profile' class='ui-tab-content'>" +
 	 						"</div>" +
  						"</div>" +
  					"</div>" +
@@ -228,7 +228,7 @@ Main.init = function() {
 	$("body").append(mainDiv);
 	
 	Main.tabs = new $.fn.tab({
-        tabList:"#tabs .ui-tab-container div u",
+        tabList:"#tabs  .ui-tab-container .clearfix u",
         contentList:"#tabs .ui-tab-container .ui-tab-content",
         showType:"fade",
         callBackStartEvent:function(index) {
@@ -256,6 +256,7 @@ Main.init = function() {
 			}
         }
     });
+    Main.tabs.triggleTab(0);
     
     IM.init();
     Search.init();
@@ -1913,14 +1914,14 @@ Map.init = function() {
 	var mapTabs = $("<div id='mapTabs'>" +
 						"<div class='ui-tab-container'>" +
 							"<div class='clearfix'>" +
-								"<u id='mapCanvasContainer' class='ui-tab-active'>" + $.i18n.prop("map.tabs.map", "地图") + "</u>" +
-								"<u id='mapItems'>" + $.i18n.prop("map.tabs.mapItems", "地图项") + "</u>" +
+								"<u id='mapCanvasContainer' style='width:50%;' class='ui-tab-active'>" + $.i18n.prop("map.tabs.map", "地图") + "</u>" +
+								"<u id='mapItems' style='width:50%;' >" + $.i18n.prop("map.tabs.mapItems", "地图项") + "</u>" +
 							"</div>" +
 							"<div>" +
 								"<div id='mapCanvasPanel' class='ui-tab-content ui-tab-active'>" +
 									"<iframe id='mapCanvas' name='mapCanvas' width='100%' height='" + Map.getMapCanvasHeight() + "'scrolling='no' frameborder='0' />" +
 								"</div>" +
-		 						"<div id='mapItemsPanel' class='ui-tab-content' style='display:none'>" +
+		 						"<div id='mapItemsPanel' class='ui-tab-content'>" +
 		 						"</div>" +
 							"</div>" +
 						"</div>" +
@@ -1929,10 +1930,11 @@ Map.init = function() {
 	mapPanel.append(mapTabs);
 					
 	Map.tabs = new $.fn.tab({
-        tabList:"#mapTabs .ui-tab-container div u",
-        contentList:"#mapTabs .ui-tab-container .ui-tab-content",
-        showType:"fade"
+        tabList:"#mapTabs .ui-tab-container .clearfix u",
+        contentList:"#mapTabs .ui-tab-container .ui-tab-content"
+//        showType:"fade"
     });
+    Map.tabs.triggleTab(0);
 
 };
 
@@ -2046,22 +2048,26 @@ Profile.init = function() {
 	var profile = $("#profile");
 	
 	var profileTabs = $("<div id='profileTabs'>" +
-		 					"<div class='profile-ui-tab-container'>" +
+		 					"<div class='ui-tab-container'>" +
 		 						"<div class='clearfix'>" +
-		 							"<u class='profile-ui-tab-active'>" + $.i18n.prop("profile.tabs.favorite", "收藏") + "</u>" +
+		 							"<u class='ui-tab-active'>" + $.i18n.prop("profile.tabs.favorite", "收藏") + "</u>" +
 		 						"</div>" +
 		 						"<div>" +
-		 							"<div id='favorite' class='profile-ui-tab-content profile-ui-tab-active'>" +
+		 							"<div id='favoriteContainer' class='ui-tab-content ui-tab-active'>" +
+		 								"<div id='favoriteItems'>" +
+		 								"</div>" +
+		 								"<div id='favoritePagination'>" +
+		 								"</div>" +
 		 							"</div>" +
 		 						"</div>" +
 		 					"</div>" +
 		 				"</div>");
-		 				
+
 	profile.append(profileTabs);
 	
 	Profile.tabs = new $.fn.tab({
-        tabList:"#profileTabs .profile-ui-tab-container div u",
-        contentList:"#profileTabs .profile-ui-tab-container .profile-ui-tab-content",
+        tabList:"#profileTabs .ui-tab-container .clearfix u",
+        contentList:"#profileTabs .ui-tab-container .ui-tab-content",
         showType:"fade",
         callBackStartEvent:function(index) {
 //            alert(index);
@@ -2070,8 +2076,146 @@ Profile.init = function() {
 //            alert("hideEvent"+index);
         },
         callBackShowEvent:function(index) {
-
+			if (index == 0) {
+				Profile.queryFavoriteShop(0, 5, true);
+			}
         }
     });
     
+    
+};
+
+
+Profile.queryFavoriteShop = function(startIndex, max, updatePage) {
+	var iq = new Iq(IqType.GET);
+	
+	var userFavoriteShop = new IqUserFavoriteShop();
+	var resultSetExtension = new ResultSetExtension();
+	resultSetExtension.setIndex(startIndex);
+	resultSetExtension.setMax(max);
+	userFavoriteShop.setResultSetExtension(resultSetExtension);
+	
+	iq.addPacketExtension(userFavoriteShop);
+	
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	var conn = connectionMgr.getAllConnections()[0];
+	if (conn) {
+		conn.handleStanza({
+			filter: new PacketIdFilter(iq.getStanzaId()),
+			timeout: Christy.loginTimeout,
+			handler: function(iqResponse) {
+				if (iqResponse.getType() == IqType.RESULT) {
+					var userFavoriteShop = iqResponse.getPacketExtension(IqUserFavoriteShop.ELEMENTNAME, IqUserFavoriteShop.NAMESPACE);
+					var shopItems = userFavoriteShop.getShopItems();
+					var favoriteItems = $("#favoriteItems");
+					favoriteItems.empty();
+					for (var i = 0; i < shopItems.length; ++i) {
+						var favoriteItemJqObj = Profile.createFavoriteItem(shopItems[i]);
+						favoriteItems.append(favoriteItemJqObj);
+					}
+					
+					if (updatePage) {
+						var rsx = userFavoriteShop.getResultSetExtension();
+						var favoritePaginationJqObj = $("#favoritePagination");
+						
+						var favoritePagination = new $.fn.Pagination({
+							renderTo: favoritePaginationJqObj,
+							total: rsx.getCount(),
+							current: 1,
+							onChanged: function(page) {
+								Profile.queryFavoriteShop((page - 1) * max, max, false);
+							}
+						});
+					}
+				}				
+			}
+		});
+		
+		conn.sendStanza(iq);
+	}
+};
+
+
+Profile.createFavoriteItem = function(shopItem) {
+	var shopInfoItemPanel = $("<div shopId='" + shopItem.getShopId() + "'>" +
+								"<table style='width:100%;border-bottom:1px solid gray;'>" +
+									"<tr>" +
+										"<td>" +
+											"<div>" + shopItem.getShopName() + " " + shopItem.getStreet() +"</div>" +
+											"<div>" + shopItem.getTel() + "</div>" +
+										"</td>" +
+										"<td valign='right'>" +
+											"<input type='button' value='" + $.i18n.prop("profile.favorite.removeFavorite", "删除") + "'/>" +
+										"</td>" +
+									"</tr>" +
+								"</table>" +
+							"</div>");
+	shopInfoItemPanel.find("td:first").click(function(){
+		var shopId = shopItem.getShopId();
+		$.ajax({
+			url: "/shop/",
+			dataType: "json",
+			cache: false,
+			type: "get",
+			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+			data: {
+				action: "getshopdetail",
+				shopid: shopId
+			},
+			success: function(shopDetail){
+				Search.currentShopDetail = shopDetail;
+				Search.showShopDetail(shopDetail);
+			},
+			error: function (xmlHttpRequest, textStatus, errorThrown) {
+				
+			},
+			complete: function(xmlHttpRequest, textStatus) {
+				
+			}
+		});
+
+	});
+	
+	shopInfoItemPanel.find("input").click(function(){
+		var iq = new Iq(IqType.SET);
+		var userFavoriteShop = new IqUserFavoriteShop();
+		
+		var item = new ShopItem(shopItem.getShopId());
+		item.setAction("remove");
+		userFavoriteShop.addShopItem(item);
+		
+		iq.addPacketExtension(userFavoriteShop);
+		
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			conn.handleStanza({
+				filter: new PacketIdFilter(iq.getStanzaId()),
+				timeout: Christy.loginTimeout,
+				handler: function(iqResponse) {
+					var opts = MainUtils.cloneObj(Main.notifyOpts);
+					if (iqResponse.getType() == IqType.RESULT) {
+						shopInfoItemPanel.remove();
+						opts.message = $.i18n.prop("profile.favorite.removeSuccess", "删除成功！");
+						
+					} else {
+						opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
+						opts.css.backgroundColor = "red";
+					}
+					$.blockUI(opts);
+				},
+				timeoutHandler: function() {
+					var opts = MainUtils.cloneObj(Main.notifyOpts);
+					opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
+					opts.css.backgroundColor = "red";
+					$.blockUI(opts); 
+				}
+			});
+			
+			conn.sendStanza(iq);
+		}
+	});
+	
+	
+	return shopInfoItemPanel;
 };
