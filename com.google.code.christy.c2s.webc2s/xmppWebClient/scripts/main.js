@@ -213,11 +213,11 @@ Main.init = function() {
  						"<div>" +
  							"<div id='im' class='ui-tab-content ui-tab-active'>" +
  							"</div>" +
-	 						"<div id='search' class='ui-tab-content'>" +
+	 						"<div id='search' class='ui-tab-content' style='display:none;'>" +
 	 						"</div>" +
-	 						"<div id='map' class='ui-tab-content'>" +
+	 						"<div id='map' class='ui-tab-content' style='display:none;'>" +
 	 						"</div>" +
-	 						"<div id='profile' class='ui-tab-content'>" +
+	 						"<div id='profile' class='ui-tab-content' style='display:none;'>" +
 	 						"</div>" +
  						"</div>" +
  					"</div>" +
@@ -253,6 +253,14 @@ Main.init = function() {
 				if (!mapCanvas.attr("src")) {
 					mapCanvas.attr("src", "/mapcanvas.html");
 				}
+			}
+			// init favorite
+			else if (index == 3) {
+				if (!Profile.isFirst) {
+					Profile.queryFavoriteShop(0, 5, true);
+					Profile.isFirst = true;
+				}
+				
 			}
         }
     });
@@ -1912,16 +1920,16 @@ Map.MAP_CONTROLBAR_HEIGHT = 20
 Map.init = function() {
 	var mapPanel = $("#map");
 	var mapTabs = $("<div id='mapTabs'>" +
-						"<div class='ui-tab-container'>" +
+						"<div class='map-ui-tab-container'>" +
 							"<div class='clearfix'>" +
-								"<u id='mapCanvasContainer' style='width:50%;' class='ui-tab-active'>" + $.i18n.prop("map.tabs.map", "地图") + "</u>" +
+								"<u id='mapCanvasContainer' style='width:50%;' class='map-ui-tab-active'>" + $.i18n.prop("map.tabs.map", "地图") + "</u>" +
 								"<u id='mapItems' style='width:50%;' >" + $.i18n.prop("map.tabs.mapItems", "地图项") + "</u>" +
 							"</div>" +
 							"<div>" +
-								"<div id='mapCanvasPanel' class='ui-tab-content ui-tab-active'>" +
+								"<div id='mapCanvasPanel' class='map-ui-tab-content map-ui-tab-active'>" +
 									"<iframe id='mapCanvas' name='mapCanvas' width='100%' height='" + Map.getMapCanvasHeight() + "'scrolling='no' frameborder='0' />" +
 								"</div>" +
-		 						"<div id='mapItemsPanel' class='ui-tab-content'>" +
+		 						"<div id='mapItemsPanel' class='map-ui-tab-content'>" +
 		 						"</div>" +
 							"</div>" +
 						"</div>" +
@@ -1930,8 +1938,10 @@ Map.init = function() {
 	mapPanel.append(mapTabs);
 					
 	Map.tabs = new $.fn.tab({
-        tabList:"#mapTabs .ui-tab-container .clearfix u",
-        contentList:"#mapTabs .ui-tab-container .ui-tab-content"
+        tabList:"#mapTabs .map-ui-tab-container .clearfix u",
+        contentList:"#mapTabs .map-ui-tab-container .map-ui-tab-content",
+        tabActiveClass:"map-ui-tab-active",
+        tabDisableClass:"map-ui-tab-disable"
 //        showType:"fade"
     });
     Map.tabs.triggleTab(0);
@@ -2048,15 +2058,15 @@ Profile.init = function() {
 	var profile = $("#profile");
 	
 	var profileTabs = $("<div id='profileTabs'>" +
-		 					"<div class='ui-tab-container'>" +
+		 					"<div class='profile-ui-tab-container'>" +
 		 						"<div class='clearfix'>" +
-		 							"<u class='ui-tab-active'>" + $.i18n.prop("profile.tabs.favorite", "收藏") + "</u>" +
+		 							"<u class='profile-ui-tab-active'>" + $.i18n.prop("profile.tabs.favorite", "收藏") + "</u>" +
 		 						"</div>" +
 		 						"<div>" +
-		 							"<div id='favoriteContainer' class='ui-tab-content ui-tab-active'>" +
+		 							"<div id='favoriteContainer' class='profile-ui-tab-content profile-ui-tab-active'>" +
 		 								"<div id='favoriteItems'>" +
 		 								"</div>" +
-		 								"<div id='favoritePagination'>" +
+		 								"<div id='favoritePagination' style='text-align: center;'>" +
 		 								"</div>" +
 		 							"</div>" +
 		 						"</div>" +
@@ -2064,22 +2074,12 @@ Profile.init = function() {
 		 				"</div>");
 
 	profile.append(profileTabs);
-	
+    
 	Profile.tabs = new $.fn.tab({
-        tabList:"#profileTabs .ui-tab-container .clearfix u",
-        contentList:"#profileTabs .ui-tab-container .ui-tab-content",
-        showType:"fade",
-        callBackStartEvent:function(index) {
-//            alert(index);
-        },
-        callBackHideEvent:function(index) {
-//            alert("hideEvent"+index);
-        },
-        callBackShowEvent:function(index) {
-			if (index == 0) {
-				Profile.queryFavoriteShop(0, 5, true);
-			}
-        }
+        tabList:"#profileTabs .profile-ui-tab-container .clearfix u",
+        contentList:"#profileTabs .profile-ui-tab-container .profile-ui-tab-content",
+        tabActiveClass:"profile-ui-tab-active",
+        tabDisableClass:"profile-ui-tab-disable"
     });
     
     
@@ -2120,7 +2120,7 @@ Profile.queryFavoriteShop = function(startIndex, max, updatePage) {
 						
 						var favoritePagination = new $.fn.Pagination({
 							renderTo: favoritePaginationJqObj,
-							total: rsx.getCount(),
+							total: Math.ceil(rsx.getCount() / max),
 							current: 1,
 							onChanged: function(page) {
 								Profile.queryFavoriteShop((page - 1) * max, max, false);
@@ -2140,7 +2140,7 @@ Profile.createFavoriteItem = function(shopItem) {
 	var shopInfoItemPanel = $("<div shopId='" + shopItem.getShopId() + "'>" +
 								"<table style='width:100%;border-bottom:1px solid gray;'>" +
 									"<tr>" +
-										"<td>" +
+										"<td style='width:100%;'>" +
 											"<div>" + shopItem.getShopName() + " " + shopItem.getStreet() +"</div>" +
 											"<div>" + shopItem.getTel() + "</div>" +
 										"</td>" +
