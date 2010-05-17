@@ -394,6 +394,20 @@ Main.init = function() {
 			
 		}
 		$("#userJid").text(conn.getJid().toBareJID());
+		
+		var mapItem = {
+			id: "itemId",
+			title: "title",
+			isShow: true,
+			closeable: true,
+			positions: [{
+				message: "pos",
+				lat: 31.221891,
+				lon: 121.443297
+			}]
+		};
+		
+		Map.updateMapItem(mapItem);
 //		
 //		var vCardIq = new Iq(IqType.GET);
 //		vCardIq.setTo(new JID(conn.getJid().getNode(), conn.getJid().getDomain(), null));
@@ -1943,7 +1957,7 @@ Map.mapFrameLoaded = function() {
 				title: mapItem.title,
 				positions: mapItem.positions
 			};
-			mapcanvas[0].contentWindow.updateMapMarker(marker);
+			mapCanvas[0].contentWindow.updateMapMarker(marker);
 		}
 	}
 };
@@ -1951,13 +1965,13 @@ Map.mapFrameLoaded = function() {
 //	id: itemId,
 //	title: "title",
 //	isShow: true,
-//	closeable: true
+//	closeable: true,
 //	positions: [{
 //		lat: lat,
 //		lon: lon
 //	}]
 //};
-Map.mapItems= {};
+Map.mapItems = {};
 
 Map.containMapItem = function (mapItemId) {
 	var mapItem = Map.mapItems[mapItemId];
@@ -2003,17 +2017,17 @@ Map.updateMapItem = function (mapItem) {
 	}
 	
 
-	var mapcanvas = $("#mapcanvas");
-	if (mapcanvas.attr("src")) {
+	var mapCanvas = $("#mapCanvas");
+	if (mapCanvas.attr("src")) {
 		if (mapItem.isShow) {
 			var marker = {
 				id: mapItem.id,
 				title: mapItem.title,
 				positions: mapItem.positions.slice(0)
 			};
-			mapcanvas[0].contentWindow.updateMapMarker(marker);
+			mapCanvas[0].contentWindow.updateMapMarker(marker);
 		} else {
-			mapcanvas[0].contentWindow.removeMapMarker(mapItem.id);
+			mapCanvas[0].contentWindow.removeMapMarker(mapItem.id);
 		}
 		
 	}
@@ -2021,9 +2035,9 @@ Map.updateMapItem = function (mapItem) {
 
 Map.removeMapItem = function (mapItemId) {
 	delete Map.mapItems[mapItemId];
-	var mapcanvas = $("#mapcanvas");
-	if (mapcanvas.attr("src")) {
-		mapcanvas[0].contentWindow.removeMapMarker(mapItemId);
+	var mapCanvas = $("#mapCanvas");
+	if (mapCanvas.attr("src")) {
+		mapCanvas[0].contentWindow.removeMapMarker(mapItemId);
 	}
 }
 
