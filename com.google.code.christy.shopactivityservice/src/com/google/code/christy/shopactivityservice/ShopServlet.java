@@ -205,6 +205,8 @@ public class ShopServlet extends HttpServlet
 		String eastingStr = req.getParameter("easting");
 		String northingStr = req.getParameter("northing");
 		
+		String shopType = req.getParameter("type");
+		
 		String pageStr = req.getParameter("page");
 		String countStr = req.getParameter("count");
 		
@@ -216,18 +218,9 @@ public class ShopServlet extends HttpServlet
 		
 		try
 		{
-			Shop[] shops = shopDbhelper.getShopByLoc(easting, northing, 10);
-			
-			List<Shop> resultShops = new ArrayList<Shop>();
-			
-			int start = (page -1) * count;
-			if (start <= shops.length -1)
-			{
-				for (int i = start; i < shops.length && resultShops.size() < count; ++start,++i)
-				{
-					resultShops.add(shops[i]);
-				}
-			}
+			Object[] result = shopDbhelper.getShopByLoc(shopType, easting, northing, 10, page, count);
+			int resultCount = (Integer) result[0];
+			Shop[] resultShops = (Shop[]) result[1];
 			
 			JSONObject resultJsonObj = new JSONObject();
 			JSONArray array = new JSONArray();
@@ -250,7 +243,7 @@ public class ShopServlet extends HttpServlet
 				}
 				
 			}
-			resultJsonObj.put("total", shops.length);
+			resultJsonObj.put("total", resultCount);
 			resultJsonObj.put("shops", array);
 			resp.getWriter().write(resultJsonObj.toString());
 			
