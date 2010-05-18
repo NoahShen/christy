@@ -40,10 +40,12 @@ public class ShopServlet extends HttpServlet
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
 		// TODO Auto-generated method stub
-		loggerServiceTracker.debug("doGet");
+		loggerServiceTracker.debug("doPost");
+		
+		req.setCharacterEncoding("UTF-8");
 		
 		resp.setContentType("text/json;charset=UTF-8");
 		resp.setCharacterEncoding("UTF-8");
@@ -69,6 +71,121 @@ public class ShopServlet extends HttpServlet
 		{
 			handleGetUserShopComments(req, resp);
 		}
+		else if ("getfavoriteshops".equals(action))
+		{
+			handleGetFavoriteShops(req, resp);
+		}
+		else if ("removefavoriteshop".equals(action))
+		{
+			handleRemoveFavoriteShop(req, resp);
+		}
+		else if ("addfavoriteshop".equals(action))
+		{
+			handleAddFavoriteShop(req, resp);
+		}
+	}
+
+	private void handleAddFavoriteShop(HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		String streamId = req.getParameter("streamid");
+		
+		if (!c2sManagerTracker.containStreamId(streamId))
+		{
+			resp.setContentType("text/html;charset=UTF-8");
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND, "invalided streamId");
+			return;
+		}
+		String username = req.getParameter("username").toLowerCase();
+		String shopId = req.getParameter("shopid");
+		try
+		{
+			shopDbhelper.addFavoriteShop(username, Long.parseLong(shopId));
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("result", "success");
+			resp.getWriter().write(jsonObj.toString());
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void handleRemoveFavoriteShop(HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		String streamId = req.getParameter("streamid");
+		
+		if (!c2sManagerTracker.containStreamId(streamId))
+		{
+			resp.setContentType("text/html;charset=UTF-8");
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND, "invalided streamId");
+			return;
+		}
+		
+		String username = req.getParameter("username").toLowerCase();
+		String favoriteshopid = req.getParameter("favoriteshopid");
+		try
+		{
+			shopDbhelper.removeFavoriteShop(username, Long.parseLong(favoriteshopid));
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("result", "success");
+			resp.getWriter().write(jsonObj.toString());
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void handleGetFavoriteShops(HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		String streamId = req.getParameter("streamid");
+		
+		if (!c2sManagerTracker.containStreamId(streamId))
+		{
+			resp.setContentType("text/html;charset=UTF-8");
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND, "invalided streamId");
+			return;
+		}
+		
+		String username = req.getParameter("username").toLowerCase();
+		
+		String pageStr = req.getParameter("page");
+		String countStr = req.getParameter("count");
+		
+		int page = pageStr == null ?  1 : Integer.parseInt(pageStr);
+		int count = countStr == null ?  10 : Integer.parseInt(countStr);
+		
+		try
+		{
+			Object[] result = shopDbhelper.getFavoriteShop(username, page, count);
+			int resultCount = (Integer) result[0];
+			UserFavoriteShop favoriteShops[] = (UserFavoriteShop[]) result[1];
+			
+			JSONArray commentsJson = new JSONArray();
+			
+			for (UserFavoriteShop favoriteShop : favoriteShops)
+			{
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("favoriteShopId", favoriteShop.getId());
+				jsonObj.put("shopId", favoriteShop.getShopId());
+				jsonObj.put("shopName", favoriteShop.getShopName());
+				jsonObj.put("street", favoriteShop.getStreet());
+				commentsJson.put(jsonObj);
+			}
+			
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("total", resultCount);
+			jsonObj.put("shops", commentsJson);
+			resp.getWriter().write(jsonObj.toString());
+		}
+		catch (Exception e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 	}
 
 	private void handleGetUserShopComments(HttpServletRequest req, HttpServletResponse resp) throws IOException
@@ -261,13 +378,12 @@ public class ShopServlet extends HttpServlet
 	private void handleSearch(HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
 		String searchKey = req.getParameter("searchKey");
-		
 		String eastingStr = req.getParameter("easting");
 		String northingStr = req.getParameter("northing");
 		
 		Object[] result = null;
 		if (searchKey != null)
-		{
+		{		
 			result = searchByKey(req, resp, searchKey);
 		} 
 		else if (eastingStr != null && northingStr != null)
@@ -376,10 +492,10 @@ public class ShopServlet extends HttpServlet
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
 		// TODO Auto-generated method stub
-		loggerServiceTracker.debug("doPost");
+		loggerServiceTracker.debug("doGet");
 		doPost(req, resp);
 	}
 

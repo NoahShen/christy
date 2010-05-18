@@ -4909,210 +4909,210 @@ parser.addExtensionParser(new ResultSetExtensionParser());
 
 
 
-// start of IqUserFavoriteShop
-
-ShopItem = jClass.extend({
-	init: function(shopId){
-		this.shopId = shopId;
-	},
-
-	getShopId: function() {
-		return this.shopId;
-	},
-	
-	getAction: function() {
-		return this.action;
-	},
-	
-	setAction: function(action) {
-		this.action = action;
-	},
-
-	getShopName: function() {
-		return this.shopName;
-	},
-
-	setShopName: function(shopName) {
-		this.shopName = shopName;
-	},
-
-	getStreet: function() {
-		return this.street;
-	},
-	
-	setStreet: function(street) {
-		this.street = street;
-	},
-	
-	getTel: function() {
-		return this.tel;
-	},
-
-	setTel: function(tel) {
-		this.tel = tel;
-	},
-		
-	toXml: function(){
-		var xml = "";
-		xml += "<shop id=\"" + this.getShopId() + "\"";
-		if (this.getAction() != null) {
-			xml +=  " action=\"" + this.getAction() + "\"";
-		}
-		xml += ">";
-		
-		if (this.getShopName() != null) {
-			xml += "<name>" + this.getShopName() + "</name>";
-		}
-		
-		if (this.getStreet() != null) {
-			xml += "<street>" + this.getStreet() + "</street>";
-		}
-		
-		if (this.getTel() != null) {
-			xml += "<tel>" + this.getStreet() + "</tel>";
-		}
-		
-		xml += "</shop>";
-		return xml;
-	}
-});
-
-IqUserFavoriteShop = PacketExtension.extend({
-	init: function(){
-		this.shopItems = new Array();
-	},
-	
-	getElementName: function(){
-		return IqUserFavoriteShop.ELEMENTNAME;
-	},
-	
-	getNamespace: function(){
-		return IqUserFavoriteShop.NAMESPACE;
-	},
-	
-	addShopItem: function(item) {
-		this.shopItems.push(item);
-	},
-	
-	removeShopItem: function(item) {
-		for (var i =  0; i < this.shopItems.length; ++i) {
-			if (this.shopItems[i] == item) {
-				this.shopItems.splice(i,1);
-			}
-		}
-	},
-	
-	getShopItems: function() {
-		return this.shopItems;
-	},
-	
-	getResultSetExtension: function() {
-		return this.resultSetExtension;
-	},
-
-	setResultSetExtension: function(resultSetExtension) {
-		this.resultSetExtension = resultSetExtension;
-	},
-	
-	toXml: function() {
-		var xml = "";
-		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\"";
-		
-		if (this.shopItems.length == 0 && this.resultSetExtension == null) {
-			xml += "/>";
-			
-		} else {
-			xml += ">";
-
-			for (var i = 0; i < this.shopItems.length; ++i){			
-				xml += this.shopItems[i].toXml();
-			}
-			
-			if (this.resultSetExtension) {
-				xml += this.resultSetExtension.toXml();
-			}
-			
-			xml += "</" + this.getElementName() + ">";
-		}
-		
-		
-		return xml;
-	}
-});
-
-IqUserFavoriteShop.ELEMENTNAME = "shops";
-IqUserFavoriteShop.NAMESPACE = "christy:shop:user:favoriteshop";
-
-// end of IqUserFavoriteShop
-
-
-// start of IqUserFavoriteShopParser
-
-IqUserFavoriteShopParser = XmppParser.ExtensionParser.extend({
-	init: function() {
-	},
-	
-	getElementName: function() {
-		return IqUserFavoriteShopParser.ELEMENTNAME
-	},
-	
-	getNamespace: function() {
-		return IqUserFavoriteShopParser.NAMESPACE;
-	},
-	
-	parseExtension: function(xmppParser, xmlElement) {
-		var userFavoriteShop = new IqUserFavoriteShop();
-		var childNodes = xmlElement.childNodes;
-		for (var i = 0; i < childNodes.length; ++i) {
-			var childEle = childNodes[i];
-			// ELEMENT_NODE
-			if (childEle.nodeType == 1) {
-				var elementName = childEle.nodeName;
-				if ("shop" == elementName) {
-					var shopItem = this.parseShopItem(childEle);
-					userFavoriteShop.addShopItem(shopItem);
-				} else {
-					var extensionParser = xmppParser.getExtensionParser(ResultSetExtension.ELEMENTNAME, ResultSetExtension.NAMESPACE);
-					if (extensionParser) {
-						var resultSetX = extensionParser.parseExtension(xmppParser, childEle);
-						userFavoriteShop.setResultSetExtension(resultSetX);
-					}
-				}
-			}
-		}
-		return userFavoriteShop;
-	},
-	
-	parseShopItem: function(shopItemElem) {
-		var shopId = shopItemElem.getAttribute("id");
-		var action = shopItemElem.getAttribute("action");
-		var shopItem = new ShopItem(shopId);
-		shopItem.setAction(action);
-		var childNodes = shopItemElem.childNodes;
-		for (var i = 0; i < childNodes.length; ++i) {
-			var childEle = childNodes[i];
-			// ELEMENT_NODE
-			if (childEle.nodeType == 1) {
-				var elementName = childEle.nodeName;
-				if ("name" == elementName) {
-					shopItem.setShopName(childEle.firstChild.nodeValue);
-				} else if ("street" == elementName) {
-					shopItem.setStreet(childEle.firstChild.nodeValue);
-				} else if ("tel" == elementName) {
-					shopItem.setTel(childEle.firstChild.nodeValue);
-				}
-			}
-		}
-		return shopItem;
-	}
-});
-
-IqUserFavoriteShopParser.ELEMENTNAME = "shops";
-IqUserFavoriteShopParser.NAMESPACE = "christy:shop:user:favoriteshop";
-// end of IqUserFavoriteShopParser
-
-var parser = XmppParser.getInstance();
-parser.addExtensionParser(new IqUserFavoriteShopParser());
+//// start of IqUserFavoriteShop
+//
+//ShopItem = jClass.extend({
+//	init: function(shopId){
+//		this.shopId = shopId;
+//	},
+//
+//	getShopId: function() {
+//		return this.shopId;
+//	},
+//	
+//	getAction: function() {
+//		return this.action;
+//	},
+//	
+//	setAction: function(action) {
+//		this.action = action;
+//	},
+//
+//	getShopName: function() {
+//		return this.shopName;
+//	},
+//
+//	setShopName: function(shopName) {
+//		this.shopName = shopName;
+//	},
+//
+//	getStreet: function() {
+//		return this.street;
+//	},
+//	
+//	setStreet: function(street) {
+//		this.street = street;
+//	},
+//	
+//	getTel: function() {
+//		return this.tel;
+//	},
+//
+//	setTel: function(tel) {
+//		this.tel = tel;
+//	},
+//		
+//	toXml: function(){
+//		var xml = "";
+//		xml += "<shop id=\"" + this.getShopId() + "\"";
+//		if (this.getAction() != null) {
+//			xml +=  " action=\"" + this.getAction() + "\"";
+//		}
+//		xml += ">";
+//		
+//		if (this.getShopName() != null) {
+//			xml += "<name>" + this.getShopName() + "</name>";
+//		}
+//		
+//		if (this.getStreet() != null) {
+//			xml += "<street>" + this.getStreet() + "</street>";
+//		}
+//		
+//		if (this.getTel() != null) {
+//			xml += "<tel>" + this.getStreet() + "</tel>";
+//		}
+//		
+//		xml += "</shop>";
+//		return xml;
+//	}
+//});
+//
+//IqUserFavoriteShop = PacketExtension.extend({
+//	init: function(){
+//		this.shopItems = new Array();
+//	},
+//	
+//	getElementName: function(){
+//		return IqUserFavoriteShop.ELEMENTNAME;
+//	},
+//	
+//	getNamespace: function(){
+//		return IqUserFavoriteShop.NAMESPACE;
+//	},
+//	
+//	addShopItem: function(item) {
+//		this.shopItems.push(item);
+//	},
+//	
+//	removeShopItem: function(item) {
+//		for (var i =  0; i < this.shopItems.length; ++i) {
+//			if (this.shopItems[i] == item) {
+//				this.shopItems.splice(i,1);
+//			}
+//		}
+//	},
+//	
+//	getShopItems: function() {
+//		return this.shopItems;
+//	},
+//	
+//	getResultSetExtension: function() {
+//		return this.resultSetExtension;
+//	},
+//
+//	setResultSetExtension: function(resultSetExtension) {
+//		this.resultSetExtension = resultSetExtension;
+//	},
+//	
+//	toXml: function() {
+//		var xml = "";
+//		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\"";
+//		
+//		if (this.shopItems.length == 0 && this.resultSetExtension == null) {
+//			xml += "/>";
+//			
+//		} else {
+//			xml += ">";
+//
+//			for (var i = 0; i < this.shopItems.length; ++i){			
+//				xml += this.shopItems[i].toXml();
+//			}
+//			
+//			if (this.resultSetExtension) {
+//				xml += this.resultSetExtension.toXml();
+//			}
+//			
+//			xml += "</" + this.getElementName() + ">";
+//		}
+//		
+//		
+//		return xml;
+//	}
+//});
+//
+//IqUserFavoriteShop.ELEMENTNAME = "shops";
+//IqUserFavoriteShop.NAMESPACE = "christy:shop:user:favoriteshop";
+//
+//// end of IqUserFavoriteShop
+//
+//
+//// start of IqUserFavoriteShopParser
+//
+//IqUserFavoriteShopParser = XmppParser.ExtensionParser.extend({
+//	init: function() {
+//	},
+//	
+//	getElementName: function() {
+//		return IqUserFavoriteShopParser.ELEMENTNAME
+//	},
+//	
+//	getNamespace: function() {
+//		return IqUserFavoriteShopParser.NAMESPACE;
+//	},
+//	
+//	parseExtension: function(xmppParser, xmlElement) {
+//		var userFavoriteShop = new IqUserFavoriteShop();
+//		var childNodes = xmlElement.childNodes;
+//		for (var i = 0; i < childNodes.length; ++i) {
+//			var childEle = childNodes[i];
+//			// ELEMENT_NODE
+//			if (childEle.nodeType == 1) {
+//				var elementName = childEle.nodeName;
+//				if ("shop" == elementName) {
+//					var shopItem = this.parseShopItem(childEle);
+//					userFavoriteShop.addShopItem(shopItem);
+//				} else {
+//					var extensionParser = xmppParser.getExtensionParser(ResultSetExtension.ELEMENTNAME, ResultSetExtension.NAMESPACE);
+//					if (extensionParser) {
+//						var resultSetX = extensionParser.parseExtension(xmppParser, childEle);
+//						userFavoriteShop.setResultSetExtension(resultSetX);
+//					}
+//				}
+//			}
+//		}
+//		return userFavoriteShop;
+//	},
+//	
+//	parseShopItem: function(shopItemElem) {
+//		var shopId = shopItemElem.getAttribute("id");
+//		var action = shopItemElem.getAttribute("action");
+//		var shopItem = new ShopItem(shopId);
+//		shopItem.setAction(action);
+//		var childNodes = shopItemElem.childNodes;
+//		for (var i = 0; i < childNodes.length; ++i) {
+//			var childEle = childNodes[i];
+//			// ELEMENT_NODE
+//			if (childEle.nodeType == 1) {
+//				var elementName = childEle.nodeName;
+//				if ("name" == elementName) {
+//					shopItem.setShopName(childEle.firstChild.nodeValue);
+//				} else if ("street" == elementName) {
+//					shopItem.setStreet(childEle.firstChild.nodeValue);
+//				} else if ("tel" == elementName) {
+//					shopItem.setTel(childEle.firstChild.nodeValue);
+//				}
+//			}
+//		}
+//		return shopItem;
+//	}
+//});
+//
+//IqUserFavoriteShopParser.ELEMENTNAME = "shops";
+//IqUserFavoriteShopParser.NAMESPACE = "christy:shop:user:favoriteshop";
+//// end of IqUserFavoriteShopParser
+//
+//var parser = XmppParser.getInstance();
+//parser.addExtensionParser(new IqUserFavoriteShopParser());
 
 
 

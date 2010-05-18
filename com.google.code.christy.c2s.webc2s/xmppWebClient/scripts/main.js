@@ -257,7 +257,7 @@ Main.init = function() {
 			// init favorite
 			else if (index == 3) {
 				if (!Profile.isFirst) {
-					Profile.queryFavoriteShop(0, Profile.pageCount, true);
+					Profile.queryFavoriteShop(1, Profile.pageCount, true);
 					Profile.isFirst = true;
 				}
 				
@@ -1411,8 +1411,14 @@ Search.init = function() {
 							"</div>");
 							
 	shopDetailBar.find("#backToShopResultInput").click(function() {
-		shopResultContainer.siblings().hide();
-		shopResultContainer.show();
+		if ($("#shopResult").children().size() > 0) {
+			shopResultContainer.siblings().hide();
+			shopResultContainer.show();
+		} else {
+			searchInput.siblings().hide();
+			searchInput.show();
+		}
+		
 	});
 	shopDetailBar.find("#viewComments").click(function() {
 		var shopDetailJson = Search.currentShopDetail;
@@ -1698,7 +1704,7 @@ Search.searchShops = function(query, page, count, type, updatePage) {
 		url: "/shop/",
 		dataType: "json",
 		cache: false,
-		type: "get",
+		type: "post",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 		data: data,
 		success: function(searchResult){
@@ -1728,7 +1734,7 @@ Search.searchShops = function(query, page, count, type, updatePage) {
 						total: Math.ceil(searchResult.total / count),
 						current: 1,
 						onChanged: function(page) {
-							Search.searchShops(data, page, count, type, false);
+							Search.searchShops(query, page, count, type, false);
 						}
 				});
 			}
@@ -1842,64 +1848,72 @@ Search.showShopDetail = function(shopDetail) {
 							"</table>" +
 						"</div>");
 	
-	shopBaseInfo.find("#adddFavorite").click(function(){
-		var iq = new Iq(IqType.SET);
-	
-		var userFavoriteShop = new IqUserFavoriteShop();
-		var item = new ShopItem(baseInfo.id);
-		item.setAction("add");
-		userFavoriteShop.addShopItem(item);
-		iq.addPacketExtension(userFavoriteShop);
-		
+	shopBaseInfo.find("#adddFavorite").click(function() {
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
-		if (conn) {
-			conn.handleStanza({
-				filter: new PacketIdFilter(iq.getStanzaId()),
-				timeout: Christy.loginTimeout,
-				handler: function(iqResponse) {
-					var opts = MainUtils.cloneObj(Main.notifyOpts);
-					if (iqResponse.getType() == IqType.RESULT) {
-						opts.message = $.i18n.prop("search.shopDetail.addFavoriteSuccess", "收藏成功!");
-					} else {
-						opts.message = $.i18n.prop("search.shopDetail.addFavoriteFailed", "收藏失败!");
-						opts.css.backgroundColor = "red";
-					}
-					$.blockUI(opts); 
-				},
-				timeoutHandler: function() {
-					var opts = MainUtils.cloneObj(Main.notifyOpts);
+		if (!conn) {
+			return;
+		}
+		
+		var streamId = connectionMgr.getStreamId();
+		var username = conn.getJid().getNode();
+		
+		$.ajax({
+			url: "/shop/",
+			dataType: "json",
+			cache: false,
+			type: "get",
+			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+			data: {
+				action: "addfavoriteshop",
+				username: username,
+				streamid: streamId,
+				shopid: baseInfo.id
+			},
+			success: function(returnValue) {
+				var opts = MainUtils.cloneObj(Main.notifyOpts);
+				if (returnValue.result == "success") {
+					opts.message = $.i18n.prop("search.shopDetail.addFavoriteSuccess", "收藏成功!");
+				} else {
 					opts.message = $.i18n.prop("search.shopDetail.addFavoriteFailed", "收藏失败!");
 					opts.css.backgroundColor = "red";
-					$.blockUI(opts);
 				}
-			});
-			
-			conn.sendStanza(iq);
-		}
+				$.blockUI(opts);
+			},
+			error: function (xmlHttpRequest, textStatus, errorThrown) {
+				var opts = MainUtils.cloneObj(Main.notifyOpts);
+				opts.message = $.i18n.prop("search.shopDetail.addFavoriteFailed", "收藏失败!");
+				opts.css.backgroundColor = "red";
+				$.blockUI(opts);
+			},
+			complete: function(xmlHttpRequest, textStatus) {
+				
+			}
+		});
+		
 	});
 	
 	shopDetailPanel.append(shopBaseInfo);
 
 	var contactIntro = $("<table>" +
-						"<tr>" +
-							"<td style='word-break:break-all;'>" +
-								"<div>" +
-									$.i18n.prop("search.shopDetail.address", "地址：") +
-									baseInfo.addr + 
-								"</div>" +
-								"<div>" +
-									$.i18n.prop("search.shopDetail.tel", "电话：") +
-									baseInfo.phone + 
-								"</div>" +
-							"</td>" +
-						"</tr>" +
-						"<tr>" +
-							"<td style='word-break:break-all;'>" +
-								shopDetail.intro +
-							"</td>" +
-						"</tr>" +
-					"</table>");
+							"<tr>" +
+								"<td style='word-break:break-all;'>" +
+									"<div>" +
+										$.i18n.prop("search.shopDetail.address", "地址：") +
+										baseInfo.addr + 
+									"</div>" +
+									"<div>" +
+										$.i18n.prop("search.shopDetail.tel", "电话：") +
+										baseInfo.phone + 
+									"</div>" +
+								"</td>" +
+							"</tr>" +
+							"<tr>" +
+								"<td style='word-break:break-all;'>" +
+									shopDetail.intro +
+								"</td>" +
+							"</tr>" +
+						"</table>");
 					
 	shopDetailPanel.append(contactIntro);
 
@@ -1926,7 +1940,7 @@ Map.init = function() {
 								"<div id='mapCanvasPanel' class='map-ui-tab-content map-ui-tab-active'>" +
 									"<iframe id='mapCanvas' name='mapCanvas' width='100%' height='" + Map.getMapCanvasHeight() + "'scrolling='no' frameborder='0' />" +
 								"</div>" +
-		 						"<div id='mapItemsPanel' class='map-ui-tab-content'>" +
+		 						"<div id='mapItemsPanel' class='map-ui-tab-content' style='display:none;'>" +
 		 						"</div>" +
 							"</div>" +
 						"</div>" +
@@ -2141,6 +2155,31 @@ Profile.queryMyComments = function(pageIndex, max, updatePage) {
 										"</div>" + 
 										"<div>" + onecomment.content + "</div>" +
 									"</div>");
+				commsJqObj.click(function() {
+					$.ajax({
+						url: "/shop/",
+						dataType: "json",
+						cache: false,
+						type: "get",
+						contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+						data: {
+							action: "getshopdetail",
+							shopid: onecomment.shopId
+						},
+						success: function(shopDetail){
+							Search.currentShopDetail = shopDetail;
+							Search.showShopDetail(shopDetail);
+							Main.tabs.triggleTab(1);
+						},
+						error: function (xmlHttpRequest, textStatus, errorThrown) {
+							
+						},
+						complete: function(xmlHttpRequest, textStatus) {
+							
+						}
+					});
+
+				});
 			}
 			commentsItems.append(commsJqObj);
 			if (updatePage) {
@@ -2166,72 +2205,84 @@ Profile.queryMyComments = function(pageIndex, max, updatePage) {
 	});
 };
 
-Profile.queryFavoriteShop = function(startIndex, max, updatePage) {
-	var iq = new Iq(IqType.GET);
-	
-	var userFavoriteShop = new IqUserFavoriteShop();
-	var resultSetExtension = new ResultSetExtension();
-	resultSetExtension.setIndex(startIndex);
-	resultSetExtension.setMax(max);
-	userFavoriteShop.setResultSetExtension(resultSetExtension);
-	
-	iq.addPacketExtension(userFavoriteShop);
+Profile.queryFavoriteShop = function(pageIndex, count, updatePage) {
 	
 	var connectionMgr = XmppConnectionMgr.getInstance();
 	var conn = connectionMgr.getAllConnections()[0];
-	if (conn) {
-		conn.handleStanza({
-			filter: new PacketIdFilter(iq.getStanzaId()),
-			timeout: Christy.loginTimeout,
-			handler: function(iqResponse) {
-				if (iqResponse.getType() == IqType.RESULT) {
-					var userFavoriteShop = iqResponse.getPacketExtension(IqUserFavoriteShop.ELEMENTNAME, IqUserFavoriteShop.NAMESPACE);
-					var shopItems = userFavoriteShop.getShopItems();
-					var favoriteItems = $("#favoriteItems");
-					favoriteItems.empty();
-					for (var i = 0; i < shopItems.length; ++i) {
-						var favoriteItemJqObj = Profile.createFavoriteItem(shopItems[i]);
-						favoriteItems.append(favoriteItemJqObj);
-					}
-					
-					if (updatePage) {
-						var rsx = userFavoriteShop.getResultSetExtension();
-						var favoritePaginationJqObj = $("#favoritePagination");
-						
-						var favoritePagination = new $.fn.Pagination({
-							renderTo: favoritePaginationJqObj,
-							total: Math.ceil(rsx.getCount() / max),
-							current: 1,
-							onChanged: function(page) {
-								Profile.queryFavoriteShop((page - 1) * max, max, false);
-							}
-						});
-					}
-				}				
-			}
-		});
-		
-		conn.sendStanza(iq);
+	if (!conn) {
+		return;
 	}
+	
+	var streamId = connectionMgr.getStreamId();
+	var username = conn.getJid().getNode();
+	
+	$.ajax({
+		url: "/shop/",
+		dataType: "json",
+		cache: false,
+		type: "get",
+		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+		data: {
+			action: "getfavoriteshops",
+			username: username,
+			streamid: streamId,
+			page: pageIndex,
+			count: count
+		},
+		success: function(queryResult){
+			var favoriteItems = $("#favoriteItems");
+			favoriteItems.empty();
+			
+			var shops = queryResult.shops;
+			var shopsJqObj = $("<div></div>");
+			for (var i = 0; i < shops.length; ++i) {
+				var shop = shops[i];
+				var shopItemJqObj = Profile.createFavoriteItem(shop);
+				shopsJqObj.append(shopItemJqObj);								
+			}
+			
+			favoriteItems.append(shopsJqObj);
+			if (updatePage) {
+				var total = queryResult.total;
+				var favoritePaginationJqObj = $("#favoritePagination");
+				
+				var favoritePagination = new $.fn.Pagination({
+					renderTo: favoritePaginationJqObj,
+					total: Math.ceil(total / count),
+					current: 1,
+					onChanged: function(page) {
+						Profile.queryFavoriteShop(page, count, false);
+					}
+				});
+			}
+		},
+		error: function (xmlHttpRequest, textStatus, errorThrown) {
+			
+		},
+		complete: function(xmlHttpRequest, textStatus) {
+			
+		}
+	});
+	
 };
 
 
-Profile.createFavoriteItem = function(shopItem) {
-	var shopInfoItemPanel = $("<div shopId='" + shopItem.getShopId() + "'>" +
-								"<table style='width:100%;border-bottom:1px solid gray;'>" +
-									"<tr>" +
-										"<td style='width:100%;'>" +
-											"<div>" + shopItem.getShopName() + " " + shopItem.getStreet() +"</div>" +
-											"<div>" + shopItem.getTel() + "</div>" +
-										"</td>" +
-										"<td valign='right'>" +
-											"<input type='button' value='" + $.i18n.prop("profile.favorite.removeFavorite", "删除") + "'/>" +
-										"</td>" +
-									"</tr>" +
-								"</table>" +
-							"</div>");
-	shopInfoItemPanel.find("td:first").click(function(){
-		var shopId = shopItem.getShopId();
+Profile.createFavoriteItem = function(favoriteItem) {
+	var favoriteItemPanel = $("<div favoriteShopId='" + favoriteItem.favoriteShopId + "' shopId='" + favoriteItem.shopId + "'>" +
+									"<table style='width:100%;border-bottom:1px solid gray;'>" +
+										"<tr>" +
+											"<td style='width:100%;'>" +
+												"<div>" + favoriteItem.shopName + " " + favoriteItem.street +"</div>" +
+												"<div>" + favoriteItem.tel + "</div>" +
+											"</td>" +
+											"<td valign='right'>" +
+												"<input type='button' value='" + $.i18n.prop("profile.favorite.removeFavorite", "删除") + "'/>" +
+											"</td>" +
+										"</tr>" +
+									"</table>" +
+								"</div>");
+	favoriteItemPanel.find("td:first").click(function(){	
+		var shopId = favoriteItem.shopId;
 		$.ajax({
 			url: "/shop/",
 			dataType: "json",
@@ -2245,6 +2296,7 @@ Profile.createFavoriteItem = function(shopItem) {
 			success: function(shopDetail){
 				Search.currentShopDetail = shopDetail;
 				Search.showShopDetail(shopDetail);
+				Main.tabs.triggleTab(1);
 			},
 			error: function (xmlHttpRequest, textStatus, errorThrown) {
 				
@@ -2256,46 +2308,52 @@ Profile.createFavoriteItem = function(shopItem) {
 
 	});
 	
-	shopInfoItemPanel.find("input").click(function(){
-		var iq = new Iq(IqType.SET);
-		var userFavoriteShop = new IqUserFavoriteShop();
-		
-		var item = new ShopItem(shopItem.getShopId());
-		item.setAction("remove");
-		userFavoriteShop.addShopItem(item);
-		
-		iq.addPacketExtension(userFavoriteShop);
-		
+	favoriteItemPanel.find("input").click(function() {
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
-		if (conn) {
-			conn.handleStanza({
-				filter: new PacketIdFilter(iq.getStanzaId()),
-				timeout: Christy.loginTimeout,
-				handler: function(iqResponse) {
-					var opts = MainUtils.cloneObj(Main.notifyOpts);
-					if (iqResponse.getType() == IqType.RESULT) {
-						shopInfoItemPanel.remove();
-						opts.message = $.i18n.prop("profile.favorite.removeSuccess", "删除成功！");
-						
-					} else {
-						opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
-						opts.css.backgroundColor = "red";
-					}
-					$.blockUI(opts);
-				},
-				timeoutHandler: function() {
-					var opts = MainUtils.cloneObj(Main.notifyOpts);
+		if (!conn) {
+			return;
+		}
+		
+		var streamId = connectionMgr.getStreamId();
+		var username = conn.getJid().getNode();
+		
+		$.ajax({
+			url: "/shop/",
+			dataType: "json",
+			cache: false,
+			type: "get",
+			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+			data: {
+				action: "removefavoriteshop",
+				username: username,
+				streamid: streamId,
+				favoriteshopid: favoriteItem.favoriteShopId
+			},
+			success: function(returnValue) {
+				var opts = MainUtils.cloneObj(Main.notifyOpts);
+				if (returnValue.result == "success") {
+					Profile.queryFavoriteShop(1, Profile.pageCount, true);
+					opts.message = $.i18n.prop("profile.favorite.removeSuccess", "删除成功！");
+				} else {
 					opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
 					opts.css.backgroundColor = "red";
-					$.blockUI(opts); 
 				}
-			});
-			
-			conn.sendStanza(iq);
-		}
+				$.blockUI(opts);
+			},
+			error: function (xmlHttpRequest, textStatus, errorThrown) {
+				var opts = MainUtils.cloneObj(Main.notifyOpts);
+				opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
+				opts.css.backgroundColor = "red";
+				$.blockUI(opts);
+			},
+			complete: function(xmlHttpRequest, textStatus) {
+				
+			}
+		});
+		
 	});
 	
 	
-	return shopInfoItemPanel;
+	return favoriteItemPanel;
 };

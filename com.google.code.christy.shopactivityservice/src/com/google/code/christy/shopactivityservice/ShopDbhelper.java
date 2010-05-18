@@ -53,6 +53,17 @@ public class ShopDbhelper
 	
 	private static final String GETUSERSHOPCOOMENTSCOUNT_SQL = "SELECT COUNT(*) FROM shopcomment WHERE username = ?";
 	
+	private static final String GETCOUNTOFFAVORITESHOP_SQL = "SELECT COUNT(*) FROM userfavoriteshop WHERE username = ?";
+	
+	private static final String GETFAVORITESHOP_SQL = "SELECT R.id as id, R.username as username, R.shopId as shopId, title, street, tel" +
+							" FROM (SELECT * FROM userfavoriteshop WHERE username = ?) R" +
+							" LEFT JOIN shop S ON R.shopId = S.shopId" +
+							" LIMIT ?, ?";
+	
+	private static final String REMOVEFAVORITESHOP_SQL = "DELETE FROM userfavoriteshop WHERE username = ? AND id = ?";
+
+	private static final String ADDFAVORITESHOP_SQL = "INSERT INTO userfavoriteshop (username, shopId) VALUES (?, ?)";
+
 	private LoggerServiceTracker loggerServiceTracker;
 	
 	public ShopDbhelper(LoggerServiceTracker loggerServiceTracker, ConnectionPool connectionPool)
@@ -570,4 +581,125 @@ public class ShopDbhelper
 			
 		}
 	}
+	
+
+	public Object[] getFavoriteShop(String username, int page, int count) throws Exception
+	{
+		Connection connection = null;
+		Object[] result = new Object[2];
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(GETFAVORITESHOP_SQL);
+			preStat.setString(1, username);
+			preStat.setInt(2, (page - 1) * count);
+			preStat.setInt(3, count);
+			ResultSet resultSet = preStat.executeQuery();
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + resultSet.toString());
+			}
+			List<UserFavoriteShop> entities = new ArrayList<UserFavoriteShop>();
+			while (resultSet.next())
+			{
+//				String username2 = resultSet.getString("username");
+				long id = resultSet.getLong("id");
+				long shopId = resultSet.getLong("shopId");
+				String name = resultSet.getString("title");
+				String street = resultSet.getString("street");
+				String tel = resultSet.getString("tel");
+				
+				UserFavoriteShop entity = new UserFavoriteShop();
+				entity.setId(id);
+				entity.setShopId(shopId);
+				entity.setUsername(username);
+				entity.setShopName(name);
+				entity.setStreet(street);
+				entity.setTel(tel);
+				
+				entities.add(entity);
+			}
+			result[1] = entities.toArray(new UserFavoriteShop[]{});
+
+			PreparedStatement preStat2 = connection.prepareStatement(GETCOUNTOFFAVORITESHOP_SQL);
+			preStat2.setString(1, username);
+			ResultSet resultSet2 = preStat2.executeQuery();
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat2.toString());
+				loggerServiceTracker.debug("Result:" + resultSet2.toString());
+			}
+			if (resultSet2.next())
+			{
+				int resultCount = resultSet2.getInt("COUNT(*)");
+				result[0] = resultCount;
+			}
+			return result;
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+		}
+
+		
+	}
+	
+	public void addFavoriteShop(String username, long shopId) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(ADDFAVORITESHOP_SQL);
+			preStat.setString(1, username);
+			preStat.setLong(2, shopId);
+			preStat.executeUpdate();
+			
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + preStat.toString());
+			}
+			
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+	
+	public void removeFavoriteShop(String username, long favoriteshopid) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(REMOVEFAVORITESHOP_SQL);
+			preStat.setString(1, username);
+			preStat.setLong(2, favoriteshopid);
+			preStat.executeUpdate();
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+			}
+			
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+
 }

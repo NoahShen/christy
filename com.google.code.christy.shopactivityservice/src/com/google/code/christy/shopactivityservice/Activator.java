@@ -36,7 +36,7 @@ public class Activator implements BundleActivator
 		c2SManagerTracker.open();
 		
 		connPool = new ConnectionPool("com.mysql.jdbc.Driver",
-						"jdbc:mysql://localhost/christy",
+						"jdbc:mysql://localhost/christy?useUnicode=true&characterEncoding=UTF-8",
 						"root",
 						"123456");
 		connPool .createPool();
