@@ -512,6 +512,12 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		return webClientSessions.size();
 	}
 	
+	@Override
+	public boolean containStreamId(String streamId)
+	{
+		return webClientSessions.containsKey(streamId);
+	}
+	
 	private void sendCloseStream(WebClientSession webClientSession)
 	{
 		RouteMessage routeMessage = new RouteMessage(getName(), webClientSession.getStreamId());

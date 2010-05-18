@@ -1454,7 +1454,7 @@ Search.init = function() {
 	});
 	
 	shopCommentsBar.find("#commentOnShop").click(function() {
-		Search.showShopComment();
+		Search.showShopCommentInputPanel();
 	});
 
 	shopCommentsContainer.append(shopCommentsBar);
@@ -1637,7 +1637,7 @@ Search.viewsShopComments = function(shopId, page, count, updatePage) {
 	});
 };
 
-Search.showShopComment = function(shopId) {
+Search.showShopCommentInputPanel = function(shopId) {
 	var detail = Search.currentShopDetail;
 	if (detail == null) {
 		return;
@@ -2059,12 +2059,19 @@ Profile.init = function() {
 		 					"<div class='profile-ui-tab-container'>" +
 		 						"<div class='clearfix'>" +
 		 							"<u class='profile-ui-tab-active'>" + $.i18n.prop("profile.tabs.favorite", "收藏") + "</u>" +
+		 							"<u>" + $.i18n.prop("profile.tabs.comments", "评论") + "</u>" +
 		 						"</div>" +
 		 						"<div>" +
 		 							"<div id='favoriteContainer' class='profile-ui-tab-content profile-ui-tab-active'>" +
 		 								"<div id='favoriteItems'>" +
 		 								"</div>" +
 		 								"<div id='favoritePagination' style='text-align: center;'>" +
+		 								"</div>" +
+		 							"</div>" +
+		 							"<div id='commentsContainer' class='profile-ui-tab-content profile-ui-tab-active'>" +
+		 								"<div id='commentsItems'>" +
+		 								"</div>" +
+		 								"<div id='commentsPagination' style='text-align: center;'>" +
 		 								"</div>" +
 		 							"</div>" +
 		 						"</div>" +
@@ -2077,12 +2084,87 @@ Profile.init = function() {
         tabList:"#profileTabs .profile-ui-tab-container .clearfix u",
         contentList:"#profileTabs .profile-ui-tab-container .profile-ui-tab-content",
         tabActiveClass:"profile-ui-tab-active",
-        tabDisableClass:"profile-ui-tab-disable"
+        tabDisableClass:"profile-ui-tab-disable",
+        callBackShowEvent:function(index) {
+        	if (index == 1) {
+        		if (!Profile.hasQueriedComments) {
+					Profile.queryMyComments(1, Profile.pageCount, true);
+					Profile.hasQueriedComments = true;
+				}
+        	}
+        }
     });
     
     
 };
 
+Profile.queryMyComments = function(pageIndex, max, updatePage) {
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	var conn = connectionMgr.getAllConnections()[0];
+	if (!conn) {
+		return;
+	}
+	
+	var streamId = connectionMgr.getStreamId();
+	var username = conn.getJid().getNode();
+	
+	$.ajax({
+		url: "/shop/",
+		dataType: "json",
+		cache: false,
+		type: "get",
+		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+		data: {
+			action: "getusershopcomments",
+			username: username,
+			streamid: streamId,
+			page: pageIndex,
+			count: max
+		},
+		success: function(queryResult){
+			var commentsItems = $("#commentsItems");
+			commentsItems.empty();
+			
+			
+			var comments = queryResult.comments;
+			var commsJqObj = $("<div></div>");
+			for (var i = 0; i < comments.length; ++i) {
+				var onecomment = comments[i];
+				commsJqObj.append("<div shopId='" + onecomment.shopId + "'>" +
+										"<div>" +
+											"<span>" + onecomment.shopTitle + "</span>" +
+											"<span>" + new Date(onecomment.time).format("yyyy-MM-dd hh:mm:ss") + "</span>" +
+										"</div>" +
+										"<div>" +
+											$.i18n.prop("search.shopDetail.restaurant.score", "总分：") +
+											onecomment.score + 
+										"</div>" + 
+										"<div>" + onecomment.content + "</div>" +
+									"</div>");
+			}
+			commentsItems.append(commsJqObj);
+			if (updatePage) {
+				var total = queryResult.total;
+				var commentsPagination = $("#commentsPagination");
+				
+				var commentsPaginationJqObj = new $.fn.Pagination({
+					renderTo: commentsPagination,
+					total: Math.ceil(total / max),
+					current: 1,
+					onChanged: function(page) {
+						Profile.queryMyComments(page, max, false);
+					}
+				});
+			}
+		},
+		error: function (xmlHttpRequest, textStatus, errorThrown) {
+			
+		},
+		complete: function(xmlHttpRequest, textStatus) {
+			
+		}
+	});
+};
 
 Profile.queryFavoriteShop = function(startIndex, max, updatePage) {
 	var iq = new Iq(IqType.GET);
