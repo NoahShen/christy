@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : connection
-Source Server Version : 50022
+Source Server         : christy
+Source Server Version : 50083
 Source Host           : localhost:3306
 Source Database       : christy
 
 Target Server Type    : MYSQL
-Target Server Version : 50022
+Target Server Version : 50083
 File Encoding         : 65001
 
-Date: 2010-05-18 17:09:20
+Date: 2010-05-18 23:18:54
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -100,7 +100,7 @@ CREATE TABLE `shopcomment` (
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`commentId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopcomment
@@ -141,7 +141,7 @@ CREATE TABLE `shopvoter` (
   `itemName` varchar(50) NOT NULL,
   `value` int(11) NOT NULL,
   PRIMARY KEY  (`voterId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopvoter
@@ -183,7 +183,7 @@ CREATE TABLE `userfavoriteshop` (
   `username` char(50) NOT NULL,
   `shopId` int(20) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userfavoriteshop
@@ -192,8 +192,8 @@ INSERT INTO `userfavoriteshop` VALUES ('1', 'noah', '0');
 INSERT INTO `userfavoriteshop` VALUES ('3', 'noah', '2');
 INSERT INTO `userfavoriteshop` VALUES ('4', 'noah', '3');
 INSERT INTO `userfavoriteshop` VALUES ('6', 'noah', '5');
-INSERT INTO `userfavoriteshop` VALUES ('7', 'noah', '6');
-INSERT INTO `userfavoriteshop` VALUES ('8', 'noah', '1');
+INSERT INTO `userfavoriteshop` VALUES ('9', 'noah', '3');
+INSERT INTO `userfavoriteshop` VALUES ('10', 'noah', '1');
 
 -- ----------------------------
 -- Table structure for `userroster`
@@ -207,7 +207,7 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster
