@@ -37,10 +37,15 @@ public class ShopDbhelper
 	private static final String ADDSHOPVOTER_SQL = "INSERT INTO shopvoter (username, shopId, itemName, value) VALUES (?, ?, ?, ?)";
 
 	private static final String GETSHOPBYLOC_SQL = "SELECT *, SQRT(POW(? - easting, 2) + POW(? - northing, 2)) AS distance" +
-						" FROM shop WHERE type= ? HAVING distance<=(? * 1000) ORDER BY distance LIMIT ?, ?";
+						" FROM shop WHERE type = ? HAVING distance<=(? * 1000) ORDER BY distance LIMIT ?, ?";
 	
-	private static final String GETSHOPBYLOCCOUNT_SQL = "SELECT COUNT(*) FROM (SELECT shopId, SQRT(POW(? - easting, 2) + POW(? - northing, 2)) AS distance FROM shop WHERE type= ? HAVING distance<=(? * 1000)) R";
+	private static final String GETSHOPBYLOCCOUNT_SQL = "SELECT COUNT(*) FROM (SELECT *, SQRT(POW(? - easting, 2) + POW(? - northing, 2)) AS distance FROM shop WHERE type = ? HAVING distance<=(? * 1000)) R";
 	
+	private static final String GETSHOPBYKEY_SQL = "SELECT * FROM shop WHERE title LIKE ? OR  content LIKE ? OR district LIKE ? OR street LIKE ? LIMIT ?, ?";
+
+	private static final String GETSHOPBYKEYCOUNT_SQL = "SELECT COUNT(*) FROM (SELECT * FROM shop WHERE title LIKE ? OR  content LIKE ? OR district LIKE ? OR street LIKE ?) R";
+
+
 	private static final String GETSHOPCOOMENTS_SQL = "SELECT *  FROM shopcomment WHERE shopId = ? ORDER BY modificationDate DESC LIMIT ?, ?";
 	
 	public ShopDbhelper(ConnectionPool connectionPool)
@@ -274,6 +279,80 @@ public class ShopDbhelper
 				String tel = shopResSet.getString("tel");
 				double longitude = shopResSet.getDouble("longitude");
 				double latitude = shopResSet.getDouble("latitude");
+				double distanceFromUser = shopResSet.getDouble("distance");
+				
+				Shop shop = new Shop();
+				shop.setShopId(id);
+				shop.setEusername(eusername);
+				shop.setType(type);
+				shop.setTitle(title);
+				shop.setContent(content);
+				shop.setShopImg(shopImg);
+				shop.setDistrict(district);
+				shop.setStreet(street);
+				shop.setTel(tel);
+				shop.setLatitude(latitude);
+				shop.setLongitude(longitude);
+				shop.setDistanceFromUser(distanceFromUser);
+				
+				shops.add(shop);
+			}
+			
+			PreparedStatement preStat2 = connection.prepareStatement(GETSHOPBYLOCCOUNT_SQL);
+			preStat2.setInt(1, easting);
+			preStat2.setInt(2, northing);
+			preStat2.setString(3, shopType);
+			preStat2.setInt(4, distance);
+			ResultSet shopResSet2 = preStat2.executeQuery();
+			if (shopResSet2.next()) 
+			{
+				int countResult = shopResSet2.getInt("COUNT(*)");
+				returnValue[0] = countResult;
+			}
+			
+			returnValue[1] = shops.toArray(new Shop[]{});
+			return returnValue;
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+	
+	public Object[] getShopByKey(String shopType, String key, int page, int count) throws Exception
+	{
+		Connection connection = null;
+		Object[] returnValue = new Object[2];
+		try
+		{
+			String search = "%" + key + "%";
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(GETSHOPBYKEY_SQL);
+			preStat.setString(1, search);
+			preStat.setString(2, search);
+			preStat.setString(3, search);
+			preStat.setString(4, search);
+			preStat.setInt(5, (page - 1) * count);
+			preStat.setInt(6, count);
+			ResultSet shopResSet = preStat.executeQuery();
+			List<Shop> shops = new ArrayList<Shop>();
+			while (shopResSet.next()) 
+			{
+				long id = shopResSet.getLong("shopId");
+				String eusername = shopResSet.getString("enterpriseUser");
+				String type = shopResSet.getString("type");
+				String title = shopResSet.getString("title");
+				String content = shopResSet.getString("content");
+				String shopImg = shopResSet.getString("shopImg");
+				String district = shopResSet.getString("district");
+				String street = shopResSet.getString("street");
+				String tel = shopResSet.getString("tel");
+				double longitude = shopResSet.getDouble("longitude");
+				double latitude = shopResSet.getDouble("latitude");
 				
 				Shop shop = new Shop();
 				shop.setShopId(id);
@@ -291,11 +370,11 @@ public class ShopDbhelper
 				shops.add(shop);
 			}
 			
-			PreparedStatement preStat2 = connection.prepareStatement(GETSHOPBYLOCCOUNT_SQL);
-			preStat2.setInt(1, easting);
-			preStat2.setInt(2, northing);
-			preStat2.setString(3, shopType);
-			preStat2.setInt(4, distance);
+			PreparedStatement preStat2 = connection.prepareStatement(GETSHOPBYKEYCOUNT_SQL);
+			preStat2.setString(1, search);
+			preStat2.setString(2, search);
+			preStat2.setString(3, search);
+			preStat2.setString(4, search);
 			ResultSet shopResSet2 = preStat2.executeQuery();
 			if (shopResSet2.next()) 
 			{

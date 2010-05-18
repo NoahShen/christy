@@ -202,23 +202,24 @@ public class ShopServlet extends HttpServlet
 
 	private void handleSearch(HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
+		String searchKey = req.getParameter("searchKey");
+		
 		String eastingStr = req.getParameter("easting");
 		String northingStr = req.getParameter("northing");
 		
-		String shopType = req.getParameter("type");
-		
-		String pageStr = req.getParameter("page");
-		String countStr = req.getParameter("count");
-		
-		int page = pageStr == null ?  1 : Integer.parseInt(pageStr);
-		int count = countStr == null ?  10 : Integer.parseInt(countStr);
-		
-		int easting = Integer.parseInt(eastingStr);
-		int northing = Integer.parseInt(northingStr);
-		
-		try
+		Object[] result = null;
+		if (searchKey != null)
 		{
-			Object[] result = shopDbhelper.getShopByLoc(shopType, easting, northing, 10, page, count);
+			result = searchByKey(req, resp, searchKey);
+		} 
+		else if (eastingStr != null && northingStr != null)
+		{
+			result = searchByLoc(req, resp, Integer.parseInt(eastingStr), Integer.parseInt(northingStr));
+		}
+		
+		
+		if (result != null)
+		{
 			int resultCount = (Integer) result[0];
 			Shop[] resultShops = (Shop[]) result[1];
 			
@@ -234,6 +235,10 @@ public class ShopServlet extends HttpServlet
 					jsonObj.put("imgSrc", s.getShopImg());
 					jsonObj.put("tel", s.getTel());
 					jsonObj.put("street", s.getStreet());
+					if (s.getDistanceFromUser() != null)
+					{
+						jsonObj.put("distance", s.getDistanceFromUser().doubleValue());
+					}
 					array.put(jsonObj);
 				}
 				catch (JSONException e)
@@ -243,10 +248,39 @@ public class ShopServlet extends HttpServlet
 				}
 				
 			}
-			resultJsonObj.put("total", resultCount);
-			resultJsonObj.put("shops", array);
-			resp.getWriter().write(resultJsonObj.toString());
+			try
+			{
+				resultJsonObj.put("total", resultCount);
+				resultJsonObj.put("shops", array);
+				resp.getWriter().write(resultJsonObj.toString());
+			}
+			catch (JSONException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
+		}
+		
+	}
+
+	private Object[] searchByLoc(HttpServletRequest req, HttpServletResponse resp, int easting, int northing)
+	{
+
+		String shopType = req.getParameter("type");
+		
+		String pageStr = req.getParameter("page");
+		String countStr = req.getParameter("count");
+		
+		int page = pageStr == null ?  1 : Integer.parseInt(pageStr);
+		int count = countStr == null ?  10 : Integer.parseInt(countStr);
+		
+		String distanceStr = req.getParameter("distance");
+		int distance = Integer.parseInt(distanceStr);
+		try
+		{
+			Object[] result = shopDbhelper.getShopByLoc(shopType, easting, northing, distance, page, count);
+			return result;
 		}
 		catch (Exception e1)
 		{
@@ -254,9 +288,33 @@ public class ShopServlet extends HttpServlet
 			e1.printStackTrace();
 		}
 		
+		return null;
 		
+	}
+
+	private Object[] searchByKey(HttpServletRequest req, HttpServletResponse resp, String searchKey)
+	{
+		String shopType = req.getParameter("type");
 		
+		String pageStr = req.getParameter("page");
+		String countStr = req.getParameter("count");
 		
+		int page = pageStr == null ?  1 : Integer.parseInt(pageStr);
+		int count = countStr == null ?  10 : Integer.parseInt(countStr);
+		
+
+		try
+		{
+			Object[] result = shopDbhelper.getShopByKey(shopType, searchKey, page, count);
+			return result;
+		}
+		catch (Exception e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		return null;
 	}
 
 	@Override

@@ -257,7 +257,7 @@ Main.init = function() {
 			// init favorite
 			else if (index == 3) {
 				if (!Profile.isFirst) {
-					Profile.queryFavoriteShop(0, 5, true);
+					Profile.queryFavoriteShop(0, Profile.pageCount, true);
 					Profile.isFirst = true;
 				}
 				
@@ -1295,38 +1295,11 @@ IM.updateUnreadMessage = function() {
 };
 
 Search = {};
+Search.pageCount = 5;
+Search.distance = 10; //10 km
 Search.init = function() {
 	var searchPanel = $("#search");
-	
-	var searchNavigation = $("<div>" +
-								"<table style='width:100%;'>" +
-									"<tr style='text-align:center;'>" +
-										"<td>" +
-											"<input id='searchBack' type='button' value='" + $.i18n.prop("search.navigation.back", "返回") + "'/>" +
-										"</td>" +
-										"<td>" +
-											"<div id='searchTitle'>Search Title</div>" +
-										"</td>" +
-										"<td>" +
-											"<input id='button1' type='button' value='Button'/>" +
-										"</td>" +
-									"</tr>" +
-								"</table>" +
-							"</div>");
-	
-	searchNavigation.find("#searchBack").click(function() {
-		var currentSearchPanel = $("#searchInnerPanel > div:visible");
-		var prevPanel = currentSearchPanel.prev();
-		if (prevPanel[0]) {
-			prevPanel.siblings().hide();
-			prevPanel.show();
-		}
-	});
-	
-	searchNavigation.hide();
-	
-	searchPanel.append(searchNavigation);
-	
+		
 	var searchInnerPanel = $("<div id='searchInnerPanel'></div>");
 	
 	var searchInput = $("<div id='searchInput'>" +
@@ -1337,7 +1310,7 @@ Search.init = function() {
 											"<input id='searchByLoc' type='button' value='" + $.i18n.prop("search.searchInput.searchByLoc", "搜索指定位置") + "'/>" +
 										"</td>" +
 										"<td style='width:100%;'>" +
-											"<input type='text' style='margin-right:0.1cm;'/>" +
+											"<input id='searchKey' type='text' style='margin-right:0.1cm;'/>" +
 										"</td>" +
 										"<td>" +
 											"<input id='doSearch' type='button' value='" + $.i18n.prop("search.searchInput.doSearch", "搜索") + "'/>" +
@@ -1383,8 +1356,16 @@ Search.init = function() {
 		
 		
 		GeoUtils.getCurrentPosition(function(p) {
-			Search.searchShopsByLoc(p, 1, 5, type, true);
+			Search.searchShops(p, 1, Search.pageCount, type, true);
 		}, function(){}, true);		
+	});
+	
+	searchInput.find("#doSearch").click(function() {
+		var searchKeyInput = $("#searchKey");
+		var key = searchKeyInput.val();
+		if (key && key != "") {
+			Search.searchShops(key, 1, Search.pageCount, "all", true);
+		}
 	});
 	
 	searchInnerPanel.append(searchInput);
@@ -1698,21 +1679,28 @@ Search.showShopComment = function(shopId) {
 	
 };
 
-Search.searchShopsByLoc = function(p, page, count, type, updatePage) {
+Search.searchShops = function(query, page, count, type, updatePage) {
+	var data = {
+		action: "search",
+		type: type,
+		page: page,
+		count: count
+	};
+	if (typeof query == "string") {
+		data.searchKey = query;
+	} else {
+		data.easting = query.easting;
+		data.northing = query.northing;
+		data.distance = Search.distance;
+	}
+	
 	$.ajax({
 		url: "/shop/",
 		dataType: "json",
 		cache: false,
 		type: "get",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-		data: {
-			action: "search",
-			type: type,
-			easting: p.easting,
-			northing: p.northing,
-			page: page,
-			count: count
-		},
+		data: data,
 		success: function(searchResult){
 			Search.currentResult = searchResult;
 			var shopResult = $("#shopResult");
@@ -1740,7 +1728,7 @@ Search.searchShopsByLoc = function(p, page, count, type, updatePage) {
 						total: Math.ceil(searchResult.total / count),
 						current: 1,
 						onChanged: function(page) {
-							Search.searchShopsByLoc(p, page, count, type, false);
+							Search.searchShops(data, page, count, type, false);
 						}
 				});
 			}
@@ -1757,6 +1745,12 @@ Search.searchShopsByLoc = function(p, page, count, type, updatePage) {
 
 
 Search.createShopInfo = function(shopInfo) {
+	var distance = "";
+	if (shopInfo.distance != null) {
+		distance = "<span>" + 
+						$.i18n.prop("search.result.aboutMeter", "约{0}米", [Math.round(shopInfo.distance)]) + 
+					"</span>";
+	}
 	var shopInfoPanel = $("<div shopId='" + shopInfo.id + "'>" +
 								"<table>" +
 									"<tr>" +
@@ -1766,7 +1760,10 @@ Search.createShopInfo = function(shopInfo) {
 										"<td>" +
 											"<div>" + shopInfo.name + "</div>" +
 											"<div>" + shopInfo.tel + "</div>" +
-											"<div>" + shopInfo.street + "</div>" +
+											"<div>" +
+												"<span>" + shopInfo.street + "</span>" +
+												distance +
+											"</div>" +
 										"</td>" +
 									"</tr>" +
 								"</table>" +
@@ -2054,6 +2051,7 @@ Map.removeMapItem = function (mapItemId) {
 }
 
 Profile = {};
+Profile.pageCount = 5;
 Profile.init = function() {
 	var profile = $("#profile");
 	

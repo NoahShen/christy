@@ -31,6 +31,8 @@ public class Shop
 	
 	private int northing;
 	
+	private Double distanceFromUser;
+	
 	private Map<String, String> shopOverall = new HashMap<String, String>();
 	
 	private Map<Long, ShopComment> comments = new HashMap<Long, ShopComment>();
@@ -246,6 +248,16 @@ public class Shop
 	public void setNorthing(int northing)
 	{
 		this.northing = northing;
+	}
+
+	public Double getDistanceFromUser()
+	{
+		return distanceFromUser;
+	}
+
+	public void setDistanceFromUser(Double distanceFromUser)
+	{
+		this.distanceFromUser = distanceFromUser;
 	}
 
 	public void addOverall(String name, String value)

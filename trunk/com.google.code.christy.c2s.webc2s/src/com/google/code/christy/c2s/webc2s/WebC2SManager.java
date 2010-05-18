@@ -107,7 +107,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	
 	private int minWait = 10;
 	
-	private int inactivity = 20;
+	private int inactivity = 70;
 	
 	private int maxHolded = 1;
 	
@@ -804,6 +804,8 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	
 					}
 					
+					webClientSession.setLastActive(System.currentTimeMillis());
+					
 					Continuation oldContinuation = webClientSession.getContinuation();
 					if (oldContinuation != null)
 					{
@@ -1194,7 +1196,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 
 	private class SessionMonitor extends Thread
 	{
-		public static final int SLEEP = 1000;
+		public static final int SLEEP = 2000;
 		
 		private boolean stop = true;
 		
@@ -1226,6 +1228,9 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 								loggerServiceTracker.debug(webClientSession.getUsername() + 
 											"[" + webClientSession.getStreamId() + "]:" + 
 											"Session time out.");
+								loggerServiceTracker.debug(webClientSession.getUsername() + 
+											"[" + webClientSession.getStreamId() + "] lastActivity:" + 
+											webClientSession.getLastActive());
 							}
 							webClientSession.close();
 							if (webClientSession.getUsername() != null)
