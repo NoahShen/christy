@@ -9,7 +9,6 @@ import com.google.code.christy.lib.ConnectionPool;
 import com.google.code.christy.sm.contactmgr.RosterItemDbHelper;
 import com.google.code.christy.sm.privatexml.PrivateXmlDbHelper;
 import com.google.code.christy.sm.user.UserDbHelper;
-import com.google.code.christy.sm.userfavoriteshop.UserFavoriteShopDbHelper;
 import com.google.code.christy.sm.vcard.VCardDbHelper;
 
 public class Activator implements BundleActivator
@@ -20,7 +19,6 @@ public class Activator implements BundleActivator
 	private ServiceRegistration userMysqlDbHelperRegistration;
 	private ServiceRegistration privateXmlMysqlDbHelperRegistration;
 	private ServiceRegistration vCardMysqlDbHelperRegistration;
-	private ServiceRegistration userFavoriteShopMysqlDbHelperRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -47,10 +45,6 @@ public class Activator implements BundleActivator
 		VCardMysqlDbHelper vCardMysqlDbHelper = new VCardMysqlDbHelper(connPool);
 		vCardMysqlDbHelperRegistration = context.registerService(VCardDbHelper.class.getName(), vCardMysqlDbHelper, null);
 		
-		UserFavoriteShopMysqlDbHelper userFavoriteShopMysqlDbHelper = new UserFavoriteShopMysqlDbHelper(connPool);
-		userFavoriteShopMysqlDbHelperRegistration = context.registerService(UserFavoriteShopDbHelper.class.getName(), userFavoriteShopMysqlDbHelper, null);
-		
-		 
 	}
 
 	/*
@@ -89,11 +83,6 @@ public class Activator implements BundleActivator
 			vCardMysqlDbHelperRegistration = null;
 		}
 		
-		if (userFavoriteShopMysqlDbHelperRegistration != null)
-		{
-			userFavoriteShopMysqlDbHelperRegistration.unregister();
-			userFavoriteShopMysqlDbHelperRegistration = null;
-		}
 	}
 	
 //	public static void main(String[] args) throws Exception
