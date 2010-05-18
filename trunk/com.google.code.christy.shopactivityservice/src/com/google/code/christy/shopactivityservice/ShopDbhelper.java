@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.code.christy.lib.ConnectionPool;
+import com.google.code.christy.log.LoggerServiceTracker;
 
 /**
  * @author Noah
@@ -46,11 +47,18 @@ public class ShopDbhelper
 	private static final String GETSHOPBYKEYCOUNT_SQL = "SELECT COUNT(*) FROM (SELECT * FROM shop WHERE title LIKE ? OR  content LIKE ? OR district LIKE ? OR street LIKE ?) R";
 
 
-	private static final String GETSHOPCOOMENTS_SQL = "SELECT *  FROM shopcomment WHERE shopId = ? ORDER BY modificationDate DESC LIMIT ?, ?";
+	private static final String GETSHOPCOOMENTS_SQL = "SELECT * FROM shopcomment WHERE shopId = ? ORDER BY modificationDate DESC LIMIT ?, ?";
 	
-	public ShopDbhelper(ConnectionPool connectionPool)
+	private static final String GETUSERSHOPCOOMENTS_SQL = "SELECT R.shopId, R.score, R.content, R.modificationDate, S.title FROM (SELECT * FROM shopcomment WHERE username = ?) R LEFT JOIN shop S ON S.shopId = R.shopId ORDER BY R.modificationDate DESC LIMIT ?, ?";
+	
+	private static final String GETUSERSHOPCOOMENTSCOUNT_SQL = "SELECT COUNT(*) FROM shopcomment WHERE username = ?";
+	
+	private LoggerServiceTracker loggerServiceTracker;
+	
+	public ShopDbhelper(LoggerServiceTracker loggerServiceTracker, ConnectionPool connectionPool)
 	{
 		super();
+		this.loggerServiceTracker = loggerServiceTracker;
 		this.connectionPool = connectionPool;
 	}
 
@@ -62,6 +70,11 @@ public class ShopDbhelper
 			connection = connectionPool.getConnection();
 			PreparedStatement preStat = connection.prepareStatement(GETALLSHOP_SQL);
 			ResultSet shopResSet = preStat.executeQuery();
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + shopResSet.toString());
+			}
 			List<Shop> shops = new ArrayList<Shop>();
 			while (shopResSet.next()) 
 			{
@@ -112,6 +125,11 @@ public class ShopDbhelper
 			connection = connectionPool.getConnection();
 			PreparedStatement preStat = connection.prepareStatement(GETALLSHOPWITHOVERALL_SQL);
 			ResultSet shopResSet = preStat.executeQuery();
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + shopResSet.toString());
+			}
 			Map<Long, Shop> shops = new HashMap<Long, Shop>();
 			while (shopResSet.next()) 
 			{
@@ -178,7 +196,11 @@ public class ShopDbhelper
 			PreparedStatement preStat = connection.prepareStatement(GETSHOPDETAIL_SQL);
 			preStat.setLong(1, shopId);
 			ResultSet shopResSet = preStat.executeQuery();
-
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + shopResSet.toString());
+			}
 			Shop shop = null;
 			while (shopResSet.next()) 
 			{
@@ -265,6 +287,12 @@ public class ShopDbhelper
 			preStat.setInt(5, (page - 1) * count);
 			preStat.setInt(6, count);
 			ResultSet shopResSet = preStat.executeQuery();
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + shopResSet.toString());
+			}
+			
 			List<Shop> shops = new ArrayList<Shop>();
 			while (shopResSet.next()) 
 			{
@@ -339,6 +367,12 @@ public class ShopDbhelper
 			preStat.setInt(5, (page - 1) * count);
 			preStat.setInt(6, count);
 			ResultSet shopResSet = preStat.executeQuery();
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + shopResSet.toString());
+			}
+			
 			List<Shop> shops = new ArrayList<Shop>();
 			while (shopResSet.next()) 
 			{
@@ -410,7 +444,10 @@ public class ShopDbhelper
 			preStat.setString(4, shopComment.getContent());
 			
 			preStat.executeUpdate();
-			
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+			}
 			for (ShopVoter voter : voters)
 			{
 				PreparedStatement preStat2 = connection.prepareStatement(ADDSHOPVOTER_SQL);
@@ -445,7 +482,13 @@ public class ShopDbhelper
 			preStat.setInt(2, (page - 1) * count);
 			preStat.setInt(3, count);
 			ResultSet commentsResSet = preStat.executeQuery();
-
+			
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + commentsResSet.toString());
+			}
+			
 			List<ShopComment> comments = new ArrayList<ShopComment>();
 			
 			while (commentsResSet.next()) 
@@ -462,6 +505,61 @@ public class ShopDbhelper
 				comments.add(comment);
 			}
 			return comments.toArray(new ShopComment[]{});
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+	
+	public Object[] getUserShopComments(String username, int page, int count) throws Exception
+	{
+		Connection connection = null;
+		Object[] returnValue = new Object[2];
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(GETUSERSHOPCOOMENTS_SQL);
+			preStat.setString(1, username);
+			preStat.setInt(2, (page - 1) * count);
+			preStat.setInt(3, count);
+			ResultSet commentsResSet = preStat.executeQuery();
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + commentsResSet.toString());
+			}
+			List<ShopComment> comments = new ArrayList<ShopComment>();
+			
+			while (commentsResSet.next()) 
+			{
+				ShopComment comment = new ShopComment();
+				comment.setShopId(commentsResSet.getLong("shopId"));
+				comment.setContent(commentsResSet.getString("content"));
+				comment.setUsername(username);
+				comment.setScore(commentsResSet.getInt("score"));
+				Timestamp timestamp = commentsResSet.getTimestamp("modificationDate");
+				comment.setLasModitDate(timestamp.getTime());
+				
+				comment.setProperty("shopTitle", commentsResSet.getString("title"));
+				comments.add(comment);
+			}
+			returnValue[1] = comments.toArray(new ShopComment[]{});
+			
+			PreparedStatement preStat2 = connection.prepareStatement(GETUSERSHOPCOOMENTSCOUNT_SQL);
+			preStat2.setString(1, username);
+			ResultSet shopResSet2 = preStat2.executeQuery();
+			if (shopResSet2.next()) 
+			{
+				int countResult = shopResSet2.getInt("COUNT(*)");
+				returnValue[0] = countResult;
+			}
+			
+			return returnValue;
 		}
 		finally
 		{

@@ -20,13 +20,20 @@ public class Activator implements BundleActivator
 	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
 	 */
 	private LoggerServiceTracker loggerServiceTracker;
+	
 	private ServiceRegistration shopServletRegistration;
+	
 	private ConnectionPool connPool;
+	
+	private C2SManagerTracker c2SManagerTracker;
 
 	public void start(BundleContext context) throws Exception
 	{
 		loggerServiceTracker = new LoggerServiceTracker(context);
 		loggerServiceTracker.open();
+		
+		c2SManagerTracker = new C2SManagerTracker(context);
+		c2SManagerTracker.open();
 		
 		connPool = new ConnectionPool("com.mysql.jdbc.Driver",
 						"jdbc:mysql://localhost/christy",
@@ -34,9 +41,9 @@ public class Activator implements BundleActivator
 						"123456");
 		connPool .createPool();
 		
-		ShopDbhelper shopDbhelper = new ShopDbhelper(connPool);
+		ShopDbhelper shopDbhelper = new ShopDbhelper(loggerServiceTracker, connPool);
 		
-		ShopServlet shopServlet = new ShopServlet(loggerServiceTracker, shopDbhelper);
+		ShopServlet shopServlet = new ShopServlet(c2SManagerTracker, loggerServiceTracker, shopDbhelper);
 		Hashtable<String, String> properties = new Hashtable<String, String>();
 		properties.put("contextPath", "/shop");
 		properties.put("pathSpec", "/");
@@ -65,6 +72,12 @@ public class Activator implements BundleActivator
 		{
 			shopServletRegistration.unregister();
 			shopServletRegistration = null;
+		}
+		
+		if (c2SManagerTracker != null)
+		{
+			c2SManagerTracker.close();
+			c2SManagerTracker = null;
 		}
 	}
 

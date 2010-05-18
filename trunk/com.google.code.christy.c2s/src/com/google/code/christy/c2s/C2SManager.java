@@ -130,4 +130,11 @@ public interface C2SManager extends Propertied
 	 * @return
 	 */
 	public int getSessionCount();
+	
+	/**
+	 * 
+	 * @param streamId
+	 * @return
+	 */
+	public boolean containStreamId(String streamId);
 }

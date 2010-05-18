@@ -1,6 +1,8 @@
 package com.google.code.christy.shopactivityservice;
 
-public class ShopComment
+import com.google.code.christy.util.AbstractPropertied;
+
+public class ShopComment extends AbstractPropertied
 {
 	private long commentId;
 	

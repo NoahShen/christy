@@ -423,6 +423,14 @@ public class C2SManagerImpl extends AbstractPropertied implements C2SManager
 		return clientSessions.size();
 	}
 	
+
+	@Override
+	public boolean containStreamId(String streamId)
+	{
+		return clientSessions.containsKey(streamId);
+	}
+
+	
 	private class RouterHandler implements IoHandler
 	{
 		@Override

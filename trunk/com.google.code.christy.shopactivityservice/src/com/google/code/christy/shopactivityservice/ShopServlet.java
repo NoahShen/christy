@@ -26,12 +26,15 @@ public class ShopServlet extends HttpServlet
 	private static final long serialVersionUID = 1279166265755384334L;
 
 	private LoggerServiceTracker loggerServiceTracker;
-
+	
+	private C2SManagerTracker c2sManagerTracker;
+	
 	private ShopDbhelper shopDbhelper;
 	
-	public ShopServlet(LoggerServiceTracker loggerServiceTracker, ShopDbhelper shopLocDbhelper)
+	public ShopServlet(C2SManagerTracker c2sManagerTracker, LoggerServiceTracker loggerServiceTracker, ShopDbhelper shopLocDbhelper)
 	{
 		super();
+		this.c2sManagerTracker = c2sManagerTracker;
 		this.loggerServiceTracker = loggerServiceTracker;
 		this.shopDbhelper = shopLocDbhelper;
 	}
@@ -62,6 +65,61 @@ public class ShopServlet extends HttpServlet
 		{
 			handleGetShopcomments(req, resp);
 		}
+		else if ("getusershopcomments".equals(action))
+		{
+			handleGetUserShopComments(req, resp);
+		}
+	}
+
+	private void handleGetUserShopComments(HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		String streamId = req.getParameter("streamid");
+		
+		if (!c2sManagerTracker.containStreamId(streamId))
+		{
+			resp.setContentType("text/html;charset=UTF-8");
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND, "invalided streamId");
+			return;
+		}
+		
+		String username = req.getParameter("username").toLowerCase();
+		
+		String pageStr = req.getParameter("page");
+		String countStr = req.getParameter("count");
+		
+		int page = pageStr == null ?  1 : Integer.parseInt(pageStr);
+		int count = countStr == null ?  10 : Integer.parseInt(countStr);
+		
+		try
+		{
+			Object[] result = shopDbhelper.getUserShopComments(username, page, count);
+			int resultCount = (Integer) result[0];
+			ShopComment comments[] = (ShopComment[]) result[1];
+			
+			JSONArray commentsJson = new JSONArray();
+			
+			for (ShopComment comment : comments)
+			{
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("shopId", comment.getShopId());
+				jsonObj.put("shopTitle", comment.getProperty("shopTitle"));
+				jsonObj.put("score", comment.getScore());
+				jsonObj.put("time", comment.getLasModitDate());
+				jsonObj.put("content", comment.getContent());
+				commentsJson.put(jsonObj);
+			}
+			
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("total", resultCount);
+			jsonObj.put("comments", commentsJson);
+			resp.getWriter().write(jsonObj.toString());
+		}
+		catch (Exception e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 	}
 
 	private void handleGetShopcomments(HttpServletRequest req, HttpServletResponse resp)
