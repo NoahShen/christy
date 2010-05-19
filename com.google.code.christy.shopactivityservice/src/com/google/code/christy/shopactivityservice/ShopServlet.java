@@ -157,10 +157,17 @@ public class ShopServlet extends HttpServlet
 		int page = pageStr == null ?  1 : Integer.parseInt(pageStr);
 		int count = countStr == null ?  10 : Integer.parseInt(countStr);
 		
+		String getTotalStr = req.getParameter("gettotal");
+		boolean getTotal = false;
+		if (getTotalStr != null)
+		{
+			getTotal = true;
+		}
+		
 		try
 		{
-			Object[] result = shopDbhelper.getFavoriteShop(username, page, count);
-			int resultCount = (Integer) result[0];
+			Object[] result = shopDbhelper.getFavoriteShop(username, page, count, getTotal);
+			Integer resultCount = (Integer) result[0];
 			UserFavoriteShop favoriteShops[] = (UserFavoriteShop[]) result[1];
 			
 			JSONArray commentsJson = new JSONArray();
@@ -176,7 +183,11 @@ public class ShopServlet extends HttpServlet
 			}
 			
 			JSONObject jsonObj = new JSONObject();
-			jsonObj.put("total", resultCount);
+			if (resultCount != null)
+			{
+				jsonObj.put("total", resultCount);
+			}
+			
 			jsonObj.put("shops", commentsJson);
 			resp.getWriter().write(jsonObj.toString());
 		}
@@ -207,10 +218,16 @@ public class ShopServlet extends HttpServlet
 		int page = pageStr == null ?  1 : Integer.parseInt(pageStr);
 		int count = countStr == null ?  10 : Integer.parseInt(countStr);
 		
+		String getTotalStr = req.getParameter("gettotal");
+		boolean getTotal = false;
+		if (getTotalStr != null)
+		{
+			getTotal = true;
+		}
 		try
 		{
-			Object[] result = shopDbhelper.getUserShopComments(username, page, count);
-			int resultCount = (Integer) result[0];
+			Object[] result = shopDbhelper.getUserShopComments(username, page, count, getTotal);
+			Integer resultCount = (Integer) result[0];
 			ShopComment comments[] = (ShopComment[]) result[1];
 			
 			JSONArray commentsJson = new JSONArray();
@@ -227,7 +244,10 @@ public class ShopServlet extends HttpServlet
 			}
 			
 			JSONObject jsonObj = new JSONObject();
-			jsonObj.put("total", resultCount);
+			if (resultCount != null)
+			{
+				jsonObj.put("total", resultCount);
+			}
 			jsonObj.put("comments", commentsJson);
 			resp.getWriter().write(jsonObj.toString());
 		}
@@ -396,7 +416,7 @@ public class ShopServlet extends HttpServlet
 		
 		if (result != null)
 		{
-			int resultCount = (Integer) result[0];
+			Integer resultCount = (Integer) result[0];
 			Shop[] resultShops = (Shop[]) result[1];
 			
 			JSONObject resultJsonObj = new JSONObject();
@@ -426,7 +446,10 @@ public class ShopServlet extends HttpServlet
 			}
 			try
 			{
-				resultJsonObj.put("total", resultCount);
+				if (resultCount != null)
+				{
+					resultJsonObj.put("total", resultCount);
+				}
 				resultJsonObj.put("shops", array);
 				resp.getWriter().write(resultJsonObj.toString());
 			}
@@ -453,9 +476,16 @@ public class ShopServlet extends HttpServlet
 		
 		String distanceStr = req.getParameter("distance");
 		int distance = Integer.parseInt(distanceStr);
+		
+		String getTotalStr = req.getParameter("gettotal");
+		boolean getTotal = false;
+		if (getTotalStr != null)
+		{
+			getTotal = true;
+		}
 		try
 		{
-			Object[] result = shopDbhelper.getShopByLoc(shopType, easting, northing, distance, page, count);
+			Object[] result = shopDbhelper.getShopByLoc(shopType, easting, northing, distance, page, count, getTotal);
 			return result;
 		}
 		catch (Exception e1)
@@ -478,10 +508,15 @@ public class ShopServlet extends HttpServlet
 		int page = pageStr == null ?  1 : Integer.parseInt(pageStr);
 		int count = countStr == null ?  10 : Integer.parseInt(countStr);
 		
-
+		String getTotalStr = req.getParameter("gettotal");
+		boolean getTotal = false;
+		if (getTotalStr != null)
+		{
+			getTotal = true;
+		}
 		try
 		{
-			Object[] result = shopDbhelper.getShopByKey(shopType, searchKey, page, count);
+			Object[] result = shopDbhelper.getShopByKey(shopType, searchKey, page, count, getTotal);
 			return result;
 		}
 		catch (Exception e1)
