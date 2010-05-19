@@ -265,7 +265,7 @@ public class ShopDbhelper
 		}
 	}
 	
-	public Object[] getShopByLoc(String shopType, int easting, int northing, int distance, int page, int count) throws Exception
+	public Object[] getShopByLoc(String shopType, int easting, int northing, int distance, int page, int count, boolean getTotal) throws Exception
 	{
 		Connection connection = null;
 		Object[] returnValue = new Object[2];
@@ -318,20 +318,30 @@ public class ShopDbhelper
 				
 				shops.add(shop);
 			}
+			returnValue[1] = shops.toArray(new Shop[]{});
 			
-			PreparedStatement preStat2 = connection.prepareStatement(GETSHOPBYLOCCOUNT_SQL);
-			preStat2.setInt(1, easting);
-			preStat2.setInt(2, northing);
-			preStat2.setString(3, shopType);
-			preStat2.setInt(4, distance);
-			ResultSet shopResSet2 = preStat2.executeQuery();
-			if (shopResSet2.next()) 
+			if (getTotal)
 			{
-				int countResult = shopResSet2.getInt("COUNT(*)");
-				returnValue[0] = countResult;
+				PreparedStatement preStat2 = connection.prepareStatement(GETSHOPBYLOCCOUNT_SQL);
+				preStat2.setInt(1, easting);
+				preStat2.setInt(2, northing);
+				preStat2.setString(3, shopType);
+				preStat2.setInt(4, distance);
+				ResultSet shopResSet2 = preStat2.executeQuery();
+				if (loggerServiceTracker.isDebugEnabled())
+				{
+					loggerServiceTracker.debug("SQL:" + preStat2.toString());
+					loggerServiceTracker.debug("Result:" + shopResSet2.toString());
+				}
+				if (shopResSet2.next()) 
+				{
+					int countResult = shopResSet2.getInt("COUNT(*)");
+					returnValue[0] = countResult;
+				}
+				
+				
 			}
 			
-			returnValue[1] = shops.toArray(new Shop[]{});
 			return returnValue;
 		}
 		finally
@@ -344,7 +354,7 @@ public class ShopDbhelper
 		}
 	}
 	
-	public Object[] getShopByKey(String shopType, String key, int page, int count) throws Exception
+	public Object[] getShopByKey(String shopType, String key, int page, int count, boolean getTotal) throws Exception
 	{
 		Connection connection = null;
 		Object[] returnValue = new Object[2];
@@ -396,20 +406,30 @@ public class ShopDbhelper
 				
 				shops.add(shop);
 			}
+			returnValue[1] = shops.toArray(new Shop[]{});
 			
-			PreparedStatement preStat2 = connection.prepareStatement(GETSHOPBYKEYCOUNT_SQL);
-			preStat2.setString(1, search);
-			preStat2.setString(2, search);
-			preStat2.setString(3, search);
-			preStat2.setString(4, search);
-			ResultSet shopResSet2 = preStat2.executeQuery();
-			if (shopResSet2.next()) 
+			if (getTotal)
 			{
-				int countResult = shopResSet2.getInt("COUNT(*)");
-				returnValue[0] = countResult;
+				PreparedStatement preStat2 = connection.prepareStatement(GETSHOPBYKEYCOUNT_SQL);
+				preStat2.setString(1, search);
+				preStat2.setString(2, search);
+				preStat2.setString(3, search);
+				preStat2.setString(4, search);
+				ResultSet shopResSet2 = preStat2.executeQuery();
+				if (loggerServiceTracker.isDebugEnabled())
+				{
+					loggerServiceTracker.debug("SQL:" + preStat2.toString());
+					loggerServiceTracker.debug("Result:" + shopResSet2.toString());
+				}
+				if (shopResSet2.next()) 
+				{
+					int countResult = shopResSet2.getInt("COUNT(*)");
+					returnValue[0] = countResult;
+				}
 			}
 			
-			returnValue[1] = shops.toArray(new Shop[]{});
+			
+			
 			return returnValue;
 		}
 		finally
@@ -449,6 +469,10 @@ public class ShopDbhelper
 				preStat2.setString(3, voter.getItemName());
 				preStat2.setInt(4, voter.getValue());
 				preStat2.executeUpdate();
+				if (loggerServiceTracker.isDebugEnabled())
+				{
+					loggerServiceTracker.debug("SQL:" + preStat2.toString());
+				}
 			}
 			
 			connection.commit();
@@ -509,7 +533,7 @@ public class ShopDbhelper
 		}
 	}
 	
-	public Object[] getUserShopComments(String username, int page, int count) throws Exception
+	public Object[] getUserShopComments(String username, int page, int count, boolean getTotal) throws Exception
 	{
 		Connection connection = null;
 		Object[] returnValue = new Object[2];
@@ -543,14 +567,23 @@ public class ShopDbhelper
 			}
 			returnValue[1] = comments.toArray(new ShopComment[]{});
 			
-			PreparedStatement preStat2 = connection.prepareStatement(GETUSERSHOPCOOMENTSCOUNT_SQL);
-			preStat2.setString(1, username);
-			ResultSet shopResSet2 = preStat2.executeQuery();
-			if (shopResSet2.next()) 
+			if (getTotal)
 			{
-				int countResult = shopResSet2.getInt("COUNT(*)");
-				returnValue[0] = countResult;
+				PreparedStatement preStat2 = connection.prepareStatement(GETUSERSHOPCOOMENTSCOUNT_SQL);
+				preStat2.setString(1, username);
+				ResultSet shopResSet2 = preStat2.executeQuery();
+				if (loggerServiceTracker.isDebugEnabled())
+				{
+					loggerServiceTracker.debug("SQL:" + preStat2.toString());
+					loggerServiceTracker.debug("Result:" + shopResSet2.toString());
+				}
+				if (shopResSet2.next()) 
+				{
+					int countResult = shopResSet2.getInt("COUNT(*)");
+					returnValue[0] = countResult;
+				}
 			}
+			
 			
 			return returnValue;
 		}
@@ -565,7 +598,7 @@ public class ShopDbhelper
 	}
 	
 
-	public Object[] getFavoriteShop(String username, int page, int count) throws Exception
+	public Object[] getFavoriteShop(String username, int page, int count, boolean getTotal) throws Exception
 	{
 		Connection connection = null;
 		Object[] result = new Object[2];
@@ -604,19 +637,23 @@ public class ShopDbhelper
 			}
 			result[1] = entities.toArray(new UserFavoriteShop[]{});
 
-			PreparedStatement preStat2 = connection.prepareStatement(GETCOUNTOFFAVORITESHOP_SQL);
-			preStat2.setString(1, username);
-			ResultSet resultSet2 = preStat2.executeQuery();
-			if (loggerServiceTracker.isDebugEnabled())
+			if (getTotal)
 			{
-				loggerServiceTracker.debug("SQL:" + preStat2.toString());
-				loggerServiceTracker.debug("Result:" + resultSet2.toString());
+				PreparedStatement preStat2 = connection.prepareStatement(GETCOUNTOFFAVORITESHOP_SQL);
+				preStat2.setString(1, username);
+				ResultSet resultSet2 = preStat2.executeQuery();
+				if (loggerServiceTracker.isDebugEnabled())
+				{
+					loggerServiceTracker.debug("SQL:" + preStat2.toString());
+					loggerServiceTracker.debug("Result:" + resultSet2.toString());
+				}
+				if (resultSet2.next())
+				{
+					int resultCount = resultSet2.getInt("COUNT(*)");
+					result[0] = resultCount;
+				}
 			}
-			if (resultSet2.next())
-			{
-				int resultCount = resultSet2.getInt("COUNT(*)");
-				result[0] = resultCount;
-			}
+			
 			return result;
 		}
 		finally

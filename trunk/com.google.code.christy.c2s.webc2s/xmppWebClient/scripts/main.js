@@ -262,7 +262,7 @@ Main.init = function() {
 			// init favorite
 			else if (index == 3) {
 				if (!Profile.isFirst) {
-					Profile.queryFavoriteShop(1, Profile.pageCount, true);
+					Profile.queryFavoriteShop(1, Profile.pageCount, true, true);
 					Profile.isFirst = true;
 				}
 				
@@ -1412,7 +1412,7 @@ Search.init = function() {
 		
 		
 		GeoUtils.getCurrentPosition(function(p) {
-			Search.searchShops(p, 1, Search.pageCount, type, true);
+			Search.searchShops(p, 1, Search.pageCount, type, true, true);
 		}, function(){}, true);		
 	});
 	
@@ -1420,7 +1420,7 @@ Search.init = function() {
 		var searchKeyInput = $("#searchKey");
 		var key = searchKeyInput.val();
 		if (key && key != "") {
-			Search.searchShops(key, 1, Search.pageCount, "all", true);
+			Search.searchShops(key, 1, Search.pageCount, "all", true, true);
 		}
 	});
 	
@@ -1741,13 +1741,16 @@ Search.showShopCommentInputPanel = function(shopId) {
 	
 };
 
-Search.searchShops = function(query, page, count, type, updatePage) {
+Search.searchShops = function(query, page, count, type, updatePage, getTotal) {
 	var data = {
 		action: "search",
 		type: type,
 		page: page,
 		count: count
 	};
+	if (getTotal) {
+		data.gettotal = 1;
+	}
 	if (typeof query == "string") {
 		data.searchKey = query;
 	} else {
@@ -1790,7 +1793,7 @@ Search.searchShops = function(query, page, count, type, updatePage) {
 						total: Math.ceil(searchResult.total / count),
 						current: 1,
 						onChanged: function(page) {
-							Search.searchShops(query, page, count, type, false);
+							Search.searchShops(query, page, count, type, false, false);
 						}
 				});
 			}
@@ -2233,7 +2236,7 @@ Profile.init = function() {
         callBackShowEvent:function(index) {
         	if (index == 1) {
         		if (!Profile.hasQueriedComments) {
-					Profile.queryMyComments(1, Profile.pageCount, true);
+					Profile.queryMyComments(1, Profile.pageCount, true, true);
 					Profile.hasQueriedComments = true;
 				}
         	}
@@ -2243,7 +2246,7 @@ Profile.init = function() {
     
 };
 
-Profile.queryMyComments = function(pageIndex, max, updatePage) {
+Profile.queryMyComments = function(pageIndex, max, updatePage, getTotal) {
 	var connectionMgr = XmppConnectionMgr.getInstance();
 	var conn = connectionMgr.getAllConnections()[0];
 	if (!conn) {
@@ -2253,19 +2256,24 @@ Profile.queryMyComments = function(pageIndex, max, updatePage) {
 	var streamId = connectionMgr.getStreamId();
 	var username = conn.getJid().getNode();
 	
+	var data = {
+		action: "getusershopcomments",
+		username: username,
+		streamid: streamId,
+		page: pageIndex,
+		count: max
+	};
+	
+	if (getTotal) {
+		data.gettotal = 1;
+	}
 	$.ajax({
 		url: "/shop/",
 		dataType: "json",
 		cache: false,
 		type: "get",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-		data: {
-			action: "getusershopcomments",
-			username: username,
-			streamid: streamId,
-			page: pageIndex,
-			count: max
-		},
+		data: data,
 		success: function(queryResult){
 			var commentsItems = $("#commentsItems");
 			commentsItems.empty();
@@ -2322,7 +2330,7 @@ Profile.queryMyComments = function(pageIndex, max, updatePage) {
 					total: Math.ceil(total / max),
 					current: 1,
 					onChanged: function(page) {
-						Profile.queryMyComments(page, max, false);
+						Profile.queryMyComments(page, max, false, false);
 					}
 				});
 			}
@@ -2336,7 +2344,7 @@ Profile.queryMyComments = function(pageIndex, max, updatePage) {
 	});
 };
 
-Profile.queryFavoriteShop = function(pageIndex, count, updatePage) {
+Profile.queryFavoriteShop = function(pageIndex, count, updatePage, getTotal) {
 	
 	var connectionMgr = XmppConnectionMgr.getInstance();
 	var conn = connectionMgr.getAllConnections()[0];
@@ -2347,19 +2355,25 @@ Profile.queryFavoriteShop = function(pageIndex, count, updatePage) {
 	var streamId = connectionMgr.getStreamId();
 	var username = conn.getJid().getNode();
 	
+	var data = {
+		action: "getfavoriteshops",
+		username: username,
+		streamid: streamId,
+		page: pageIndex,
+		count: count,
+	};
+	
+	if (getTotal) {
+		data.gettotal = 1;
+	}
+	
 	$.ajax({
 		url: "/shop/",
 		dataType: "json",
 		cache: false,
 		type: "get",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-		data: {
-			action: "getfavoriteshops",
-			username: username,
-			streamid: streamId,
-			page: pageIndex,
-			count: count
-		},
+		data: data,
 		success: function(queryResult){
 			var favoriteItems = $("#favoriteItems");
 			favoriteItems.empty();
@@ -2382,7 +2396,7 @@ Profile.queryFavoriteShop = function(pageIndex, count, updatePage) {
 					total: Math.ceil(total / count),
 					current: 1,
 					onChanged: function(page) {
-						Profile.queryFavoriteShop(page, count, false);
+						Profile.queryFavoriteShop(page, count, false, false);
 					}
 				});
 			}
@@ -2464,7 +2478,7 @@ Profile.createFavoriteItem = function(favoriteItem) {
 			success: function(returnValue) {
 				var opts = MainUtils.cloneObj(Main.notifyOpts);
 				if (returnValue.result == "success") {
-					Profile.queryFavoriteShop(1, Profile.pageCount, true);
+					Profile.queryFavoriteShop(1, Profile.pageCount, true, true);
 					opts.message = $.i18n.prop("profile.favorite.removeSuccess", "删除成功！");
 				} else {
 					opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
