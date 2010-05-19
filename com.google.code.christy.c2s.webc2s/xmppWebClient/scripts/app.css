@@ -1,3 +1,14 @@
+html, body, div {
+	font-family:arial,sans-serif;
+	font-size: 12pt;
+	margin: 0;
+	padding: 0;
+}
+
+input {
+	font-family:arial,sans-serif;
+}
+
 input[type="text"] {
   	width:100%;
 }
