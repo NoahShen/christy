@@ -1573,7 +1573,7 @@ Search.init = function() {
 			$.ajax({
 				url: "/shop/",
 				cache: false,
-				type: "get",
+				type: "post",
 				contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 				data: {
 					action: "submitShopComment",
@@ -1835,35 +1835,40 @@ Search.createShopInfo = function(shopInfo) {
 							"</div>");
 	shopInfoPanel.click(function(){
 		var shopId = $(this).attr("shopId");
-		$.ajax({
-			url: "/shop/",
-			dataType: "json",
-			cache: false,
-			type: "get",
-			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-			data: {
-				action: "getshopdetail",
-				shopid: shopId
-			},
-			success: function(shopDetail){
-				Search.showShopDetail(shopDetail);
-			},
-			error: function (xmlHttpRequest, textStatus, errorThrown) {
-				
-			},
-			complete: function(xmlHttpRequest, textStatus) {
-				
-			}
-		});
-
+		Search.getShopDetail(shopId, false);
 	});
 	
 	return shopInfoPanel;
 };
 
+Search.getShopDetail = function(shopId, changeTab) {
+	$.ajax({
+		url: "/shop/",
+		dataType: "json",
+		cache: false,
+		type: "get",
+		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+		data: {
+			action: "getshopdetail",
+			shopid: shopId
+		},
+		success: function(shopDetail){
+			Search.currentShopDetail = shopDetail;
+			Search.showShopDetail(shopDetail);
+			if (changeTab) {
+				Main.tabs.triggleTab(1);
+			}
+		},
+		error: function (xmlHttpRequest, textStatus, errorThrown) {
+			
+		},
+		complete: function(xmlHttpRequest, textStatus) {
+			
+		}
+	});
+};
 
 Search.showShopDetail = function(shopDetail) {
-	Search.currentShopDetail = shopDetail;
 	var shopDetailPanel = $("#shopDetailPanel");
 	shopDetailPanel.empty();
 	
@@ -1924,7 +1929,7 @@ Search.showShopDetail = function(shopDetail) {
 			url: "/shop/",
 			dataType: "json",
 			cache: false,
-			type: "get",
+			type: "post",
 			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 			data: {
 				action: "addfavoriteshop",
@@ -2271,7 +2276,7 @@ Profile.queryMyComments = function(pageIndex, max, updatePage, getTotal) {
 		url: "/shop/",
 		dataType: "json",
 		cache: false,
-		type: "get",
+		type: "post",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 		data: data,
 		success: function(queryResult){
@@ -2283,7 +2288,7 @@ Profile.queryMyComments = function(pageIndex, max, updatePage, getTotal) {
 			var commsJqObj = $("<div></div>");
 			for (var i = 0; i < comments.length; ++i) {
 				var onecomment = comments[i];
-				commsJqObj.append("<div shopId='" + onecomment.shopId + "'>" +
+				var commentJqObj = $("<div shopId='" + onecomment.shopId + "'>" +
 										"<div>" +
 											"<span>" + onecomment.shopTitle + "</span>" +
 											"<span>" + new Date(onecomment.time).format("yyyy-MM-dd hh:mm:ss") + "</span>" +
@@ -2294,31 +2299,11 @@ Profile.queryMyComments = function(pageIndex, max, updatePage, getTotal) {
 										"</div>" + 
 										"<div>" + onecomment.content + "</div>" +
 									"</div>");
-				commsJqObj.click(function() {
-					$.ajax({
-						url: "/shop/",
-						dataType: "json",
-						cache: false,
-						type: "get",
-						contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-						data: {
-							action: "getshopdetail",
-							shopid: onecomment.shopId
-						},
-						success: function(shopDetail){
-							Search.currentShopDetail = shopDetail;
-							Search.showShopDetail(shopDetail);
-							Main.tabs.triggleTab(1);
-						},
-						error: function (xmlHttpRequest, textStatus, errorThrown) {
-							
-						},
-						complete: function(xmlHttpRequest, textStatus) {
-							
-						}
-					});
-
-				});
+				commentJqObj.click(function() {
+					Search.getShopDetail(onecomment.shopId, true);
+				});	
+				commsJqObj.append(commentJqObj);
+				
 			}
 			commentsItems.append(commsJqObj);
 			if (updatePage) {
@@ -2371,7 +2356,7 @@ Profile.queryFavoriteShop = function(pageIndex, count, updatePage, getTotal) {
 		url: "/shop/",
 		dataType: "json",
 		cache: false,
-		type: "get",
+		type: "post",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 		data: data,
 		success: function(queryResult){
@@ -2428,29 +2413,7 @@ Profile.createFavoriteItem = function(favoriteItem) {
 								"</div>");
 	favoriteItemPanel.find("td:first").click(function(){	
 		var shopId = favoriteItem.shopId;
-		$.ajax({
-			url: "/shop/",
-			dataType: "json",
-			cache: false,
-			type: "get",
-			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-			data: {
-				action: "getshopdetail",
-				shopid: shopId
-			},
-			success: function(shopDetail){
-				Search.currentShopDetail = shopDetail;
-				Search.showShopDetail(shopDetail);
-				Main.tabs.triggleTab(1);
-			},
-			error: function (xmlHttpRequest, textStatus, errorThrown) {
-				
-			},
-			complete: function(xmlHttpRequest, textStatus) {
-				
-			}
-		});
-
+		Search.getShopDetail(shopId, true);
 	});
 	
 	favoriteItemPanel.find("input").click(function() {
@@ -2467,7 +2430,7 @@ Profile.createFavoriteItem = function(favoriteItem) {
 			url: "/shop/",
 			dataType: "json",
 			cache: false,
-			type: "get",
+			type: "post",
 			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 			data: {
 				action: "removefavoriteshop",
