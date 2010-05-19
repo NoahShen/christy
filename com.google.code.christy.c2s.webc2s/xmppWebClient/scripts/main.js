@@ -82,7 +82,7 @@ Main.init = function() {
 						"</div>" +
 						"<div id='sysPanel' class='sys-panel-container' style='display:none;'>" +
 							"<div id='preferences' style='display:none;'>" +
-								"<div>" +
+								"<div id='sysAction'>" +
 									"<div style='text-align:center;'>" +
 										"<input id='exit' type='button' value='" + $.i18n.prop("preferences.exit", "退出") + "'/>" +
 									"</div>" +
@@ -167,6 +167,7 @@ Main.init = function() {
 			var prefPanel = sysPanel.find("#preferences");
 			prefPanel.siblings().hide();
 			prefPanel.show();
+			Preferences.updatePreferencesUI();
 		} else {
 			var sysMessageContainer = sysPanel.find("#sysMessageContainer");
 			sysMessageContainer.siblings().hide();
@@ -270,11 +271,23 @@ Main.init = function() {
     Search.init();
     Map.init();
     Profile.init();
-    
+    Preferences.init();
     
     //adjustment message area
 	$(window).resize(function(){
 		Main.updatePanelSize();
+	});
+	
+	Preferences.addItemChangedListener({
+		preferenceNames: ["shareLoc"],
+		handler: function(oldValue, newValue) {
+			if (Main.geoLocIntervalId) {
+				clearInterval(Main.geoLocIntervalId);
+			}
+			if (newValue == "true") {
+				Main.geoLocIntervalId = setInterval(Main.updateLoc, 10 * 1000);
+			}
+		}
 	});
 	
 	var connectionMgr = XmppConnectionMgr.getInstance();
@@ -404,19 +417,22 @@ Main.init = function() {
 		}
 		$("#userJid").text(conn.getJid().toBareJID());
 		
-		var mapItem = {
-			id: "itemId",
-			title: "title",
-			isShow: true,
-			closeable: true,
-			positions: [{
-				message: "pos",
-				lat: 31.221891,
-				lon: 121.443297
-			}]
-		};
+		Preferences.updatePreferences(true);
 		
-		Map.updateMapItem(mapItem);
+		// TODO test code
+//		var mapItem = {
+//			id: "itemId",
+//			title: "title",
+//			isShow: true,
+//			closeable: true,
+//			positions: [{
+//				message: "pos",
+//				lat: 31.221891,
+//				lon: 121.443297
+//			}]
+//		};
+//		
+//		Map.updateMapItem(mapItem);
 //		
 //		var vCardIq = new Iq(IqType.GET);
 //		vCardIq.setTo(new JID(conn.getJid().getNode(), conn.getJid().getDomain(), null));
@@ -459,6 +475,33 @@ Main.init = function() {
     
     
 };
+
+
+Main.updateLoc = function() {
+	GeoUtils.getCurrentPosition(function(p) {
+		var lat = p.coords.latitude;
+		var lon = p.coords.longitude;
+		
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			var currentP = conn.currentPresence;
+			var geoLocExtension = new GeoLocExtension();
+			geoLocExtension.setType(GeoLocType.LATLON);
+			geoLocExtension.setLat(lat);
+			geoLocExtension.setLon(lon);
+			
+			currentP.removePacketExtension(GeoLocExtension.ELEMENTNAME, GeoLocExtension.NAMESPACE);
+			currentP.addPacketExtension(geoLocExtension);
+			conn.changeStatus(currentP);
+		}
+		
+	}, 
+	function(){
+		
+	}, false);		
+};
+
 Main.updatePanelSize = function() {
 	$("#chatPanel [messagearea]").height(IM.getMessageContentHeight());
 	$("#mapCanvas").height(Map.getMapCanvasHeight());
@@ -536,7 +579,6 @@ IM.init = function() {
 	});
 	
 	contactPanel.append(addContact);
-	
 	
 	var activeChat = $("<div id='activeChat'></div>");
 	var activeLabel = $("<div id='activeLabel' opened='1'>" + 
@@ -963,17 +1005,15 @@ IM.showContactInfo = function(contact) {
 					filter: new PacketIdFilter(iq.getStanzaId()),
 					timeout: Christy.loginTimeout,
 					handler: function(iqResponse) {
+						var opts = MainUtils.cloneObj(Main.notifyOpts);
 						if (iqResponse.getType() == IqType.RESULT) {
-							var opts = MainUtils.cloneObj(Main.notifyOpts);
 							opts.message = $.i18n.prop("contact.removeContactSuccess", "删除成功！");
-							$.blockUI(opts);
 							$("#contactInfoBack").click();
 						} else {
-							var opts = MainUtils.cloneObj(Main.notifyOpts);
 							opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
 							opts.css.backgroundColor = "red";
-							$.blockUI(opts); 
 						}
+						$.blockUI(opts); 
 					},
 					timeoutHandler: function() {
 						var opts = MainUtils.cloneObj(Main.notifyOpts);
@@ -1704,7 +1744,7 @@ Search.searchShops = function(query, page, count, type, updatePage) {
 		url: "/shop/",
 		dataType: "json",
 		cache: false,
-		type: "post",
+		type: "get",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 		data: data,
 		success: function(searchResult){
@@ -2356,4 +2396,182 @@ Profile.createFavoriteItem = function(favoriteItem) {
 	
 	
 	return favoriteItemPanel;
+};
+
+
+Preferences = {};
+Preferences.preferencesItems = {};
+
+Preferences.setPreferenceItem = function(preferenceName, value) {
+	var oldValue = Preferences.preferencesItems[preferenceName];
+	if (oldValue != value) {
+		Preferences.preferencesItems[preferenceName] = value;
+		Preferences.fireItemChangedListener(preferenceName, oldValue, value);
+	}
+};
+
+Preferences.getPreferenceItem = function(preferenceName) {
+	return Preferences.preferencesItems[preferenceName];
+};
+
+Preferences.preferencesItems["shareLoc"] = false;
+Preferences.itemChangedListeners = [];
+Preferences.addItemChangedListener = function(listener) {
+	if (!isArray(listener.preferenceNames)) {
+		listener.preferenceNames = [listener.preferenceNames];
+	}
+	
+	Preferences.itemChangedListeners.push(listener);
+};
+
+Preferences.removeItemChangedListener = function(listener) {
+	var listeners = Preferences.itemChangedListeners;
+	for (var i = 0; i < listeners.length; ++i){
+		if (listeners[i] == listener){
+			listeners.splice(i,1);
+			break;
+		}
+	}
+};
+
+Preferences.fireItemChangedListener = function(preferenceName, oldValue, newValue) {
+	var listeners = Preferences.itemChangedListeners;
+	for (var i = 0; i < listeners.length; ++i){
+		var l = listeners[i];
+		if (l.preferenceNames.contains(preferenceName)){
+			l.handler(oldValue, newValue);
+			break;
+		}
+	}
+};
+
+Preferences.init = function() {
+	var preferencesItems = $("<div id='preferencesItems'>" +
+								"<table>" +
+									"<tr>" +
+										"<td>" +
+											"<input id='shareloc' name='shareloc' type='checkbox' checked='checked'/>" +
+											"<label id='shareloc_label' for='shareloc'>" +
+												$.i18n.prop("preferences.shareLoc", "共享位置信息") +
+											"</label>" +
+										"</td>" +
+									"</tr>" +
+									"<tr>" +
+										"<td>" +
+											"<div>" +
+												"<input id='showContactPos' name='showContactPos' type='checkbox' checked='checked'/>" +
+												"<label id='showContactPos_label' for='showContactPos'>" +
+													$.i18n.prop("contact.showContactPos", "显示联系人位置") +
+												"</label>" +
+											"</div>" + 
+										"</td>" +
+									"</tr>" +
+									"<tr>" +
+										"<td>" +
+											"<div style='text-align:center;'>" +
+												"<input id='savePreferences' type='button' value='" + $.i18n.prop("preferences.savePreferences", "保存") + "'/>" +
+											"</div>" +
+										"</td>" +
+									"</tr>" +
+								"</table>" +
+							"</div>");
+						
+	preferencesItems.find("#savePreferences").click(function(){
+		var iq = new Iq(IqType.SET);
+	
+		var privateXml = new IqPrivateXml();
+		var preferencesExtension = new PreferencesExtension();
+		
+		var showContactPosCheckbox = $("#showContactPos");
+		var showContactPosValue = (showContactPosCheckbox.attr("checked") == true) + "";
+		preferencesExtension.setPreference("showContactPos", showContactPosValue);
+		
+		var sharelocCheckbox = $("#shareloc");
+		var sharelocValue = (sharelocCheckbox.attr("checked") == true) + "";
+		preferencesExtension.setPreference("shareLoc", sharelocValue);
+	
+		privateXml.setPacketExtension(preferencesExtension);
+		iq.addPacketExtension(privateXml);
+		
+		var connectionMgr = XmppConnectionMgr.getInstance();
+		var conn = connectionMgr.getAllConnections()[0];
+		if (conn) {
+			conn.handleStanza({
+				filter: new PacketIdFilter(iq.getStanzaId()),
+				timeout: Christy.loginTimeout,
+				handler: function(iqResponse) {
+					var opts = MainUtils.cloneObj(Main.notifyOpts);
+					if (iqResponse.getType() == IqType.RESULT) {
+						opts.message = $.i18n.prop("preferences.saveSuccess", "保存成功！");
+						Preferences.setPreferenceItem("shareLoc", sharelocValue);
+						Preferences.setPreferenceItem("showContactPos", showContactPosValue);
+					} else {
+						opts.message = $.i18n.prop("preferences.saveFailed", "保存失败！");
+						opts.css.backgroundColor = "red";
+					}
+					$.blockUI(opts);
+					$("#sys").click();
+				},
+				timeoutHandler: function() {
+					var opts = MainUtils.cloneObj(Main.notifyOpts);
+					opts.message = $.i18n.prop("preferences.saveFailed", "保存失败！");
+					opts.css.backgroundColor = "red";
+					$.blockUI(opts);
+					$("#sys").click();
+				}
+			});
+			conn.sendStanza(iq);
+		}
+		
+	});
+	$("#sysAction").before(preferencesItems);
+};
+
+Preferences.updatePreferences = function(updateUI) {
+	var iq = new Iq(IqType.GET);
+	
+	var privateXml = new IqPrivateXml();
+	var preferencesExtension = new PreferencesExtension();
+	privateXml.setPacketExtension(preferencesExtension);
+	iq.addPacketExtension(privateXml);
+	
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	var conn = connectionMgr.getAllConnections()[0];
+	if (conn) {
+		conn.handleStanza({
+			filter: new PacketIdFilter(iq.getStanzaId()),
+			timeout: Christy.loginTimeout,
+			handler: function(iqResponse) {
+				if (iqResponse.getType() == IqType.RESULT) {
+					var privateXmlX = iqResponse.getPacketExtension(IqPrivateXml.ELEMENTNAME, IqPrivateXml.NAMESPACE);
+					if (privateXmlX) {
+						var preferencesX = privateXmlX.getPacketExtension();
+						if (preferencesX) {
+							var preferences = preferencesX.getAllPreferences();
+							for (var key in preferences) {
+								Preferences.setPreferenceItem(key, preferences[key]);
+							}							
+							if (updateUI) {
+								Preferences.updatePreferencesUI();
+							}
+						}
+					}
+					
+				}				
+			}
+		});
+		
+		conn.sendStanza(iq);
+	}
+};
+
+Preferences.updatePreferencesUI = function() {
+	var sharelocValue = (Preferences.preferencesItems["shareLoc"] == "true");				
+	var sharelocCheckbox = $("#shareloc");
+	sharelocCheckbox.attr("checked", sharelocValue);
+	
+	var showContactPosValue = (Preferences.preferencesItems["showContactPos"] == "true");				
+	var showContactPosCheckbox = $("#showContactPos");
+	showContactPosCheckbox.attr("checked", showContactPosValue);
+	
 };
