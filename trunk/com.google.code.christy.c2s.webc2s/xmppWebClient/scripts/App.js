@@ -247,7 +247,7 @@ function sessionBindedSuccess2() {
 	$("#loginDiv").remove();
 	
 	var progressBar = $("<div style='position:fixed;top:10px;left:10px;'>" +
-							"<div>Loading...</div>" +
+							"<div>" + $.i18n.prop("login.loading", "正在载入...") + "</div>" +
 							"<div class='progressbar'>" +
 								"<div style='width:0%;' class='bar'></div>" +
 							"</div>" +
