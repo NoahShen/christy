@@ -5257,7 +5257,8 @@ parser.addExtensionParser(new GeoLocExtensionParser());
 // start of Preferences
 
 PreferencesExtension = PacketExtension.extend({
-	init: function(){
+	init: function() {
+		this.preferences = {};
 	},
 	
 	getElementName: function(){
@@ -5268,19 +5269,28 @@ PreferencesExtension = PacketExtension.extend({
 		return PreferencesExtension.NAMESPACE;
 	},
 	
-	setShareLoc: function(shareLoc) {
-		this.shareLoc = shareLoc;
+	setPreference: function(preferenceName, preferenceValue) {
+		this.preferences[preferenceName] = preferenceValue;
 	},
 	
-	isShareLoc: function() {
-		return this.shareLoc;
+	getPreference: function(preferenceName) {
+		return this.preferences[preferenceName];
+	},
+	
+	getAllPreferences: function() {
+		return this.preferences;
+	},
+	
+	removePreference: function(preferenceName) {
+		delete this.preferences[preferenceName];
 	},
 	
 	toXml: function() {
 		var xml = "";
 		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\">";
-		if (this.isShareLoc() != null) {
-			xml += "<shareloc>" + (this.isShareLoc() == true) + "</shareloc>";
+		
+		for (var key in this.preferences) {
+			xml += "<item name='" + key + "'>" + this.preferences[key] + "</item>";
 		}
 		
 		xml += "</" + this.getElementName() + ">";
@@ -5317,8 +5327,9 @@ PreferencesExtensionParser = XmppParser.ExtensionParser.extend({
 			// ELEMENT_NODE
 			if (childEle.nodeType == 1) {
 				var elementName = childEle.nodeName;
-				if ("shareloc" == elementName) {
-					preferencesExtension.setShareLoc(childEle.firstChild.nodeValue == "true");
+				if ("item" == elementName) {
+					var prefeName = childEle.getAttribute("name");
+					preferencesExtension.setPreference(prefeName, childEle.firstChild.nodeValue);
 				}
 			}
 		}
