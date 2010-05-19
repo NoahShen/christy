@@ -19,6 +19,9 @@ MainUtils.cloneObj = function(myObj) {
 };
 
 Main = {};
+
+Main.updateLocInterval = 10; // seconds
+
 Main.notifyOpts = { 
     message: "", 
     fadeIn: 700, 
@@ -38,6 +41,7 @@ Main.notifyOpts = {
         color: "#fff" 
     } 
 };
+
 Main.init = function() {
 	var mainDiv = $("<div id='main'></div>").css({
 		"position":"absolute",
@@ -55,7 +59,7 @@ Main.init = function() {
 									"<div id='userStatus'><div>" + $.i18n.prop("topBar.status", "状态") + "</div></div>" +
 								"</td>" +
 								"<td>" +
-									"<div id='userJid'>Noah@example.com</div>" +
+									"<div id='userJid'></div>" +
 								"</td>" +
 								"<td>" +
 									"<div id='sys'>" + $.i18n.prop("topBar.sys", "系统") + "</div>" +
@@ -286,7 +290,7 @@ Main.init = function() {
 					clearInterval(Main.geoLocIntervalId);
 				}
 				if (newValue == "true") {
-					Main.geoLocIntervalId = setInterval(Main.updateLoc, 10 * 1000);
+					Main.geoLocIntervalId = setInterval(Main.updateLoc, Main.updateLocInterval * 1000);
 				}
 			} else if (preferenceName == "showContactPos") {
 				if (newValue != "true") {
@@ -1876,6 +1880,9 @@ Search.showShopDetail = function(shopDetail) {
 											"<input id='adddFavorite' type='button' value='" +
 												$.i18n.prop("search.shopDetail.adddFavorite", "收藏") + 
 											"' />" +
+											"<input id='showShopPos' type='button' value='" +
+												$.i18n.prop("search.shopDetail.showShopPos", "地图") + 
+											"' />" +
 										"</div>" +
 										"<div>" +
 											"<span>" + 
@@ -1943,6 +1950,26 @@ Search.showShopDetail = function(shopDetail) {
 			}
 		});
 		
+	});
+	
+	shopBaseInfo.find("#showShopPos").click(function() {
+		var lat = baseInfo.lat;
+		var lon = baseInfo.lon;
+		
+		var mapItem = {
+			id: "shopId_" + baseInfo.id,
+			title: baseInfo.name,
+			isShow: true,
+			closeable: true,
+			itemVisible: true,
+			positions: [{
+				message: baseInfo.name,
+				lat: lat,
+				lon: lon
+			}]
+		};
+		Map.updateMapItem(mapItem);
+		Main.tabs.triggleTab(2);
 	});
 	
 	shopDetailPanel.append(shopBaseInfo);
@@ -2041,7 +2068,9 @@ Map.mapFrameLoaded = function() {
 //	title: "title",
 //	isShow: true,
 //	closeable: true,
+//	itemVisible: true;
 //	positions: [{
+//		message: "marker",
 //		lat: lat,
 //		lon: lon
 //	}]

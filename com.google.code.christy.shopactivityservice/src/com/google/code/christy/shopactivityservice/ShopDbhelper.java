@@ -251,24 +251,6 @@ public class ShopDbhelper
 					{
 						shop.addOverall(itemName, itemValue);
 					}
-//					
-//					Integer commentId = (Integer) shopResSet.getObject("commentId");
-//					if (commentId != null && !shop.containComment(commentId.longValue()))
-//					{
-//						String username = shopResSet.getString("username");
-//						int score = shopResSet.getInt("score");
-//						String commentContent = shopResSet.getString("commentContent");
-//						Timestamp timestamp = shopResSet.getTimestamp("commentMoDate");
-//						
-//						ShopComment comment = new ShopComment();
-//						comment.setCommentId(commentId.longValue());
-//						comment.setContent(commentContent);
-//						comment.setLasModitDate(timestamp.getTime());
-//						comment.setScore(score);
-//						comment.setUsername(username);
-//						comment.setShopId(id);
-//						shop.addComment(comment);
-//					}
 				}
 			}
 			return shop;
