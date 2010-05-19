@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : christy
-Source Server Version : 50083
+Source Server         : connection
+Source Server Version : 50022
 Source Host           : localhost:3306
 Source Database       : christy
 
 Target Server Type    : MYSQL
-Target Server Version : 50083
+Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-05-18 23:18:54
+Date: 2010-05-19 14:45:24
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -46,7 +46,7 @@ CREATE TABLE `privatedata` (
 -- Records of privatedata
 -- ----------------------------
 INSERT INTO `privatedata` VALUES ('noah', '[storage][storage:bookmarks]', '<storage xmlns=\"storage:bookmarks\">\n<conference autojoin=\"false\" name=\"name\" jid=\"conference.example.com\">\n<nick>Noah</nick>\n<password>password</password>\n</conference>\n<url url=\"http://www.google.com.hk\" name=\"google HK\"/>\n</storage>');
-INSERT INTO `privatedata` VALUES ('noah', '[preference][christy:user:preference]', '<preference xmlns=\"christy:user:preference\"><shareloc>false</shareloc></preference>');
+INSERT INTO `privatedata` VALUES ('noah', '[preference][christy:user:preference]', '<preference xmlns=\"christy:user:preference\"><item name=\"showContactPos\">true</item><item name=\"shareLoc\">false</item></preference>');
 
 -- ----------------------------
 -- Table structure for `shop`
@@ -100,7 +100,7 @@ CREATE TABLE `shopcomment` (
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`commentId`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopcomment
@@ -141,7 +141,7 @@ CREATE TABLE `shopvoter` (
   `itemName` varchar(50) NOT NULL,
   `value` int(11) NOT NULL,
   PRIMARY KEY  (`voterId`)
-) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopvoter
@@ -183,7 +183,7 @@ CREATE TABLE `userfavoriteshop` (
   `username` char(50) NOT NULL,
   `shopId` int(20) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userfavoriteshop
@@ -207,7 +207,7 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster

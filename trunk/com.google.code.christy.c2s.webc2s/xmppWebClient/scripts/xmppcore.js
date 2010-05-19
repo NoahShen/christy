@@ -3778,6 +3778,10 @@ XmppConnection = jClass.extend({
 		}
 	},
 	
+	getAllContacts: function() {
+		return this.contacts;
+	},
+	
 	getContact: function(jid) {
 		for (var i =  0; i < this.contacts.length; ++i){
 			var contact = this.contacts[i];
