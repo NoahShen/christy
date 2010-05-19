@@ -282,24 +282,16 @@ Main.init = function() {
 		Main.updatePanelSize();
 	});
 	
+	Main.geoLocIntervalId = setInterval(Main.updateMyPos, Main.updateLocInterval * 1000);
+	
 	Preferences.addItemChangedListener({
-		preferenceNames: ["shareLoc", "showContactPos"],
+		preferenceNames: ["showContactPos"],
 		handler: function(preferenceName, oldValue, newValue) {
-			if (preferenceName == "shareLoc") {
-				if (Main.geoLocIntervalId) {
-					clearInterval(Main.geoLocIntervalId);
-				}
-				if (newValue == "true") {
-					Main.geoLocIntervalId = setInterval(Main.updateLoc, Main.updateLocInterval * 1000);
-				}
-			} else if (preferenceName == "showContactPos") {
-				if (newValue != "true") {
-					Map.hideContactPos();
-				} else {
-					Map.showContactPos();
-				}
+			if (newValue != "true") {
+				Map.hideContactPos();
+			} else {
+				Map.showContactPos();
 			}
-			
 		}
 	});
 	
@@ -493,28 +485,48 @@ Main.init = function() {
 };
 
 
-Main.updateLoc = function() {
+Main.updateMyPos = function() {
 	GeoUtils.getCurrentPosition(function(p) {
 		var lat = p.coords.latitude;
 		var lon = p.coords.longitude;
 		
-		var connectionMgr = XmppConnectionMgr.getInstance();
-		var conn = connectionMgr.getAllConnections()[0];
-		if (conn) {
-			var currentP = conn.currentPresence;
-			var geoLocExtension = new GeoLocExtension();
-			geoLocExtension.setType(GeoLocType.LATLON);
-			geoLocExtension.setLat(lat);
-			geoLocExtension.setLon(lon);
-			
-			currentP.removePacketExtension(GeoLocExtension.ELEMENTNAME, GeoLocExtension.NAMESPACE);
-			currentP.addPacketExtension(geoLocExtension);
-			conn.changeStatus(currentP);
+		var title = $.i18n.prop("map.myPosition", "我的位置");
+		var mapItem = {
+			id: "myPosition",
+			title: title,
+			isShow: true,
+			closeable: false,
+			itemVisible: true,
+			positions: [{
+				message: title,
+				lat: lat,
+				lon: lon
+			}]
+		};
+		Map.updateMapItem(mapItem);
+
+		if (Preferences.preferencesItems["shareLoc"] == "true") {
+			var connectionMgr = XmppConnectionMgr.getInstance();
+			var conn = connectionMgr.getAllConnections()[0];
+			if (conn) {
+				var currentP = conn.currentPresence;
+				var geoLocExtension = new GeoLocExtension();
+				geoLocExtension.setType(GeoLocType.LATLON);
+				geoLocExtension.setLat(lat);
+				geoLocExtension.setLon(lon);
+				
+				currentP.removePacketExtension(GeoLocExtension.ELEMENTNAME, GeoLocExtension.NAMESPACE);
+				currentP.addPacketExtension(geoLocExtension);
+				conn.changeStatus(currentP);
+			}
 		}
+		
 		
 	}, 
 	function(){
-		
+		if (Main.geoLocIntervalId) {
+			clearInterval(Main.geoLocIntervalId);
+		}
 	}, false);		
 };
 
