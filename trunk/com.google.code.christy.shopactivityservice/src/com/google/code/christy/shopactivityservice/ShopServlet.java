@@ -348,6 +348,11 @@ public class ShopServlet extends HttpServlet
 			basicInfo.put("name", shop.getTitle());
 			basicInfo.put("imgSrc", shop.getShopImg());
 			basicInfo.put("hasCoupon", true);
+			basicInfo.put("addr", shop.getDistrict() + " " + shop.getStreet());
+			basicInfo.put("phone", shop.getTel());
+			basicInfo.put("lat", shop.getLatitude());
+			basicInfo.put("lon", shop.getLongitude());
+			jsonObj.put("basicInfo", basicInfo);
 			
 			
 			JSONObject overall = new JSONObject();
@@ -357,9 +362,6 @@ public class ShopServlet extends HttpServlet
 			}
 			jsonObj.put("overall", overall);
 			
-			basicInfo.put("addr", shop.getDistrict() + " " + shop.getStreet());
-			basicInfo.put("phone", shop.getTel());
-			jsonObj.put("basicInfo", basicInfo);
 			
 			jsonObj.put("intro", shop.getContent());
 			

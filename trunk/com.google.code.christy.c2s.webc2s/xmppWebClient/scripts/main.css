@@ -1,15 +1,20 @@
-html, body, input {
+html, body, div {
 	font-family:arial,sans-serif;
-}
-
-body, div{
+	font-size: 12pt;
 	margin: 0;
 	padding: 0;
-	font-szie: 15pt;
+}
+
+input {
+	font-family:arial,sans-serif;
 }
 
 #main > div {
 	margin: 0px 7px 0px 7px
+}
+
+#userStatus, #sys {
+	cursor: pointer;
 }
 
 .menu-active {
