@@ -279,14 +279,23 @@ Main.init = function() {
 	});
 	
 	Preferences.addItemChangedListener({
-		preferenceNames: ["shareLoc"],
-		handler: function(oldValue, newValue) {
-			if (Main.geoLocIntervalId) {
-				clearInterval(Main.geoLocIntervalId);
+		preferenceNames: ["shareLoc", "showContactPos"],
+		handler: function(preferenceName, oldValue, newValue) {
+			if (preferenceName == "shareLoc") {
+				if (Main.geoLocIntervalId) {
+					clearInterval(Main.geoLocIntervalId);
+				}
+				if (newValue == "true") {
+					Main.geoLocIntervalId = setInterval(Main.updateLoc, 10 * 1000);
+				}
+			} else if (preferenceName == "showContactPos") {
+				if (newValue != "true") {
+					Map.hideContactPos();
+				} else {
+					Map.showContactPos();
+				}
 			}
-			if (newValue == "true") {
-				Main.geoLocIntervalId = setInterval(Main.updateLoc, 10 * 1000);
-			}
+			
 		}
 	});
 	
@@ -308,6 +317,9 @@ Main.init = function() {
 			if (eventType == ConnectionEventType.ContactUpdated
 				|| eventType == ConnectionEventType.ContactStatusChanged) {
 				IM.updateContact(contact, false);
+				if (Preferences.preferencesItems["showContactPos"] == "true") {
+					Map.showContactPos();
+				}
 			} else if (eventType == ConnectionEventType.ContactRemoved) {
 				IM.updateContact(contact, true);
 			} else if (eventType == ConnectionEventType.ChatCreated) {
@@ -358,7 +370,7 @@ Main.init = function() {
 				var connection = event.connection;
 				var presence = event.stanza;
 				
-				var from = presence.getFrom();				
+				var from = presence.getFrom();		
 				var userSubscribeMe = $("<div style='text-align:center;'>" +
 											"<div>" +
 												from.toBareJID() + $.i18n.prop("contact.wantToAddMe", "想要添加您为联系人") +
@@ -2042,7 +2054,7 @@ Map.containMapItem = function (mapItemId) {
 		return true;
 	}
 	return false;
-}
+};
 
 Map.updateMapItem = function (mapItem) {
 	var mapItemId = mapItem.id;	
@@ -2055,7 +2067,13 @@ Map.updateMapItem = function (mapItem) {
 		if (mapItem.closeable) {
 			closeInput = "<input type='button' value='" + $.i18n.prop("map.mapItems.remove", "删除") + "'/>";
 		}
-		itemDiv = $("<div mapItem='" + mapItemId + "'>" + 
+		
+		var display = "";
+		
+		if (!mapItem.itemVisible) {
+			display = "style='display:none'";
+		}
+		itemDiv = $("<div mapItem='" + mapItemId + "' " + display + " >" + 
 						"<input id='" + mapItem.id + "-mapItem' name='" + mapItem.id + "-mapItem' type='checkbox' checked='checked'/>" +
 						"<label id='" + mapItem.id + "-mapItemLabel' for='" + mapItem.id + "-mapItem'>" + mapItem.title + "</label>" +
 						closeInput +
@@ -2094,7 +2112,7 @@ Map.updateMapItem = function (mapItem) {
 		}
 		
 	}
-}
+};
 
 Map.removeMapItem = function (mapItemId) {
 	delete Map.mapItems[mapItemId];
@@ -2102,7 +2120,51 @@ Map.removeMapItem = function (mapItemId) {
 	if (mapCanvas.attr("src")) {
 		mapCanvas[0].contentWindow.removeMapMarker(mapItemId);
 	}
-}
+};
+
+Map.showContactPos = function() {
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	var conn = connectionMgr.getAllConnections()[0];
+	if (conn) {
+		var contacts = conn.getAllContacts();
+		
+		var positions = [];
+		
+		for (var i = 0; i < contacts.length; ++i) {
+			var contact = contacts[i];
+			var userResource = contact.getMaxPriorityResource();
+			if (userResource) {
+				var presence = userResource.currentPresence;
+				var geolocX = presence.getPacketExtension(GeoLocExtension.ELEMENTNAME, GeoLocExtension.NAMESPACE);
+				if (geolocX && geolocX.getType() == GeoLocType.LATLON) {
+					var lat = geolocX.getLat();
+					var lon = geolocX.getLon();
+					
+					var position = {
+						message: contact.getShowName(),
+						lat: lat,
+						lon: lon
+					};
+					positions.push(position);
+				}		
+			}			
+		}
+		
+		var mapItem = {
+			id: "allContact",
+			title: "allContact",
+			isShow: true,
+			closeable: false,
+			itemVisible: false,
+			positions: positions
+		};
+		Map.updateMapItem(mapItem);
+	}
+};
+
+Map.hideContactPos = function() {
+	Map.removeMapItem("allContact");
+};
 
 Profile = {};
 Profile.pageCount = 5;
@@ -2439,7 +2501,7 @@ Preferences.fireItemChangedListener = function(preferenceName, oldValue, newValu
 	for (var i = 0; i < listeners.length; ++i){
 		var l = listeners[i];
 		if (l.preferenceNames.contains(preferenceName)){
-			l.handler(oldValue, newValue);
+			l.handler(preferenceName, oldValue, newValue);
 			break;
 		}
 	}
