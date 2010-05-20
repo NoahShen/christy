@@ -4,7 +4,15 @@ GeoUtils.getCurrentPosition = function(success_callback, error_callback, isUtm) 
 	// TODO test code
 	if (!isUtm) {
 		var p = {};
-		p.coords = {latitude: 31.221891, longitude: 121.443297};
+		if (GeoUtils.latitude == null) {
+			GeoUtils.latitude = 31.221891;
+		}
+		
+		if (GeoUtils.longitude == null) {
+			GeoUtils.longitude = 121.443297;
+		}
+		GeoUtils.longitude += 0.001
+		p.coords = {latitude: GeoUtils.latitude, longitude: GeoUtils.longitude};
 		success_callback(p);
 		return;
 	}
@@ -18,44 +26,39 @@ GeoUtils.getCurrentPosition = function(success_callback, error_callback, isUtm) 
 	
 	if (typeof (geo_position_js) == "undefined") {
 		$.include(["lib/geo.js"], function(){
-			if(geo_position_js.init()){
-				geo_position_js.getCurrentPosition(function(position) {
-					if (isUtm) {
-    					success_callback(position);
-    					return;
-    				}
-					var lat = position.coords.latitude;
-    				var lon = position.coords.longitude;
-    				var zone = Math.floor ((lon + 180.0) / 6) + 1;
-    				var xy = {};
-       				zone = LatLonToUTMXY (DegToRad (lat), DegToRad (lon), zone, xy);
-    				
-    				var pUTM = {easting: Math.round(xy[0]), northing: Math.round(xy[1])};
-					success_callback(pUTM);
-				},error_callback, {enableHighAccuracy:true});
-			} else {
-				alert("geo unavailable");
-			}
+			GeoUtils.getCurrentPosition2(success_callback, error_callback, isUtm);
 		});
 	} else {
-		if(geo_position_js.init()){
-			geo_position_js.getCurrentPosition(function(position) {
-					if (isUtm) {
-    					success_callback(position);
-    					return;
-    				}
-					var lat = position.coords.latitude;
-    				var lon = position.coords.longitude;
-    				var zone = Math.floor ((lon + 180.0) / 6) + 1;
-    				var xy = {};
-       				zone = LatLonToUTMXY (DegToRad (lat), DegToRad (lon), zone, xy);
-    				var pUTM = {easting: Math.round(xy[0]), northing: Math.round(xy[1])};
-					success_callback(pUTM);
-				}, error_callback, {enableHighAccuracy:true});
-		} else {
-			alert("geo unavailable");
-		}
+		GeoUtils.getCurrentPosition2(success_callback, error_callback, isUtm);
 	}
+};
+
+GeoUtils.getCurrentPosition2 = function(success_callback, error_callback, isUtm) {
+	if(geo_position_js.init()){
+		geo_position_js.getCurrentPosition(function(position) {
+			if (!isUtm) {
+				success_callback(position);
+				return;
+			}
+			var lat = position.coords.latitude;
+			var lon = position.coords.longitude;
+			var zone = Math.floor ((lon + 180.0) / 6) + 1;
+			var xy = {};
+			zone = LatLonToUTMXY (DegToRad (lat), DegToRad (lon), zone, xy);
+			var pUTM = {easting: Math.round(xy[0]), northing: Math.round(xy[1])};
+			success_callback(pUTM);
+		}, error_callback, {enableHighAccuracy:true});
+	} else {
+		error_callback();
+	}
+};
+
+GeoUtils.convertLatLon2UTM = function(lat, lon) {
+	var zone = Math.floor ((lon + 180.0) / 6) + 1;
+	var xy = {};
+	zone = LatLonToUTMXY (DegToRad (lat), DegToRad (lon), zone, xy);
+	var pUTM = {easting: Math.round(xy[0]), northing: Math.round(xy[1])};
+	return pUTM;
 };
 
 var pi = Math.PI;

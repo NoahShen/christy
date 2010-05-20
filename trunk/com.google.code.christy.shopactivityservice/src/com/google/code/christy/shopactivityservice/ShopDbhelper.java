@@ -42,6 +42,11 @@ public class ShopDbhelper
 	
 	private static final String GETSHOPBYLOCCOUNT_SQL = "SELECT COUNT(*) FROM (SELECT *, SQRT(POW(? - easting, 2) + POW(? - northing, 2)) AS distance FROM shop WHERE type = ? HAVING distance<=(? * 1000)) R";
 	
+	private static final String GETSHOPBYLOCWITHOUTTYPE_SQL = "SELECT *, SQRT(POW(? - easting, 2) + POW(? - northing, 2)) AS distance" +
+						" FROM shop HAVING distance<=(? * 1000) ORDER BY distance LIMIT ?, ?";
+
+	private static final String GETSHOPBYLOCCOUNTWITHOUTTYPE_SQL = "SELECT COUNT(*) FROM (SELECT *, SQRT(POW(? - easting, 2) + POW(? - northing, 2)) AS distance FROM shop HAVING distance<=(? * 1000)) R";
+	
 	private static final String GETSHOPBYKEY_SQL = "SELECT * FROM shop WHERE title LIKE ? OR  content LIKE ? OR district LIKE ? OR street LIKE ? LIMIT ?, ?";
 
 	private static final String GETSHOPBYKEYCOUNT_SQL = "SELECT COUNT(*) FROM (SELECT * FROM shop WHERE title LIKE ? OR  content LIKE ? OR district LIKE ? OR street LIKE ?) R";
@@ -272,13 +277,28 @@ public class ShopDbhelper
 		try
 		{
 			connection = connectionPool.getConnection();
-			PreparedStatement preStat = connection.prepareStatement(GETSHOPBYLOC_SQL);
-			preStat.setInt(1, easting);
-			preStat.setInt(2, northing);
-			preStat.setString(3, shopType);
-			preStat.setInt(4, distance);
-			preStat.setInt(5, (page - 1) * count);
-			preStat.setInt(6, count);
+			PreparedStatement preStat = null;
+			if ("all".equals(shopType))
+			{
+				preStat = connection.prepareStatement(GETSHOPBYLOCWITHOUTTYPE_SQL);
+				preStat.setInt(1, easting);
+				preStat.setInt(2, northing);
+				preStat.setInt(3, distance);
+				preStat.setInt(4, (page - 1) * count);
+				preStat.setInt(5, count);
+			}
+			else
+			{
+				preStat = connection.prepareStatement(GETSHOPBYLOC_SQL);
+				preStat.setInt(1, easting);
+				preStat.setInt(2, northing);
+				preStat.setString(3, shopType);
+				preStat.setInt(4, distance);
+				preStat.setInt(5, (page - 1) * count);
+				preStat.setInt(6, count);
+			}
+			
+			
 			ResultSet shopResSet = preStat.executeQuery();
 			if (loggerServiceTracker.isDebugEnabled())
 			{
@@ -322,11 +342,23 @@ public class ShopDbhelper
 			
 			if (getTotal)
 			{
-				PreparedStatement preStat2 = connection.prepareStatement(GETSHOPBYLOCCOUNT_SQL);
-				preStat2.setInt(1, easting);
-				preStat2.setInt(2, northing);
-				preStat2.setString(3, shopType);
-				preStat2.setInt(4, distance);
+				connection = connectionPool.getConnection();
+				PreparedStatement preStat2 = null;
+				if ("all".equals(shopType))
+				{
+					preStat2 = connection.prepareStatement(GETSHOPBYLOCCOUNTWITHOUTTYPE_SQL);
+					preStat2.setInt(1, easting);
+					preStat2.setInt(2, northing);
+					preStat2.setInt(3, distance);
+				}
+				else
+				{
+					preStat2 = connection.prepareStatement(GETSHOPBYLOCCOUNT_SQL);
+					preStat2.setInt(1, easting);
+					preStat2.setInt(2, northing);
+					preStat2.setString(3, shopType);
+					preStat2.setInt(4, distance);
+				}
 				ResultSet shopResSet2 = preStat2.executeQuery();
 				if (loggerServiceTracker.isDebugEnabled())
 				{
