@@ -46,7 +46,7 @@ $(document).ready(function() {
 		$("#login_status").css("color", "black");
 		$("#login_status").text(connecting);
 		
-		$.include(["lib/jClass.js", "xmpputils.js", "xmppcore.js"], function(){
+		$.include(["xmppcore.js"], function(){
 			var connectionMgr = XmppConnectionMgr.getInstance();
 			var listener = function(event){
 				var conn = event.connection;
@@ -255,24 +255,27 @@ function sessionBindedSuccess2() {
 	
 	$("body").append(progressBar);
 	
+//	var files = [
+//					"component/tab/ui.tab.style.css",
+//					"component/tab/ui.tab.js",
+//					"component/jquery.syspanel.style.css",
+//					"component/jquery.syspanel.js",
+//					"component/jquery.pagination.style.css",
+//					"component/jquery.pagination.js",
+//					"lib/geoutils.js",
+//					"lib/jquery.blockUI.js",
+//					"main.css",
+//					"main.js"
+//				];
+	
 	var files = [
-					// TODO start of test code
-//					"lib/jClass.js", 
-//					"xmpputils.js", 
-//					"xmppcore.js",
-					// TODO end of test code
-					"component/tab/ui.tab.style.css",
-					"component/tab/ui.tab.js",
-					"component/jquery.syspanel.style.css",
-					"component/jquery.syspanel.js",
-					"component/jquery.pagination.style.css",
-					"component/jquery.pagination.js",
-					"geoutils.js",
+					"lib/components.css",
+					"lib/components.js",
+					"lib/geoutils.js",
 					"lib/jquery.blockUI.js",
 					"main.css",
 					"main.js"
 				];
-	
 	var currentIndex = 0;
 
 	var loadFile = function() {
