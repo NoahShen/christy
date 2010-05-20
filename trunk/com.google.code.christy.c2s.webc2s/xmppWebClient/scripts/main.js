@@ -2010,6 +2010,7 @@ Search.showShopDetail = function(shopDetail) {
 			}]
 		};
 		Map.updateMapItem(mapItem);
+		Map.setMapItemCenter(mapItem.id);
 		Main.tabs.triggleTab(2);
 	});
 	
@@ -2204,6 +2205,17 @@ Map.removeMapItem = function (mapItemId) {
 	if (mapCanvas.attr("src")) {
 		mapCanvas[0].contentWindow.removeMapMarker(mapItemId);
 	}
+};
+
+Map.setMapItemCenter = function (mapItemId) {
+	var mapItem = Map.mapItems[mapItemId];
+	if (mapItem) {
+		var mapCanvas = $("#mapCanvas");
+		if (mapCanvas.attr("src")) {
+			mapCanvas[0].contentWindow.setMapMarkerCenter(mapItemId);
+		}
+	}
+	
 };
 
 Map.showContactPos = function() {
