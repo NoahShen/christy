@@ -2995,6 +2995,8 @@ XmppParser = jClass.extend({
 			if ("features" == elementName
 				|| "stream:features" == elementName) {
 				body.addStanza(this.parseStreamFeature(packetElement));
+			} else if ("failure" == elementName) {
+				body.addStanza(this.parseFailure(packetElement));
 			} else if ("success" == elementName) {
 				body.addStanza(new Success());
 			} else if ("iq" == elementName) {
@@ -3010,6 +3012,11 @@ XmppParser = jClass.extend({
 		
 //				alert(body.toXml());
 		return body;
+	},
+	
+	parseFailure: function(failureElement) {
+		var xmlns = failureElement.getAttribute("xmlns");
+		return new Failure(xmlns);
 	},
 	
 	parseMessage: function(messageElement) {
@@ -3970,20 +3977,25 @@ XmppConnection = jClass.extend({
 			rid: requestId,
 			handler: function(responsebody) {
 				var stanzas = responsebody.getStanzas();
-				if (stanzas.length > 0 ){
+				if (stanzas.length > 0 ) {
 					var eventType = ConnectionEventType.SaslFailed;
-					if (stanzas[0] instanceof Success) {
+					var stanze = stanzas[0];
+					if (stanze instanceof Success) {
 						eventType = ConnectionEventType.SaslSuccessful;
 						connectionThis.authenticated = true;
 						
 						// TODO Do not need it in new Protocal
 //						connectionThis.bindResource();
+					} else if (stanze instanceof Failure) {
+						eventType = ConnectionEventType.SaslFailed;
+						connectionThis.authenticated = false;
 					}
+					
 					var event = {
 							eventType: eventType,
 							when: TimeUtils.currentTimeMillis(),
 							connection: connectionThis,
-							stanza: stanzas[0]
+							stanza: stanze
 					}
 					connectionMgr.fireConnectionEvent(event);
 				}

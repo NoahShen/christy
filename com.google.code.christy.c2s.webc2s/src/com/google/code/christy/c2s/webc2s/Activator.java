@@ -8,6 +8,7 @@ import com.google.code.christy.c2s.C2SManager;
 import com.google.code.christy.c2s.ChristyStreamFeature;
 import com.google.code.christy.c2s.UserAuthenticator;
 import com.google.code.christy.c2s.webc2s.controller.WebC2sController;
+import com.google.code.christy.lib.ConnectionPool;
 import com.google.code.christy.log.LoggerServiceTracker;
 
 public class Activator implements BundleActivator
@@ -34,6 +35,8 @@ public class Activator implements BundleActivator
 	private WebC2sController webc2sController;
 
 	private HttpServletServiceTracker httpServletServiceTracker;
+
+	private ConnectionPool connPool;
 
 	/*
 	 * (non-Javadoc)
@@ -69,7 +72,14 @@ public class Activator implements BundleActivator
 		//---------streamFeature
 		
 		//authenticator
-		PlainUserAuthenticatorImpl plainUserAuthenticator = new PlainUserAuthenticatorImpl();
+		
+		connPool = new ConnectionPool("com.mysql.jdbc.Driver",
+				"jdbc:mysql://localhost/christy?useUnicode=true&characterEncoding=UTF-8",
+				"root",
+				"123456");
+		connPool .createPool();
+		
+		PlainUserAuthenticatorImpl plainUserAuthenticator = new PlainUserAuthenticatorImpl(connPool);
 		plainUserAuthenticatorRegistration = context.registerService(UserAuthenticator.class.getName(), plainUserAuthenticator, null);
 		
 		userAuthenticatorTracker = new UserAuthenticatorTracker(context);
@@ -180,6 +190,11 @@ public class Activator implements BundleActivator
 		{
 			httpServletServiceTracker.close();
 			httpServletServiceTracker = null;
+		}
+		
+		if (connPool != null)
+		{
+			connPool.closeConnectionPool();
 		}
 	}
 

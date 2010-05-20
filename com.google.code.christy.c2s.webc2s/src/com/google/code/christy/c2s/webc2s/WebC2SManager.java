@@ -1063,11 +1063,10 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 				failure.setNamespace(Failure.SASL_FAILURE_NS);
 				webClientSession.write(failure, response, rid);
 				
-				Body responsebody = new Body();
-				responsebody.setProperty("type", "terminate");
-				webClientSession.write(responsebody, response, (String) body.getProperty("rid"));
+//				Body responsebody = new Body();
+//				responsebody.setProperty("type", "terminate");
+//				webClientSession.write(responsebody, response, rid);
 				
-				webClientSession.write(responsebody, response, rid);
 				webClientSession.close();
 				
 				return true;
