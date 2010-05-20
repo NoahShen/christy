@@ -47,7 +47,7 @@
 	width:100%;
 }
 
-.profile-ui-tab-container div u{
+.profile-ui-tab-container .clearfix > div{
 	float:left;
 	cursor:pointer;
 	margin-top:3px;
@@ -55,12 +55,17 @@
 	text-decoration:none;
 	width:24.9%;
 }
-.profile-ui-tab-container div u.profile-ui-tab-active {
+
+.profile-ui-tab-container .clearfix > div .profile-tab {
+	width:100%;
+}
+
+.profile-ui-tab-container .clearfix > div .profile-ui-tab-active {
 	background:#CCFFFF;
 	margin-bottom:-1px;
 	border-bottom:1px solid #fff;
 }
-.profile-ui-tab-container div u.profile-ui-tab-disable {
+.profile-ui-tab-container .clearfix > div .profile-ui-tab-disable {
 	background:#ff0000;
 
 }

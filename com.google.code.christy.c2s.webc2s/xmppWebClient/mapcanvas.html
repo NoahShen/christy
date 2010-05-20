@@ -10,6 +10,7 @@
 		
 			markers = {};
 			map = null;
+			myEventListener = null;
 			function initialize() {
 				if (GBrowserIsCompatible()) {
 	        		map = new GMap2(document.getElementById("map_canvas"));
@@ -96,6 +97,22 @@
 				}
 				return false;
 			}
+			
+			
+			function startSelectPos(callBack) {
+				myEventListener = GEvent.bind(map , "click", this, function(overlay, latlng) {
+			    	GEvent.removeListener(myEventListener);
+			    	myEventListener = null;
+					callBack(latlng.lat(), latlng.lng());
+			    }); 
+			}
+			
+			function stopSelectPos() {
+				if (myEventListener != null) {
+					GEvent.removeListener(myEventListener);
+				}
+			}
+			
 		</script>
 	</head>
 	<body onload="initialize()" onunload="GUnload()">

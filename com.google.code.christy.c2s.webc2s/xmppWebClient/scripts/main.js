@@ -240,7 +240,9 @@ Main.init = function() {
 //            alert(index);
         },
         callBackHideEvent:function(index) {
-//            alert("hideEvent"+index);
+			if (index == 2) {
+				Map.stopSelectPos();
+			}
         },
         callBackShowEvent:function(index) {
         	
@@ -1417,12 +1419,18 @@ Search.init = function() {
 								"</tr>" +
 							"</table>" + 
 						"</div>");
+	searchInput.find("#searchByLoc").click(function() {
+		Map.startSelectPos(function(lat, lon) {
+			Main.tabs.triggleTab(1);
+			var utm = GeoUtils.convertLatLon2UTM(lat, lon);
+			Search.searchShops(utm, 1, Search.pageCount, "all", true, true);
+		});
+	});
 	
 	searchInput.find("#searchType div").click(function() {
 		var typeJqObj = $(this);
 		var type = typeJqObj.attr("id");
-		
-		
+			
 		GeoUtils.getCurrentPosition(function(p) {
 			Search.searchShops(p, 1, Search.pageCount, type, true, true);
 		}, function(){}, true);		
@@ -1438,19 +1446,29 @@ Search.init = function() {
 	
 	searchInnerPanel.append(searchInput);
 	
-	
 	var shopResultContainer = $("<div id='shopResultContainer'></div>");
 	shopResultContainer.hide();
 	
-	var shopResultBar = $("<div id='shopResultBar'></div>");
+	var shopResultBar = $("<div id='shopResultBar'>" +
+								"<table>" +
+									"<tr>" +
+										"<td>" +
+											"<input id='backToSearchInput' type='button' value='" + $.i18n.prop("search.back", "返回") + "'/>" +
+										"</td>" +
+										"<td style='width:100%;text-align:center;'>" +
+											"<div id='searchTitle'></div>" +
+										"</td>" +
+										"<td>" +
+										"</td>" +
+									"</tr>" +
+								"</table>" +	
+							"</div>");
 	
-	var backToSearchInput = $("<input id='backToSearchInput' type='button' value='" + $.i18n.prop("search.back", "返回") + "'/>");
+	var backToSearchInput = shopResultBar.find("#backToSearchInput");
 	backToSearchInput.click(function() {
 		searchInput.siblings().hide();
 		searchInput.show();
 	});
-	
-	shopResultBar.append(backToSearchInput);
 	
 	shopResultContainer.append(shopResultBar);
 	
@@ -1763,12 +1781,15 @@ Search.searchShops = function(query, page, count, type, updatePage, getTotal) {
 	if (getTotal) {
 		data.gettotal = 1;
 	}
+	var searchTitle = null;
 	if (typeof query == "string") {
 		data.searchKey = query;
+		searchTitle = query;
 	} else {
 		data.easting = query.easting;
 		data.northing = query.northing;
 		data.distance = Search.distance;
+		searchTitle = $.i18n.prop("search.searchInput.searchByLoc", "搜索指定位置");
 	}
 	
 	$.ajax({
@@ -1783,6 +1804,7 @@ Search.searchShops = function(query, page, count, type, updatePage, getTotal) {
 			var shopResult = $("#shopResult");
 			shopResult.empty();
 			
+			$("#searchTitle").text(searchTitle);
 			var shops = searchResult.shops;
 			for (var i = 0; i < shops.length; ++i) {
 				var shopPanel = Search.createShopInfo(shops[i]);
@@ -2069,6 +2091,16 @@ Map.getMapCanvasHeight = function(){
 	return canvasHeigh - 10;
 };
 
+Map.mapLoadedCallBack = [];
+Map.showMap = function(mapShownCallBack) {
+	if (Map.mapLoaded) {
+		mapShownCallBack();
+	} else {
+		Map.mapLoadedCallBack.push(mapShownCallBack);
+	}
+	Main.tabs.triggleTab(2);
+};
+
 Map.mapFrameLoaded = function() {
 	var mapCanvas = $("#mapCanvas");
 	for (var key in Map.mapItems) {
@@ -2081,6 +2113,11 @@ Map.mapFrameLoaded = function() {
 			};
 			mapCanvas[0].contentWindow.updateMapMarker(marker);
 		}
+	}
+	Map.mapLoaded = true;
+	for (var i = 0; i < Map.mapLoadedCallBack.length; ++i) {
+		Map.mapLoadedCallBack[i]();
+		Map.mapLoadedCallBack.splice(i,1);
 	}
 };
 //var mapItem = {
@@ -2148,7 +2185,7 @@ Map.updateMapItem = function (mapItem) {
 	
 
 	var mapCanvas = $("#mapCanvas");
-	if (mapCanvas.attr("src")) {
+	if (Map.mapLoaded) {
 		if (mapItem.isShow) {
 			var marker = {
 				id: mapItem.id,
@@ -2159,7 +2196,6 @@ Map.updateMapItem = function (mapItem) {
 		} else {
 			mapCanvas[0].contentWindow.removeMapMarker(mapItem.id);
 		}
-		
 	}
 };
 
@@ -2215,6 +2251,25 @@ Map.hideContactPos = function() {
 	Map.removeMapItem("allContact");
 };
 
+Map.startSelectPos = function(callBack) {
+	Map.showMap(function() {
+		var opts = MainUtils.cloneObj(Main.notifyOpts);
+		opts.message = $.i18n.prop("search.searchInput.selectPosInMap", "请指定位置");
+		$.blockUI(opts);
+		
+		var mapCanvas = $("#mapCanvas");
+		mapCanvas[0].contentWindow.startSelectPos(callBack);
+	});
+	
+};
+
+Map.stopSelectPos = function() {
+	if (Map.mapLoaded) {
+		var mapCanvas = $("#mapCanvas");
+		mapCanvas[0].contentWindow.stopSelectPos();
+	}
+}
+
 Profile = {};
 Profile.pageCount = 5;
 Profile.init = function() {
@@ -2223,8 +2278,18 @@ Profile.init = function() {
 	var profileTabs = $("<div id='profileTabs'>" +
 		 					"<div class='profile-ui-tab-container'>" +
 		 						"<div class='clearfix'>" +
-		 							"<u class='profile-ui-tab-active'>" + $.i18n.prop("profile.tabs.favorite", "收藏") + "</u>" +
-		 							"<u>" + $.i18n.prop("profile.tabs.comments", "评论") + "</u>" +
+		 							"<div>" +
+		 								"<span class='profile-tab profile-ui-tab-active'>" + 
+		 									$.i18n.prop("profile.tabs.favorite", "收藏") + 
+		 								"</span>" +
+		 								"<span id='favoriteRefresh' style='display:inline;'>Refresh</span>" +
+		 							"</div>" +
+		 							"<div>" +
+		 								"<span class='profile-tab'>" + 
+		 									$.i18n.prop("profile.tabs.comments", "评论") + 
+		 								"</span>" +
+		 								"<span id='commentsRefresh' style='display:none;'>Refresh</span>" +
+		 							"</div>" +
 		 						"</div>" +
 		 						"<div>" +
 		 							"<div id='favoriteContainer' class='profile-ui-tab-content profile-ui-tab-active'>" +
@@ -2245,13 +2310,28 @@ Profile.init = function() {
 
 	profile.append(profileTabs);
     
+    var favoriteRefresh = profile.find("#favoriteRefresh");
+    favoriteRefresh.click(function() {
+    	Profile.queryFavoriteShop(1, Profile.pageCount, true, true);
+    });
+    
+    var commentsRefresh = profile.find("#commentsRefresh");
+    commentsRefresh.click(function() {
+    	Profile.queryMyComments(1, Profile.pageCount, true, true);
+    });
+    
 	Profile.tabs = new $.fn.tab({
-        tabList:"#profileTabs .profile-ui-tab-container .clearfix u",
+        tabList:"#profileTabs .profile-ui-tab-container .clearfix div .profile-tab",
         contentList:"#profileTabs .profile-ui-tab-container .profile-ui-tab-content",
         tabActiveClass:"profile-ui-tab-active",
         tabDisableClass:"profile-ui-tab-disable",
         callBackShowEvent:function(index) {
-        	if (index == 1) {
+        	if (index == 0) {
+				favoriteRefresh.css("display", "inline");
+				commentsRefresh.css("display", "none");
+			} else if (index == 1) {
+        		commentsRefresh.css("display", "inline");
+        		favoriteRefresh.css("display", "none");
         		if (!Profile.hasQueriedComments) {
 					Profile.queryMyComments(1, Profile.pageCount, true, true);
 					Profile.hasQueriedComments = true;
