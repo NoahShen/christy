@@ -83,7 +83,7 @@
 						var gmarker = new GMarker(new GLatLng(p.lat, p.lon));
 						if (map) {
 							map.addOverlay(gmarker);
-							gmarker.bindInfoWindowHtml(p.message);
+							gmarker.bindInfoWindow(p.message);
 						}
 						markerWrapper.gmarkers.push(gmarker);
 					}

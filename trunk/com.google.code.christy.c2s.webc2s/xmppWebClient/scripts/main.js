@@ -492,6 +492,7 @@ Main.updateMyPos = function() {
 		var lon = p.coords.longitude;
 		
 		var title = $.i18n.prop("map.myPosition", "我的位置");
+		var titleJqObj = $("<div>" + title + "</div>");
 		var mapItem = {
 			id: "myPosition",
 			title: title,
@@ -499,7 +500,7 @@ Main.updateMyPos = function() {
 			closeable: false,
 			itemVisible: true,
 			positions: [{
-				message: title,
+				message: titleJqObj[0],
 				lat: lat,
 				lon: lon
 			}]
@@ -1997,6 +1998,17 @@ Search.showShopDetail = function(shopDetail) {
 		var lat = baseInfo.lat;
 		var lon = baseInfo.lon;
 		
+		var posInfoJqObj = $("<div>" +
+								"<div>" + baseInfo.name + "</div>" +
+								"<div>" +
+									"<input type='button' value='路线'/>" +
+								"</div>" +
+							"</div>");
+		posInfoJqObj.find("input").click(function() {
+			// TODO
+			alert(this);
+		});
+		
 		var mapItem = {
 			id: "shopId_" + baseInfo.id,
 			title: baseInfo.name,
@@ -2004,14 +2016,16 @@ Search.showShopDetail = function(shopDetail) {
 			closeable: true,
 			itemVisible: true,
 			positions: [{
-				message: baseInfo.name,
+				message: posInfoJqObj[0],
 				lat: lat,
 				lon: lon
 			}]
 		};
 		Map.updateMapItem(mapItem);
-		Map.setMapItemCenter(mapItem.id);
-		Main.tabs.triggleTab(2);
+		Map.showMap(function(){
+			Map.setMapItemCenter(mapItem.id);
+		});
+		
 	});
 	
 	shopDetailPanel.append(shopBaseInfo);
