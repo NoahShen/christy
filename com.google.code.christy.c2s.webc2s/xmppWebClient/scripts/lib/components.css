@@ -1,0 +1,166 @@
+/** =========start of Tab **/
+
+/** 清浮动 **/
+.clearfix:after{
+    content:".";
+    display:block;
+    height:0;
+    clear:both;
+    visibility:hidden;
+}
+
+.clearfix{
+    display:inline-block;
+}
+
+/* Hides from IE-mac \*/
+* html .clearfix{
+    height:1%;
+}
+
+.clearfix{
+    display:block;
+}
+
+.ui-tab-container{
+	width:100%;
+}
+
+.ui-tab-container div u{
+	float:left;
+	cursor:pointer;
+	margin-top:3px;
+	text-align:center;
+	text-decoration:none;
+	width:24.9%;
+}
+.ui-tab-container div u.ui-tab-active{
+	background:#99FFCC;
+	margin-bottom:-1px;
+	border-bottom:1px solid #fff;
+}
+.ui-tab-container div u.ui-tab-disable{
+	background:#ff0000;
+
+}
+
+
+.profile-ui-tab-container{
+	width:100%;
+}
+
+.profile-ui-tab-container .clearfix > div{
+	float:left;
+	cursor:pointer;
+	margin-top:3px;
+	text-align:center;
+	text-decoration:none;
+	width:24.9%;
+}
+
+.profile-ui-tab-container .clearfix > div .profile-tab {
+	width:100%;
+}
+
+.profile-ui-tab-container .clearfix > div .profile-ui-tab-active {
+	background:#CCFFFF;
+	margin-bottom:-1px;
+	border-bottom:1px solid #fff;
+}
+.profile-ui-tab-container .clearfix > div .profile-ui-tab-disable {
+	background:#ff0000;
+
+}
+
+/** =========end of Tab **/
+
+
+/** =========start of syspanel **/
+.syspanel {
+
+}
+.syspanel table {
+	width:100%;
+}
+
+.syspanel .syspanel-close {
+	font-family: Arial;
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+	text-align: right;
+}
+
+.syspanel .messagepanel {
+	word-break: break-all;
+	word-wrap: break-word;
+}
+
+.syspanel .prevNext {
+	font-family: Arial;
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+	right: 6px;
+	text-align: right;
+}
+
+.syspanel .prevNext span{
+	margin: 2px 7px 2px 7px;
+}
+/** =========end of syspanel **/
+
+
+
+/** =========start of Pagination **/
+
+.pagination {
+	color:#000000;
+	cursor:default;
+	font-family:Tahoma,Verdana;
+	font-size:12px;
+}
+
+.pagination input {
+	color: #000000;
+	font-family: Tahoma,Verdana;
+	font-size: 10px;
+}
+
+.pagination span {
+	padding: 0px 5px
+}
+
+
+.pagination input.itext, .pagination input.icount {
+	color: #666666;
+	font-weight: bold;
+	background-color: #F7F7F7;
+	border: 1px solid #CCCCCC;
+	font-size:10px;
+}
+
+.pagination input.itext {
+	width: 25px;
+	color: #000000;
+	text-align: right;
+	border-right: none;
+}
+.pagination input.icount {
+	width: 35px;
+	text-align: left;
+	border-left: none;
+}
+.pagination input.ibutton {
+	height: 17px;
+	color: #FFFFFF;
+	font-weight: bold;
+	font-family: Verdana;
+	background-color: #999999;
+	border: 1px solid #666666;
+	padding: 0px 0px 2px 1px;
+	margin-left: 2px;
+	cursor: hand;
+}
+/** =========end of Pagination **/
+
