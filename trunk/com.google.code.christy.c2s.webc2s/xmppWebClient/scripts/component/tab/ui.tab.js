@@ -42,10 +42,11 @@
 			var _this = this;
 			switch(_this.opts.showType){
 				case "show":
-					$(_this.opts.contentList+":visible").hide();
+					var visibleJqObj = $(_this.opts.contentList+":visible");
+					visibleJqObj.hide();
 					//callback
 					if(_this.opts.callBackHideEvent){
-						_this.opts.callBackHideEvent(index);
+						_this.opts.callBackHideEvent(visibleJqObj.index());
 					}
 					$(_this.opts.contentList).eq(index).show();
 					if(_this.opts.callBackShowEvent){
@@ -54,10 +55,11 @@
 					isShow =false;
 					break;
 				case "fade":
-					$(_this.opts.contentList+":visible").fadeOut(_this.opts.showSpeed,function(){
+					var visibleJqObj = $(_this.opts.contentList+":visible");
+					visibleJqObj.fadeOut(_this.opts.showSpeed,function(){
 						//callback
 						if(_this.opts.callBackHideEvent){
-							_this.opts.callBackHideEvent(index);
+							_this.opts.callBackHideEvent(visibleJqObj.index());
 						}
 						$(_this.opts.contentList).eq(index).fadeIn(function(){
 							//callback
@@ -69,10 +71,11 @@
 					});
 					break;
 				case "slide":
-					$(_this.opts.contentList+":visible").slideUp(_this.opts.showSpeed,function(){
+					var visibleJqObj = $(_this.opts.contentList+":visible");
+					visibleJqObj.slideUp(_this.opts.showSpeed,function(){
 						//callback
 						if(_this.opts.callBackHideEvent){
-							_this.opts.callBackHideEvent(index);
+							_this.opts.callBackHideEvent(visibleJqObj.index());
 						}
 						$(_this.opts.contentList).eq(index).slideDown(function(){
 							//callback
