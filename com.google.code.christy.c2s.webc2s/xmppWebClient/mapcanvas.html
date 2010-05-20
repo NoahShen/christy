@@ -13,7 +13,7 @@
 			function initialize() {
 				if (GBrowserIsCompatible()) {
 	        		map = new GMap2(document.getElementById("map_canvas"));
-	        		map.setCenter(new GLatLng(31.230708, 121.472916), 13);
+//	        		map.setCenter(new GLatLng(31.230708, 121.472916), 13);
 	        		var customUI = map.getDefaultUI();
 			        customUI.maptypes.hybrid = false;
 			        map.setUI(customUI);
@@ -28,7 +28,14 @@
 				    	}
 						
 				    }); 
-		    
+		    		
+		    		window.parent.GeoUtils.getCurrentPosition(function(p) {
+		    			var lat = p.coords.latitude;
+						var lon = p.coords.longitude;
+						map.setCenter(new GLatLng(lat, lon), 13);
+						
+		    		}, function() {}, false);
+		    		
 	        		if (window.parent.Map.mapFrameLoaded) {
 	        			window.parent.Map.mapFrameLoaded();
 	        		}
@@ -76,9 +83,7 @@
 						var gmarker = new GMarker(new GLatLng(p.lat, p.lon));
 						if (map) {
 							map.addOverlay(gmarker);
-							GEvent.addListener(gmarker, "click", function() {
-								gmarker.openInfoWindowHtml(p.message);
-							});
+							gmarker.bindInfoWindowHtml(p.message);
 						}
 						markerWrapper.gmarkers.push(gmarker);
 					}
@@ -98,6 +103,22 @@
 					}
 				}
 				delete markers[markerId];
+			}
+			
+			function setMapMarkerCenter(markerId) {
+				var markerWrapper = markers[markerId];
+				if (markerWrapper) {
+
+					var gmarker = markerWrapper.gmarkers[0];
+					if (gmarker) {
+						var lat = gmarker.getLatLng().lat();
+						var lng = gmarker.getLatLng().lng();
+						
+						map.setCenter(new GLatLng(lat, lng));
+						GEvent.trigger(gmarker, "click");
+					}
+					
+				}
 			}
 			
 			function containMapMarker(markerId) {
