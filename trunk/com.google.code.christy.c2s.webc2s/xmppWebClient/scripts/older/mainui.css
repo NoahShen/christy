@@ -1,0 +1,50 @@
+div[status-message] {
+	font-size: x-small;
+	color: gray;
+}
+
+#chat-scroller-header span {
+	text-decoration: none; 
+	color: #867863;
+}
+
+#chat-scroller-header spanv:hover {
+	text-decoration: none; 
+	color: #4b412f
+}
+
+#chat-scroller-header span.selected {
+	text-decoration: underline !important; 
+	color: #4b412f !important;
+}
+
+
+span[tabContactJid] {
+	padding-left: 10px;
+}
+
+
+.contactGroup {
+	padding-left: 10px;
+}
+
+
+.contextMenu LI.available A { background-image: url(/resource/status/available.png); }
+.contextMenu LI.away A { background-image: url(/resource/status/away.png); }
+.contextMenu LI.chat A { background-image: url(/resource/status/chat.png); }
+.contextMenu LI.xa A { background-image: url(/resource/status/xa.png); }
+.contextMenu LI.dnd A { background-image: url(/resource/status/dnd.png); }
+
+.hasNewMessage {
+	font-weight: bolder;
+}
+
+.contactMessage {
+	color: blue;
+}
+
+.myMessage {
+	color: red;
+}
+
+
