@@ -8,9 +8,8 @@
 -->
 		<script>
 		
-			markers = {};
-			map = null;
-			myEventListener = null;
+			var markers = {};
+			var map = null;
 			function initialize() {
 				if (GBrowserIsCompatible()) {
 	        		map = new GMap2(document.getElementById("map_canvas"));
@@ -19,6 +18,17 @@
 			        customUI.maptypes.hybrid = false;
 			        map.setUI(customUI);
 	        		
+	        		var myEventListener = GEvent.bind(map , "click", this, function(overlay, latlng) {
+				    	if (!stopSelect) {
+				    		for (var i = 0; i < selectPosCallBackFuncs.length; ++i) {
+								selectPosCallBackFuncs[i](latlng.lat(), latlng.lng());
+								selectPosCallBackFuncs.splice(i,1);
+							}
+							stopSelect = true;
+				    	}
+						
+				    }); 
+		    
 	        		if (window.parent.Map.mapFrameLoaded) {
 	        			window.parent.Map.mapFrameLoaded();
 	        		}
@@ -98,19 +108,17 @@
 				return false;
 			}
 			
+			var stopSelect = true;
+			var selectPosCallBackFuncs = [];
 			
 			function startSelectPos(callBack) {
-				myEventListener = GEvent.bind(map , "click", this, function(overlay, latlng) {
-			    	GEvent.removeListener(myEventListener);
-			    	myEventListener = null;
-					callBack(latlng.lat(), latlng.lng());
-			    }); 
+				stopSelect = false;
+				selectPosCallBackFuncs.push(callBack);
+				
 			}
 			
 			function stopSelectPos() {
-				if (myEventListener != null) {
-					GEvent.removeListener(myEventListener);
-				}
+				stopSelect = true;
 			}
 			
 		</script>

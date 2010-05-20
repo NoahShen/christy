@@ -245,7 +245,6 @@ Main.init = function() {
 			}
         },
         callBackShowEvent:function(index) {
-        	
         	if (index == 0) {
         		var chatPanel = $("#chatPanel");
         		var jidStr = chatPanel.children("div:visible").attr("chatcontactjid");
