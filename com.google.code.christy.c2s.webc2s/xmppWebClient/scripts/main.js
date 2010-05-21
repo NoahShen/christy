@@ -2009,7 +2009,7 @@ Search.showShopDetail = function(shopDetail) {
 										"<td>" +
 											"<div style='text-align:right;'>" +
 												"<a href='javascript:void(0);'>" +
-													$.i18n.prop("search.shopDetail.viewRoute", "查看路线") +
+													$.i18n.prop("search.shopDetail.viewRoute", "路线") +
 												"</a>" +
 											"</div>" +
 										"</td>" +
@@ -2022,8 +2022,8 @@ Search.showShopDetail = function(shopDetail) {
 				var myLat = p.coords.latitude;
 				var myLon = p.coords.longitude;
 				
-				Map.showRoute(myLat, myLon, lat, lon);
-				
+				Map.getRoute(myLat, myLon, lat, lon);
+				$("#mapRoute").show();
 			}, function() {}, false);
 			
 		});
@@ -2099,7 +2099,7 @@ Map.init = function() {
 								"</div>" +
 								"<div>" +
 									"<span id='mapRoute' class='map-tab' style='display:none;'>" + 
-										$.i18n.prop("map.tabs.route", "路线") + 
+										$.i18n.prop("map.tabs.route", "路线") +
 									"</span>" +
 									"<span id='closeRoute' style='display:none;'>Close</span>" +
 								"</div>" +
@@ -2120,6 +2120,7 @@ Map.init = function() {
 	mapTabs.find("#closeRoute").click(function() {
 		Map.tabs.triggleTab(0);
 		$("#mapRoute").hide();
+		Map.removeRoute();
 	});
 	
 	mapPanel.append(mapTabs);
@@ -2188,11 +2189,18 @@ Map.mapFrameLoaded = function() {
 	}
 };
 
-Map.showRoute = function(fromLat, fromLon, toLat, toLon) {
+Map.getRoute = function(fromLat, fromLon, toLat, toLon) {
 	Map.showMap(function () {
 		var mapCanvas = $("#mapCanvas");
-		mapCanvas[0].contentWindow.showRoute(fromLat, fromLon, toLat, toLon);
+		mapCanvas[0].contentWindow.getRoute(fromLat, fromLon, toLat, toLon);
 	});
+};
+
+Map.removeRoute = function() {
+	if (Map.mapLoaded) {
+		var mapCanvas = $("#mapCanvas");
+		mapCanvas[0].contentWindow.removeRoute();
+	}
 };
 
 //var mapItem = {

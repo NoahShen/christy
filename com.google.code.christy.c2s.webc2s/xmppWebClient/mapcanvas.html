@@ -1,5 +1,6 @@
 <html>
 	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <!-- 192.168.1.80-->
 		<script src="http://ditu.google.cn/maps?file=api&amp;v=2&amp;key=ABQIAAAAuzpWr51oR6m775odTgrhPBQEO34WZEWuIFq1A7yobGXPE-K5exS2AO9TF78NrQFufRMT68o4QfnoUA&sensor=false" type="text/javascript"></script>
 
@@ -40,28 +41,21 @@
 	        			window.parent.Map.mapFrameLoaded();
 	        		}
 	        		
-	        		// TODO test
 	        		/*
-	        		for (var i = 0; i < 10; ++i) {
-	        			var marker = {
-	        				id: i + "a",
-	        				positions: [{
-	        					lat: 31.230708,
-	        					lon: 121.472916
-	        				}]
-	        			};
-	        			updateMapMarker(marker);
+	        		document.getElementById("return2Map").onclick = function() {
+	        			document.getElementById("map_canvas").style.display = "block";
+	        			document.getElementById("mapDirectionPanel").style.display = "none";
+	        		};
+	        		
+	        		document.getElementById("close").onclick = function() {
+	        			removeRoute();
+	        			document.getElementById("map_canvas").style.display = "block";
+	        			document.getElementById("mapDirectionPanel").style.display = "none";
 	        		}
 	        		
-	        		for (var j = 0; j < 10; ++j) {
-	        			var marker = {
-	        				id: j + "a",
-	        				positions: [{
-	        					lat: 31.230708,
-	        					lon: 121.572916
-	        				}]
-	        			};
-	        			updateMapMarker(marker);
+	        		document.getElementById("mapDirection").onclick = function() {
+	        			document.getElementById("map_canvas").style.display = "block";
+	        			document.getElementById("mapDirectionPanel").style.display = "none";
 	        		}
 	        		*/
 	      		}
@@ -147,18 +141,85 @@
 				if (gdir) {
 					gdir.clear();
 					gdir = null;
+//					map.removeControl(routeControl);
 				}
+				
 			}
-			function showRoute(fromLat, fromLon, toLat, toLon) {
+			
+			function getRoute(fromLat, fromLon, toLat, toLon) {
 				removeRoute();
 				
-				gdir = new GDirections(map,window.parent.document.getElementById('mapDirection'));
+				gdir = new GDirections(map, window.parent.document.getElementById('mapDirection'));
+				G_TRAVEL_MODE_WALKING
+				gdir.loadFromWaypoints([
+					fromLat + "," + fromLon, 
+					toLat + "," + toLon
+				],{
+					travelMode:G_TRAVEL_MODE_DRIVING
+				});
 				
-				
+//				map.addControl(routeControl);
 			}
+			
+			/*
+			function RouteControl() {}
+			
+			RouteControl.prototype = new GControl();
+			
+			RouteControl.prototype.initialize = function(map) {
+				var container = document.createElement("div");
+
+				var return2Route = document.createElement("div");
+				this.setButtonStyle_(return2Route);
+				container.appendChild(return2Route);
+				return2Route.appendChild(document.createTextNode("显示路线"));
+			 	GEvent.addDomListener(return2Route, "click", function() {
+			    	$("#map_canvas").hide();
+					$("#mapDirectionPanel").show();
+			  	});
+			
+				map.getContainer().appendChild(container);
+			  	return container;
+			}
+			
+			RouteControl.prototype.getDefaultPosition = function() {
+			  return new GControlPosition(G_ANCHOR_BOTTOM_RIGHT, new GSize(7, 7));
+			}
+	
+			RouteControl.prototype.setButtonStyle_ = function(button) {
+			  button.style.textDecoration = "underline";
+			  button.style.color = "#0000cc";
+			  button.style.backgroundColor = "white";
+			  button.style.font = "small Arial";
+			  button.style.border = "1px solid black";
+			  button.style.padding = "2px";
+			  button.style.marginBottom = "3px";
+			  button.style.textAlign = "center";
+			  button.style.width = "6em";
+			  button.style.cursor = "pointer";
+			}
+			
+			var routeControl = new RouteControl();
+			*/
 		</script>
 	</head>
 	<body onload="initialize()" onunload="GUnload()">
 		<div id='map_canvas' style='width:100%;height:100%;'></div>
+<!--
+		<div id='mapDirectionPanel' style='width:100%;height:100%;display:none;'>
+			<table style='width:100%;'>
+				<tr>
+					<td style='width:49%;text-align:left;'>
+						<input id='return2Map' type='button' value="返回" />
+					</td>
+					<td style='width:49%;text-align:right;'>
+						<input id='close' type='button' value="关闭" />
+					</td>
+				</tr>
+			</table>
+			
+			<div id='mapDirection'></div>
+		</div>
+-->
 	</body>
 </html>
