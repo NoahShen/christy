@@ -141,7 +141,21 @@
 			function stopSelectPos() {
 				stopSelect = true;
 			}
+			var gdir = null;
 			
+			function removeRoute() {
+				if (gdir) {
+					gdir.clear();
+					gdir = null;
+				}
+			}
+			function showRoute(fromLat, fromLon, toLat, toLon) {
+				removeRoute();
+				
+				gdir = new GDirections(map,window.parent.document.getElementById('mapDirection'));
+				
+				
+			}
 		</script>
 	</head>
 	<body onload="initialize()" onunload="GUnload()">

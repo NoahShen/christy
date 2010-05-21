@@ -1999,14 +1999,33 @@ Search.showShopDetail = function(shopDetail) {
 		var lon = baseInfo.lon;
 		
 		var posInfoJqObj = $("<div>" +
-								"<div>" + baseInfo.name + "</div>" +
-								"<div>" +
-									"<input type='button' value='路线'/>" +
-								"</div>" +
+								"<table style='width:100%'>" +
+									"<tr>" +
+										"<td>" +
+											"<div>" + baseInfo.name + "</div>" +
+										"</td>" +
+									"</tr>" +
+									"<tr>" +
+										"<td>" +
+											"<div style='text-align:right;'>" +
+												"<a href='javascript:void(0);'>" +
+													$.i18n.prop("search.shopDetail.viewRoute", "查看路线") +
+												"</a>" +
+											"</div>" +
+										"</td>" +
+									"</tr>" +
+								"</table>" +
+								
 							"</div>");
-		posInfoJqObj.find("input").click(function() {
-			// TODO
-			alert(this);
+		posInfoJqObj.find("a").click(function() {
+			GeoUtils.getCurrentPosition(function(p) {
+				var myLat = p.coords.latitude;
+				var myLon = p.coords.longitude;
+				
+				Map.showRoute(myLat, myLon, lat, lon);
+				
+			}, function() {}, false);
+			
 		});
 		
 		var mapItem = {
@@ -2068,8 +2087,22 @@ Map.init = function() {
 	var mapTabs = $("<div id='mapTabs'>" +
 						"<div class='map-ui-tab-container'>" +
 							"<div class='clearfix'>" +
-								"<u id='mapCanvasContainer' style='width:50%;' class='map-ui-tab-active'>" + $.i18n.prop("map.tabs.map", "地图") + "</u>" +
-								"<u id='mapItems' style='width:50%;' >" + $.i18n.prop("map.tabs.mapItems", "地图项") + "</u>" +
+								"<div>" +
+									"<span id='mapCanvasContainer' class='map-tab map-ui-tab-active'>" + 
+										$.i18n.prop("map.tabs.map", "地图") + 
+									"</span>" +
+								"</div>" +
+								"<div>" +
+									"<span id='mapItems' class='map-tab'>" + 
+										$.i18n.prop("map.tabs.mapItems", "地图项") + 
+									"</span>" +
+								"</div>" +
+								"<div>" +
+									"<span id='mapRoute' class='map-tab' style='display:none;'>" + 
+										$.i18n.prop("map.tabs.route", "路线") + 
+									"</span>" +
+									"<span id='closeRoute' style='display:none;'>Close</span>" +
+								"</div>" +
 							"</div>" +
 							"<div>" +
 								"<div id='mapCanvasPanel' class='map-ui-tab-content map-ui-tab-active'>" +
@@ -2077,21 +2110,41 @@ Map.init = function() {
 								"</div>" +
 		 						"<div id='mapItemsPanel' class='map-ui-tab-content' style='display:none;'>" +
 		 						"</div>" +
+		 						"<div id='mapRoutePanel' class='map-ui-tab-content' style='display:none;'>" +
+		 							"<div id='mapDirection'></div>" +
+		 						"</div>" +
 							"</div>" +
 						"</div>" +
 					"</div>");
 	
+	mapTabs.find("#closeRoute").click(function() {
+		Map.tabs.triggleTab(0);
+		$("#mapRoute").hide();
+	});
+	
 	mapPanel.append(mapTabs);
 					
 	Map.tabs = new $.fn.tab({
-        tabList:"#mapTabs .map-ui-tab-container .clearfix u",
-        contentList:"#mapTabs .map-ui-tab-container .map-ui-tab-content",
-        tabActiveClass:"map-ui-tab-active",
-        tabDisableClass:"map-ui-tab-disable"
-//        showType:"fade"
+        tabList: "#mapTabs .map-ui-tab-container .clearfix .map-tab",
+        contentList: "#mapTabs .map-ui-tab-container .map-ui-tab-content",
+        tabActiveClass: "map-ui-tab-active",
+        tabDisableClass: "map-ui-tab-disable",
+		callBackHideEvent: function(index) {
+        	if (index == 2) {
+        		$("#closeRoute").hide();
+        	}
+        },
+        callBackShowEvent: function(index) {
+        	if (index == 2) {
+        		$("#mapRoute").show();
+        	}
+        	if (index == 2) {
+				$("#closeRoute").show();
+        	}
+        }
     });
     Map.tabs.triggleTab(0);
-
+	
 };
 
 Map.getMapCanvasHeight = function(){
@@ -2134,6 +2187,14 @@ Map.mapFrameLoaded = function() {
 		Map.mapLoadedCallBack.splice(i,1);
 	}
 };
+
+Map.showRoute = function(fromLat, fromLon, toLat, toLon) {
+	Map.showMap(function () {
+		var mapCanvas = $("#mapCanvas");
+		mapCanvas[0].contentWindow.showRoute(fromLat, fromLon, toLat, toLon);
+	});
+};
+
 //var mapItem = {
 //	id: itemId,
 //	title: "title",
@@ -2346,17 +2407,22 @@ Profile.init = function() {
     });
     
 	Profile.tabs = new $.fn.tab({
-        tabList:"#profileTabs .profile-ui-tab-container .clearfix div .profile-tab",
-        contentList:"#profileTabs .profile-ui-tab-container .profile-ui-tab-content",
-        tabActiveClass:"profile-ui-tab-active",
-        tabDisableClass:"profile-ui-tab-disable",
-        callBackShowEvent:function(index) {
+        tabList: "#profileTabs .profile-ui-tab-container .clearfix div .profile-tab",
+        contentList: "#profileTabs .profile-ui-tab-container .profile-ui-tab-content",
+        tabActiveClass: "profile-ui-tab-active",
+        tabDisableClass: "profile-ui-tab-disable",
+        callBackHideEvent: function(index) {
+        	if (index == 0) {
+        		favoriteRefresh.css("display", "none");
+        	} else if (index == 1) {
+        		commentsRefresh.css("display", "none");
+        	}
+        },
+        callBackShowEvent: function(index) {
         	if (index == 0) {
 				favoriteRefresh.css("display", "inline");
-				commentsRefresh.css("display", "none");
 			} else if (index == 1) {
         		commentsRefresh.css("display", "inline");
-        		favoriteRefresh.css("display", "none");
         		if (!Profile.hasQueriedComments) {
 					Profile.queryMyComments(1, Profile.pageCount, true, true);
 					Profile.hasQueriedComments = true;
