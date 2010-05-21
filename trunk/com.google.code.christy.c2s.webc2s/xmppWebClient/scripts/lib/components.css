@@ -76,25 +76,22 @@
 	width:100%;
 }
 
-.map-ui-tab-container .clearfix > div{
+.map-ui-tab-container .clearfix .map-tab {
 	float:left;
 	cursor:pointer;
 	margin-top:3px;
 	text-align:center;
 	text-decoration:none;
-	width:33%;
+	width:27%;
 }
 
-.map-ui-tab-container .clearfix > div .map-tab {
-	width:100%;
-}
-
-.map-ui-tab-container .clearfix > div .map-ui-tab-active {
+.map-ui-tab-container .clearfix .map-ui-tab-active {
 	background:#CCFFFF;
 	margin-bottom:-1px;
 	border-bottom:1px solid #fff;
 }
-.map-ui-tab-container .clearfix > div .map-ui-tab-disable {
+
+.map-ui-tab-container .clearfix .map-ui-tab-disable {
 	background:#ff0000;
 
 }
