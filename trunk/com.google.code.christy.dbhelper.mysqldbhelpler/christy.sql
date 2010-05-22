@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : connection
-Source Server Version : 50022
+Source Server         : christy
+Source Server Version : 50083
 Source Host           : localhost:3306
 Source Database       : christy
 
 Target Server Type    : MYSQL
-Target Server Version : 50022
+Target Server Version : 50083
 File Encoding         : 65001
 
-Date: 2010-05-21 17:16:04
+Date: 2010-05-22 16:34:55
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -100,7 +100,7 @@ CREATE TABLE `shopcomment` (
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`commentId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopcomment
@@ -141,7 +141,7 @@ CREATE TABLE `shopvoter` (
   `itemName` varchar(50) NOT NULL,
   `value` int(11) NOT NULL,
   PRIMARY KEY  (`voterId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopvoter
@@ -163,6 +163,7 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `username` char(50) NOT NULL,
   `password` char(50) NOT NULL,
+  `email` char(50) NOT NULL,
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`username`)
@@ -171,8 +172,11 @@ CREATE TABLE `user` (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES ('Noah', '123', '2010-04-10 14:29:55', '2010-04-10 14:30:27');
-INSERT INTO `user` VALUES ('Noah2', '123', '2010-04-12 20:30:42', '2010-04-12 20:30:51');
+INSERT INTO `user` VALUES ('Noah', '123', 'noah.shen87@gmail.com', '2010-04-10 14:29:55', '2010-05-22 16:18:17');
+INSERT INTO `user` VALUES ('Noah2', '123', 'noahs-ark@163.com', '2010-04-12 20:30:42', '2010-05-22 16:18:22');
+INSERT INTO `user` VALUES ('noah45', '123', 'noah.shen8787@gmail.com', '2010-05-22 16:21:52', '2010-05-22 16:21:52');
+INSERT INTO `user` VALUES ('noah87', '123', 'noah.shen878787@gmail.com', '2010-05-22 16:23:02', '2010-05-22 16:23:02');
+INSERT INTO `user` VALUES ('noah123', '123', '54', '2010-05-22 16:23:45', '2010-05-22 16:23:45');
 
 -- ----------------------------
 -- Table structure for `userfavoriteshop`
@@ -183,7 +187,7 @@ CREATE TABLE `userfavoriteshop` (
   `username` char(50) NOT NULL,
   `shopId` int(20) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userfavoriteshop
@@ -207,7 +211,7 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster

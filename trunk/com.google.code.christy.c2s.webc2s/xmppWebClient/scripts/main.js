@@ -485,27 +485,39 @@ Main.init = function() {
     
 };
 
+Main.myPositionMapItem = {
+	
+};
 
 Main.updateMyPos = function() {
 	GeoUtils.getCurrentPosition(function(p) {
 		var lat = p.coords.latitude;
 		var lon = p.coords.longitude;
+				
+		var myPositionMapItem = Map.mapItems["myPosition"];
+		if (myPositionMapItem == null) {
+			var title = $.i18n.prop("map.myPosition", "我的位置");
+			var titleJqObj = $("<div>" + title + "</div>");
+			myPositionMapItem = {
+				id: "myPosition",
+				title: title,
+				isShow: true,
+				closeable: false,
+				itemVisible: true,
+				positions: [{
+					message: titleJqObj[0],
+					lat: lat,
+					lon: lon
+				}]
+			}
+			Map.updateMapItem(myPositionMapItem);
+		} else {
+			myPositionMapItem.positions[0].lat = lat;
+			myPositionMapItem.positions[0].lon = lon;
+			Map.updateMapItemAttribute(myPositionMapItem);
+		}
+
 		
-		var title = $.i18n.prop("map.myPosition", "我的位置");
-		var titleJqObj = $("<div>" + title + "</div>");
-		var mapItem = {
-			id: "myPosition",
-			title: title,
-			isShow: true,
-			closeable: false,
-			itemVisible: true,
-			positions: [{
-				message: titleJqObj[0],
-				lat: lat,
-				lon: lon
-			}]
-		};
-		Map.updateMapItem(mapItem);
 
 		if (Preferences.preferencesItems["shareLoc"] == "true") {
 			var connectionMgr = XmppConnectionMgr.getInstance();
@@ -1604,6 +1616,7 @@ Search.init = function() {
 				url: "/shop/",
 				cache: false,
 				type: "post",
+				dataType: "json",
 				contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 				data: {
 					action: "submitShopComment",
@@ -2087,7 +2100,7 @@ Map.init = function() {
 	var mapTabs = $("<div id='mapTabs'>" +
 						"<div class='map-ui-tab-container'>" +
 							"<div class='clearfix'>" +
-								"<div>" +
+								"<div class='map-ui-tab-parent-active'>" +
 									"<span id='mapCanvasContainer' class='map-tab map-ui-tab-active'>" + 
 										$.i18n.prop("map.tabs.map", "地图") + 
 									"</span>" +
@@ -2109,6 +2122,9 @@ Map.init = function() {
 									"<iframe id='mapCanvas' name='mapCanvas' width='100%' height='" + Map.getMapCanvasHeight() + "'scrolling='no' frameborder='0' />" +
 								"</div>" +
 		 						"<div id='mapItemsPanel' class='map-ui-tab-content' style='display:none;'>" +
+		 							"<input id='mapItemsSelectAll' type='button' value='" + $.i18n.prop("map.mapItems.selectAll", "全选") + "'/>" +
+		 							"<input id='mapItemsSelectNone' type='button' value='" + $.i18n.prop("map.mapItems.selectNone", "全不选") + "'/>" +
+		 							"<input id='mapItemsRemoveAll' type='button' value='" + $.i18n.prop("map.mapItems.removeAll", "全部删除") + "'/>" +
 		 						"</div>" +
 		 						"<div id='mapRoutePanel' class='map-ui-tab-content' style='display:none;'>" +
 		 							"<div id='mapDirection'></div>" +
@@ -2123,6 +2139,50 @@ Map.init = function() {
 		Map.removeRoute();
 	});
 	
+	mapTabs.find("#mapItemsSelectAll").click(function() {
+		var mapItemsDivJqObj = $("#mapItemsPanel").find("div[mapItem]:visible");
+		$.each(mapItemsDivJqObj, function(index, value) {
+			var mapItemsDivJqObj = $(value);
+			var checkboxJqObj = mapItemsDivJqObj.children("input[type='checkbox']");
+			checkboxJqObj.attr("checked", true);
+		});
+		
+		$.each(mapItemsDivJqObj, function(index, value) {
+			var mapItemsDivJqObj = $(value);
+			var mapItem = Map.mapItems[mapItemsDivJqObj.attr("mapItem")];
+			if (mapItem) {
+				var checkboxJqObj = mapItemsDivJqObj.children("input[type='checkbox']");
+				mapItem.isShow = (checkboxJqObj.attr("checked") == true);
+				Map.updateMapItem(mapItem);
+			}
+		});
+		
+	});
+	
+	mapTabs.find("#mapItemsSelectNone").click(function() {
+		var mapItemsDivJqObj = $("#mapItemsPanel").find("div[mapItem]:visible");
+		$.each(mapItemsDivJqObj, function(index, value) {
+			var mapItemsDivJqObj = $(value);
+			var checkboxJqObj = mapItemsDivJqObj.children("input[type='checkbox']");
+			checkboxJqObj.attr("checked", false);
+		});
+		
+		$.each(mapItemsDivJqObj, function(index, value) {
+			var mapItemsDivJqObj = $(value);
+			var mapItem = Map.mapItems[mapItemsDivJqObj.attr("mapItem")];
+			if (mapItem) {
+				var checkboxJqObj = mapItemsDivJqObj.children("input[type='checkbox']");
+				mapItem.isShow = (checkboxJqObj.attr("checked") == true);
+				Map.updateMapItem(mapItem);
+			}
+		});
+	});
+	
+	mapTabs.find("#mapItemsRemoveAll").click(function() {
+		$("#mapItemsPanel").find("div[mapItem] > input[type='button']:visible").click();
+	});
+	
+	
 	mapPanel.append(mapTabs);
 					
 	Map.tabs = new $.fn.tab({
@@ -2130,6 +2190,7 @@ Map.init = function() {
         contentList: "#mapTabs .map-ui-tab-container .map-ui-tab-content",
         tabActiveClass: "map-ui-tab-active",
         tabDisableClass: "map-ui-tab-disable",
+        tabParentActiveClass: "map-ui-tab-parent-active",
 		callBackHideEvent: function(index) {
         	if (index == 2) {
         		$("#closeRoute").hide();
@@ -2230,45 +2291,50 @@ Map.updateMapItem = function (mapItem) {
 	Map.mapItems[mapItemId] = mapItem;
 	
 	var mapItemsPanel = $("#mapItemsPanel");
-	var itemDiv = mapItemsPanel.children("div[mapItem='" + mapItemId + "']");
-	if (itemDiv.size() == 0) {
-		var closeInput = "";
-		if (mapItem.closeable) {
-			closeInput = "<input type='button' value='" + $.i18n.prop("map.mapItems.remove", "删除") + "'/>";
-		}
-		
-		var display = "";
-		
-		if (!mapItem.itemVisible) {
-			display = "style='display:none'";
-		}
-		itemDiv = $("<div mapItem='" + mapItemId + "' " + display + " >" + 
-						"<input id='" + mapItem.id + "-mapItem' name='" + mapItem.id + "-mapItem' type='checkbox' checked='checked'/>" +
-						"<label id='" + mapItem.id + "-mapItemLabel' for='" + mapItem.id + "-mapItem'>" + mapItem.title + "</label>" +
-						closeInput +
-					"</div>");
-		itemDiv.children("input:first").click(function() {
+	var itemDivJqObj = mapItemsPanel.children("div[mapItem='" + mapItemId + "']");
+	if (itemDivJqObj.size() == 0) {
+		itemDivJqObj = $("<div mapItem='" + mapItemId + "'>" + 
+								"<input id='" + mapItem.id + "-mapItem' name='" + mapItem.id + "-mapItem' type='checkbox' checked='checked'/>" +
+								"<label id='" + mapItem.id + "-mapItemLabel' for='" + mapItem.id + "-mapItem'>" + mapItem.title + "</label>" +
+								"<input type='button' value='" + $.i18n.prop("map.mapItems.remove", "删除") + "'/>" + 
+							"</div>");
+		itemDivJqObj.children("input:first").click(function() {
 			var checkbox = $(this);
 			var mapItem = Map.mapItems[mapItemId];
 			if (mapItem) {
 				mapItem.isShow = (checkbox.attr("checked") == true);
-				Map.updateMapItem(mapItem);
+				Map.updateMapItemAttribute(mapItem);
 			}
 		});
-		
-		if (mapItem.closeable) {
-			itemDiv.children("input:last").click(function(){
-				Map.removeMapItem(mapItemId);
-				itemDiv.remove();
-			});
-		}
-		
-		mapItemsPanel.append(itemDiv);
+		itemDivJqObj.children("input:last").click(function() {
+			Map.removeMapItem(mapItemId);
+			itemDivJqObj.remove();
+		});
+		mapItemsPanel.append(itemDivJqObj);
+	}
+
+	if (!mapItem.closeable) {
+		itemDivJqObj.find("input:last").hide();
 	}
 	
+	if (!mapItem.itemVisible) {
+		itemDivJqObj.hide();
+	}
 
-	var mapCanvas = $("#mapCanvas");
+	Map.updateMapItemAttribute(mapItem);
+};
+
+Map.removeMapItem = function (mapItemId) {
+	delete Map.mapItems[mapItemId];
 	if (Map.mapLoaded) {
+		var mapCanvas = $("#mapCanvas");
+		mapCanvas[0].contentWindow.removeMapMarker(mapItemId);
+	}
+};
+
+Map.updateMapItemAttribute = function(mapItem) {
+	if (Map.mapLoaded) {
+		var mapCanvas = $("#mapCanvas");
 		if (mapItem.isShow) {
 			var marker = {
 				id: mapItem.id,
@@ -2279,14 +2345,6 @@ Map.updateMapItem = function (mapItem) {
 		} else {
 			mapCanvas[0].contentWindow.removeMapMarker(mapItem.id);
 		}
-	}
-};
-
-Map.removeMapItem = function (mapItemId) {
-	delete Map.mapItems[mapItemId];
-	var mapCanvas = $("#mapCanvas");
-	if (mapCanvas.attr("src")) {
-		mapCanvas[0].contentWindow.removeMapMarker(mapItemId);
 	}
 };
 
@@ -2372,7 +2430,7 @@ Profile.init = function() {
 	var profileTabs = $("<div id='profileTabs'>" +
 		 					"<div class='profile-ui-tab-container'>" +
 		 						"<div class='clearfix'>" +
-		 							"<div>" +
+		 							"<div class='profile-ui-tab-parent-active'>" +
 		 								"<span class='profile-tab profile-ui-tab-active'>" + 
 		 									$.i18n.prop("profile.tabs.favorite", "收藏") + 
 		 								"</span>" +
@@ -2419,6 +2477,7 @@ Profile.init = function() {
         contentList: "#profileTabs .profile-ui-tab-container .profile-ui-tab-content",
         tabActiveClass: "profile-ui-tab-active",
         tabDisableClass: "profile-ui-tab-disable",
+        tabParentActiveClass: "profile-ui-tab-parent-active",
         callBackHideEvent: function(index) {
         	if (index == 0) {
         		favoriteRefresh.css("display", "none");

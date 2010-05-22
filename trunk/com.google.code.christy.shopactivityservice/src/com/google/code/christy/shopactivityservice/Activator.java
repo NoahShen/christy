@@ -42,8 +42,9 @@ public class Activator implements BundleActivator
 		connPool .createPool();
 		
 		ShopDbhelper shopDbhelper = new ShopDbhelper(loggerServiceTracker, connPool);
+		UserDbhelper userDbhelper = new UserDbhelper(loggerServiceTracker, connPool);
 		
-		ShopServlet shopServlet = new ShopServlet(c2SManagerTracker, loggerServiceTracker, shopDbhelper);
+		ShopServlet shopServlet = new ShopServlet(c2SManagerTracker, loggerServiceTracker, shopDbhelper, userDbhelper);
 		Hashtable<String, String> properties = new Hashtable<String, String>();
 		properties.put("contextPath", "/shop");
 		properties.put("pathSpec", "/");

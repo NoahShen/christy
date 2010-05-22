@@ -145,16 +145,28 @@ $(document).ready(function() {
 	
 	$("#button_login").click(loginAction);
 	
+	$("#register").click(function() {
+		$.get("register.html", function(html) {
+			$("#loginDiv").append(html);
+			$.include("register.js", function() {
+				$("#registerTable").show();
+				$("#loginTable").hide();
+			});
+		}); 
+	});
+	
 	var loginUsername = $.i18n.prop("login.username", "用户名：");
 	var loginPassword = $.i18n.prop("login.password", "密码：");
 	var rememberUsername = $.i18n.prop("login.remember_username", "记住帐号");
 	var login = $.i18n.prop("login.loginAction", "登录");
+	var register = $.i18n.prop("login.register", "注册");
 	
 	$("#login_username").text(loginUsername);
 	$("#login_password").text(loginPassword);
 	$("#login_RememberUsername").text(rememberUsername);
 	$("#button_login").text(login);
-	        
+	$("#register").text(register);
+	
 //	$.i18n.properties({
 //	    name: "i18n",
 //	    path: "/i18n/",
@@ -166,11 +178,13 @@ $(document).ready(function() {
 //	        var loginPassword = $.i18n.prop("login.password", "密码：");
 //	        var rememberUsername = $.i18n.prop("login.remember_username", "记住帐号");
 //	        var login = $.i18n.prop("login.loginAction", "登录");
+//			var register = $.i18n.prop("login.register", "注册");
 //	        
 //	        $("#login_username").text(loginUsername);
 //	        $("#login_password").text(loginPassword);
 //	        $("#login_RememberUsername").text(rememberUsername);
 //	        $("#button_login").text(login);
+//			$("#register").text(register);
 //	    }
 //	});
 	
@@ -181,6 +195,7 @@ function disabledInputController(bool) {
 	$("#username").attr("disabled", bool);
 	$("#password").attr("disabled", bool);
 	$("#remember_username").attr("disabled", bool);
+	$("#register").attr("disabled", bool);
 }
 
 function saslSuccess() {
