@@ -64,14 +64,29 @@
 			function updateMapMarker(marker) {
 				var markerId = marker.id;
 				var oldMarkerWrapper = markers[markerId];
+				
 				if (oldMarkerWrapper) {
-					removeMapMarker(oldMarkerWrapper.id);
+					if (oldMarkerWrapper.gmarkers.length == marker.positions.length) {
+						for (var i = 0; i < marker.positions.length; ++i) {
+							var p = marker.positions[i];
+							var gmarker = oldMarkerWrapper.gmarkers[i];
+							if (gmarker) {
+								gmarker.setLatLng(new GLatLng(p.lat, p.lon));
+								gmarker.bindInfoWindow(p.message);
+							}
+						}
+						return;
+					}
 				}
+				
+				removeMapMarker(markerId);
+				
 				if (marker.positions && marker.positions.length > 0) {
 					var markerWrapper = {
 						id: markerId,
-						gmarkers: new Array()
+						gmarkers: []
 					};
+					
 					for (var i = 0; i < marker.positions.length; ++i) {
 						var p = marker.positions[i];
 						var gmarker = new GMarker(new GLatLng(p.lat, p.lon));

@@ -265,6 +265,13 @@
 								}
 								$(_this.opts.tabList).removeClass(_this.opts.tabActiveClass);
 								$(this).addClass(_this.opts.tabActiveClass);
+								
+								if (_this.opts.tabParentActiveClass) {
+									$(_this.opts.tabList).parent().removeClass(_this.opts.tabParentActiveClass);
+									$(this).parent().addClass(_this.opts.tabParentActiveClass);
+								}
+								
+								
 								_this._showContent(index);
 							}
 						});

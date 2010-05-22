@@ -1,4 +1,4 @@
-html, body, div {
+html, body, div, a {
 	font-family:arial,sans-serif;
 	font-size: 12pt;
 	margin: 0;
@@ -17,8 +17,6 @@ input[type="text"] {
 input[type="password"] {
 	width:100%;
 }
-
-.sexybutton.sexysimple.sexymygray { background-color: #999999; }
 
 .progressbar {
 	background-color: #EEEEEE;

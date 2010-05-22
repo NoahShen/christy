@@ -31,12 +31,18 @@ public class ShopServlet extends HttpServlet
 	
 	private ShopDbhelper shopDbhelper;
 	
-	public ShopServlet(C2SManagerTracker c2sManagerTracker, LoggerServiceTracker loggerServiceTracker, ShopDbhelper shopLocDbhelper)
+	private UserDbhelper userDbhelper;
+	
+	public ShopServlet(C2SManagerTracker c2sManagerTracker, 
+				LoggerServiceTracker loggerServiceTracker, 
+				ShopDbhelper shopLocDbhelper,
+				UserDbhelper userDbhelper)
 	{
 		super();
 		this.c2sManagerTracker = c2sManagerTracker;
 		this.loggerServiceTracker = loggerServiceTracker;
 		this.shopDbhelper = shopLocDbhelper;
+		this.userDbhelper = userDbhelper;
 	}
 
 	@Override
@@ -82,6 +88,61 @@ public class ShopServlet extends HttpServlet
 		else if ("addfavoriteshop".equals(action))
 		{
 			handleAddFavoriteShop(req, resp);
+		}
+		else if ("register".equals(action))
+		{
+			handleRegister(req, resp);
+		}
+	}
+
+	private void handleRegister(HttpServletRequest req, HttpServletResponse resp)
+	{
+		String username = req.getParameter("username").toLowerCase();
+		String password = req.getParameter("password");
+		String email = req.getParameter("email").toLowerCase();
+		
+		try
+		{
+			int result = userDbhelper.contain(username, email);
+			if (result == 1) 
+			{
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("result", "failed");
+				jsonObj.put("reason", "usernameDuplicated");
+				resp.getWriter().write(jsonObj.toString());
+				return;
+			}
+			
+			if (result == 2) 
+			{
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("result", "failed");
+				jsonObj.put("reason", "emailDuplicated");
+				resp.getWriter().write(jsonObj.toString());
+				return;
+			}
+			
+			
+			userDbhelper.addUser(username, password, email);
+			
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("result", "success");
+			resp.getWriter().write(jsonObj.toString());
+		}
+		catch (JSONException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
