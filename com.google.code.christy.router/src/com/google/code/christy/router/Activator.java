@@ -1,6 +1,10 @@
 package com.google.code.christy.router;
 
+import java.util.Iterator;
+import java.util.List;
 
+import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration.XMLConfiguration;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -46,15 +50,51 @@ public class Activator implements BundleActivator
 											routeMessageParserServiceTracker,
 											loggerServiceTracker);
 		
-		routerController = new RouterController(rm);
-		routerController.start();
 		
-		// TODO test code
-		rm.setDomain("example.com");
-		rm.registerSmModule("sm_1", "md5password");
-		rm.registerSmModule("sm_1_1", "md5password");
-		rm.registerC2sModule("c2s_1", "md5password");
-		rm.registerC2sModule("c2s_web1", "md5password");
+//		routerController = new RouterController(rm);
+//		routerController.start();
+		
+		String appPath = System.getProperty("appPath");
+		XMLConfiguration config = new XMLConfiguration(appPath + "/routerconfig.xml");
+		
+		String domain = config.getString("domain", "example.com");
+		rm.setDomain(domain);
+		
+		List<?> smModules = config.configurationsAt("sm-modules.sm-module");
+		
+		for (Iterator<?> it = smModules.iterator(); it.hasNext();)
+		{
+			HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
+			String name = sub.getString("name");
+			String password = sub.getString("password");
+			rm.registerSmModule(name, password);
+		}
+
+		List<?> c2sModules = config.configurationsAt("c2s-modules.c2s-module");
+		
+		for (Iterator<?> it = c2sModules.iterator(); it.hasNext();)
+		{
+			HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
+			String name = sub.getString("name");
+			String password = sub.getString("password");
+			rm.registerC2sModule(name, password);
+		}
+		
+		int c2sPort = config.getInt("c2s-port", 8787);
+		rm.setC2sPort(c2sPort);
+		
+		int s2sPort = config.getInt("s2s-port", 8788);
+		rm.setS2sPort(s2sPort);
+		
+		int smPort = config.getInt("sm-port", 8789);
+		rm.setSmPort(smPort);
+		
+		int c2sLimit = config.getInt("c2s-limit", 0);
+		rm.setC2sLimit(c2sLimit);
+		
+		int smLimit = config.getInt("sm-limit", 0);
+		rm.setSmLimit(smLimit);
+		
 		rm.start();
 	}
 

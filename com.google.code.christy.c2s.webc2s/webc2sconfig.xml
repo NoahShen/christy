@@ -1,0 +1,16 @@
+<christy xmlns='christy:c2s:webc2s'>
+	<name>c2s_web1</name>
+	<domain>example.com</domain>
+	<router-ip>localhost</router-ip>
+	<router-port>8787</router-port>
+	<router-password>md5password</router-password>
+	<web-client-port>8080</web-client-port>
+	<web-client>/xmppWebClient</web-client>
+	<context-path>/webclient</context-path>
+	<path-spec>/JHB.do</path-spec>
+	<max-wait>60</max-wait>
+	<min-wait>10</min-wait>
+	<inactivity>70</inactivity>
+	<max-holded>1</max-holded>
+	<client-limit>0</client-limit>
+</christy>

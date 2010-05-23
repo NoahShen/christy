@@ -1,5 +1,6 @@
 package com.google.code.christy.c2s.webc2s;
 
+import org.apache.commons.configuration.XMLConfiguration;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -105,15 +106,36 @@ public class Activator implements BundleActivator
 		webc2sController = new WebC2sController(c2sManager);
 		webc2sController.start();
 		
-		// TODO
-		c2sManager.setName("c2s_web1");
-		c2sManager.setDomain("example.com");
-		c2sManager.setRouterIp("localhost");
-		c2sManager.setRouterPassword("md5password");
-		
 		String appPath = System.getProperty("appPath");
+		XMLConfiguration config = new XMLConfiguration(appPath + "/webc2sconfig.xml");
+		String name = config.getString("name", "c2s_web1");
+		String domain = config.getString("domain", "example.com");
+		String routerIp = config.getString("router-ip", "localhost");
+		String routerPassword = config.getString("router-password", "md5password");
+		int routerPort = config.getInt("router-port", 8787);
+		int webclientPort = config.getInt("web-client-port", 8080);
+		int maxWait = config.getInt("max-wait", 60);
+		int minWait = config.getInt("min-wait", 10);
+		int inactivity = config.getInt("inactivity", 70);
+		int maxHolded = config.getInt("max-holded", 1);
+		String contextPath = config.getString("context-path", "/webclient");
+		String pathSpec = config.getString("path-spec", "/JHB.do");
+		String xmppWebClient = config.getString("web-client", "/xmppWebClient");
 		
-		c2sManager.setResourceBase(appPath + "/xmppWebClient/");
+		c2sManager.setName(name);
+		c2sManager.setDomain(domain);
+		c2sManager.setRouterIp(routerIp);
+		c2sManager.setRouterPassword(routerPassword);
+		c2sManager.setRouterPort(routerPort);
+		c2sManager.setRouterIp(routerIp);
+		c2sManager.setWebclientPort(webclientPort);
+		c2sManager.setMaxWait(maxWait);
+		c2sManager.setMinWait(minWait);
+		c2sManager.setInactivity(inactivity);
+		c2sManager.setMaxHolded(maxHolded);
+		c2sManager.setContextPath(contextPath);
+		c2sManager.setPathSpec(pathSpec);
+		c2sManager.setResourceBase(appPath + xmppWebClient);
 		
 		c2sManager.start();
 		
