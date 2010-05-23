@@ -575,7 +575,7 @@ IM.init = function() {
 	
 	var contactPanel = $("<div id='contact'></div>");
 	
-	var addContact = $("<div id='addContact'></div>");
+	var addContact = $("<div id='addContact' class='icon'></div>");
 	addContact.click(function() {
 		
 		var inputField = $("<div>" +
@@ -2114,7 +2114,7 @@ Map.init = function() {
 									"<span id='mapRoute' class='map-tab' style='display:none;'>" + 
 										$.i18n.prop("map.tabs.route", "路线") +
 									"</span>" +
-									"<span id='closeRoute' style='display:none;'>Close</span>" +
+									"<div id='closeRoute' class='icon' style='display:none;'></div>" +
 								"</div>" +
 							"</div>" +
 							"<div>" +
@@ -2434,13 +2434,13 @@ Profile.init = function() {
 		 								"<span class='profile-tab profile-ui-tab-active'>" + 
 		 									$.i18n.prop("profile.tabs.favorite", "收藏") + 
 		 								"</span>" +
-		 								"<span id='favoriteRefresh' style='display:inline;'>Refresh</span>" +
+		 								"<div id='favoriteRefresh' class='icon' style='display:inline;'></div>" +
 		 							"</div>" +
 		 							"<div>" +
 		 								"<span class='profile-tab'>" + 
 		 									$.i18n.prop("profile.tabs.comments", "评论") + 
 		 								"</span>" +
-		 								"<span id='commentsRefresh' style='display:none;'>Refresh</span>" +
+		 								"<div id='commentsRefresh' class='icon' style='display:none;'></div>" +
 		 							"</div>" +
 		 						"</div>" +
 		 						"<div>" +
@@ -2480,16 +2480,20 @@ Profile.init = function() {
         tabParentActiveClass: "profile-ui-tab-parent-active",
         callBackHideEvent: function(index) {
         	if (index == 0) {
-        		favoriteRefresh.css("display", "none");
+        		favoriteRefresh.hide();
+//        		favoriteRefresh.css("display", "none");
         	} else if (index == 1) {
+        		commentsRefresh.hide();
         		commentsRefresh.css("display", "none");
         	}
         },
         callBackShowEvent: function(index) {
         	if (index == 0) {
-				favoriteRefresh.css("display", "inline");
+        		favoriteRefresh.show();
+//				favoriteRefresh.css("display", "inline");
 			} else if (index == 1) {
-        		commentsRefresh.css("display", "inline");
+				commentsRefresh.show();
+//        		commentsRefresh.css("display", "inline");
         		if (!Profile.hasQueriedComments) {
 					Profile.queryMyComments(1, Profile.pageCount, true, true);
 					Profile.hasQueriedComments = true;
