@@ -41,16 +41,16 @@
 
 
 .status-items .available{
-	background-image: url(/resource/status/available.png);
+	background-image: url("/resource/status/available.png");
 }
 .status-items .away{
-	background-image: url(/resource/status/away.png);
+	background-image: url("/resource/status/away.png");
 }
 .status-items .chat{
-	background-image: url(/resource/status/chat.png);
+	background-image: url("/resource/status/chat.png");
 }
 .status-items .dnd{
-	background-image: url(/resource/status/dnd.png);
+	background-image: url("/resource/status/dnd.png");
 }
 
 .status-items .selected{
@@ -64,15 +64,16 @@
 .activechat-unread {
 	font-weight: bold;
 }
+
 div[statusimg] {
-	background-image: url(/resource/status/unavailable.png);
+	background-image: url("/resource/status/unavailable.png");
 	background-repeat: no-repeat;
 	background-position: left;
 	padding-left: 20px;
 }
 
 #userStatus {
-	background-image: url(/resource/status/unavailable.png);
+	background-image: url("/resource/status/unavailable.png");
 	background-repeat: no-repeat;
 	background-position: left;
 }
@@ -105,20 +106,36 @@ div[messagearea] {
 
 
 .forward {
-	background-image: url(/resource/status/available.png);
+	background-image: url("/resource/status/available.png");
 	background-repeat: no-repeat;
 	background-position: right;
 	width: 100%;
 }
 
-#addContact {
-	background-image: url(/resource/status/available.png);
+.icon {
 	background-repeat: no-repeat;
 	background-position: center;
-	width: 18px;
-	height: 18px;
-	position: absolute;
-	right: 12px;
+	width: 16px;
+	height: 16px;
 }
 
+#addContact {
+	background-image: url("/resource/add.png");
+	float:right;
+	margin-right:12px;
+}
+
+
+#favoriteRefresh , #commentsRefresh{
+	background-image: url("/resource/refresh.png");
+	float:right;
+	margin-right:12px;
+	margin-top:7px;
+}
+
+#closeRoute {
+	background-image: url("/resource/close.png");
+	float:right;
+	margin-right:12px;
+}
 
