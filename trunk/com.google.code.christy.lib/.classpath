@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-collections-3.2.1.jar" sourcepath="lib/commons-collections-3.2.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-lang-2.5.jar" sourcepath="lib/commons-lang-2.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-configuration-1.6.jar" sourcepath="lib/commons-configuration-1.6-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hessian-4.0.6.jar" sourcepath="lib/hessian-4.0.6-src.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jetty-xml-7.0.1.v20091125.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jetty-servlets-7.0.1.v20091125.jar"/>
