@@ -1,0 +1,9 @@
+<christy xmlns='christy:c2s:defaultc2s'>
+	<name>c2s_1</name>
+	<domain>example.com</domain>
+	<router-ip>localhost</router-ip>
+	<router-port>8787</router-port>
+	<router-password>md5password</router-password>
+	<client-limit>0</client-limit>
+	<xmpp-client-port>5222</xmpp-client-port>
+</christy>

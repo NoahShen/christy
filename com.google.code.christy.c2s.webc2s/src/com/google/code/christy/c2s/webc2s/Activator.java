@@ -118,6 +118,7 @@ public class Activator implements BundleActivator
 		int minWait = config.getInt("min-wait", 10);
 		int inactivity = config.getInt("inactivity", 70);
 		int maxHolded = config.getInt("max-holded", 1);
+		int clientLimit = config.getInt("client-limit", 0);
 		String contextPath = config.getString("context-path", "/webclient");
 		String pathSpec = config.getString("path-spec", "/JHB.do");
 		String xmppWebClient = config.getString("web-client", "/xmppWebClient");
@@ -133,6 +134,7 @@ public class Activator implements BundleActivator
 		c2sManager.setMinWait(minWait);
 		c2sManager.setInactivity(inactivity);
 		c2sManager.setMaxHolded(maxHolded);
+		c2sManager.setClientLimit(clientLimit);
 		c2sManager.setContextPath(contextPath);
 		c2sManager.setPathSpec(pathSpec);
 		c2sManager.setResourceBase(appPath + xmppWebClient);
