@@ -4,6 +4,7 @@ import java.util.Hashtable;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.commons.configuration.XMLConfiguration;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -109,17 +110,36 @@ public class Activator implements BundleActivator
 												loggerServiceTracker);
 		
 		defaultC2sController = new DefaultC2sController(c2sManager);
-		// TODO
 		defaultC2sController.start();
 		
 		
 		c2sManagerRegistration = context.registerService(C2SManager.class.getName(), c2sManager, null);
 		
-		// TODO
-		c2sManager.setName("c2s_1");
-		c2sManager.setDomain("example.com");
-		c2sManager.setRouterIp("localhost");
-		c2sManager.setRouterPassword("md5password");
+		String appPath = System.getProperty("appPath");
+		XMLConfiguration config = new XMLConfiguration(appPath + "/defaultc2s.xml");
+		
+		String name = config.getString("name", "c2s_1");
+		c2sManager.setName(name);
+		
+		String domain = config.getString("domain", "example.com");
+		c2sManager.setDomain(domain);
+		
+		String routerIp = config.getString("router-ip", "localhost");
+		c2sManager.setRouterIp(routerIp);
+		
+		String routerPassword = config.getString("router-password", "md5password");
+		c2sManager.setRouterPassword(routerPassword);
+		
+		int routerPort = config.getInt("router-port", 8787);
+		c2sManager.setRouterPort(routerPort);
+		
+		int clientLimit = config.getInt("client-limit", 0);
+		c2sManager.setClientLimit(clientLimit);
+		
+		int xmppClientPort = config.getInt("xmpp-client-port", 5222);
+		c2sManager.setXmppClientPort(xmppClientPort);
+		
+		
 		c2sManager.start();
 	}
 

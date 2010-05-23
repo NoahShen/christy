@@ -1,0 +1,9 @@
+<christy xmlns='christy:sm'>
+	<name>sm_1</name>
+	<domain>example.com</domain>
+	<router-ip>localhost</router-ip>
+	<router-port>8789</router-port>
+	<router-password>md5password</router-password>
+	<online-users-limit>0</online-users-limit>
+	<resource-limit-perUser>0</resource-limit-perUser>
+</christy>

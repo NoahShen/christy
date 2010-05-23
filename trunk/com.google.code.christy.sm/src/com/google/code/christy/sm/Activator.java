@@ -1,6 +1,7 @@
 package com.google.code.christy.sm;
 
 
+import org.apache.commons.configuration.XMLConfiguration;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -72,12 +73,30 @@ public class Activator implements BundleActivator
 		routerController = new SmController(smManager);
 		routerController.start();
 		
+		String appPath = System.getProperty("appPath");
+		XMLConfiguration config = new XMLConfiguration(appPath + "/smconfig.xml");
 		
-		// TODO
-		smManager.setName("sm_1");
-		smManager.setDomain("example.com");
-		smManager.setRouterIp("localhost");
-		smManager.setRouterPassword("md5password");
+		String name = config.getString("name", "sm_1");
+		smManager.setName(name);
+		
+		String domain = config.getString("domain", "example.com");
+		smManager.setDomain(domain);
+		
+		String routerIp = config.getString("router-ip", "localhost");
+		smManager.setRouterIp(routerIp);
+		
+		String routerPassword = config.getString("router-password", "md5password");
+		smManager.setRouterPassword(routerPassword);
+		
+		int routerPort = config.getInt("router-port", 8789);
+		smManager.setRouterPort(routerPort);
+		
+		int onlineUsersLimit = config.getInt("online-users-limit", 0);
+		smManager.setOnlineUsersLimit(onlineUsersLimit);
+		
+		int resourceLimitPerUser = config.getInt("resource-limit-perUser", 0);
+		smManager.setResourceLimitPerUser(resourceLimitPerUser);
+		
 		smManager.start();
 	}
 
