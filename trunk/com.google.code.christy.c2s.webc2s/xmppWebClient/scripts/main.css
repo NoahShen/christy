@@ -1,15 +1,7 @@
-
-#main > div {
-	margin: 0px 7px 0px 7px
-}
-
 #userStatus, #sys {
 	cursor: pointer;
 }
 
-.menu-active {
-	background: #99FFCC
-}
 
 .sys-panel-container {
 	background: #EAEAEA none repeat scroll 0 0;
@@ -19,8 +11,7 @@
 
 .status-items-container {
 	background: #EAEAEA none repeat scroll 0 0;
-	border: 1px solid #CCCCCC;
-	padding: 10px;
+	border: 5px solid #CCCCCC;
 }
 
 .status-items {
@@ -30,22 +21,24 @@
 	cursor: pointer;
 }
 
-.status-items div div{
-	padding-left: 15px;
-}
 
 .status-items div{
 	background-repeat: no-repeat;
 	background-position: left;
 }
 
+.status-items div div {
+	padding-left: 18px;
+}
 
 .status-items .available{
 	background-image: url("/resource/status/available.png");
 }
+
 .status-items .away{
 	background-image: url("/resource/status/away.png");
 }
+
 .status-items .chat{
 	background-image: url("/resource/status/chat.png");
 }
@@ -71,30 +64,15 @@ div[statusimg] {
 	background-position: left;
 	padding-left: 20px;
 }
-
+/*
 #topBar {
-	background-color:#F4FFF4;
-	border-left:2px outset #CCCCCC;
-	border-right:2px outset #CCCCCC;
+	background-color: #18A5E0;
 }
 
 #topTabs {
-
-	border-bottom-left-radius: 9px; /* css 3 */
-	border-bottom-right-radius: 9px; /* css 3 */
-	
-    -moz-border-radius-bottomleft: 9px;  /* mozilla */
-    -moz-border-radius-bottomright: 9px;  /* mozilla */
-    
-    -webkit-border-bottom-left-radius: 9px;  /* webkit */
-    -webkit-border-bottom-right-radius: 9px;  /* webkit */
-	
-	background-color:#F4FFF4;
-	
-	border-bottom:2px outset #CCCCCC;
-	border-left:2px outset #CCCCCC;
-	border-right:2px outset #CCCCCC;
+	background-color: #18A5E0;
 }
+*/
 
 #userStatus {
 	background-image: url("/resource/status/unavailable.png");
@@ -102,10 +80,9 @@ div[statusimg] {
 	background-position: left;
 }
 
-#userStatus div{
+#userStatus div {
 	padding-left: 20px;
 }
-
 
 div[statusmessage] {
 	font-size: x-small;
@@ -128,7 +105,6 @@ div[messagearea] {
 	color: red;
 }
 
-
 .forward {
 	background-image: url("/resource/status/available.png");
 	background-repeat: no-repeat;
@@ -145,22 +121,23 @@ div[messagearea] {
 
 #addContact {
 	background-image: url("/resource/add.png");
-	float:right;
-	margin-right:12px;
+	float: right;
+	margin-right: 12px;
+	margin-top: 2px;
 }
 
 
-#favoriteRefresh , #commentsRefresh{
+#favoriteRefresh, #commentsRefresh {
 	background-image: url("/resource/refresh.png");
-	float:right;
-	margin-right:12px;
-	margin-top:7px;
+	float: right;
+	margin-right: 12px;
+	margin-top: 7px;
 }
 
 #closeRoute {
 	background-image: url("/resource/close.png");
-	float:right;
-	margin-right:12px;
-	margin-top:7px;
+	float: right;
+	margin-right: 12px;
+	margin-top: 7px;
 }
 
