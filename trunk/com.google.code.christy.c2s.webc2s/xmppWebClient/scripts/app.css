@@ -1,4 +1,4 @@
-html, body, div, a {
+html, body, div, span, a {
 	font-family:arial,sans-serif;
 	font-size: 12pt;
 	margin: 0;
@@ -10,6 +10,26 @@ input {
 	font-size: 10pt;
 }
 
+#logo {
+	margin:20px;	
+}
+
+#loginTable {
+	margin:10 auto;
+	padding:10px;
+	/*
+	border:2px outset #ccc;
+	border-radius: 9px; /* css 3 */
+	border-radius: 9px; /* css 3 */
+	
+    -moz-border-radius: 9px;  /* mozilla */
+    -moz-border-radius: 9px;  /* mozilla */
+    
+    -webkit-border: 9px;  /* webkit */
+    -webkit-border: 9px;  /* webkit */
+    */
+}
+
 input[type="text"] {
   	width:100%;
 }
@@ -17,6 +37,7 @@ input[type="text"] {
 input[type="password"] {
 	width:100%;
 }
+
 
 .progressbar {
 	background-color: #EEEEEE;
