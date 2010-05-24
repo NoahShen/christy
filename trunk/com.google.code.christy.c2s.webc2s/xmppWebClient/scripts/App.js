@@ -1,9 +1,9 @@
 $(document).ready(function() {
 	
 	$("#background").gradientz({
-		start: "#CEF6CE",     // start color: default is the background color
+		start: "#C8C8C8",     // start color: default is the background color
 		end: "#FFFFFF",     // end color: default is the background color.
-		distance: 100,
+		distance: getPageHeight() * 0.7,
 		fillWidth: true
 	});
 	
@@ -430,3 +430,25 @@ Cookies.getCookieVal = function(offset){
    }
    return unescape(document.cookie.substring(offset, endstr));
 };
+
+
+
+function getPageHeight() {
+	if($.browser.msie) {
+		return document.compatMode == "CSS1Compat"? 
+			document.documentElement.clientHeight :
+			document.body.clientHeight;
+	} else {
+		return self.innerHeight;
+	}	
+};
+
+function getPageWidth() {
+	if($.browser.msie){
+		return document.compatMode == "CSS1Compat"? 
+				document.documentElement.clientWidth :
+				document.body.clientWidth;
+	} else {
+		return self.innerWidth;
+	}
+}; 
