@@ -137,5 +137,6 @@ div[messagearea] {
 	background-image: url("/resource/close.png");
 	float:right;
 	margin-right:12px;
+	margin-top:7px;
 }
 
