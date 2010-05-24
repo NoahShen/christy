@@ -1,9 +1,11 @@
 $(document).ready(function() {
 	
 	$("#background").gradientz({
-		start: "#C8C8C8",     // start color: default is the background color
-		end: "#FFFFFF",     // end color: default is the background color.
-		distance: getPageHeight() * 0.7,
+//		start: "#94C1F8", 
+//		end: "#479AFA",
+		start: "#479AFA", 
+		end: "#FFFFFF",
+		distance: 65,
 		fillWidth: true
 	});
 	

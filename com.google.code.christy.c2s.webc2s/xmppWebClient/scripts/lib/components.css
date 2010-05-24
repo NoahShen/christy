@@ -2,125 +2,117 @@
 
 /** 清浮动 **/
 .clearfix:after{
-    content:".";
-    display:block;
-    height:0;
-    clear:both;
-    visibility:hidden;
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
 }
 
 .clearfix{
-    display:inline-block;
+    display: inline-block;
 }
 
 /* Hides from IE-mac \*/
 * html .clearfix{
-    height:1%;
+    height: 1%;
 }
 
 .clearfix{
-    display:block;
+    display: block;
 }
 
 .ui-tab-container{
-	width:100%;
+	width: 100%;
 }
 
 
 .ui-tab-container > div u {
-	float:left;
-	cursor:pointer;
-	margin-top:3px;
-	text-align:center;
-	text-decoration:none;
-	width:25%;
-	line-height:27px;
-	color:#3D3E3C;
-	margin:5px 0px 0px 0px;
-}
-.ui-tab-container > div .ui-tab-content{
-	margin-top:10px;
+	float: left;
+	cursor: pointer;
+	margin-top: 3px;
+	text-align: center;
+	text-decoration: none;
+	width: 25%;
+	line-height: 27px;
+	margin: 5px 0px 0px 0px;
 }
 
-
-.ui-tab-container > div u.ui-tab-active{
-	color:#1B8406;
-	font-weight:bold;
-	background:url("/resource/tab_active.gif") repeat-x scroll 0 0
-}
-.ui-tab-container > div u.ui-tab-disable{
-	background:#ff0000;
+.ui-tab-container > div u.ui-tab-active {
+	background-color: #470EFF;
 }
 
-
-.profile-ui-tab-container{
-	width:100%;
+.ui-tab-container > div u.ui-tab-disable {
+	background: #ff0000;
 }
 
-.profile-ui-tab-container .clearfix > div{
-	float:left;
-	cursor:pointer;
-	margin-top:3px;
-	text-align:center;
-	text-decoration:none;
-	width:24.9%;
-	line-height:30px;
+.profile-ui-tab-container {
+	width: 100%;
+}
+
+.profile-ui-tab-container .clearfix {
+	background: url("/resource/subTab.gif") repeat-x scroll 0 0 transparent;
+}
+
+.profile-ui-tab-container .clearfix > div {
+	float: left;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	width: 24.9%;
+	line-height: 30px;
 }
 
 .profile-ui-tab-container .clearfix > div .profile-tab {
-	width:100%;
+	width: 100%;
 }
 
 .profile-ui-tab-container .clearfix > div .profile-ui-tab-active {
-	background:#CCFFFF;
-	margin-bottom:-1px;
 }
 
 .profile-ui-tab-container .clearfix .profile-ui-tab-parent-active {
-	background:#CCFFFF;
-	margin-bottom:-1px;
+	background-image:url("/resource/subTab_active.gif");
 }
 
 
 .profile-ui-tab-container .clearfix > div .profile-ui-tab-disable {
-	background:#ff0000;
+	background: #ff0000;
 
 }
 
 .map-ui-tab-container {
-	width:100%;
+	width: 100%;
+}
+
+.map-ui-tab-container .clearfix {
+	background:url("/resource/subTab.gif") repeat-x scroll 0 0 transparent;
 }
 
 
-.map-ui-tab-container .clearfix > div{
-	float:left;
-	cursor:pointer;
-	margin-top:3px;
-	text-align:center;
-	text-decoration:none;
-	width:27%;
-	line-height:30px;
+.map-ui-tab-container .clearfix > div {
+	float: left;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	width: 27%;
+	line-height: 30px;
 }
 
 
 .map-ui-tab-container .clearfix > div .map-tab {
-	width:100%;
+	width: 100%;
 }
 
 .map-ui-tab-container .clearfix > div .map-ui-tab-active {
-	background:#CCFFFF;
-	margin-bottom:-1px;
 }
 
 .map-ui-tab-container .clearfix .map-ui-tab-parent-active {
-	background:#CCFFFF;
-	margin-bottom:-1px;
+	background-image: url("/resource/subTab_active2.gif");
 }
 
 
 .map-ui-tab-container .clearfix > div .map-ui-tab-disable {
-	background:#ff0000;
-
+	background: #ff0000;
 }
 
 /** =========end of Tab **/
@@ -131,7 +123,7 @@
 
 }
 .syspanel table {
-	width:100%;
+	width: 100%;
 }
 
 .syspanel .syspanel-close {
@@ -156,7 +148,7 @@
 	text-align: right;
 }
 
-.syspanel .prevNext span{
+.syspanel .prevNext span {
 	margin: 2px 7px 2px 7px;
 }
 /** =========end of syspanel **/
@@ -166,10 +158,10 @@
 /** =========start of Pagination **/
 
 .pagination {
-	color:#000000;
-	cursor:default;
-	font-family:Tahoma,Verdana;
-	font-size:12px;
+	color: #000000;
+	cursor: default;
+	font-family: Tahoma,Verdana;
+	font-size: 12px;
 }
 
 .pagination input {
@@ -188,7 +180,7 @@
 	font-weight: bold;
 	background-color: #F7F7F7;
 	border: 1px solid #CCCCCC;
-	font-size:10px;
+	font-size: 10px;
 }
 
 .pagination input.itext {
