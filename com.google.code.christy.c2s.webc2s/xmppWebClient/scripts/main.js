@@ -209,7 +209,7 @@ Main.init = function() {
 	
 	var tabs = $("<div id='tabs'>" +
  					"<div class='ui-tab-container'>" +
- 						"<div class='clearfix'>" +
+ 						"<div id='topTabs' class='clearfix'>" +
  							"<u id='contactTab' class='ui-tab-active'>" + $.i18n.prop("tabs.contact", "联系人") + "<span id='unreadCount'><span></u>" +
 							"<u id='searchTab'>" + $.i18n.prop("tabs.search", "搜索") + "</u>" +
 							"<u id='mapTab'>" + $.i18n.prop("tabs.map", "地图") + "</u>" +
@@ -549,25 +549,6 @@ Main.updatePanelSize = function() {
 	$("#mapCanvas").height(Map.getMapCanvasHeight());
 };
 
-Main.getPageHeight = function() {
-	if($.browser.msie) {
-		return document.compatMode == "CSS1Compat"? 
-			document.documentElement.clientHeight :
-			document.body.clientHeight;
-	} else {
-		return self.innerHeight;
-	}	
-};
-
-Main.getPageWidth = function() {
-	if($.browser.msie){
-		return document.compatMode == "CSS1Compat"? 
-				document.documentElement.clientWidth :
-				document.body.clientWidth;
-	} else {
-		return self.innerWidth;
-	}
-}; 
 
 IM = {};
 IM.init = function() {
@@ -924,9 +905,6 @@ IM.createContactJqObj = function(newContact) {
 										"<td>" +
 											"<img src='/resource/statusmenu.png'/>" +
 										"</td>" +
-										"<td>" +
-											"<img src='/resource/ajax-loader2.gif'/>" +
-										"</td>" +
 									"<tr/>" +
 								"</table>" +
 							"</div>");
@@ -1134,7 +1112,7 @@ IM.CHAT_TITLE_HEIGHT = 20;
 IM.INPUT_BAR_HEIGHT = 22;
 
 IM.getMessageContentHeight = function(){
-	var pageHeight = Main.getPageHeight();
+	var pageHeight = getPageHeight();
 	var topBarHeight = $("#topBar").height();
 	var tabsBarHeight = $("#tabs .clearfix").height();
 	
@@ -2210,7 +2188,7 @@ Map.init = function() {
 };
 
 Map.getMapCanvasHeight = function(){
-	var pageHeight = Main.getPageHeight();
+	var pageHeight = getPageHeight();
 	var topBarHeight = $("#topBar").height();
 	var tabsBarHeight = $("#tabs .clearfix").height();
 	

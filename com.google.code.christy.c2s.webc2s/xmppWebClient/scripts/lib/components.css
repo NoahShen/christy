@@ -26,21 +26,29 @@
 	width:100%;
 }
 
-.ui-tab-container div u {
+
+.ui-tab-container > div u {
 	float:left;
 	cursor:pointer;
 	margin-top:3px;
 	text-align:center;
 	text-decoration:none;
-	width:24.9%;
-	line-height:30px;
+	width:25%;
+	line-height:27px;
+	color:#3D3E3C;
+	margin:5px 0px 0px 0px;
 }
-.ui-tab-container div u.ui-tab-active{
-	background:#99FFCC;
-	margin-bottom:-1px;
-	border-bottom:1px solid #fff;
+.ui-tab-container > div .ui-tab-content{
+	margin-top:10px;
 }
-.ui-tab-container div u.ui-tab-disable{
+
+
+.ui-tab-container > div u.ui-tab-active{
+	color:#1B8406;
+	font-weight:bold;
+	background:url("/resource/tab_active.gif") repeat-x scroll 0 0
+}
+.ui-tab-container > div u.ui-tab-disable{
 	background:#ff0000;
 }
 
@@ -71,7 +79,6 @@
 .profile-ui-tab-container .clearfix .profile-ui-tab-parent-active {
 	background:#CCFFFF;
 	margin-bottom:-1px;
-	border-bottom:1px solid #fff;
 }
 
 

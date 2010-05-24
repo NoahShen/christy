@@ -10,6 +10,10 @@ input {
 	font-size: 10pt;
 }
 
+textarea:focus {  
+	outline: none;  
+}
+
 #logo {
 	margin:20px;	
 }

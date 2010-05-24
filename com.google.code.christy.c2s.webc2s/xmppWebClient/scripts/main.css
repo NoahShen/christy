@@ -72,6 +72,30 @@ div[statusimg] {
 	padding-left: 20px;
 }
 
+#topBar {
+	background-color:#F4FFF4;
+	border-left:2px outset #CCCCCC;
+	border-right:2px outset #CCCCCC;
+}
+
+#topTabs {
+
+	border-bottom-left-radius: 9px; /* css 3 */
+	border-bottom-right-radius: 9px; /* css 3 */
+	
+    -moz-border-radius-bottomleft: 9px;  /* mozilla */
+    -moz-border-radius-bottomright: 9px;  /* mozilla */
+    
+    -webkit-border-bottom-left-radius: 9px;  /* webkit */
+    -webkit-border-bottom-right-radius: 9px;  /* webkit */
+	
+	background-color:#F4FFF4;
+	
+	border-bottom:2px outset #CCCCCC;
+	border-left:2px outset #CCCCCC;
+	border-right:2px outset #CCCCCC;
+}
+
 #userStatus {
 	background-image: url("/resource/status/unavailable.png");
 	background-repeat: no-repeat;
