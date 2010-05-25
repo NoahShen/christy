@@ -64,15 +64,14 @@ div[statusimg] {
 	background-position: left;
 	padding-left: 20px;
 }
-/*
+
 #topBar {
-	background-color: #18A5E0;
+	background-color: #94C1F8;
 }
 
 #topTabs {
-	background-color: #18A5E0;
+	background-color: #94C1F8;
 }
-*/
 
 #userStatus {
 	background-image: url("/resource/status/unavailable.png");
@@ -84,6 +83,21 @@ div[statusimg] {
 	padding-left: 20px;
 }
 
+#activeLabel {
+	line-height: 30px;
+	background-image: url("/resource/subTab_active.gif");
+	padding-left: 7px;
+}
+
+.contact-group {
+	line-height: 30px;
+	background-image: url("/resource/contactGroup.png");
+	padding-left: 7px;
+}
+
+.contact-list-item {
+	border-bottom: 1px solid #CCCCCC;
+}
 div[statusmessage] {
 	font-size: x-small;
 	color: gray;
@@ -106,10 +120,11 @@ div[messagearea] {
 }
 
 .forward {
-	background-image: url("/resource/status/available.png");
+	background-image: url("/resource/forword.png");
 	background-repeat: no-repeat;
 	background-position: right;
 	width: 100%;
+	height: 25px;
 }
 
 .icon {
@@ -119,11 +134,14 @@ div[messagearea] {
 	height: 16px;
 }
 
+.closeButton {
+	background-image: url("/resource/close.png");
+}
+
 #addContact {
 	background-image: url("/resource/add.png");
 	float: right;
-	margin-right: 12px;
-	margin-top: 2px;
+	margin-top: 6px;
 }
 
 
@@ -135,7 +153,6 @@ div[messagearea] {
 }
 
 #closeRoute {
-	background-image: url("/resource/close.png");
 	float: right;
 	margin-right: 12px;
 	margin-top: 7px;

@@ -5,6 +5,9 @@ html, body, div, span, a {
 	padding: 0;
 }
 
+body {
+	background-image:url("/resource/tabcontentbg.png");
+}
 input {
 	font-family:arial,sans-serif;
 	font-size: 10pt;

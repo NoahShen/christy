@@ -235,7 +235,7 @@ Main.init = function() {
 	Main.tabs = new $.fn.tab({
         tabList:"#tabs  .ui-tab-container .clearfix u",
         contentList:"#tabs .ui-tab-container .ui-tab-content",
-        showType:"fade",
+//        showType:"fade",
         callBackStartEvent:function(index) {
 //            alert(index);
         },
@@ -813,7 +813,7 @@ IM.addContact2Group = function( contactlistJqObj, contactJqObj, groupName, displ
 		groupJqObj = IM.addGroup(contactlistJqObj, groupName, displayName);
 	}
 	
-	if (groupJqObj.find(".contactGroup").attr("opened") == "0") {
+	if (groupJqObj.find(".contact-group").attr("opened") == "0") {
 		contactJqObj.hide();
 	}
 	
@@ -844,7 +844,7 @@ IM.addContact2Group = function( contactlistJqObj, contactJqObj, groupName, displ
 
 IM.addGroup = function(contactlistJqObj, groupName, displayName) {
 	var newGroupJqObj = $("<div></div>").attr("groupname", groupName).attr("displayname", displayName);
-	var groupLabel = $("<div id='" + groupName + "-label' class='contactGroup' opened='1'></div>");
+	var groupLabel = $("<div id='" + groupName + "-label' class='contact-group' opened='1'></div>");
 	groupLabel.text(displayName);
 	
 	newGroupJqObj.append(groupLabel);
@@ -883,7 +883,7 @@ IM.createContactJqObj = function(newContact) {
 	var newBareJid = newContact.getBareJid();
 	var showName = newContact.getShowName();
 	var statusMessage = $.i18n.prop("status.unavailable", "离线");
-	var newContactJqObj = $("<div>" +
+	var newContactJqObj = $("<div class='contact-list-item'>" +
 								"<table style='width:100%;'>" +
 									"<tr>" +
 										"<td style='width:100%;'>" +
@@ -902,8 +902,8 @@ IM.createContactJqObj = function(newContact) {
 												"</table>" + 
 											"</div>" +
 										"</td>" +
-										"<td>" +
-											"<img src='/resource/statusmenu.png'/>" +
+										"<td style='width:40px;'>" +
+											"<img src='/resource/userinfo.png'/>" +
 										"</td>" +
 									"<tr/>" +
 								"</table>" +
@@ -1183,10 +1183,8 @@ IM.createChatPanel = function(contact){
 				if (text && text != "") {
 					conn.sendChatText(chat, text);
 					
-					var messageArea = contactChatPanel.find("div[messagearea]");
-					messageArea.append("<div class='my-message'>" + $.i18n.prop("contact.chating.isaid", "我") + ":" + text + "</div>");
-					var messageAreaElem = messageArea[0];
-					messageAreaElem.scrollTop = messageAreaElem.scrollHeight;
+					var messageJqObj = $("<div class='my-message'>" + $.i18n.prop("contact.chating.isaid", "我") + ":" + text + "</div>");
+					IM.appendMessageToArea(contactChatPanel, messageJqObj);
 					inputField.val("");
 				}
 			}
@@ -1213,7 +1211,7 @@ IM.createChatPanel = function(contact){
 											"</span>" +
 										"</td>" +
 										"<td>" +
-											"关闭" +
+											"<div class='icon closeButton'></div>" +
 										"</td>" +
 									"<tr/>" +
 								"</table>" +
@@ -1302,11 +1300,9 @@ IM.messageReceived = function(event) {
 	
 	var jidStr = eventChat.bareJID.toPrepedBareJID();
 	var chatPanel = $("#chatPanel > div[chatcontactjid='" + jidStr + "']");
-	var messageArea =  chatPanel.find("div[messagearea]");
 	
-	messageArea.append("<div class='contact-message'>" + showName + ":" + message.getBody() + "</div>");
-	var messageAreaElem = messageArea[0];
-	messageAreaElem.scrollTop = messageAreaElem.scrollHeight;
+	var messageJqObj = $("<div class='contact-message'>" + showName + ":" + message.getBody() + "</div>");
+	IM.appendMessageToArea(chatPanel, messageJqObj);
 	
 	if (!chatPanel.is(":visible")) {
 		var unread = chatPanel.attr("unread");
@@ -1354,6 +1350,19 @@ IM.updateUnreadMessage = function() {
 		
 };
 
+IM.maxMessageCount = 50;
+
+IM.appendMessageToArea =function(contactChatPanel, messageJqObj) {
+	var messageArea = contactChatPanel.find("div[messagearea]");
+	var messageCount = messageArea.children().size();
+	if (messageCount >= IM.maxMessageCount) {
+		messageArea.children(":first").remove();
+	}
+	messageArea.append(messageJqObj);
+	var messageAreaElem = messageArea[0];
+	messageAreaElem.scrollTop = messageAreaElem.scrollHeight;
+}
+
 Search = {};
 Search.pageCount = 5;
 Search.distance = 10; //10 km
@@ -1378,36 +1387,39 @@ Search.init = function() {
 									"</tr>" +
 								"</table>" +								
 							"</div>" +
-							"<table id='searchType' style='width:100%;'>" +
-								"<tr>" +
-									"<td>" +
-										"<div id='restaurant' class='forward'>" +
-											$.i18n.prop("search.searchType.restaurant", "餐馆") + 
-										"</div>" +
-									"</td>" +
-								"</tr>" +
-								"<tr>" +
-									"<td>" +
-										"<div id='hotel' class='forward'>" +
-											$.i18n.prop("search.searchType.hotel", "宾馆") + 
-										"</div>" + 
-									"</td>" +
-								"</tr>" +
-								"<tr>" +
-									"<td>" +
-										"<div id='bar_cafe' class='forward'>" +
-											$.i18n.prop("search.searchType.bar_cafe", "酒吧/咖啡厅") + 
-										"</div>" + 
-									"</td>" +
-								"</tr>" +
-								"<tr>" +
-									"<td>" +
-										"<div id='market' class='forward'>" +
-											$.i18n.prop("search.searchType.market", "商场/超市") + 
-										"</div>" + 
-									"</td>" +
-								"</tr>" +
-							"</table>" + 
+							"<div>" +
+								"<div>" + $.i18n.prop("search.searchInput.searchNearby", "搜索附近") + "<div>" +
+								"<table id='searchType' style='width:100%;'>" +
+									"<tr>" +
+										"<td>" +
+											"<div id='restaurant' class='forward'>" +
+												$.i18n.prop("search.searchType.restaurant", "餐馆") + 
+											"</div>" +
+										"</td>" +
+									"</tr>" +
+									"<tr>" +
+										"<td>" +
+											"<div id='hotel' class='forward'>" +
+												$.i18n.prop("search.searchType.hotel", "宾馆") + 
+											"</div>" + 
+										"</td>" +
+									"</tr>" +
+									"<tr>" +
+										"<td>" +
+											"<div id='bar_cafe' class='forward'>" +
+												$.i18n.prop("search.searchType.bar_cafe", "酒吧/咖啡厅") + 
+											"</div>" + 
+										"</td>" +
+									"</tr>" +
+									"<tr>" +
+										"<td>" +
+											"<div id='market' class='forward'>" +
+												$.i18n.prop("search.searchType.market", "商场/超市") + 
+											"</div>" + 
+										"</td>" +
+									"</tr>" +
+								"</table>" +
+							"</div>" + 
 						"</div>");
 	searchInput.find("#searchByLoc").click(function() {
 		Map.startSelectPos(function(lat, lon) {
@@ -2092,7 +2104,7 @@ Map.init = function() {
 									"<span id='mapRoute' class='map-tab' style='display:none;'>" + 
 										$.i18n.prop("map.tabs.route", "路线") +
 									"</span>" +
-									"<div id='closeRoute' class='icon' style='display:none;'></div>" +
+									"<div id='closeRoute' class='icon closeButton' style='display:none;'></div>" +
 								"</div>" +
 							"</div>" +
 							"<div>" +
