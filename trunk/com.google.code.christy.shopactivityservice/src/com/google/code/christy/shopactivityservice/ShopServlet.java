@@ -240,6 +240,7 @@ public class ShopServlet extends HttpServlet
 				jsonObj.put("shopId", favoriteShop.getShopId());
 				jsonObj.put("shopName", favoriteShop.getShopName());
 				jsonObj.put("street", favoriteShop.getStreet());
+				jsonObj.put("tel", favoriteShop.getTel());
 				commentsJson.put(jsonObj);
 			}
 			

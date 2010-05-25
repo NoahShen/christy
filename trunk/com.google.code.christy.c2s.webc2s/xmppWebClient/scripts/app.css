@@ -8,6 +8,7 @@ html, body, div, span, a {
 body {
 	background-image:url("/resource/bg.png");
 }
+
 input {
 	font-family:arial,sans-serif;
 	font-size: 10pt;
@@ -17,32 +18,62 @@ textarea:focus {
 	outline: none;  
 }
 
+.button-base {
+	height: 100%;
+	position: relative;
+	background:none repeat scroll 0 0 #E3E3E3;
+}
+
+.button-base-top-shadow  {
+	background: none repeat scroll 0 0 #F9F9F9;
+	border-bottom: 0.23em solid #EEEEEE;
+	height: 0.692em;
+	left: 0;
+	overflow: hidden;
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+
+.button-base-content  {
+
+	box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.698);
+	-moz-box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.698);
+	-webkit-box-shadow: rgba(0, 0, 0, 0.698) 1px 2px 2px;
+	
+    border-radius: 4px; /* css 3 */
+   
+    -moz-border-radius: 4px;  /* mozilla */
+   
+    -webkit-border-radius: 4px;  /* webkit */
+    
+    cursor: pointer;
+	color: #333333;
+	line-height: 1.55em;
+	padding: 0 0.461em;
+	position: relative;
+	text-align: center;
+}
+
+.button-body  {
+	padding: 0 0.15em;
+}
+
 #logo {
-	margin:20px;	
+	margin: 20px;	
 }
 
 #loginTable {
-	margin:10 auto;
-	padding:10px;
-	/*
-	border:2px outset #ccc;
-	border-radius: 9px; /* css 3 */
-	border-radius: 9px; /* css 3 */
-	
-    -moz-border-radius: 9px;  /* mozilla */
-    -moz-border-radius: 9px;  /* mozilla */
-    
-    -webkit-border: 9px;  /* webkit */
-    -webkit-border: 9px;  /* webkit */
-    */
+	margin: 10 auto;
+	padding: 10px;
 }
 
 input[type="text"] {
-  	width:100%;
+  	width: 100%;
 }
 
 input[type="password"] {
-	width:100%;
+	width: 100%;
 }
 
 
@@ -55,7 +86,7 @@ input[type="password"] {
 }
 
 .progressbar .bar {
-	background-color:#6CAF00;
-	height:16px;
-	width:0;
+	background-color: #6CAF00;
+	height: 16px;
+	width: 0;
 }
