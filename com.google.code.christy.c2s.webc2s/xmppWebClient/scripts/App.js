@@ -443,7 +443,7 @@ function getPageHeight() {
 	} else {
 		return self.innerHeight;
 	}	
-};
+}
 
 function getPageWidth() {
 	if($.browser.msie){
@@ -453,4 +453,5 @@ function getPageWidth() {
 	} else {
 		return self.innerWidth;
 	}
-}; 
+}
+

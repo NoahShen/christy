@@ -53,19 +53,9 @@ Main.init = function() {
 	});
 	
 	var topBar = $("<div id='topBar'>" +
-						"<table style='width:100%;text-align:center;'>" +
-							"<tr>" +
-								"<td>" +
-									"<div id='userStatus'><div>" + $.i18n.prop("topBar.status", "状态") + "</div></div>" +
-								"</td>" +
-								"<td>" +
-									"<div id='userJid'></div>" +
-								"</td>" +
-								"<td>" +
-									"<div id='sys'>" + $.i18n.prop("topBar.sys", "系统") + "</div>" +
-								"</td>" +
-							"</tr>" +
-						"</table>" +
+						"<div id='userStatus' style='position:absolute;left:0px;text-align:center;'><div>" + $.i18n.prop("topBar.status", "状态") + "</div></div>" +
+						"<div id='sys' style='position:absolute;right:0px;text-align:center;'>" + $.i18n.prop("topBar.sys", "系统") + "</div>" +
+						"<div id='userJid' style='text-align:center;'></div>" +
 						"<div id='statusitemsContainer' class='status-items-container' style='display:none;'>" +
 							"<div id='statusItems' class='status-items'>" +
 								"<div presenceshow='" + PresenceShow.AVAILABLE + "' class='available selected'><div>" + $.i18n.prop("statusContainer.status.available", "在线") + "</div></div>" +
@@ -485,10 +475,6 @@ Main.init = function() {
     
 };
 
-Main.myPositionMapItem = {
-	
-};
-
 Main.updateMyPos = function() {
 	GeoUtils.getCurrentPosition(function(p) {
 		var lat = p.coords.latitude;
@@ -883,7 +869,7 @@ IM.createContactJqObj = function(newContact) {
 	var newBareJid = newContact.getBareJid();
 	var showName = newContact.getShowName();
 	var statusMessage = $.i18n.prop("status.unavailable", "离线");
-	var newContactJqObj = $("<div class='contact-list-item'>" +
+	var newContactJqObj = $("<div class='list-item'>" +
 								"<table style='width:100%;'>" +
 									"<tr>" +
 										"<td style='width:100%;'>" +
@@ -1376,7 +1362,8 @@ Search.init = function() {
 								"<table>" +
 									"<tr>" +
 										"<td>" +
-											"<input id='searchByLoc' type='button' value='" + $.i18n.prop("search.searchInput.searchByLoc", "搜索指定位置") + "'/>" +
+//											"<a id='searchByLoc' href='javascript:void(0);'>" + $.i18n.prop("search.searchInput.searchByLoc", "搜索指定位置") + "</a>" +
+											"<div id='searchByLoc' class='icon'></div>" +
 										"</td>" +
 										"<td style='width:100%;'>" +
 											"<input id='searchKey' type='text' style='margin-right:0.1cm;'/>" +
@@ -1392,9 +1379,9 @@ Search.init = function() {
 								"<table id='searchType' style='width:100%;'>" +
 									"<tr>" +
 										"<td>" +
-											"<div id='restaurant'>" +
+											"<div id='restaurant' class='search-type'>" +
 												"<div class='restaurant-type-item'></div>" +
-												"<div class='search-type-item'>" +
+												"<div class='forward'>" +
 													$.i18n.prop("search.searchType.restaurant", "餐馆") + 
 												"</div>" +
 											"</div>" +
@@ -1402,9 +1389,9 @@ Search.init = function() {
 									"</tr>" +
 									"<tr>" +
 										"<td>" +
-											"<div id='hotel'>" +
+											"<div id='hotel' class='search-type'>" +
 												"<div class='hotel-type-item'></div>" +
-												"<div class='search-type-item'>" +
+												"<div class='forward'>" +
 													$.i18n.prop("search.searchType.hotel", "宾馆") + 
 												"</div>" +
 											"</div>" + 
@@ -1412,9 +1399,9 @@ Search.init = function() {
 									"</tr>" +
 									"<tr>" +
 										"<td>" +
-											"<div id='bar_cafe'>" +
+											"<div id='bar_cafe' class='search-type'>" +
 												"<div class='barCafe-type-item'></div>" +
-												"<div class='search-type-item'>" +
+												"<div class='forward'>" +
 													$.i18n.prop("search.searchType.bar_cafe", "酒吧/咖啡厅") + 
 												"</div>" +
 											"</div>" + 
@@ -1422,9 +1409,9 @@ Search.init = function() {
 									"</tr>" +
 									"<tr>" +
 										"<td>" +
-											"<div id='market'>" +
+											"<div id='market' class='search-type'>" +
 												"<div class='market-type-item'></div>" +
-												"<div class='search-type-item'>" +
+												"<div class='forward'>" +
 													$.i18n.prop("search.searchType.market", "商场/超市") + 
 												"</div>" +
 											"</div>" + 
@@ -1441,7 +1428,7 @@ Search.init = function() {
 		});
 	});
 	
-	searchInput.find("#searchType div").click(function() {
+	searchInput.find("#searchType .search-type").click(function() {
 		var typeJqObj = $(this);
 		var type = typeJqObj.attr("id");
 			
@@ -1463,23 +1450,15 @@ Search.init = function() {
 	var shopResultContainer = $("<div id='shopResultContainer'></div>");
 	shopResultContainer.hide();
 	
-	var shopResultBar = $("<div id='shopResultBar'>" +
-								"<table>" +
-									"<tr>" +
-										"<td>" +
-											"<input id='backToSearchInput' type='button' value='" + $.i18n.prop("search.back", "返回") + "'/>" +
-										"</td>" +
-										"<td style='width:100%;text-align:center;'>" +
-											"<div id='searchTitle'></div>" +
-										"</td>" +
-										"<td>" +
-										"</td>" +
-									"</tr>" +
-								"</table>" +	
+	var shopResultBar = $("<div id='shopResultBar' style='width:100%;text-align:center;' class='search-bar'>" +
+								"<div style='position:absolute;left:0px;'>" +
+									"<a id='backToSearch' href='javascript:void(0);'>&lt;&lt;" + $.i18n.prop("search.back", "返回") + "</a>" +
+								"</div>" +
+								"<div id='searchTitle'></div>" +
 							"</div>");
 	
-	var backToSearchInput = shopResultBar.find("#backToSearchInput");
-	backToSearchInput.click(function() {
+	var backToSearch = shopResultBar.find("#backToSearch");
+	backToSearch.click(function() {
 		searchInput.siblings().hide();
 		searchInput.show();
 	});
@@ -1494,23 +1473,17 @@ Search.init = function() {
 	var shopDetail = $("<div id='shopDetail'></div>");
 	shopDetail.hide();
 	
-	var shopDetailBar = $("<div id='shopDetailBar'>" +
-							"<table style='width:100%;text-align:center;'>" +
-								"<tr>" +
-									"<td>" +
-										"<input id='backToShopResultInput' type='button' value='" + $.i18n.prop("search.back", "返回") + "'/>" + 
-									"</td>" +
-									"<td>" +
-										"<div id='shopName'></div>" +
-									"</td>" +
-									"<td>" +
-										"<input id='viewComments' type='button' value='" + $.i18n.prop("search.shopDetail.viewComments", "查看评论") + "'/>" + 
-									"</td>" +
-								"</tr>" +
-							"</table>" +
+	var shopDetailBar = $("<div id='shopDetailBar' style='width:100%;text-align:center;' class='search-bar'>" +
+								"<div style='position:absolute;left:0px;'>" +
+									"<a id='backToShopResult' href='javascript:void(0);'>&lt;&lt;" + $.i18n.prop("search.back", "返回") + "</a>" +
+								"</div>" +
+								"<div style='position:absolute;right:0px;'>" +
+									"<input id='viewComments' type='button' value='" + $.i18n.prop("search.shopDetail.viewComments", "查看评论") + "'/>" + 
+								"</div>" +
+								"<div id='shopName'></div>" +
 							"</div>");
 							
-	shopDetailBar.find("#backToShopResultInput").click(function() {
+	shopDetailBar.find("#backToShopResult").click(function() {
 		if ($("#shopResult").children().size() > 0) {
 			shopResultContainer.siblings().hide();
 			shopResultContainer.show();
@@ -1538,23 +1511,17 @@ Search.init = function() {
 	var shopCommentsContainer = $("<div id='shopCommentsContainer'></div>");
 	shopCommentsContainer.hide();
 	
-	var shopCommentsBar = $("<div id='shopCommentsBar'>" +
-								"<table style='width:100%;text-align:center;'>" +
-									"<tr>" +
-										"<td>" +
-											"<input id='backToShopDetailInput' type='button' value='" + $.i18n.prop("search.back", "返回") + "'/>" + 
-										"</td>" +
-										"<td>" +
-											"<div id='shopNameComments'></div>" +
-										"</td>" +
-										"<td>" +
-											"<input id='commentOnShop' type='button' value='" + $.i18n.prop("search.shopDetail.comment", "评论") + "'/>" + 
-										"</td>" +
-									"</tr>" +
-								"</table>" +
+	var shopCommentsBar = $("<div id='shopCommentsBar' style='width:100%;text-align:center;' class='search-bar'>" +
+								"<div style='position:absolute;left:0px;'>" +
+									"<a id='backToShopDetail' href='javascript:void(0);'>&lt;&lt;" + $.i18n.prop("search.back", "返回") + "</a>" +
+								"</div>" +
+								"<div style='position:absolute;right:0px;'>" +
+									"<input id='commentOnShop' type='button' value='" + $.i18n.prop("search.shopDetail.comment", "评论") + "'/>" + 
+								"</div>" +
+								"<div id='shopNameComments'></div>" +
 							"</div>");
 							
-	shopCommentsBar.find("#backToShopDetailInput").click(function() {
+	shopCommentsBar.find("#backToShopDetail").click(function() {
 		shopDetail.siblings().hide();
 		shopDetail.show();
 	});
@@ -1575,22 +1542,16 @@ Search.init = function() {
 	var commentOnShopContainer = $("<div id='commentOnShopContainer'></div>");
 	commentOnShopContainer.hide();
 	
-	var commentOnShopBar = $("<div id='commentOnShopBar'>" +
-								"<table style='width:100%;text-align:center;'>" +
-									"<tr>" +
-										"<td>" +
-											"<input id='backToShopCommentsInput' type='button' value='" + $.i18n.prop("search.back", "返回") + "'/>" + 
-										"</td>" +
-										"<td>" +
-											"<div id='shopNameComment'></div>" +
-										"</td>" +
-										"<td>" +
-											"<input id='submintShopComment' type='button' value='" + $.i18n.prop("search.comment.submit", "提交") + "'/>" + 
-										"</td>" +
-									"</tr>" +
-								"</table>" +
+	var commentOnShopBar = $("<div id='commentOnShopBar' style='width:100%;text-align:center;' class='search-bar'>" +
+								"<div style='position:absolute;left:0px;'>" +
+									"<a id='backToShopComments' href='javascript:void(0);'>&lt;&lt;" + $.i18n.prop("search.back", "返回") + "</a>" +
+								"</div>" +
+								"<div style='position:absolute;right:0px;'>" +
+									"<input id='submintShopComment' type='button' value='" + $.i18n.prop("search.comment.submit", "提交") + "'/>" + 
+								"</div>" +
+								"<div id='shopNameComment'></div>" +
 							"</div>");
-	commentOnShopBar.find("#backToShopCommentsInput").click(function() {
+	commentOnShopBar.find("#backToShopComments").click(function() {
 		shopCommentsContainer.siblings().hide();
 		shopCommentsContainer.show();
 	});
@@ -1632,7 +1593,7 @@ Search.init = function() {
 						Copts.message = $.i18n.prop("search.comment.commentSuccess", "评论成功！");
 						$.blockUI(opts); 
 
-						$("#backToShopDetailInput").click();
+						$("#backToShopDetail").click();
 					} else {
 						var opts = MainUtils.cloneObj(Main.notifyOpts);
 						opts.message = $.i18n.prop("search.comment.commentFailed", "评论失败！");
@@ -1861,11 +1822,11 @@ Search.searchShops = function(query, page, count, type, updatePage, getTotal) {
 Search.createShopInfo = function(shopInfo) {
 	var distance = "";
 	if (shopInfo.distance != null) {
-		distance = "<span>" + 
+		distance = "<span class='distance-style'>" + 
 						$.i18n.prop("search.result.aboutMeter", "约{0}米", [Math.round(shopInfo.distance)]) + 
 					"</span>";
 	}
-	var shopInfoPanel = $("<div shopId='" + shopInfo.id + "'>" +
+	var shopInfoPanel = $("<div shopId='" + shopInfo.id + "' class='forward list-item'>" +
 								"<table>" +
 									"<tr>" +
 										"<td>" +
@@ -2124,9 +2085,9 @@ Map.init = function() {
 									"<iframe id='mapCanvas' name='mapCanvas' width='100%' height='" + Map.getMapCanvasHeight() + "'scrolling='no' frameborder='0' />" +
 								"</div>" +
 		 						"<div id='mapItemsPanel' class='map-ui-tab-content' style='display:none;'>" +
-		 							"<input id='mapItemsSelectAll' type='button' value='" + $.i18n.prop("map.mapItems.selectAll", "全选") + "'/>" +
-		 							"<input id='mapItemsSelectNone' type='button' value='" + $.i18n.prop("map.mapItems.selectNone", "全不选") + "'/>" +
-		 							"<input id='mapItemsRemoveAll' type='button' value='" + $.i18n.prop("map.mapItems.removeAll", "全部删除") + "'/>" +
+		 							"<a id='mapItemsSelectAll' href='javascript:void(0);' style='margin:3px 3px;'>" + $.i18n.prop("map.mapItems.selectAll", "全选") + "</a>" +
+		 							"<a id='mapItemsSelectNone' href='javascript:void(0);' style='margin:3px 3px;'>" + $.i18n.prop("map.mapItems.selectNone", "全不选") + "</a>" +
+		 							"<a id='mapItemsRemoveAll' href='javascript:void(0);' style='margin:3px 3px;'>" + $.i18n.prop("map.mapItems.removeAll", "全部删除") + "</a>" +
 		 						"</div>" +
 		 						"<div id='mapRoutePanel' class='map-ui-tab-content' style='display:none;'>" +
 		 							"<div id='mapDirection'></div>" +
@@ -2544,7 +2505,7 @@ Profile.queryMyComments = function(pageIndex, max, updatePage, getTotal) {
 			var commsJqObj = $("<div></div>");
 			for (var i = 0; i < comments.length; ++i) {
 				var onecomment = comments[i];
-				var commentJqObj = $("<div shopId='" + onecomment.shopId + "'>" +
+				var commentJqObj = $("<div shopId='" + onecomment.shopId + "' class='list-item'>" +
 										"<div>" +
 											"<span>" + onecomment.shopTitle + "</span>" +
 											"<span>" + new Date(onecomment.time).format("yyyy-MM-dd hh:mm:ss") + "</span>" +
@@ -2654,15 +2615,16 @@ Profile.queryFavoriteShop = function(pageIndex, count, updatePage, getTotal) {
 
 
 Profile.createFavoriteItem = function(favoriteItem) {
-	var favoriteItemPanel = $("<div favoriteShopId='" + favoriteItem.favoriteShopId + "' shopId='" + favoriteItem.shopId + "'>" +
-									"<table style='width:100%;border-bottom:1px solid gray;'>" +
+	var favoriteItemPanel = $("<div favoriteShopId='" + favoriteItem.favoriteShopId + "' shopId='" + favoriteItem.shopId + "' class='list-item'>" +
+									"<table style='width:100%;'>" +
 										"<tr>" +
 											"<td style='width:100%;'>" +
 												"<div>" + favoriteItem.shopName + " " + favoriteItem.street +"</div>" +
 												"<div>" + favoriteItem.tel + "</div>" +
 											"</td>" +
 											"<td valign='right'>" +
-												"<input type='button' value='" + $.i18n.prop("profile.favorite.removeFavorite", "删除") + "'/>" +
+												"<div class='icon closeButton'></div>" + 
+//												"<input type='button' value='" + $.i18n.prop("profile.favorite.removeFavorite", "删除") + "'/>" +
 											"</td>" +
 										"</tr>" +
 									"</table>" +
@@ -2672,7 +2634,7 @@ Profile.createFavoriteItem = function(favoriteItem) {
 		Search.getShopDetail(shopId, true);
 	});
 	
-	favoriteItemPanel.find("input").click(function() {
+	favoriteItemPanel.find(".closeButton").click(function() {
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
 		if (!conn) {
