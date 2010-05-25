@@ -6,7 +6,7 @@ html, body, div, span, a {
 }
 
 body {
-	background-image:url("/resource/tabcontentbg.png");
+	background-image:url("/resource/bg.png");
 }
 input {
 	font-family:arial,sans-serif;

@@ -1372,7 +1372,7 @@ Search.init = function() {
 	var searchInnerPanel = $("<div id='searchInnerPanel'></div>");
 	
 	var searchInput = $("<div id='searchInput'>" +
-							"<div>" +
+							"<div class='search-bar'>" +
 								"<table>" +
 									"<tr>" +
 										"<td>" +
@@ -1387,34 +1387,46 @@ Search.init = function() {
 									"</tr>" +
 								"</table>" +								
 							"</div>" +
-							"<div>" +
+							"<div class='search-nearby'>" +
 								"<div>" + $.i18n.prop("search.searchInput.searchNearby", "搜索附近") + "<div>" +
 								"<table id='searchType' style='width:100%;'>" +
 									"<tr>" +
 										"<td>" +
-											"<div id='restaurant' class='forward'>" +
-												$.i18n.prop("search.searchType.restaurant", "餐馆") + 
+											"<div id='restaurant'>" +
+												"<div class='restaurant-type-item'></div>" +
+												"<div class='search-type-item'>" +
+													$.i18n.prop("search.searchType.restaurant", "餐馆") + 
+												"</div>" +
 											"</div>" +
 										"</td>" +
 									"</tr>" +
 									"<tr>" +
 										"<td>" +
-											"<div id='hotel' class='forward'>" +
-												$.i18n.prop("search.searchType.hotel", "宾馆") + 
+											"<div id='hotel'>" +
+												"<div class='hotel-type-item'></div>" +
+												"<div class='search-type-item'>" +
+													$.i18n.prop("search.searchType.hotel", "宾馆") + 
+												"</div>" +
 											"</div>" + 
 										"</td>" +
 									"</tr>" +
 									"<tr>" +
 										"<td>" +
-											"<div id='bar_cafe' class='forward'>" +
-												$.i18n.prop("search.searchType.bar_cafe", "酒吧/咖啡厅") + 
+											"<div id='bar_cafe'>" +
+												"<div class='barCafe-type-item'></div>" +
+												"<div class='search-type-item'>" +
+													$.i18n.prop("search.searchType.bar_cafe", "酒吧/咖啡厅") + 
+												"</div>" +
 											"</div>" + 
 										"</td>" +
 									"</tr>" +
 									"<tr>" +
 										"<td>" +
-											"<div id='market' class='forward'>" +
-												$.i18n.prop("search.searchType.market", "商场/超市") + 
+											"<div id='market'>" +
+												"<div class='market-type-item'></div>" +
+												"<div class='search-type-item'>" +
+													$.i18n.prop("search.searchType.market", "商场/超市") + 
+												"</div>" +
 											"</div>" + 
 										"</td>" +
 									"</tr>" +
