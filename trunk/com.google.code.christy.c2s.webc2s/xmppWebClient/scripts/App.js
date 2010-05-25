@@ -1,13 +1,13 @@
 $(document).ready(function() {
 	
-	$("#background").gradientz({
+//	$("#background").gradientz({
 //		start: "#94C1F8", 
 //		end: "#479AFA",
-		start: "#479AFA", 
-		end: "#FFFFFF",
-		distance: 65,
-		fillWidth: true
-	});
+////		start: "#479AFA", 
+////		end: "#FFFFFF",
+//		distance: getPageHeight() * 0.5,
+//		fillWidth: true
+//	});
 	
 	
 	$.ImportBasePath = "/scripts/";

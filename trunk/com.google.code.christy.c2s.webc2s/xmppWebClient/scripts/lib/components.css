@@ -30,16 +30,17 @@
 .ui-tab-container > div u {
 	float: left;
 	cursor: pointer;
-	margin-top: 3px;
 	text-align: center;
 	text-decoration: none;
 	width: 25%;
 	line-height: 27px;
-	margin: 5px 0px 0px 0px;
 }
 
 .ui-tab-container > div u.ui-tab-active {
 	background-color: #470EFF;
+}
+
+.ui-tab-container .ui-tab-content {
 }
 
 .ui-tab-container > div u.ui-tab-disable {
@@ -107,7 +108,7 @@
 }
 
 .map-ui-tab-container .clearfix .map-ui-tab-parent-active {
-	background-image: url("/resource/subTab_active2.gif");
+	background-image:url("/resource/subTab_active.gif");
 }
 
 
