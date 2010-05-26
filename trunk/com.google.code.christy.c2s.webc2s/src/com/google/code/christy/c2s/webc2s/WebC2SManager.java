@@ -107,7 +107,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	
 	private int minWait = 10;
 	
-	private int inactivity = 70;
+	private int inactivity = 80;
 	
 	private int maxHolded = 1;
 	
@@ -763,6 +763,12 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 							}
 						}
 					}
+					
+					if (loggerServiceTracker.isDebugEnabled())
+					{
+						loggerServiceTracker.debug("received Body:" + body.toXml());
+					}
+					
 				}
 				catch (Exception e)
 				{
@@ -838,7 +844,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 						{
 							loggerServiceTracker.debug(webClientSession.getUsername() + 
 										"[" + webClientSession.getStreamId() + "]:" + 
-										"Invalid Key Sequence Error");
+										"checkkey failed");
 						}
 						return;
 					}
@@ -963,6 +969,10 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			String key = (String) body.getProperty("key");
 			if (key == null)
 			{
+				if (loggerServiceTracker.isDebugEnabled())
+				{
+					loggerServiceTracker.debug("key can not be null");
+				}
 				return false;
 			}
 			
@@ -982,6 +992,10 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 			}
 			else
 			{
+				if (loggerServiceTracker.isDebugEnabled())
+				{
+					loggerServiceTracker.debug("Invalid Key Sequence Error");
+				}
 				return false;
 			}
 			
@@ -1225,8 +1239,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 				{
 					synchronized (webClientSession)
 					{
-						if (!webClientSession.isSuspended()
-								&& System.currentTimeMillis() - webClientSession.getLastActive() > inactivity * 1000)
+						if (System.currentTimeMillis() - webClientSession.getLastActive() > inactivity * 1000)
 						{
 							if (loggerServiceTracker.isDebugEnabled())
 							{
