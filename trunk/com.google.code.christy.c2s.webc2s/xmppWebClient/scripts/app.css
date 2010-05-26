@@ -1,6 +1,6 @@
 html, body, div, span, a {
 	font-family:arial,sans-serif;
-	font-size: 12pt;
+	font-size: 100%;
 	margin: 0;
 	padding: 0;
 }
@@ -19,44 +19,36 @@ textarea:focus {
 }
 
 .button-base {
-	height: 100%;
-	position: relative;
-	background:none repeat scroll 0 0 #E3E3E3;
-}
-
-.button-base-top-shadow  {
-	background: none repeat scroll 0 0 #F9F9F9;
-	border-bottom: 0.23em solid #EEEEEE;
-	height: 0.692em;
-	left: 0;
-	overflow: hidden;
-	position: absolute;
-	right: 0;
-	top: 0;
-}
-
-.button-base-content  {
-
-	box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.698);
+    margin: 0 7px 0 0;
+    background-color: #f5f5f5;
+    border: 1px solid #dedede;
+    border-top: 1px solid #eee;
+    border-left: 1px solid #eee;
+    
+    font-size: 100%;
+    line-height: 130%;
+    text-decoration: none;
+    font-weight: bold;
+    color: #565656;
+    cursor: pointer;
+    padding: 2px 7px 2px 7px; /* Links */
+    
+    box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.698);
 	-moz-box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.698);
 	-webkit-box-shadow: rgba(0, 0, 0, 0.698) 1px 2px 2px;
 	
-    border-radius: 4px; /* css 3 */
-   
-    -moz-border-radius: 4px;  /* mozilla */
-   
-    -webkit-border-radius: 4px;  /* webkit */
-    
-    cursor: pointer;
-	color: #333333;
-	line-height: 1.55em;
-	padding: 0 0.461em;
-	position: relative;
-	text-align: center;
 }
 
-.button-body  {
-	padding: 0 0.15em;
+.button-base:hover {
+    background-color: #dff4ff;
+    border: 1px solid #c2e1ef;
+    color: #336699;
+}
+
+.button-base:active{
+    background-color: #6299c5;
+    border: 1px solid #6299c5;
+    color: #fff;
 }
 
 #logo {
