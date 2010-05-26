@@ -50,6 +50,7 @@ $(document).ready(function() {
 		
 		$.include(["xmppcore.js"], function(){
 			var connectionMgr = XmppConnectionMgr.getInstance();
+			connectionMgr.setUseKey(false);
 			var listener = function(event){
 				var conn = event.connection;
 				var initPresence = new Presence(PresenceType.AVAILABLE);
@@ -86,8 +87,7 @@ $(document).ready(function() {
 				loginFailed = true;
 			} else if (type == ConnectionEventType.SessionBinded) {
 				loginStatus = $.i18n.prop("login.sessionbinded", "会话已绑定...");
-				// TODO
-				sessionBindedSuccess2();
+				sessionBindedSuccess();
 				connectionMgr.removeConnectionListener(lognListener);
 			} else if (type == ConnectionEventType.BindSessionFailed) {
 				loginStatus = $.i18n.prop("login.bindsessionfailed", "会话绑定失败...");
@@ -148,6 +148,10 @@ $(document).ready(function() {
 	$("#button_login").click(loginAction);
 	
 	$("#register").click(function() {
+		if ($(this).attr("disabled") == "true") {
+			return;
+		}
+		
 		$.get("register.html", function(html) {
 			$("#loginDiv").append(html);
 			$.include("register.js", function() {
@@ -212,55 +216,6 @@ function saslSuccess() {
 }
 
 function sessionBindedSuccess() {
-	$("#loginDiv").hide();
-	
-	var progressBar = $("<div style='position:fixed;top:10px;left:10px;'>" +
-							"<div>Loading...</div>" +
-							"<div class='progressbar'>" +
-								"<div style='width:0%;' class='bar'></div>" +
-							"</div>" +
-						"</div>");
-	
-	$("body").append(progressBar);
-	
-	var files = ["lib/jquerycontextmenu/jquery.contextMenu.css",
-					"lib/jquerycontextmenu/jquery.contextMenu.js",
-					"lib/jquery_pagination/pagination.css",
-					"lib/jquery_pagination/jquery.pagination.js",
-					"geoutils.js",
-					"mainui.css",
-					"mainui.js"
-				];
-	
-	var currentIndex = 0;
-
-	var loadFile = function() {
-		$.include(files[currentIndex], function(){
-			++currentIndex;
-//			progressBar.find(".bar").css("width", (currentIndex / files.length) * 100 + "%");
-			progressBar.find(".bar").animate({
-						width: (currentIndex / files.length) * 100 + "%"
-					}, 
-					100,
-					"swing", 
-					function() {
-						if (currentIndex < files.length) {
-							loadFile();
-						} else {
-							progressBar.hide();
-							MainUI.init();
-						}
-					}
-			);
-			
-			
-			
-		});
-	}
-	loadFile();
-}
-
-function sessionBindedSuccess2() {
 	$("#loginDiv").remove();
 	
 	var progressBar = $("<div style='position:fixed;top:10px;left:10px;'>" +
@@ -271,19 +226,6 @@ function sessionBindedSuccess2() {
 						"</div>");
 	
 	$("body").append(progressBar);
-	
-//	var files = [
-//					"component/tab/ui.tab.style.css",
-//					"component/tab/ui.tab.js",
-//					"component/jquery.syspanel.style.css",
-//					"component/jquery.syspanel.js",
-//					"component/jquery.pagination.style.css",
-//					"component/jquery.pagination.js",
-//					"lib/geoutils.js",
-//					"lib/jquery.blockUI.js",
-//					"main.css",
-//					"main.js"
-//				];
 	
 	var files = [
 					"lib/components.css",
@@ -363,12 +305,6 @@ function mCutStr(text, len){
         }
         return text.substr(0,pos)+"...";
     }
-}
-
-
-function scrollToWindowBottom() {
-	var c = window.document.body.scrollHeight;
-	window.scroll(0,c); 
 }
 
 Array.prototype.contains = function(obj) {

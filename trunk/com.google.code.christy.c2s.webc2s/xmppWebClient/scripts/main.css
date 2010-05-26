@@ -67,6 +67,7 @@ div[statusimg] {
 
 #topBar {
 	background-color: #94C1F8;
+	line-height: 20px;
 }
 
 #topTabs {
@@ -89,6 +90,17 @@ div[statusimg] {
 	padding-left: 7px;
 }
 
+#backToContactList {
+	background-image: url("/resource/backToContact.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	width: 23px;
+	height: 25px;
+	box-shadow: 1px 2px 2px #000;
+	-moz-box-shadow: 1px 2px 2px #000;
+	-webkit-box-shadow: #000 1px 2px 2px ;
+
+}
 .contact-group {
 	line-height: 30px;
 	background-image: url("/resource/contactGroup.png");
@@ -149,7 +161,7 @@ div[messagearea] {
 }
 
 .restaurant-type-item {
-	background-image: url("/resource/restaurant.png");
+	background-image: url("/resource/restaurant2.png");
 	background-repeat: no-repeat;
 	background-position: left;
 	width: 32px;
@@ -158,7 +170,7 @@ div[messagearea] {
 }
 
 .hotel-type-item {
-	background-image: url("/resource/hotel.png");
+	background-image: url("/resource/hotel2.png");
 	background-repeat: no-repeat;
 	background-position: left;
 	width: 32px;

@@ -3621,15 +3621,27 @@ XmppConnectionMgr = jClass.extend({
 		if (rid == null) {
 			body.setAttribute("rid", this.getRequestId());
 		}
-		var key = this.keyGenerater.getKey();
-		if (key != null) {
-			body.setAttribute("key", key);
-		}
-		if (this.keyGenerater.isKeyEmpty()) {
-			body.setAttribute("newkey", this.keyGenerater.getNewKey());
+		
+		if (this.useKey) {
+			var key = this.keyGenerater.getKey();
+			if (key != null) {
+				body.setAttribute("key", key);
+			}
+			if (this.keyGenerater.isKeyEmpty()) {
+				body.setAttribute("newkey", this.keyGenerater.getNewKey());
+			}
 		}
 		
+		
 		this.bodyMessagQueue.push(body);
+	},
+	
+	setUseKey: function(useKey) {
+		this.useKey = useKey;
+	},
+	
+	isUseKey: function() {
+		return this.useKey;
 	},
 	
 	/**
