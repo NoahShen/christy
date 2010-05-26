@@ -1591,7 +1591,7 @@ Search.init = function() {
 				success: function(response){
 					if (response.result == "success") {
 						var opts = MainUtils.cloneObj(Main.notifyOpts);
-						Copts.message = $.i18n.prop("search.comment.commentSuccess", "评论成功！");
+						opts.message = $.i18n.prop("search.comment.commentSuccess", "评论成功！");
 						$.blockUI(opts); 
 
 						$("#backToShopDetail").click();
@@ -1670,11 +1670,11 @@ Search.viewsShopComments = function(shopId, page, count, updatePage) {
 	
 				var shopCommentsPagination = shopCommentsContainer.children("#shopCommentsPagination");
 				if (shopCommentsPagination.size() == 0) {
-					var shopCommentsPagination = $("<div id='shopCommentsPagination' style='text-align: right;' page='1'>" +
-														"<span>&lt;</span>" +
-														"<span>&gt;</span>" +
+					var shopCommentsPagination = $("<div id='shopCommentsPagination' style='text-align:center;' page='1'>" +
+														"<div id='shopCommentsPaginationNext'></div>" +
+														"<div id='shopCommentsPaginationPrev'></div>" +
 													"</div>");
-					shopCommentsPagination.children("span:first").click(function() {
+					shopCommentsPagination.children("#shopCommentsPaginationPrev").click(function() {
 						var currentPage = parseInt(shopCommentsPagination.attr("page"));
 						if (currentPage == 1) {
 							return;
@@ -1684,7 +1684,7 @@ Search.viewsShopComments = function(shopId, page, count, updatePage) {
 						
 					});
 					
-					shopCommentsPagination.children("span:last").click(function() {
+					shopCommentsPagination.children("#shopCommentsPaginationNext").click(function() {
 						if (shopComments.children("div").children().size() == 0) {
 							return;
 						}
@@ -1731,7 +1731,8 @@ Search.showShopCommentInputPanel = function(shopId) {
 		
 		var content = $("<div>" +
 							"<div>" + $.i18n.prop("search.comment.comment", "评论：") + "</div>" +
-							"<input item='content' type='text' style='width:100%;height:130px;' />" +
+							"<textarea rows='10' item='content' style='width:100%;'>" +
+							"</textarea>" + 
 						"</div>");
 		shopCommentItems.append(content);
 		
