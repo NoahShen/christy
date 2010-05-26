@@ -85,7 +85,7 @@ div[statusimg] {
 }
 
 #activeLabel {
-	line-height: 30px;
+	line-height: 34px;
 	background-image: url("/resource/subTab_active.gif");
 	padding-left: 7px;
 }
@@ -103,7 +103,7 @@ div[statusimg] {
 
 }
 .contact-group {
-	line-height: 30px;
+	line-height: 34px;
 	background-image: url("/resource/contactGroup.png");
 	padding-left: 7px;
 }
@@ -144,7 +144,8 @@ div[messagearea] {
 
 .search-bar {
 	background: url("/resource/subTab_active.gif") repeat-x scroll 0 0 transparent;
-	line-height: 30px;
+	line-height: 34px;
+	height: 34px;
 }
 
 #searchByLoc {

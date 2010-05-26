@@ -69,7 +69,7 @@ Main.init = function() {
 										"<input id='statusMessage' type='text'/>" +
 									"</td>" +
 									"<td>" +
-										"<input id='changeStatus' type='button' value='" + $.i18n.prop("statusContainer.update", "更新") + "'/>" +
+										"<input id='changeStatus' type='button' class='button-base' value='" + $.i18n.prop("statusContainer.update", "更新") + "'/>" +
 									"</td>" +
 								"</tr>" +
 							"</table>" +
@@ -78,7 +78,7 @@ Main.init = function() {
 							"<div id='preferences' style='display:none;'>" +
 								"<div id='sysAction'>" +
 									"<div style='text-align:center;'>" +
-										"<input id='exit' type='button' value='" + $.i18n.prop("preferences.exit", "退出") + "'/>" +
+										"<input id='exit' type='button' class='button-base' value='" + $.i18n.prop("preferences.exit", "退出") + "'/>" +
 									"</div>" +
 								"</div>" +
 							"</div>" +
@@ -328,7 +328,7 @@ Main.init = function() {
 									$.i18n.prop("app.connectionClosed", "连接已断开") +
 								"</div>" +
 								"<div>" +
-									"<input id='ok' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+									"<input id='ok' type='button' class='button-base' style='margin: 2px 2px 2px 2px' value='" + 
 										$.i18n.prop("button.ok", "确定") + 
 									"'/>" +
 								"</div>" +
@@ -369,10 +369,10 @@ Main.init = function() {
 												"</label>" +
 											"</div>" +
 											"<div>" +
-												"<input id='ok' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+												"<input id='ok' type='button' class='button-base' style='margin: 2px 2px 2px 2px' value='" + 
 													$.i18n.prop("contact.accept", "接受") + 
 												"'/>" +
-												"<input id='cancel' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+												"<input id='cancel' type='button' class='button-base' style='margin: 2px 2px 2px 2px' value='" + 
 													$.i18n.prop("contact.reject", "拒绝") + 
 												"'/>" +
 											"</div>" +
@@ -553,10 +553,10 @@ IM.init = function() {
 									"<input id='userJid' type='text' style='margin: 2px 0px 2px 0px' />" +
 								"</div>" +
 								"<div>" +
-									"<input id='ok' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+									"<input id='ok' type='button' class='button-base' style='margin: 2px 2px 2px 2px' value='" + 
 										$.i18n.prop("button.ok", "确定") + 
 									"'/>" +
-									"<input id='cancel' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+									"<input id='cancel' type='button' class='button-base' style='margin: 2px 2px 2px 2px' value='" + 
 										$.i18n.prop("button.cancel", "取消") + 
 									"'/>" +
 								"</div>" +
@@ -627,7 +627,7 @@ IM.init = function() {
 									"<tr>" +
 										"<td>" +
 											"<div style='float:left;'>" +
-												"<input id='contactInfoBack' type='button' value='" + $.i18n.prop("contact.closeContactInfo", "关闭") + "'>" +
+												"<a id='contactInfoBack' href='javascript:void(0);'>&lt;&lt;" + $.i18n.prop("contact.closeContactInfo", "关闭") + "</a>" +
 											"</div>" +
 										"</td>" +
 									"</tr>" +
@@ -973,10 +973,10 @@ IM.showContactInfo = function(contact) {
 								"</table>" +
 							"</div>" +
 							"<div>" +
-								"<input id='saveContactInfo' type='button' value='" + $.i18n.prop("contact.saveContactInfo", "保存") + "'>" +
+								"<input id='saveContactInfo' type='button' class='button-base' value='" + $.i18n.prop("contact.saveContactInfo", "保存") + "'>" +
 							"</div>" +
 							"<div>" +
-								"<input id='deleteContact' type='button' value='" + $.i18n.prop("contact.deleteContact", "删除") + "'>" +
+								"<input id='deleteContact' type='button' class='button-base' value='" + $.i18n.prop("contact.deleteContact", "删除") + "'>" +
 							"</div>" +
 						"</div>");
 	contactInfo.find("#deleteContact").click(function(){
@@ -985,10 +985,10 @@ IM.showContactInfo = function(contact) {
 									$.i18n.prop("contact.confirmRemoveContact", "确认删除？") +
 								"</div>" +
 								"<div>" +
-									"<input id='ok' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+									"<input id='ok' type='button' class='button-base' style='margin: 2px 2px 2px 2px' value='" + 
 										$.i18n.prop("button.ok", "确定") + 
 									"'/>" +
-									"<input id='cancel' type='button' style='margin: 2px 2px 2px 2px' value='" + 
+									"<input id='cancel' type='button' class='button-base' style='margin: 2px 2px 2px 2px' value='" + 
 										$.i18n.prop("button.cancel", "取消") + 
 									"'/>" +
 								"</div>" +
@@ -1138,13 +1138,12 @@ IM.createChatPanel = function(contact){
 													"<tr>" +
 														"<td>" +
 															"<div id='backToContactList'></div>" +
-//															"<input id='backToContactList' type='button' value='返回'/>" +
 														"</td>" +
 														"<td style='width:100%;'>" +
 															"<input inputfield='1' type='text'/>" +
 														"</td>" +
 														"<td>" +
-															"<input id='sendMessage' type='button' value='"+ $.i18n.prop("chatPanel.send", "发送") + "' />" + 
+															"<input id='sendMessage' type='button' class='button-base' value='"+ $.i18n.prop("chatPanel.send", "发送") + "' />" + 
 														"</td>" +
 													"</tr>" +
 												"</table>" +
@@ -1370,7 +1369,7 @@ Search.init = function() {
 											"<input id='searchKey' type='text' style='margin-right:0.1cm;'/>" +
 										"</td>" +
 										"<td>" +
-											"<input id='doSearch' type='button' value='" + $.i18n.prop("search.searchInput.doSearch", "搜索") + "'/>" +
+											"<input id='doSearch' type='button' class='button-base' value='" + $.i18n.prop("search.searchInput.doSearch", "搜索") + "'/>" +
 										"</td>" +
 									"</tr>" +
 								"</table>" +								
@@ -1479,7 +1478,7 @@ Search.init = function() {
 									"<a id='backToShopResult' href='javascript:void(0);'>&lt;&lt;" + $.i18n.prop("search.back", "返回") + "</a>" +
 								"</div>" +
 								"<div style='position:absolute;right:0px;'>" +
-									"<input id='viewComments' type='button' value='" + $.i18n.prop("search.shopDetail.viewComments", "查看评论") + "'/>" + 
+									"<input id='viewComments' type='button' class='button-base' value='" + $.i18n.prop("search.shopDetail.viewComments", "查看评论") + "'/>" + 
 								"</div>" +
 								"<div id='shopName'></div>" +
 							"</div>");
@@ -1517,7 +1516,7 @@ Search.init = function() {
 									"<a id='backToShopDetail' href='javascript:void(0);'>&lt;&lt;" + $.i18n.prop("search.back", "返回") + "</a>" +
 								"</div>" +
 								"<div style='position:absolute;right:0px;'>" +
-									"<input id='commentOnShop' type='button' value='" + $.i18n.prop("search.shopDetail.comment", "评论") + "'/>" + 
+									"<input id='commentOnShop' type='button' class='button-base' value='" + $.i18n.prop("search.shopDetail.comment", "评论") + "'/>" + 
 								"</div>" +
 								"<div id='shopNameComments'></div>" +
 							"</div>");
@@ -1548,7 +1547,7 @@ Search.init = function() {
 									"<a id='backToShopComments' href='javascript:void(0);'>&lt;&lt;" + $.i18n.prop("search.back", "返回") + "</a>" +
 								"</div>" +
 								"<div style='position:absolute;right:0px;'>" +
-									"<input id='submintShopComment' type='button' value='" + $.i18n.prop("search.comment.submit", "提交") + "'/>" + 
+									"<input id='submintShopComment' type='button' class='button-base' value='" + $.i18n.prop("search.comment.submit", "提交") + "'/>" + 
 								"</div>" +
 								"<div id='shopNameComment'></div>" +
 							"</div>");
@@ -1919,10 +1918,10 @@ Search.showShopDetail = function(shopDetail) {
 										"<div>" +
 											"<span>" + baseInfo.name + "</span>" +
 											"<span>"+ baseInfo.hasCoupon + "</span>" +
-											"<input id='adddFavorite' type='button' value='" +
+											"<input id='adddFavorite' type='button' class='button-base' value='" +
 												$.i18n.prop("search.shopDetail.adddFavorite", "收藏") + 
 											"' />" +
-											"<input id='showShopPos' type='button' value='" +
+											"<input id='showShopPos' type='button' class='button-base' value='" +
 												$.i18n.prop("search.shopDetail.showShopPos", "地图") + 
 											"' />" +
 										"</div>" +
@@ -2284,7 +2283,7 @@ Map.updateMapItem = function (mapItem) {
 		itemDivJqObj = $("<div mapItem='" + mapItemId + "'>" + 
 								"<input id='" + mapItem.id + "-mapItem' name='" + mapItem.id + "-mapItem' type='checkbox' checked='checked'/>" +
 								"<label id='" + mapItem.id + "-mapItemLabel' for='" + mapItem.id + "-mapItem'>" + mapItem.title + "</label>" +
-								"<input type='button' value='" + $.i18n.prop("map.mapItems.remove", "删除") + "'/>" + 
+								"<input type='button' class='button-base' value='" + $.i18n.prop("map.mapItems.remove", "删除") + "'/>" + 
 							"</div>");
 		itemDivJqObj.children("input:first").click(function() {
 			var checkbox = $(this);
@@ -2648,9 +2647,7 @@ Profile.createFavoriteItem = function(favoriteItem) {
 												"<div>" + favoriteItem.tel + "</div>" +
 											"</td>" +
 											"<td valign='right'>" +
-												"<div class='icon closeButton'></div>" + 
-//												"<input type='button' value='" + $.i18n.prop("profile.favorite.removeFavorite", "删除") + "'/>" +
-											"</td>" +
+												"<div class='icon closeButton'></div>" + 											"</td>" +
 										"</tr>" +
 									"</table>" +
 								"</div>");
@@ -2780,7 +2777,7 @@ Preferences.init = function() {
 									"<tr>" +
 										"<td>" +
 											"<div style='text-align:center;'>" +
-												"<input id='savePreferences' type='button' value='" + $.i18n.prop("preferences.savePreferences", "保存") + "'/>" +
+												"<input id='savePreferences' type='button' class='button-base' value='" + $.i18n.prop("preferences.savePreferences", "保存") + "'/>" +
 											"</div>" +
 										"</td>" +
 									"</tr>" +
