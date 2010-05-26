@@ -125,6 +125,7 @@ public class WebClientSession extends AbstractPropertied implements ClientSessio
 			body.setProperty("ack", rid);
 		}
 		response.getWriter().write(body.toXml());
+		setLastActive(System.currentTimeMillis());
 	}
 	
 	public String getLastKey()
