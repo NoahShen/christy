@@ -1137,7 +1137,8 @@ IM.createChatPanel = function(contact){
 												"<table style='margin-left:10px;'>" +
 													"<tr>" +
 														"<td>" +
-															"<input id='backToList' type='button' value='返回'/>" +
+															"<div id='backToContactList'></div>" +
+//															"<input id='backToContactList' type='button' value='返回'/>" +
 														"</td>" +
 														"<td style='width:100%;'>" +
 															"<input inputfield='1' type='text'/>" +
@@ -1152,7 +1153,7 @@ IM.createChatPanel = function(contact){
 									"</table>" +
 								"</div>");
 	
-	contactChatPanel.find("#backToList").click(function(){
+	contactChatPanel.find("#backToContactList").click(function(){
 		var contactPanel = $("#contact");
 		contactPanel.siblings().hide();
 		contactPanel.show();
@@ -1997,7 +1998,6 @@ Search.showShopDetail = function(shopDetail) {
 			GeoUtils.getCurrentPosition(function(p) {
 				var myLat = p.coords.latitude;
 				var myLon = p.coords.longitude;
-				
 				Map.getRoute(myLat, myLon, lat, lon);
 				$("#mapRoute").show();
 			}, function() {}, false);
@@ -2013,7 +2013,9 @@ Search.showShopDetail = function(shopDetail) {
 			positions: [{
 				message: posInfoJqObj[0],
 				lat: lat,
-				lon: lon
+				lon: lon,
+				image: "/resource/" + baseInfo.type + ".png",
+				imageSize: {width: 32, height: 37}
 			}]
 		};
 		Map.updateMapItem(mapItem);

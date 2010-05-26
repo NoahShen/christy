@@ -434,6 +434,7 @@ public class ShopServlet extends HttpServlet
 			basicInfo.put("phone", shop.getTel());
 			basicInfo.put("lat", shop.getLatitude());
 			basicInfo.put("lon", shop.getLongitude());
+			basicInfo.put("type", shop.getType());
 			jsonObj.put("basicInfo", basicInfo);
 			
 			

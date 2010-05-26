@@ -15,10 +15,13 @@
 				if (GBrowserIsCompatible()) {
 	        		map = new GMap2(document.getElementById("map_canvas"));
 //	        		map.setCenter(new GLatLng(31.230708, 121.472916), 13);
+/*
 	        		var customUI = map.getDefaultUI();
 			        customUI.maptypes.hybrid = false;
 			        map.setUI(customUI);
-	        		
+*/
+					map.setUIToDefault();
+					
 	        		var myEventListener = GEvent.bind(map , "click", this, function(overlay, latlng) {
 				    	if (!stopSelect) {
 				    		for (var i = 0; i < selectPosCallBackFuncs.length; ++i) {
@@ -87,14 +90,25 @@
 						gmarkers: []
 					};
 					
-					for (var i = 0; i < marker.positions.length; ++i) {
-						var p = marker.positions[i];
-						var gmarker = new GMarker(new GLatLng(p.lat, p.lon));
-						if (map) {
+					if (map) {
+						for (var i = 0; i < marker.positions.length; ++i) {
+							var p = marker.positions[i];
+							markerOptions = {};
+							if (p.image) {
+								var icon = new GIcon(G_DEFAULT_ICON);
+								icon.image = p.image;
+								icon.shadow = null;
+								if (p.imageSize) {
+									icon.iconSize = new GSize(p.imageSize.width, p.imageSize.height);
+								}
+        						
+								markerOptions.icon = icon;
+							}
+							var gmarker = new GMarker(new GLatLng(p.lat, p.lon), markerOptions);
 							map.addOverlay(gmarker);
 							gmarker.bindInfoWindow(p.message);
+							markerWrapper.gmarkers.push(gmarker);
 						}
-						markerWrapper.gmarkers.push(gmarker);
 					}
 					markers[markerId] = markerWrapper;
 				}
