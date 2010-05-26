@@ -1567,14 +1567,36 @@ Search.init = function() {
 			
 			var comentContent = "";			
 			var shopCommentItems = $("#shopCommentItems");
-			var items = shopCommentItems.find("input[item]");
-	
+			var items = shopCommentItems.find("[item]");
+			
+			var inputValid = true;
 			$.each(items, function(index, value) {		
 				var commentItem = $(value);
 				var itemName = commentItem.attr("item");
 				var itemValue = commentItem.val();
+				if (itemName != "content") {
+					if (isNaN(itemValue) 
+						|| itemValue < 1 
+						|| itemValue　> 100) {
+						alert($.i18n.prop("search.comment.inputNumber", "请输入数字(1~100)！"));
+						commentItem[0].focus();
+						inputValid = false;
+						return false;
+					}
+					
+					if (itemValue == null || itemValue == "") {
+						alert($.i18n.prop("search.comment.inputScore", "请评分！"));
+						commentItem[0].focus();
+						inputValid = false;
+						return false;
+					}
+				}
 				comentContent += itemName + ":" + itemValue + ";";
 			});
+			
+			if (!inputValid) {
+				return;
+			}
 			
 			$.ajax({
 				url: "/shop/",
@@ -1716,12 +1738,12 @@ Search.showShopCommentInputPanel = function(shopId) {
 
 	var overall = detail.overall;
 	if (overall) {
-		var shopCommentItems = $("<div id='shopCommentItems'></div>");
+		var shopCommentItems = $("<div id='shopCommentItems' style='margin:5px;'></div>");
 		var i = 1;
 		for(var key in overall) {
-			shopCommentItems.append("<span>" +
+			shopCommentItems.append("<span style='margin:5px;'>" +
 										"<span>" + $.i18n.prop("search.shopDetail.restaurant." + key, "项目：") + "</span>" +
-										"<input item='" + key + "' type='text' style='width:50px;'/>" +
+										"<input item='" + key + "' type='text' style='width:50px;margin:5px;'/>" +
 									"</span>");
 			if (i != 0 && i % 2 == 0) {
 				shopCommentItems.append("<br/>");

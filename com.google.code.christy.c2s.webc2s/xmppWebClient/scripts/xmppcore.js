@@ -3485,13 +3485,16 @@ XmppConnectionMgr = jClass.extend({
 				}
 				var requestId = aThis.getRequestId();
 				bodyMessage.setAttribute("rid", requestId);
-				var key = aThis.keyGenerater.getKey();
-				if (key != null) {
-					bodyMessage.setAttribute("key", key);
+				if (this.useKey) {
+					var key = aThis.keyGenerater.getKey();
+					if (key != null) {
+						bodyMessage.setAttribute("key", key);
+					}
+					if (aThis.keyGenerater.isKeyEmpty()) {
+						bodyMessage.setAttribute("newkey", aThis.keyGenerater.getNewKey());
+					}
 				}
-				if (aThis.keyGenerater.isKeyEmpty()) {
-					bodyMessage.setAttribute("newkey", aThis.keyGenerater.getNewKey());
-				}
+				
 			    aThis.bodyMessagQueue.unshift(bodyMessage);
 			},
 			complete: function(xmlHttpRequest, textStatus) {
