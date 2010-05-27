@@ -7,6 +7,8 @@ package com.google.code.christy.c2s.webc2s;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -1219,6 +1221,8 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		
 		private boolean stop = true;
 		
+		private SimpleDateFormat dateformat =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
 		public boolean isStop()
 		{
 			return stop;
@@ -1248,7 +1252,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 											"Session time out.");
 								loggerServiceTracker.debug(webClientSession.getUsername() + 
 											"[" + webClientSession.getStreamId() + "] lastActivity:" + 
-											webClientSession.getLastActive());
+											dateformat.format(new Date(webClientSession.getLastActive())));
 							}
 							webClientSession.close();
 							if (webClientSession.getUsername() != null)
