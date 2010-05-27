@@ -10,7 +10,7 @@
 	<path-spec>/JHB.do</path-spec>
 	<max-wait>60</max-wait>
 	<min-wait>10</min-wait>
-	<inactivity>70</inactivity>
+	<inactivity>80</inactivity>
 	<max-holded>1</max-holded>
 	<client-limit>0</client-limit>
 </christy>
