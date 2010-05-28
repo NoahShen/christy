@@ -136,11 +136,11 @@ Main.init = function() {
 		
 	var sysPanel = topBar.find("#sysPanel");
 	sysPanel.sysPanel({
-		panelAdded: function (panel) {
+		panelAdded: function(panel) {
 			$("#sys").text($.i18n.prop("topBar.sys", "系统") + 
 							"(" + sysPanel.getPanelCount() + ")");
 		},
-		panelRemoved: function (panel) {
+		panelRemoved: function(panel) {
 			var text = $.i18n.prop("topBar.sys", "系统");
 			var count = sysPanel.getPanelCount();
 			
@@ -1625,7 +1625,7 @@ Search.init = function() {
 						$.blockUI(opts); 
 					}
 				},
-				error: function (xmlHttpRequest, textStatus, errorThrown) {
+				error: function(xmlHttpRequest, textStatus, errorThrown) {
 					var opts = MainUtils.cloneObj(Main.notifyOpts);
 					opts.message = $.i18n.prop("search.comment.commentFailed", "评论失败！");
 					opts.css.backgroundColor = "red";
@@ -1720,7 +1720,7 @@ Search.viewsShopComments = function(shopId, page, count, updatePage) {
 				}
 			}
 		},
-		error: function (xmlHttpRequest, textStatus, errorThrown) {
+		error: function(xmlHttpRequest, textStatus, errorThrown) {
 			
 		},
 		complete: function(xmlHttpRequest, textStatus) {
@@ -1833,7 +1833,7 @@ Search.searchShops = function(query, page, count, type, updatePage, getTotal) {
 				});
 			}
 		},
-		error: function (xmlHttpRequest, textStatus, errorThrown) {
+		error: function(xmlHttpRequest, textStatus, errorThrown) {
 			
 		},
 		complete: function(xmlHttpRequest, textStatus) {
@@ -1894,7 +1894,7 @@ Search.getShopDetail = function(shopId, changeTab) {
 				Main.tabs.triggleTab(1);
 			}
 		},
-		error: function (xmlHttpRequest, textStatus, errorThrown) {
+		error: function(xmlHttpRequest, textStatus, errorThrown) {
 			
 		},
 		complete: function(xmlHttpRequest, textStatus) {
@@ -1982,7 +1982,7 @@ Search.showShopDetail = function(shopDetail) {
 				}
 				$.blockUI(opts);
 			},
-			error: function (xmlHttpRequest, textStatus, errorThrown) {
+			error: function(xmlHttpRequest, textStatus, errorThrown) {
 				var opts = MainUtils.cloneObj(Main.notifyOpts);
 				opts.message = $.i18n.prop("search.shopDetail.addFavoriteFailed", "收藏失败!");
 				opts.css.backgroundColor = "red";
@@ -2240,7 +2240,7 @@ Map.mapFrameLoaded = function() {
 };
 
 Map.getRoute = function(fromLat, fromLon, toLat, toLon) {
-	Map.showMap(function () {
+	Map.showMap(function() {
 		var mapCanvas = $("#mapCanvas");
 		mapCanvas[0].contentWindow.getRoute(fromLat, fromLon, toLat, toLon);
 	});
@@ -2267,7 +2267,7 @@ Map.removeRoute = function() {
 //};
 Map.mapItems = {};
 
-Map.containMapItem = function (mapItemId) {
+Map.containMapItem = function(mapItemId) {
 	var mapItem = Map.mapItems[mapItemId];
 	if (mapItem) {
 		return true;
@@ -2275,7 +2275,7 @@ Map.containMapItem = function (mapItemId) {
 	return false;
 };
 
-Map.updateMapItem = function (mapItem) {
+Map.updateMapItem = function(mapItem) {
 	var mapItemId = mapItem.id;	
 	Map.mapItems[mapItemId] = mapItem;
 	
@@ -2313,7 +2313,7 @@ Map.updateMapItem = function (mapItem) {
 	Map.updateMapItemAttribute(mapItem);
 };
 
-Map.removeMapItem = function (mapItemId) {
+Map.removeMapItem = function(mapItemId) {
 	delete Map.mapItems[mapItemId];
 	if (Map.mapLoaded) {
 		var mapCanvas = $("#mapCanvas");
@@ -2337,7 +2337,7 @@ Map.updateMapItemAttribute = function(mapItem) {
 	}
 };
 
-Map.setMapItemCenter = function (mapItemId) {
+Map.setMapItemCenter = function(mapItemId) {
 	var mapItem = Map.mapItems[mapItemId];
 	if (mapItem) {
 		var mapCanvas = $("#mapCanvas");
@@ -2563,7 +2563,7 @@ Profile.queryMyComments = function(pageIndex, max, updatePage, getTotal) {
 				});
 			}
 		},
-		error: function (xmlHttpRequest, textStatus, errorThrown) {
+		error: function(xmlHttpRequest, textStatus, errorThrown) {
 			
 		},
 		complete: function(xmlHttpRequest, textStatus) {
@@ -2629,7 +2629,7 @@ Profile.queryFavoriteShop = function(pageIndex, count, updatePage, getTotal) {
 				});
 			}
 		},
-		error: function (xmlHttpRequest, textStatus, errorThrown) {
+		error: function(xmlHttpRequest, textStatus, errorThrown) {
 			
 		},
 		complete: function(xmlHttpRequest, textStatus) {
@@ -2691,7 +2691,7 @@ Profile.createFavoriteItem = function(favoriteItem) {
 				}
 				$.blockUI(opts);
 			},
-			error: function (xmlHttpRequest, textStatus, errorThrown) {
+			error: function(xmlHttpRequest, textStatus, errorThrown) {
 				var opts = MainUtils.cloneObj(Main.notifyOpts);
 				opts.message = $.i18n.prop("contact.removeContactFailed", "删除失败！");
 				opts.css.backgroundColor = "red";
