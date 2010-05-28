@@ -149,9 +149,11 @@ div[messagearea] {
 }
 
 #searchByLoc {
-	background-image: url("/resource/status/unavailable.png");
+	background-image: url("/resource/selectFromMap.png");
 	background-repeat: no-repeat;
 	background-position: left;
+	width: 24px;
+	height: 32px;
 }
 
 .forward {

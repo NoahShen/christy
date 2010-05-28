@@ -1362,8 +1362,7 @@ Search.init = function() {
 								"<table>" +
 									"<tr>" +
 										"<td>" +
-//											"<a id='searchByLoc' href='javascript:void(0);'>" + $.i18n.prop("search.searchInput.searchByLoc", "搜索指定位置") + "</a>" +
-											"<div id='searchByLoc' class='icon'></div>" +
+											"<div id='searchByLoc'></div>" +
 										"</td>" +
 										"<td style='width:100%;'>" +
 											"<input id='searchKey' type='text' style='margin-right:0.1cm;'/>" +
