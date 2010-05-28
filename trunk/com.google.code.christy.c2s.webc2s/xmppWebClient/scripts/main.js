@@ -484,6 +484,7 @@ Main.updateMyPos = function() {
 		if (myPositionMapItem == null) {
 			var title = $.i18n.prop("map.myPosition", "我的位置");
 			var titleJqObj = $("<div>" + title + "</div>");
+		
 			myPositionMapItem = {
 				id: "myPosition",
 				title: title,
@@ -493,7 +494,9 @@ Main.updateMyPos = function() {
 				positions: [{
 					message: titleJqObj[0],
 					lat: lat,
-					lon: lon
+					lon: lon,
+					image: "/resource/i.png",
+					imageSize: {width: 13, height: 18}
 				}]
 			}
 			Map.updateMapItem(myPositionMapItem);
