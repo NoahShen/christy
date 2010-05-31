@@ -3,13 +3,9 @@ package com.google.code.christy.shopactivityservice;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -53,6 +49,8 @@ public class ShopServlet extends HttpServlet
 	private ShopDbhelper shopDbhelper;
 	
 	private UserDbhelper userDbhelper;
+
+	private Seacher seacher;
 	
 	public ShopServlet(C2SManagerTracker c2sManagerTracker, 
 				LoggerServiceTracker loggerServiceTracker, 
@@ -64,7 +62,16 @@ public class ShopServlet extends HttpServlet
 		this.loggerServiceTracker = loggerServiceTracker;
 		this.shopDbhelper = shopLocDbhelper;
 		this.userDbhelper = userDbhelper;
-		
+		this.seacher = new Seacher();
+		try
+		{
+			this.seacher.createIndex();
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
@@ -586,7 +593,7 @@ public class ShopServlet extends HttpServlet
 
 	private Object[] searchByKey(HttpServletRequest req, HttpServletResponse resp, String searchKey)
 	{
-		String shopType = req.getParameter("type");
+//		String shopType = req.getParameter("type");
 		
 		String pageStr = req.getParameter("page");
 		String countStr = req.getParameter("count");
@@ -600,15 +607,35 @@ public class ShopServlet extends HttpServlet
 		{
 			getTotal = true;
 		}
+//		try
+//		{
+//			Object[] result = shopDbhelper.getShopByKey(shopType, searchKey, page, count, getTotal);
+//			return result;
+//		}
+//		catch (Exception e1)
+//		{
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+		
 		try
 		{
-			Object[] result = shopDbhelper.getShopByKey(shopType, searchKey, page, count, getTotal);
-			return result;
+			return this.seacher.seachIndex(searchKey, page, count, getTotal);
 		}
-		catch (Exception e1)
+		catch (CorruptIndexException e)
 		{
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (ParseException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		return null;
@@ -645,7 +672,7 @@ public class ShopServlet extends HttpServlet
 			appPath = System.getProperty("appPath");
 		} 
 		
-		private void createIndex() throws Exception
+		public void createIndex() throws Exception
 		{
 			loggerServiceTracker.debug("Start creating Index");
 			
@@ -664,8 +691,8 @@ public class ShopServlet extends HttpServlet
 				doc.add(new Field("title", shop.getTitle(), Field.Store.YES, Field.Index.ANALYZED));
 				doc.add(new Field("content", shop.getContent(), Field.Store.NO, Field.Index.ANALYZED));
 				doc.add(new Field("shopImg", shop.getShopImg(), Field.Store.YES, Field.Index.NO));
-				doc.add(new Field("district", shop.getDistrict(), Field.Store.NO, Field.Index.NOT_ANALYZED));
-				doc.add(new Field("street", shop.getStreet(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+				doc.add(new Field("district", shop.getDistrict(), Field.Store.NO, Field.Index.ANALYZED));
+				doc.add(new Field("street", shop.getStreet(), Field.Store.YES, Field.Index.ANALYZED));
 				doc.add(new Field("tel", shop.getTel(), Field.Store.YES, Field.Index.NO));
 				
 				writer.addDocument(doc);
@@ -691,7 +718,7 @@ public class ShopServlet extends HttpServlet
 			{
 				QueryParser queryParser = new QueryParser(Version.LUCENE_29, field, getAnalyzer());
 				Query query = queryParser.parse(queryString);
-				TopDocs topDocs = searcher.search(query, Integer.MAX_VALUE);
+				TopDocs topDocs = searcher.search(query, 10000);
 				ScoreDoc[] hits = topDocs.scoreDocs;
 				for (int i = 0; i < hits.length; i++)
 				{
@@ -702,26 +729,6 @@ public class ShopServlet extends HttpServlet
 						scoreDocs.put(docid, scoreDoc);
 					}
 				}
-					
-				
-//				for (int i = 0; i < hits.length; i++)
-//				{
-//					ScoreDoc scoreDoc = hits[i];
-//					int docid = scoreDoc.doc;
-//					Document d = searcher.doc(docid);
-//					String idStr = d.get("id");
-//					if (!shops.containsKey(idStr))
-//					{
-//						Shop shop = new Shop();
-//						shop.setShopId(Integer.parseInt(idStr));
-//						shop.setTitle(d.get("title"));
-//						shop.setShopImg(d.get("shopImg"));
-//						shop.setTel(d.get("tel"));
-//						shop.setStreet(d.get("street"));
-//						shops.put(idStr, shop);
-//					}
-//					
-//				}
 			}
 			
 			int startIndex = (page - 1) * count;
@@ -759,49 +766,4 @@ public class ShopServlet extends HttpServlet
 			
 		}
 	}
-//	
-//	private class SearchItem
-//	{
-//		private float score;
-//		
-//		private Shop shop;
-//
-//		public SearchItem(float score, Shop shop)
-//		{
-//			super();
-//			this.score = score;
-//			this.shop = shop;
-//		}
-//
-//		public float getScore()
-//		{
-//			return score;
-//		}
-//
-//		public Shop getShop()
-//		{
-//			return shop;
-//		}
-//		
-//		
-//	}
-	
-	private class ScoreDocComparator implements Comparator<ScoreDoc>
-	{
-		@Override
-		public int compare(ScoreDoc o1, ScoreDoc o2)
-		{
-			if (o1.score > o2.score)
-			{
-				return 1;
-			} 
-			else if (o1.score < o2.score)
-			{
-				return -1;
-			}
-			return 0;
-		}
-		
-	}
-	
 }
