@@ -46,7 +46,7 @@ public class ContactManager
 					OfflineSubscribeMsgDbHelperTracker offlineSubscribeMsgDbHelperTracker,
 					UserDbHelperTracker userDbHelperTracker)
 	{
-		cacheRoster = true;
+		cacheRoster = false;
 		cacheSize = 1000;
 		rosterCache = new LRULinkedHashMap<String, IqRoster>(cacheSize);
 		
