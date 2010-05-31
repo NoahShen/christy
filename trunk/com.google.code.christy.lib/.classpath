@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-smartcn-2.9.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-analyzers-2.9.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-core-2.9.2.jar" sourcepath="lib/lucene-2.9.2-src.zip"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-collections-3.2.1.jar" sourcepath="lib/commons-collections-3.2.1-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-lang-2.5.jar" sourcepath="lib/commons-lang-2.5-sources.jar"/>

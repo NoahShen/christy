@@ -1,15 +1,36 @@
 package com.google.code.christy.shopactivityservice;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,6 +64,8 @@ public class ShopServlet extends HttpServlet
 		this.loggerServiceTracker = loggerServiceTracker;
 		this.shopDbhelper = shopLocDbhelper;
 		this.userDbhelper = userDbhelper;
+		
+
 	}
 
 	@Override
@@ -609,8 +632,176 @@ public class ShopServlet extends HttpServlet
 	@Override
 	public void init() throws ServletException
 	{
-		// TODO Auto-generated method stub
 		super.init();
 	}
 
+	private class Seacher
+	{
+		
+		private String appPath;
+
+		public Seacher()
+		{
+			appPath = System.getProperty("appPath");
+		} 
+		
+		private void createIndex() throws Exception
+		{
+			loggerServiceTracker.debug("Start creating Index");
+			
+			IndexWriter writer = new IndexWriter(FSDirectory.open(new File(appPath + "/luceneTest/")), 
+							getAnalyzer(), 
+							true,
+							MaxFieldLength.UNLIMITED);
+			
+			Shop[] allShop = shopDbhelper.getAllShop();
+			for (Shop shop : allShop)
+			{
+				Document doc = new Document();
+				doc.add(new Field("id", shop.getShopId() + "", Field.Store.YES, Field.Index.NO));
+				doc.add(new Field("eusername", shop.getEusername(), Field.Store.NO, Field.Index.NOT_ANALYZED));
+				doc.add(new Field("type", shop.getType(), Field.Store.NO, Field.Index.NOT_ANALYZED));
+				doc.add(new Field("title", shop.getTitle(), Field.Store.YES, Field.Index.ANALYZED));
+				doc.add(new Field("content", shop.getContent(), Field.Store.NO, Field.Index.ANALYZED));
+				doc.add(new Field("shopImg", shop.getShopImg(), Field.Store.YES, Field.Index.NO));
+				doc.add(new Field("district", shop.getDistrict(), Field.Store.NO, Field.Index.NOT_ANALYZED));
+				doc.add(new Field("street", shop.getStreet(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+				doc.add(new Field("tel", shop.getTel(), Field.Store.YES, Field.Index.NO));
+				
+				writer.addDocument(doc);
+			}
+			writer.optimize();
+			writer.close();
+			loggerServiceTracker.debug("Create Index completed");
+		}
+		
+		private Analyzer getAnalyzer()
+		{
+			return new SmartChineseAnalyzer(Version.LUCENE_29);
+		}
+		
+		public Object[] seachIndex(String queryString, int page, int count, boolean getTotal) throws CorruptIndexException, IOException, ParseException
+		{
+			Object[] result = new Object[2];
+			IndexSearcher searcher = new IndexSearcher(FSDirectory.open(new File(appPath + "/luceneTest/")), false);
+			Map<Integer, ScoreDoc> scoreDocs = new TreeMap<Integer, ScoreDoc>();
+			
+			String[] searchField = {"title", "content", "type", "street", "district", "eusername"};
+			for (String field : searchField)
+			{
+				QueryParser queryParser = new QueryParser(Version.LUCENE_29, field, getAnalyzer());
+				Query query = queryParser.parse(queryString);
+				TopDocs topDocs = searcher.search(query, Integer.MAX_VALUE);
+				ScoreDoc[] hits = topDocs.scoreDocs;
+				for (int i = 0; i < hits.length; i++)
+				{
+					ScoreDoc scoreDoc = hits[i];
+					int docid = scoreDoc.doc;
+					if (!scoreDocs.containsKey(docid))
+					{
+						scoreDocs.put(docid, scoreDoc);
+					}
+				}
+					
+				
+//				for (int i = 0; i < hits.length; i++)
+//				{
+//					ScoreDoc scoreDoc = hits[i];
+//					int docid = scoreDoc.doc;
+//					Document d = searcher.doc(docid);
+//					String idStr = d.get("id");
+//					if (!shops.containsKey(idStr))
+//					{
+//						Shop shop = new Shop();
+//						shop.setShopId(Integer.parseInt(idStr));
+//						shop.setTitle(d.get("title"));
+//						shop.setShopImg(d.get("shopImg"));
+//						shop.setTel(d.get("tel"));
+//						shop.setStreet(d.get("street"));
+//						shops.put(idStr, shop);
+//					}
+//					
+//				}
+			}
+			
+			int startIndex = (page - 1) * count;
+			int currentIndex = 0;
+			List<Shop> resultShops = new ArrayList<Shop>();
+			for (ScoreDoc scoreDoc : scoreDocs.values())
+			{
+				if (currentIndex >= startIndex)
+				{
+					Document d = searcher.doc(scoreDoc.doc);
+					String idStr = d.get("id");
+					Shop shop = new Shop();
+					shop.setShopId(Integer.parseInt(idStr));
+					shop.setTitle(d.get("title"));
+					shop.setShopImg(d.get("shopImg"));
+					shop.setTel(d.get("tel"));
+					shop.setStreet(d.get("street"));
+					resultShops.add(shop);
+					
+					if (resultShops.size() >= count)
+					{
+						break;
+					}
+				}
+				++currentIndex;
+			}
+			
+			result[0] = scoreDocs.size();
+			
+			
+			
+			result[1] = resultShops.toArray(new Shop[]{});
+			
+			return result;
+			
+		}
+	}
+//	
+//	private class SearchItem
+//	{
+//		private float score;
+//		
+//		private Shop shop;
+//
+//		public SearchItem(float score, Shop shop)
+//		{
+//			super();
+//			this.score = score;
+//			this.shop = shop;
+//		}
+//
+//		public float getScore()
+//		{
+//			return score;
+//		}
+//
+//		public Shop getShop()
+//		{
+//			return shop;
+//		}
+//		
+//		
+//	}
+	
+	private class ScoreDocComparator implements Comparator<ScoreDoc>
+	{
+		@Override
+		public int compare(ScoreDoc o1, ScoreDoc o2)
+		{
+			if (o1.score > o2.score)
+			{
+				return 1;
+			} 
+			else if (o1.score < o2.score)
+			{
+				return -1;
+			}
+			return 0;
+		}
+		
+	}
+	
 }
