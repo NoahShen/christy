@@ -103,6 +103,13 @@ public class DefaultC2sController
 		{
 			c2sManager.exit();
 		}
+
+		@Override
+		public void execCommand(Map<String, Object> params)
+		{
+			// TODO Auto-generated method stub
+			
+		}
 		
 	}
 
