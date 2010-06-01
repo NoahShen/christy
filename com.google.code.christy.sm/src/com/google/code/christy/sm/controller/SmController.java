@@ -99,6 +99,13 @@ public class SmController
 		{
 			smManager.exit();
 		}
+
+		@Override
+		public void execCommand(Map<String, Object> params)
+		{
+			// TODO Auto-generated method stub
+			
+		}
 		
 	}
 

@@ -98,6 +98,22 @@ public class WebC2sController
 		{
 			webc2sManager.exit();
 		}
+
+		@Override
+		public void execCommand(Map<String, Object> params)
+		{
+			String action = (String) params.get("action");
+			if ("close_session".equals(action))
+			{
+				closeSessionAction(params);
+			}
+		}
+
+		private void closeSessionAction(Map<String, Object> params)
+		{
+			// TODO Auto-generated method stub
+			
+		}
 		
 	}
 
