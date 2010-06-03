@@ -101,10 +101,10 @@ public class SmController
 		}
 
 		@Override
-		public void execCommand(Map<String, Object> params)
+		public Map<String, Object> execCommand(Map<String, Object> params)
 		{
 			// TODO Auto-generated method stub
-			
+			return null;
 		}
 		
 	}

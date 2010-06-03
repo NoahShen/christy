@@ -100,13 +100,14 @@ public class WebC2sController
 		}
 
 		@Override
-		public void execCommand(Map<String, Object> params)
+		public Map<String, Object> execCommand(Map<String, Object> params)
 		{
 			String action = (String) params.get("action");
 			if ("close_session".equals(action))
 			{
 				closeSessionAction(params);
 			}
+			return null;
 		}
 
 		private void closeSessionAction(Map<String, Object> params)
