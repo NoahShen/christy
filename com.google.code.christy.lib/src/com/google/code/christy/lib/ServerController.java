@@ -13,8 +13,9 @@ public interface ServerController
 	/**
 	 * 
 	 * @param params
+	 * @return
 	 */
-	public void execCommand(Map<String, Object> params);
+	public Map<String, Object> execCommand(Map<String, Object> params);
 	
 	/**
 	 * 
