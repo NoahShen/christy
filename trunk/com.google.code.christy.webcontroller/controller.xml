@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<controller>
+	<users>
+		<user name="Noah" password="123"></user>
+	</users>
+	<modules>
+		<defaultc2s ip="127.0.0.1" port="7878">
+		</defaultc2s>
+		<webc2s ip="127.0.0.1" port="7777">
+		</webc2s>
+		<router ip="127.0.0.1" port="7676">
+		</router>
+		<sm ip="127.0.0.1" port="7575">
+		</sm>
+	</modules>
+</controller>
