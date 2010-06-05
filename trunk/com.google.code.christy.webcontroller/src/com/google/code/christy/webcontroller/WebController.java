@@ -38,6 +38,7 @@ public class WebController
 		webappcontext.setContextPath("/");
 		webappcontext.setResourceBase("webpage/");
 		
+		webappcontext.addServlet(LoginServlet.class, "/login.do");
 		FilterHolder fHolder = new FilterHolder(org.eclipse.jetty.servlets.GzipFilter.class);
 		fHolder.setName("compress");
 		
