@@ -1426,7 +1426,9 @@ Search.init = function() {
 		Map.startSelectPos(function(lat, lon) {
 			Main.tabs.triggleTab(1);
 			var utm = GeoUtils.convertLatLon2UTM(lat, lon);
-			Search.searchShops(utm, 1, Search.pageCount, "all", true, true);
+			Search.searchShops(utm, 1, Search.pageCount, 
+								"all", true, true, 
+								$.i18n.prop("search.searchTitle.searchByLoc", "搜索指定位置"));
 		});
 	});
 	
@@ -1435,7 +1437,9 @@ Search.init = function() {
 		var type = typeJqObj.attr("id");
 			
 		GeoUtils.getCurrentPosition(function(p) {
-			Search.searchShops(p, 1, Search.pageCount, type, true, true);
+			Search.searchShops(p, 1, Search.pageCount, 
+								type, true, true,
+								$.i18n.prop("search.searchTitle.searchNearby", "搜索附近"));
 		}, function(){}, true);		
 	});
 	
@@ -1443,7 +1447,7 @@ Search.init = function() {
 		var searchKeyInput = $("#searchKey");
 		var key = searchKeyInput.val();
 		if (key && key != "") {
-			Search.searchShops(key, 1, Search.pageCount, "all", true, true);
+			Search.searchShops(key, 1, Search.pageCount, "all", true, true, key);
 		}
 	});
 	
@@ -1772,7 +1776,9 @@ Search.showShopCommentInputPanel = function(shopId) {
 	
 };
 
-Search.searchShops = function(query, page, count, type, updatePage, getTotal) {
+Search.searchShops = function(query, page, count, type, updatePage, getTotal, searchTitle) {
+	var shopResult = $("#shopResult");
+	shopResult.text($.i18n.prop("search.searching", "正在搜索..."));
 	var data = {
 		action: "search",
 		type: type,
@@ -1782,15 +1788,13 @@ Search.searchShops = function(query, page, count, type, updatePage, getTotal) {
 	if (getTotal) {
 		data.gettotal = 1;
 	}
-	var searchTitle = null;
+	
 	if (typeof query == "string") {
 		data.searchKey = query;
-		searchTitle = query;
 	} else {
 		data.easting = query.easting;
 		data.northing = query.northing;
 		data.distance = Search.distance;
-		searchTitle = $.i18n.prop("search.searchInput.searchByLoc", "搜索指定位置");
 	}
 	
 	$.ajax({
@@ -1802,7 +1806,6 @@ Search.searchShops = function(query, page, count, type, updatePage, getTotal) {
 		data: data,
 		success: function(searchResult){
 			Search.currentResult = searchResult;
-			var shopResult = $("#shopResult");
 			shopResult.empty();
 			
 			$("#searchTitle").text(searchTitle);
@@ -1816,8 +1819,15 @@ Search.searchShops = function(query, page, count, type, updatePage, getTotal) {
 			shopResultContainer.siblings().hide();
 			shopResultContainer.show();
 			
-			if (updatePage) {				
+			if (updatePage) {
 				var shopPagination = shopResultContainer.children("#shopPagination");
+				
+				if (shops.length == 0) {
+					shopResult.append($.i18n.prop("search.noResult", "未搜索到相关的结果"));
+					shopPagination.empty();
+					return;
+				}			
+				
 				if (shopPagination.size() == 0) {
 					var shopPagination = $("<div id='shopPagination' style='text-align: center;'></div>");
 					shopResultContainer.append(shopPagination)
@@ -1834,7 +1844,7 @@ Search.searchShops = function(query, page, count, type, updatePage, getTotal) {
 			}
 		},
 		error: function(xmlHttpRequest, textStatus, errorThrown) {
-			
+			shopResult.empty();
 		},
 		complete: function(xmlHttpRequest, textStatus) {
 			
