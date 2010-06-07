@@ -20,10 +20,8 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.FilterMapping;
-import org.eclipse.jetty.webapp.WebAppContext;
-
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 
 
 public class WebController
@@ -34,21 +32,25 @@ public class WebController
 		
 		Server server = new Server(8787);
 
-		WebAppContext webappcontext = new WebAppContext();
-		webappcontext.setContextPath("/");
-		webappcontext.setResourceBase("webpage/");
+		ServletContextHandler servletContextHandler = new ServletContextHandler();
+		servletContextHandler.setContextPath("/");
 		
-		webappcontext.addServlet(LoginServlet.class, "/login.do");
-		FilterHolder fHolder = new FilterHolder(org.eclipse.jetty.servlets.GzipFilter.class);
-		fHolder.setName("compress");
+		servletContextHandler.addServlet(LoginServlet.class, "/login.do");
 		
-		webappcontext.addFilter(fHolder, "*.js", FilterMapping.ALL);
-		webappcontext.addFilter(fHolder, "*.css", FilterMapping.ALL);
-		webappcontext.addFilter(fHolder, "*.html", FilterMapping.ALL);
-		webappcontext.addFilter(fHolder, "*.jsp", FilterMapping.ALL);
+//		FilterHolder fHolder = new FilterHolder(org.eclipse.jetty.servlets.GzipFilter.class);
+//		fHolder.setName("compress");
+//		
+//		webappcontext.addFilter(fHolder, "*.js", FilterMapping.ALL);
+//		webappcontext.addFilter(fHolder, "*.css", FilterMapping.ALL);
+//		webappcontext.addFilter(fHolder, "*.html", FilterMapping.ALL);
+//		webappcontext.addFilter(fHolder, "*.jsp", FilterMapping.ALL);
+		
+		ResourceHandler resource_handler = new ResourceHandler();
+		resource_handler.setWelcomeFiles(new String[] { "index.html" });
+		resource_handler.setResourceBase("webpage/");
 		
 		HandlerList handlers = new HandlerList();
-		handlers.setHandlers(new Handler[] { webappcontext, new DefaultHandler() });
+		handlers.setHandlers(new Handler[] { servletContextHandler, resource_handler, new DefaultHandler() });
 		server.setHandler(handlers);
 
 		server.start();
