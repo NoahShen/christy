@@ -248,6 +248,7 @@ Main.init = function() {
 				var mapCanvas = $("#mapCanvas");
 				if (!mapCanvas.attr("src")) {
 					mapCanvas.attr("src", "/mapcanvas.html");
+					Main.updatePanelSize();
 				}
 			}
 			// init favorite
@@ -2118,7 +2119,7 @@ Map.init = function() {
 							"</div>" +
 							"<div>" +
 								"<div id='mapCanvasPanel' class='map-ui-tab-content map-ui-tab-active'>" +
-									"<iframe id='mapCanvas' name='mapCanvas' width='100%' height='" + Map.getMapCanvasHeight() + "'scrolling='no' frameborder='0' />" +
+									"<iframe id='mapCanvas' name='mapCanvas' style='width:100%;height:" + Map.getMapCanvasHeight() + ";' scrolling='no' frameborder='0' />" +
 								"</div>" +
 		 						"<div id='mapItemsPanel' class='map-ui-tab-content' style='display:none;'>" +
 		 							"<a id='mapItemsSelectAll' href='javascript:void(0);' style='margin:3px 3px;'>" + $.i18n.prop("map.mapItems.selectAll", "全选") + "</a>" +
@@ -2211,7 +2212,7 @@ Map.init = function() {
 Map.getMapCanvasHeight = function(){
 	var pageHeight = getPageHeight();
 	var topBarHeight = $("#topBar").height();
-	var tabsBarHeight = $("#tabs .clearfix").height();
+	var tabsBarHeight = $("#topTabs").height();
 	
 	var canvasHeigh = pageHeight - topBarHeight - tabsBarHeight - Map.MAP_CONTROLBAR_HEIGHT;
 	
@@ -2222,8 +2223,13 @@ Map.getMapCanvasHeight = function(){
 Map.mapLoadedCallBack = [];
 Map.showMap = function(mapShownCallBack) {
 	if (Map.mapLoaded) {
-		mapShownCallBack();
+		if (mapShownCallBack) {
+			mapShownCallBack();
+		}
 	} else {
+		if (mapShownCallBack) {
+			mapShownCallBack();
+		}
 		Map.mapLoadedCallBack.push(mapShownCallBack);
 	}
 	Main.tabs.triggleTab(2);
