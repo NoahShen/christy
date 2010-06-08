@@ -1,5 +1,6 @@
 (function(){
 	var task = null;
+	var ajaxFailedCount = 0;
 	
 	var viewport = new Ext.Viewport({
         layout: 'border',
@@ -73,7 +74,42 @@
             		if (task == null) {
             			task = {
 						    run: function(){
-						        alert("D");
+						    	var modules = "";
+						    	Ext.getCmp("tabs").items.each(function(comp){
+						    		modules += comp.ip + ":" + comp.port + ";";
+						    	});
+						    	
+						        Ext.Ajax.request({
+									url: 'controller.do',
+								    success: function(response, opts) {
+								    	var infos = Ext.decode(response.responseText);
+								    	for (var i = 0; i < infos.length; ++i) {
+								    		var info = infos[i];
+								    		var tabPanel = Ext.getCmp("tabs");
+						                	var comp = tabPanel.get(info.id);
+						                	if (comp) {
+						                		comp.getEl().dom.innerHTML = info.info;
+						                	}
+								    	}
+								    },
+								    failure: function(response, opts) {
+								    	++ajaxFailedCount;
+								    	if (ajaxFailedCount > 5) {
+								    		if (task) {
+					            				Ext.TaskMgr.stop(task);
+					            				task = null;
+					            			}
+					            			
+					            			Ext.getCmp("tabs").items.each(function(comp){
+									    		comp.getEl().dom.innerHTML = "Ajax Failed";
+									    	});
+								    	}
+								    },
+								    params: {
+								   		action: "getModulesInfo",
+								   		modules: modules,
+								    }
+								});
 						    },
 						    interval: 3000
 						}
@@ -84,7 +120,6 @@
             	"remove": function(thisContainer, component ) {
             		var count = Ext.getCmp("tabs").items.getCount();
             		if (count == 0) {
-            			alert(component.ip);
             			if (task) {
             				Ext.TaskMgr.stop(task);
             				task = null;

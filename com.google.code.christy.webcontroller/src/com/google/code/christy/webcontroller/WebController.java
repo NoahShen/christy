@@ -30,7 +30,7 @@ public class WebController
 	{
 		PropertyConfigurator.configure(WebController.class.getResource("log4j.properties"));
 		
-		Server server = new Server(8787);
+		Server server = new Server(17777);
 
 		ServletContextHandler servletContextHandler = new ServletContextHandler();
 		servletContextHandler.setContextPath("/");

@@ -1,6 +1,7 @@
 Ext.onReady(function(){
     Ext.QuickTips.init();
- 
+ 	Ext.BLANK_IMAGE_URL = "/lib/resources/images/default/s.gif";
+ 	
 	// Create a variable to hold our EXT Form Panel. 
 	// Assign various config options as seen.	 
     var login = new Ext.FormPanel({ 

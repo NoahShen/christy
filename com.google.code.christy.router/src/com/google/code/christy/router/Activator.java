@@ -51,8 +51,8 @@ public class Activator implements BundleActivator
 											loggerServiceTracker);
 		
 		
-//		routerController = new RouterController(rm);
-//		routerController.start();
+		routerController = new RouterController(rm);
+		routerController.start();
 		
 		String appPath = System.getProperty("appPath");
 		XMLConfiguration config = new XMLConfiguration(appPath + "/routerconfig.xml");
