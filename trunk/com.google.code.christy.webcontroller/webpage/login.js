@@ -5,7 +5,7 @@ Ext.onReady(function(){
 	// Assign various config options as seen.	 
     var login = new Ext.FormPanel({ 
         labelWidth:80,
-        url:'login.do', 
+        url:'controller.do', 
         frame:true, 
         title:'Login', 
         defaultType:'textfield',
@@ -13,7 +13,8 @@ Ext.onReady(function(){
 		// Specific attributes for the text fields for username / password. 
 		// The "name" attribute defines the name of variables sent to the server.
         items:[{ 
-            fieldLabel:'Username', 
+            fieldLabel:'Username',
+            id: 'username',
             name:'username', 
             allowBlank:false 
         },{ 
@@ -24,7 +25,8 @@ Ext.onReady(function(){
         }],
  
 		// All the magic happens after the user clicks the button     
-        buttons:[{ 
+        buttons:[{
+        	id:'login',
             text:'Login',
             formBind: true,	 
             // Function that fires when user clicks the button 
@@ -46,14 +48,12 @@ Ext.onReady(function(){
 			// you define as redirect. 
  
                     success:function(){ 
-						Ext.Msg.alert('Status', 'Login Successful!', function(btn, text){
-						    Ext.getCmp("loginWin").close();
-						    ScriptMgr.load({
-								scripts: ['main.js'],
-								callback: function() {
-								
-							  	}
-							}); 
+						Ext.getCmp("loginWin").close();
+					    ScriptMgr.load({
+							scripts: ['main.js'],
+							callback: function() {
+							
+						  	}
 						});
 					},
  
@@ -86,9 +86,15 @@ Ext.onReady(function(){
         resizable: false,
         plain: true,
         border: false,
-        items: [login]
+        items: [login],
+        listeners: { 
+			'show': function() { 
+				this.findByType('textfield')[0].focus(true, true); //第一个textfield获得焦点 
+			} 
+		}
 	});
 	win.show();
+	
 });
 
 ScriptLoader = function() {

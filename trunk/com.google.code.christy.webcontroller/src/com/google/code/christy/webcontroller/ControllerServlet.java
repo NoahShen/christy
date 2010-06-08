@@ -13,11 +13,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-public class LoginServlet extends HttpServlet
+public class ControllerServlet extends HttpServlet
 {
 	
 	/**
@@ -57,6 +60,67 @@ public class LoginServlet extends HttpServlet
 		String username = req.getParameter("username");
 		String password = req.getParameter("password");
 		
+		if (username != null && password != null)
+		{
+			doLogin(req, resp, username, password);
+		}
+
+		String action = req.getParameter("action");
+		if ("getModuleNodes".equals(action))
+		{
+			getModulesNodes(req, resp);
+		}
+	}
+
+	private void getModulesNodes(HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		String node = req.getParameter("node");
+		if ("moduleRoot".equals(node))
+		{
+			String defaultc2s = "{'text': 'defaultc2s', 'id': 'defaultc2s', 'cls': 'folder'}";
+			String webc2s = "{'text': 'webc2s', 'id': 'webc2s', 'cls': 'folder'}";
+			String router = "{'text': 'router', 'id': 'router', 'cls': 'folder'}";
+			String sm = "{'text': 'sm', 'id': 'sm', 'cls': 'folder'}";
+			
+			resp.getWriter().write("[" + defaultc2s + "," + webc2s + "," + router + "," + sm + "]");
+		}
+		else
+		{
+			try
+			{
+				String json = createTreeJson(node);
+				resp.getWriter().write(json);
+			}
+			catch (JSONException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private String createTreeJson(String node) throws JSONException
+	{
+		JSONArray array = new JSONArray();
+		for (ModuleInfo info : modules)
+		{
+			if (info.getType().equals(node))
+			{
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("id", info.getIp() + ":" + info.getPort());
+				jsonObj.put("text", info.getIp() + ":" + info.getPort());
+				jsonObj.put("leaf", true);
+				jsonObj.put("cls", "file");
+				jsonObj.put("ip", info.getIp());
+				jsonObj.put("port", info.getPort());
+				array.put(jsonObj);
+			}
+		}
+		return array.toString();
+	}
+
+	private void doLogin(HttpServletRequest req, HttpServletResponse resp, String username, String password) throws IOException
+	{
 		if (!users.containsKey(username))
 		{
 			resp.getWriter().write("{success: false, errors: { reason: 'username not exist' }}");
@@ -71,7 +135,6 @@ public class LoginServlet extends HttpServlet
 		}
 		
 		resp.getWriter().write("{success: true}");
-		
 	}
 
 	/* (non-Javadoc)
