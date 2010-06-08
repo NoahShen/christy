@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/backport-util-concurrent-3.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ehcache-1.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-analyzers-2.9.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-smartcn-2.9.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-core-2.9.2.jar" sourcepath="lib/lucene-2.9.2-src.zip"/>

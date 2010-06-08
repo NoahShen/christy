@@ -31,6 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.code.christy.cache.Cache;
 import com.google.code.christy.log.LoggerServiceTracker;
 
 public class ShopServlet extends HttpServlet
@@ -52,16 +53,21 @@ public class ShopServlet extends HttpServlet
 
 	private Seacher seacher;
 	
+	private CacheServiceTracker cacheServiceTracker;
+	
 	public ShopServlet(C2SManagerTracker c2sManagerTracker, 
 				LoggerServiceTracker loggerServiceTracker, 
 				ShopDbhelper shopLocDbhelper,
-				UserDbhelper userDbhelper)
+				UserDbhelper userDbhelper,
+				CacheServiceTracker cacheServiceTracker)
 	{
 		super();
 		this.c2sManagerTracker = c2sManagerTracker;
 		this.loggerServiceTracker = loggerServiceTracker;
 		this.shopDbhelper = shopLocDbhelper;
 		this.userDbhelper = userDbhelper;
+		this.cacheServiceTracker = cacheServiceTracker;
+		
 		this.seacher = new Seacher();
 		try
 		{
@@ -449,10 +455,16 @@ public class ShopServlet extends HttpServlet
 	private void handleGetShopDetail(HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
 		String shopId = req.getParameter("shopid");
-		
+
 		try
 		{
-			Shop shop = shopDbhelper.getShopDetail(Long.parseLong(shopId));
+			Cache cache = cacheServiceTracker.getCache("shopDetailCache");
+			Shop shop = (Shop) cache.get(shopId);
+			if (shop == null)
+			{
+				shop = shopDbhelper.getShopDetail(Long.parseLong(shopId));
+				cache.put(shopId, shop);
+			}
 			JSONObject jsonObj = new JSONObject();
 			
 			JSONObject basicInfo = new JSONObject();
