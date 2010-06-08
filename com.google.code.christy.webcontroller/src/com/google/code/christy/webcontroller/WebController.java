@@ -35,7 +35,7 @@ public class WebController
 		ServletContextHandler servletContextHandler = new ServletContextHandler();
 		servletContextHandler.setContextPath("/");
 		
-		servletContextHandler.addServlet(LoginServlet.class, "/login.do");
+		servletContextHandler.addServlet(ControllerServlet.class, "/controller.do");
 		
 //		FilterHolder fHolder = new FilterHolder(org.eclipse.jetty.servlets.GzipFilter.class);
 //		fHolder.setName("compress");

@@ -1,4 +1,6 @@
 (function(){
+	var task = null;
+	
 	var viewport = new Ext.Viewport({
         layout: 'border',
         items: [
@@ -23,37 +25,75 @@
             maxSize: 400,
             collapsible: true,
             margins: '0 0 0 5',
-            layout: {
-                type: 'accordion',
-                animate: true
-            },
-            items: [{
-                title: 'Navigation',
-                html: 'Navigation',
-                border: false,
-                iconCls: 'nav' // see the HEAD section for style used
-            }, {
-                title: 'Settings',
-                html: '<p>Some settings in here.</p>',
-                border: false,
-                iconCls: 'settings'
-            }]
+            
+            xtype: 'treepanel',
+            rootVisible: false,
+            dataUrl: 'controller.do?action=getModuleNodes',
+	        root: {
+	            nodeType: 'async',
+	            text: 'Module Root',
+	            draggable: false,
+	            id: 'moduleRoot'
+	        },
+	        
+	        listeners: {
+	            'dblclick': function(n) {
+	                if (n.attributes.ip) {
+	                	var ip = n.attributes.ip;
+	                	var port = n.attributes.port;
+	                	var tabPanel = Ext.getCmp("tabs");
+	                	var comp = tabPanel.get(n.attributes.text);
+	                	if (comp) {
+	                		tabPanel.activate(n.attributes.text);
+	                	} else {
+	                		tabPanel.add({
+		                		id: n.attributes.text,
+					            title: n.attributes.text,
+					            html: n.attributes.text,
+					            ip:ip,
+					            port:port,
+					            closable:true
+					        }).show();
+	                	}
+	                	
+	                }
+	            }
+	        }
         },
         // in this instance the TabPanel is not wrapped by another panel
         // since no title is needed, this Panel is added directly
         // as a Container
         new Ext.TabPanel({
+        	id:'tabs',
             region: 'center', // a center region is ALWAYS required for border layout
             deferredRender: false,
-            activeTab: 0,     // first tab initially active
-            items: [{
-                title: 'Close Me',
-                closable: true,
-                autoScroll: true
-            }, {
-                title: 'Center Panel',
-                autoScroll: true
-            }]
+            listeners: {
+            	"add": function(thisContainer, component, index) {
+
+            		if (task == null) {
+            			task = {
+						    run: function(){
+						        alert("D");
+						    },
+						    interval: 3000
+						}
+						
+						Ext.TaskMgr.start(task);
+            		}
+            	},
+            	"remove": function(thisContainer, component ) {
+            		var count = Ext.getCmp("tabs").items.getCount();
+            		if (count == 0) {
+            			alert(component.ip);
+            			if (task) {
+            				Ext.TaskMgr.stop(task);
+            				task = null;
+            			}
+            			
+            		}
+            		
+            	}
+            }
         })]
     });
     
