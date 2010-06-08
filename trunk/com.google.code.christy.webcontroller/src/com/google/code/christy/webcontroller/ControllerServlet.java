@@ -20,6 +20,8 @@ import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import com.caucho.hessian.client.HessianProxyFactory;
+
 public class ControllerServlet extends HttpServlet
 {
 	
@@ -70,6 +72,36 @@ public class ControllerServlet extends HttpServlet
 		{
 			getModulesNodes(req, resp);
 		}
+		else if ("getModulesInfo".equals(action))
+		{
+			getModulesInfo(req, resp);
+		}
+	}
+
+	private void getModulesInfo(HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		String modules = req.getParameter("modules");
+		String[] infos = modules.split(";");
+		JSONArray array = new JSONArray();
+		for (String info : infos)
+		{
+			String url = "http://" + info + "/hessianController";
+			try
+			{
+				HessianProxyFactory factory = new HessianProxyFactory();
+				ServerController controller = (ServerController) factory.create(ServerController.class, url);
+				Map<String, Object> serverInfo = controller.getServerInfo();
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("id", info);
+				jsonObj.put("info", serverInfo);
+				array.put(jsonObj);
+			}
+			catch (Exception e)
+			{
+//					e.printStackTrace();
+			}
+		}
+		resp.getWriter().write(array.toString());
 	}
 
 	private void getModulesNodes(HttpServletRequest req, HttpServletResponse resp) throws IOException
