@@ -27,6 +27,8 @@ public class Activator implements BundleActivator
 	
 	private C2SManagerTracker c2SManagerTracker;
 
+	private CacheServiceTracker cacheServiceTracker;
+
 	public void start(BundleContext context) throws Exception
 	{
 		loggerServiceTracker = new LoggerServiceTracker(context);
@@ -44,7 +46,10 @@ public class Activator implements BundleActivator
 		ShopDbhelper shopDbhelper = new ShopDbhelper(loggerServiceTracker, connPool);
 		UserDbhelper userDbhelper = new UserDbhelper(loggerServiceTracker, connPool);
 		
-		ShopServlet shopServlet = new ShopServlet(c2SManagerTracker, loggerServiceTracker, shopDbhelper, userDbhelper);
+		cacheServiceTracker = new CacheServiceTracker(context);
+		cacheServiceTracker.open();
+		
+		ShopServlet shopServlet = new ShopServlet(c2SManagerTracker, loggerServiceTracker, shopDbhelper, userDbhelper, cacheServiceTracker);
 		Hashtable<String, String> properties = new Hashtable<String, String>();
 		properties.put("contextPath", "/shop");
 		properties.put("pathSpec", "/");
@@ -79,6 +84,12 @@ public class Activator implements BundleActivator
 		{
 			c2SManagerTracker.close();
 			c2SManagerTracker = null;
+		}
+		
+		if (cacheServiceTracker != null)
+		{
+			cacheServiceTracker.close();
+			cacheServiceTracker = null;
 		}
 	}
 

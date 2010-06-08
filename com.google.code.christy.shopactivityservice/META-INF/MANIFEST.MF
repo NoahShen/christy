@@ -7,6 +7,7 @@ Bundle-ClassPath: bin/
 Bundle-Activator: com.google.code.christy.shopactivityservice.Activator
 Bundle-Vendor: Noah
 Import-Package: com.google.code.christy.c2s,
+ com.google.code.christy.cache,
  com.google.code.christy.lib,
  com.google.code.christy.log,
  com.google.code.christy.util,
