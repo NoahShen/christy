@@ -82,6 +82,7 @@
 						        Ext.Ajax.request({
 									url: 'controller.do',
 								    success: function(response, opts) {
+								    	ajaxFailedCount = 0;
 								    	var infos = Ext.decode(response.responseText);
 								    	for (var i = 0; i < infos.length; ++i) {
 								    		var info = infos[i];
