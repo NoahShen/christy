@@ -3421,7 +3421,7 @@ XmppConnectionMgr = jClass.extend({
 					continue;
 				}
 				var bodyMessage = aThis.bodyMessagQueue.shift();
-				aThis.execAjaxRequest(bodyMessage);
+				aThis.execAjaxRequest(bodyMessage, false);
 			}
 			return;
 		}
@@ -3441,8 +3441,11 @@ XmppConnectionMgr = jClass.extend({
 		}
 	},
 	
-	execAjaxRequest: function(bodyMessage) {
+	execAjaxRequest: function(bodyMessage, async) {
 		var aThis = XmppConnectionMgr.instance;
+		if (async == null) {
+			async = true;
+		}
 		// TODO
 //		if (window.console) {
 //			window.console.log("sending:" + bodyMessage.toXml());
@@ -3453,6 +3456,7 @@ XmppConnectionMgr = jClass.extend({
 			url: Christy.requestUrl,
 			dataType: "xml",
 			cache: false,
+			async: async,
 			type: "post",
 			contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 			data: bodyMessage.toXml(),

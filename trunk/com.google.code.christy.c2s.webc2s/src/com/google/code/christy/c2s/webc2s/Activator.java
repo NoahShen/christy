@@ -6,8 +6,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
-import com.google.code.christy.Christy;
-import com.google.code.christy.ChristyTracker;
 import com.google.code.christy.c2s.C2SManager;
 import com.google.code.christy.c2s.ChristyStreamFeature;
 import com.google.code.christy.c2s.UserAuthenticator;
@@ -42,8 +40,6 @@ public class Activator implements BundleActivator
 
 	private ConnectionPool connPool;
 
-	private ChristyTracker christyTracker;
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -51,15 +47,6 @@ public class Activator implements BundleActivator
 	 */
 	public void start(BundleContext context) throws Exception
 	{
-		
-		christyTracker = new ChristyTracker(context);
-		christyTracker.open();
-		
-		Object service = christyTracker.getService();
-		if (service == null)
-		{
-			throw new Exception("christy is null");
-		}
 		
 		//---------streamFeature
 
@@ -88,8 +75,8 @@ public class Activator implements BundleActivator
 		//---------streamFeature
 		
 		
-		Christy christy = (Christy) service;
-		XMLConfiguration config = (XMLConfiguration) christy.getProperty("config");
+		String appPath = System.getProperty("appPath");
+		XMLConfiguration config = new XMLConfiguration(appPath + "/webc2sconfig.xml");
 		
 		SubnodeConfiguration subConifg = config.configurationAt("dbconfig");
 		
@@ -152,7 +139,7 @@ public class Activator implements BundleActivator
 		c2sManager.setClientLimit(clientLimit);
 		c2sManager.setContextPath(contextPath);
 		c2sManager.setPathSpec(pathSpec);
-		c2sManager.setResourceBase(christy.getAppPath() + xmppWebClient);
+		c2sManager.setResourceBase(appPath + "/" + xmppWebClient);
 		
 		c2sManager.start();
 		
@@ -170,11 +157,6 @@ public class Activator implements BundleActivator
 	 */
 	public void stop(BundleContext context) throws Exception
 	{
-		if (christyTracker != null)
-		{
-			christyTracker.close();
-			christyTracker = null;
-		}
 		
 		if (routeMessageParserServiceTracker != null)
 		{
