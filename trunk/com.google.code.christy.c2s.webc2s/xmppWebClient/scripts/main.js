@@ -1697,32 +1697,34 @@ Search.viewsShopComments = function(shopId, page, count, updatePage) {
 				shopNameComments.text(detail.basicInfo.name);
 	
 				var shopCommentsPagination = shopCommentsContainer.children("#shopCommentsPagination");
-				if (shopCommentsPagination.size() == 0) {
-					var shopCommentsPagination = $("<div id='shopCommentsPagination' style='text-align:center;' page='1'>" +
-														"<div id='shopCommentsPaginationNext'></div>" +
-														"<div id='shopCommentsPaginationPrev'></div>" +
-													"</div>");
-					shopCommentsPagination.children("#shopCommentsPaginationPrev").click(function() {
-						var currentPage = parseInt(shopCommentsPagination.attr("page"));
-						if (currentPage == 1) {
-							return;
-						}
-						shopCommentsPagination.attr("page", currentPage - 1);
-						Search.viewsShopComments(shopId, currentPage - 1, count, false);
-						
-					});
-					
-					shopCommentsPagination.children("#shopCommentsPaginationNext").click(function() {
-						if (shopComments.children("div").children().size() == 0) {
-							return;
-						}
-						var currentPage = parseInt(shopCommentsPagination.attr("page"));
-						shopCommentsPagination.attr("page", currentPage + 1);
-						Search.viewsShopComments(shopId, currentPage + 1, count, false);
-					});
-					
-					shopCommentsContainer.append(shopCommentsPagination)
+				if (shopCommentsPagination.size() != 0) {
+					shopCommentsPagination.remove();
 				}
+				
+				var shopCommentsPagination = $("<div id='shopCommentsPagination' style='text-align:center;' page='1'>" +
+													"<div id='shopCommentsPaginationNext'></div>" +
+													"<div id='shopCommentsPaginationPrev'></div>" +
+												"</div>");
+				shopCommentsPagination.children("#shopCommentsPaginationPrev").click(function() {
+					var currentPage = parseInt(shopCommentsPagination.attr("page"));
+					if (currentPage == 1) {
+						return;
+					}
+					shopCommentsPagination.attr("page", currentPage - 1);
+					Search.viewsShopComments(shopId, currentPage - 1, count, false);
+					
+				});
+				
+				shopCommentsPagination.children("#shopCommentsPaginationNext").click(function() {
+					if (shopComments.children("div").children().size() == 0) {
+						return;
+					}
+					var currentPage = parseInt(shopCommentsPagination.attr("page"));
+					shopCommentsPagination.attr("page", currentPage + 1);
+					Search.viewsShopComments(shopId, currentPage + 1, count, false);
+				});
+				
+				shopCommentsContainer.append(shopCommentsPagination);
 			}
 		},
 		error: function(xmlHttpRequest, textStatus, errorThrown) {
@@ -1778,8 +1780,14 @@ Search.showShopCommentInputPanel = function(shopId) {
 };
 
 Search.searchShops = function(query, page, count, type, updatePage, getTotal, searchTitle) {
+	
 	var shopResult = $("#shopResult");
 	shopResult.text($.i18n.prop("search.searching", "正在搜索..."));
+	
+	var shopResultContainer = $("#shopResultContainer");
+	shopResultContainer.siblings().hide();
+	shopResultContainer.show();
+			
 	var data = {
 		action: "search",
 		type: type,
@@ -1815,10 +1823,6 @@ Search.searchShops = function(query, page, count, type, updatePage, getTotal, se
 				var shopPanel = Search.createShopInfo(shops[i]);
 				shopResult.append(shopPanel);
 			}
-			
-			var shopResultContainer = $("#shopResultContainer");
-			shopResultContainer.siblings().hide();
-			shopResultContainer.show();
 			
 			if (updatePage) {
 				var shopPagination = shopResultContainer.children("#shopPagination");

@@ -369,7 +369,27 @@ public class ShopServlet extends HttpServlet
 		
 		try
 		{
-			ShopComment comments[] = shopDbhelper.getShopComments(Long.parseLong(shopId), page, count);
+			Cache cache = cacheServiceTracker.getCache("shopcommentsCache");
+			String key = shopId + "-" + page + "-" + count;
+			ShopComment[] comments = (ShopComment[]) cache.get(key);
+			
+			if (comments == null)
+			{
+				comments = shopDbhelper.getShopComments(Long.parseLong(shopId), page, count);
+				cache.put(key, comments);
+				
+				String commentsCacheMarker = shopId + "CommentCache";
+				String markerValue = (String) cache.get(commentsCacheMarker);
+				if (markerValue == null)
+				{
+					markerValue = "";
+				}
+				
+				StringBuilder sbuilder = new StringBuilder(markerValue);
+				sbuilder.append(key + ";");
+				cache.put(shopId + "CommentCache", sbuilder.toString());
+			}
+			
 			
 			JSONArray commentsJson = new JSONArray();
 			
@@ -432,6 +452,26 @@ public class ShopServlet extends HttpServlet
 		try
 		{
 			shopDbhelper.addComment(shopComment, voters);
+			
+			Cache cache = cacheServiceTracker.getCache("shopcommentsCache");
+			
+			String commentsCacheMarker = shopId + "CommentCache";
+			String markerValue = (String) cache.get(commentsCacheMarker);
+			if (markerValue != null)
+			{
+				String[] caches = markerValue.split(";");
+				for (String cacheKey : caches)
+				{
+					if (cacheKey != null && !cacheKey.isEmpty())
+					{
+						cache.remove(cacheKey);
+					}
+					
+				}
+				cache.remove(commentsCacheMarker);
+			}
+			
+			
 		}
 		catch (Exception e1)
 		{

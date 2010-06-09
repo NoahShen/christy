@@ -89,7 +89,11 @@
 								    		var tabPanel = Ext.getCmp("tabs");
 						                	var comp = tabPanel.get(info.id);
 						                	if (comp) {
-						                		comp.getEl().dom.innerHTML = info.info;
+						                		var html = "";
+						                		for (var key in info.info) {
+						                			html += key + ":" + info.info[key] + "<br/>";
+						                		}
+						                		comp.getEl().dom.innerHTML = html;
 						                	}
 								    	}
 								    },
@@ -112,7 +116,7 @@
 								    }
 								});
 						    },
-						    interval: 3000
+						    interval: 10 * 1000
 						}
 						
 						Ext.TaskMgr.start(task);

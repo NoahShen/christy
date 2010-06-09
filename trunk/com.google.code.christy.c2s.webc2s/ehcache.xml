@@ -41,6 +41,17 @@ xsi:noNamespaceSchemaLocation="ehcache.xsd">
             memoryStoreEvictionPolicy="LRU"
             />
             
+      <cache
+	    name="shopcommentsCache"
+            maxElementsInMemory="10000"
+            eternal="false"
+            timeToIdleSeconds="120"
+            timeToLiveSeconds="120"
+            overflowToDisk="false"
+            diskPersistent="false"
+            memoryStoreEvictionPolicy="LRU"
+            />
+            
 <!--    
 <cache name="sampleCacheAsync"
    maxElementsInMemory="1000"
