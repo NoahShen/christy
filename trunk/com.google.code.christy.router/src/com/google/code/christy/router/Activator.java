@@ -7,7 +7,10 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.Christy;
+import com.google.code.christy.ChristyTracker;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.router.controller.RouterController;
 import com.google.code.christy.router.impl.RouteMessageParserServiceTracker;
@@ -24,6 +27,8 @@ public class Activator implements BundleActivator
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 	private LoggerServiceTracker loggerServiceTracker;
 	private RouterController routerController;
+	private ChristyTracker christyTracker;
+	private ServiceRegistration rmRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -33,6 +38,15 @@ public class Activator implements BundleActivator
 	public void start(BundleContext context) throws Exception
 	{
 
+		christyTracker = new ChristyTracker(context);
+		christyTracker.open();
+		
+		Object service = christyTracker.getService();
+		if (service == null)
+		{
+			throw new Exception("christy is null");
+		}
+		
 		routerToSmMessageDispatcherTracker = new RouterToSmMessageDispatcherTracker(context);
 		routerToSmMessageDispatcherTracker.open();
 
@@ -46,17 +60,15 @@ public class Activator implements BundleActivator
 		loggerServiceTracker.open();
 		
 		RouterManagerImpl rm = new RouterManagerImpl(routerToSmMessageDispatcherTracker, 
-											routerToSmInterceptorServiceTracker,
-											routeMessageParserServiceTracker,
-											loggerServiceTracker);
+							routerToSmInterceptorServiceTracker,
+							routeMessageParserServiceTracker,
+							loggerServiceTracker);
 		
+
+		Christy christy = (Christy) service;
 		
-		routerController = new RouterController(rm);
-		routerController.start();
-		
-		String appPath = System.getProperty("appPath");
-		XMLConfiguration config = new XMLConfiguration(appPath + "/routerconfig.xml");
-		
+		XMLConfiguration config = (XMLConfiguration) christy.getProperty("config");
+
 		String domain = config.getString("domain", "example.com");
 		rm.setDomain(domain);
 		
@@ -96,6 +108,11 @@ public class Activator implements BundleActivator
 		rm.setSmLimit(smLimit);
 		
 		rm.start();
+		
+		rmRegistration = context.registerService(RouterManager.class.getName(), rm, null);
+		routerController = new RouterController(rm);
+		
+		routerController.start();
 	}
 
 	/*
@@ -105,6 +122,12 @@ public class Activator implements BundleActivator
 	 */
 	public void stop(BundleContext context) throws Exception
 	{
+		if (christyTracker != null)
+		{
+			christyTracker.close();
+			christyTracker = null;
+		}
+		
 		if (routerToSmMessageDispatcherTracker != null)
 		{
 			routerToSmMessageDispatcherTracker.close();
@@ -133,6 +156,12 @@ public class Activator implements BundleActivator
 		{
 			routerController.stop();
 			routerController = null;
+		}
+		
+		if (rmRegistration != null)
+		{
+			rmRegistration.unregister();
+			rmRegistration = null;
 		}
 	}
 

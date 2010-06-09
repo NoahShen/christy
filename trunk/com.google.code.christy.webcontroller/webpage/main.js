@@ -90,9 +90,14 @@
 						                	var comp = tabPanel.get(info.id);
 						                	if (comp) {
 						                		var html = "";
-						                		for (var key in info.info) {
-						                			html += key + ":" + info.info[key] + "<br/>";
+						                		if (info.error) {
+						                			html = "Error";
+						                		} else {
+						                			for (var key in info.info) {
+							                			html += key + ":" + info.info[key] + "<br/>";
+							                		}
 						                		}
+						                		
 						                		comp.getEl().dom.innerHTML = html;
 						                	}
 								    	}

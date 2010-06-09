@@ -1,10 +1,13 @@
 package com.google.code.christy.c2s.webc2s;
 
+import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.Christy;
+import com.google.code.christy.ChristyTracker;
 import com.google.code.christy.c2s.C2SManager;
 import com.google.code.christy.c2s.ChristyStreamFeature;
 import com.google.code.christy.c2s.UserAuthenticator;
@@ -39,6 +42,8 @@ public class Activator implements BundleActivator
 
 	private ConnectionPool connPool;
 
+	private ChristyTracker christyTracker;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -46,6 +51,15 @@ public class Activator implements BundleActivator
 	 */
 	public void start(BundleContext context) throws Exception
 	{
+		
+		christyTracker = new ChristyTracker(context);
+		christyTracker.open();
+		
+		Object service = christyTracker.getService();
+		if (service == null)
+		{
+			throw new Exception("christy is null");
+		}
 		
 		//---------streamFeature
 
@@ -60,6 +74,7 @@ public class Activator implements BundleActivator
 		
 		streamFeatureStracker = new ChristyStreamFeatureServiceTracker(context);
 		streamFeatureStracker.open();
+		
 		//---------streamFeature
 		
 		routeMessageParserServiceTracker = new RouteMessageParserServiceTracker(context);
@@ -72,19 +87,26 @@ public class Activator implements BundleActivator
 		streamFeatureStracker.open();
 		//---------streamFeature
 		
+		
+		Christy christy = (Christy) service;
+		XMLConfiguration config = (XMLConfiguration) christy.getProperty("config");
+		
+		SubnodeConfiguration subConifg = config.configurationAt("dbconfig");
+		
 		//authenticator
 		
 		connPool = new ConnectionPool("com.mysql.jdbc.Driver",
-				"jdbc:mysql://localhost/christy?useUnicode=true&characterEncoding=UTF-8",
-				"root",
-				"123456");
-		connPool .createPool();
+				subConifg.getString("url"),
+				subConifg.getString("user"),
+				subConifg.getString("password"));
+		connPool.createPool();
 		
 		PlainUserAuthenticatorImpl plainUserAuthenticator = new PlainUserAuthenticatorImpl(connPool);
 		plainUserAuthenticatorRegistration = context.registerService(UserAuthenticator.class.getName(), plainUserAuthenticator, null);
 		
 		userAuthenticatorTracker = new UserAuthenticatorTracker(context);
 		userAuthenticatorTracker.open();
+		
 		//authenticator
 		
 		httpServletServiceTracker = new HttpServletServiceTracker(context);
@@ -101,13 +123,6 @@ public class Activator implements BundleActivator
 								httpServletServiceTracker,
 								loggerServiceTracker);
 
-		c2sManagerRegistration = context.registerService(C2SManager.class.getName(), c2sManager, null);
-
-		webc2sController = new WebC2sController(c2sManager);
-		webc2sController.start();
-		
-		String appPath = System.getProperty("appPath");
-		XMLConfiguration config = new XMLConfiguration(appPath + "/webc2sconfig.xml");
 		String name = config.getString("name", "c2s_web1");
 		String domain = config.getString("domain", "example.com");
 		String routerIp = config.getString("router-ip", "localhost");
@@ -137,9 +152,14 @@ public class Activator implements BundleActivator
 		c2sManager.setClientLimit(clientLimit);
 		c2sManager.setContextPath(contextPath);
 		c2sManager.setPathSpec(pathSpec);
-		c2sManager.setResourceBase(appPath + xmppWebClient);
+		c2sManager.setResourceBase(christy.getAppPath() + xmppWebClient);
 		
 		c2sManager.start();
+		
+		c2sManagerRegistration = context.registerService(C2SManager.class.getName(), c2sManager, null);
+		
+		webc2sController = new WebC2sController(c2sManager);
+		webc2sController.start();
 		
 	}
 
@@ -150,6 +170,12 @@ public class Activator implements BundleActivator
 	 */
 	public void stop(BundleContext context) throws Exception
 	{
+		if (christyTracker != null)
+		{
+			christyTracker.close();
+			christyTracker = null;
+		}
+		
 		if (routeMessageParserServiceTracker != null)
 		{
 			routeMessageParserServiceTracker.close();
