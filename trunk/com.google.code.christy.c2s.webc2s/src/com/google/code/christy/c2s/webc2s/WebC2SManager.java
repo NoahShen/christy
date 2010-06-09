@@ -706,7 +706,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 		{
 			// TODO Auto-generated method stub
-			super.doGet(req, resp);
+			super.doPost(req, resp);
 		}
 
 		@Override
