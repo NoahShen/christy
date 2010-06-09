@@ -93,18 +93,32 @@ public class ControllerServlet extends HttpServlet
 		for (String info : infos)
 		{
 			String url = "http://" + info + "/hessianController";
+			JSONObject jsonObj = new JSONObject();
+			
 			try
 			{
+				jsonObj.put("id", info);
+				
 				ServerController controller = (ServerController) factory.create(ServerController.class, url);
 				Map<String, Object> serverInfo = controller.getServerInfo();
-				JSONObject jsonObj = new JSONObject();
-				jsonObj.put("id", info);
 				jsonObj.put("info", serverInfo);
-				array.put(jsonObj);
+				
 			}
 			catch (Exception e)
 			{
-//					e.printStackTrace();
+				try
+				{
+					jsonObj.put("error", true);
+				}
+				catch (JSONException e1)
+				{
+					
+				}
+				e.printStackTrace();
+			}
+			finally
+			{
+				array.put(jsonObj);
 			}
 		}
 		resp.getWriter().write(array.toString());

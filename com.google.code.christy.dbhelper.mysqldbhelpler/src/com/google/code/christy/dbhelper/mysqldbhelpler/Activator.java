@@ -1,10 +1,14 @@
 package com.google.code.christy.dbhelper.mysqldbhelpler;
 
 
+import org.apache.commons.configuration.SubnodeConfiguration;
+import org.apache.commons.configuration.XMLConfiguration;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.Christy;
+import com.google.code.christy.ChristyTracker;
 import com.google.code.christy.lib.ConnectionPool;
 import com.google.code.christy.sm.contactmgr.RosterItemDbHelper;
 import com.google.code.christy.sm.privatexml.PrivateXmlDbHelper;
@@ -19,6 +23,7 @@ public class Activator implements BundleActivator
 	private ServiceRegistration userMysqlDbHelperRegistration;
 	private ServiceRegistration privateXmlMysqlDbHelperRegistration;
 	private ServiceRegistration vCardMysqlDbHelperRegistration;
+	private ChristyTracker christyTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -27,11 +32,26 @@ public class Activator implements BundleActivator
 	 */
 	public void start(BundleContext context) throws Exception
 	{
+		christyTracker = new ChristyTracker(context);
+		christyTracker.open();
+		
+		Object service = christyTracker.getService();
+		if (service == null)
+		{
+			throw new Exception("christy is null");
+		}
+		
+		Christy christy = (Christy) service;
+		XMLConfiguration config = (XMLConfiguration) christy.getProperty("config");
+		
+		SubnodeConfiguration subConifg = config.configurationAt("dbconfig");
+		
+		
 		connPool = new ConnectionPool("com.mysql.jdbc.Driver",
-				"jdbc:mysql://localhost/christy?useUnicode=true&characterEncoding=UTF-8",
-				"root",
-				"123456");
-		connPool .createPool();
+				subConifg.getString("url"),
+				subConifg.getString("user"),
+				subConifg.getString("password"));
+		connPool.createPool();
 
 		RosterItemMysqlDbHelper rosterItemMysqlDbHelper = new RosterItemMysqlDbHelper(connPool);
 		rosterItemMysqlDbHelperRegistration = context.registerService(RosterItemDbHelper.class.getName(), rosterItemMysqlDbHelper, null);
@@ -81,6 +101,12 @@ public class Activator implements BundleActivator
 		{
 			vCardMysqlDbHelperRegistration.unregister();
 			vCardMysqlDbHelperRegistration = null;
+		}
+		
+		if (christyTracker != null)
+		{
+			christyTracker.close();
+			christyTracker = null;
 		}
 		
 	}
