@@ -33,6 +33,13 @@ public class ControllerServlet extends HttpServlet
 	private Map<String, String> users = new HashMap<String, String>();
 	
 	private List<ModuleInfo> modules = new ArrayList<ModuleInfo>();
+
+	private HessianProxyFactory factory;
+	
+	public ControllerServlet()
+	{
+		factory = new HessianProxyFactory();
+	}
 	
 	/* (non-Javadoc)
 	 * @see javax.servlet.GenericServlet#destroy()
@@ -88,7 +95,6 @@ public class ControllerServlet extends HttpServlet
 			String url = "http://" + info + "/hessianController";
 			try
 			{
-				HessianProxyFactory factory = new HessianProxyFactory();
 				ServerController controller = (ServerController) factory.create(ServerController.class, url);
 				Map<String, Object> serverInfo = controller.getServerInfo();
 				JSONObject jsonObj = new JSONObject();
