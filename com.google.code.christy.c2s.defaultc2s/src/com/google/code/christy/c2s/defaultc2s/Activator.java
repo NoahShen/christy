@@ -10,8 +10,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
-import com.google.code.christy.Christy;
-import com.google.code.christy.ChristyTracker;
 import com.google.code.christy.c2s.C2SManager;
 import com.google.code.christy.c2s.ChristyStreamFeature;
 import com.google.code.christy.c2s.UserAuthenticator;
@@ -37,7 +35,6 @@ public class Activator implements BundleActivator
 	private LoggerServiceTracker loggerServiceTracker;
 	private DefaultC2sController defaultC2sController;
 	private ConnectionPool connPool;
-	private ChristyTracker christyTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -46,14 +43,6 @@ public class Activator implements BundleActivator
 	 */
 	public void start(BundleContext context) throws Exception
 	{
-		christyTracker = new ChristyTracker(context);
-		christyTracker.open();
-		
-		Object service = christyTracker.getService();
-		if (service == null)
-		{
-			throw new Exception("christy is null");
-		}
 
 		//---------streamFeature
 		
@@ -87,8 +76,8 @@ public class Activator implements BundleActivator
 		//sslcontext
 		
 		
-		Christy christy = (Christy) service;
-		XMLConfiguration config = (XMLConfiguration) christy.getProperty("config");
+		String appPath = System.getProperty("appPath");
+		XMLConfiguration config = new XMLConfiguration(appPath + "/defaultc2s.xml");
 		
 		SubnodeConfiguration subConifg = config.configurationAt("dbconfig");
 		
@@ -164,13 +153,7 @@ public class Activator implements BundleActivator
 	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception
-	{
-		if (christyTracker != null)
-		{
-			christyTracker.close();
-			christyTracker = null;
-		}
-		
+	{		
 		if (streamFeatureStracker != null)
 		{
 			streamFeatureStracker.close();

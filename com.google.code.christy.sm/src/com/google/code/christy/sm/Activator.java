@@ -6,8 +6,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
-import com.google.code.christy.Christy;
-import com.google.code.christy.ChristyTracker;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.sm.contactmgr.OfflineSubscribeMsgDbHelperTracker;
 import com.google.code.christy.sm.contactmgr.RosterItemDbHelperTracker;
@@ -31,7 +29,6 @@ public class Activator implements BundleActivator
 	private UserDbHelperTracker userDbHelperTracker;
 	private LoggerServiceTracker loggerServiceTracker;
 	private SmController routerController;
-	private ChristyTracker christyTracker;
 	private ServiceRegistration smManagerRegistration;
 
 	/*
@@ -40,16 +37,7 @@ public class Activator implements BundleActivator
 	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
 	 */
 	public void start(BundleContext context) throws Exception
-	{
-		christyTracker = new ChristyTracker(context);
-		christyTracker.open();
-		
-		Object service = christyTracker.getService();
-		if (service == null)
-		{
-			throw new Exception("christy is null");
-		}
-		
+	{		
 		routeMessageParserServiceTracker = new RouteMessageParserServiceTracker(context);
 		routeMessageParserServiceTracker.open();
 		
@@ -84,8 +72,9 @@ public class Activator implements BundleActivator
 					userDbHelperTracker,
 					loggerServiceTracker);
 		
-		Christy christy = (Christy) service;
-		XMLConfiguration config = (XMLConfiguration) christy.getProperty("config");
+		String appPath = System.getProperty("appPath");
+		XMLConfiguration config = new XMLConfiguration(appPath + "/smconfig.xml");
+		
 		
 		String name = config.getString("name", "sm_1");
 		smManager.setName(name);
@@ -123,12 +112,6 @@ public class Activator implements BundleActivator
 	 */
 	public void stop(BundleContext context) throws Exception
 	{
-		if (christyTracker != null)
-		{
-			christyTracker.close();
-			christyTracker = null;
-		}
-		
 		if (routeMessageParserServiceTracker != null)
 		{
 			routeMessageParserServiceTracker.close();

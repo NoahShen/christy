@@ -6,8 +6,7 @@ Bundle-Version: 1.0.0
 Bundle-ClassPath: bin/
 Bundle-Activator: com.google.code.christy.dbhelper.mysqldbhelpler.Activator
 Bundle-Vendor: Noah
-Import-Package: com.google.code.christy,
- com.google.code.christy.lib,
+Import-Package: com.google.code.christy.lib,
  com.google.code.christy.sm,
  com.google.code.christy.sm.contactmgr,
  com.google.code.christy.sm.privatexml,
