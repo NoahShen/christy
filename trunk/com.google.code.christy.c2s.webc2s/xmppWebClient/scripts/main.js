@@ -223,7 +223,7 @@ Main.init = function() {
 	$("body").append(mainDiv);
 	
 	Main.tabs = new $.fn.tab({
-        tabList:"#tabs  .ui-tab-container .clearfix u",
+        tabList:"#tabs .ui-tab-container .clearfix u",
         contentList:"#tabs .ui-tab-container .ui-tab-content",
 //        showType:"fade",
         callBackStartEvent:function(index) {
