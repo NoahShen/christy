@@ -22,6 +22,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.routemessage.RouteMessage;
+import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 import com.google.code.christy.router.RouterManager;
 import com.google.code.christy.router.RouterToSmMessageDispatcher;
 import com.google.code.christy.router.SmSession;
@@ -65,6 +66,10 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 	public static final String SMROUTER_SYNCC2S_NAMESPACE = "christy:internal:sm2router:syncc2s";
 	
+	public static final String MODULEROUTER_NAMESPACE = "christy:internal:module2router";
+	
+	public static final String MODULEROUTER_AUTH_NAMESPACE = "christy:internal:module2router:auth";
+	
 	private IoAcceptor c2sAcceptor;
 	
 	private boolean started = false;
@@ -104,6 +109,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	private RouteMessageParserServiceTracker routeMessageParserServiceTracker;
 
 	private LoggerServiceTracker loggerServiceTracker;
+
+	private SocketAcceptor otherModuleAcceptor;
 	
 	/**
 	 * @param resourceBinderServiceTracker
@@ -308,6 +315,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			loggerServiceTracker.error("c2s acceptor start failure:" + e.getMessage());
 			return;
 		}
+		
+		
 		try
 		{
 			startSmAcceptor();
@@ -316,6 +325,17 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		{
 			e.printStackTrace();
 			loggerServiceTracker.error("sm acceptor start failure:" + e.getMessage());
+			return;
+		}
+		
+		try
+		{
+			startOtherModuleAcceptor();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			loggerServiceTracker.error("module acceptor start failure:" + e.getMessage());
 			return;
 		}
 		
@@ -349,6 +369,19 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		c2sAcceptor.bind(new InetSocketAddress(c2sPort), new C2sHandler(), config);
 	}
 
+	private void startOtherModuleAcceptor() throws IOException
+	{
+		otherModuleAcceptor = new SocketAcceptor();
+		IoAcceptorConfig config = new SocketAcceptorConfig();
+		DefaultIoFilterChainBuilder chain = config.getFilterChain();
+
+		chain.addFirst("xmppCodec", new ProtocolCodecFilter(new XmppCodecFactory()));
+		
+		int modulePort = getModulePort();
+		
+		otherModuleAcceptor.bind(new InetSocketAddress(modulePort), new ModuleHandler(), config);
+	}
+	
 	@Override
 	public synchronized void stop()
 	{
@@ -1080,6 +1113,60 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		public void sessionOpened(IoSession session) throws Exception
 		{
 			loggerServiceTracker.debug("session" + session + ": sessionOpened");
+			
+		}
+		
+	}
+	
+	private class ModuleHandler implements IoHandler
+	{
+
+		@Override
+		public void exceptionCaught(IoSession arg0, Throwable arg1) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void messageReceived(IoSession arg0, Object arg1) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void messageSent(IoSession arg0, Object arg1) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void sessionClosed(IoSession arg0) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void sessionCreated(IoSession arg0) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void sessionIdle(IoSession arg0, IdleStatus arg1) throws Exception
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void sessionOpened(IoSession arg0) throws Exception
+		{
+			// TODO Auto-generated method stub
 			
 		}
 		

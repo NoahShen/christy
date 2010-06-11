@@ -12,6 +12,7 @@ import com.google.code.christy.c2s.UserAuthenticator;
 import com.google.code.christy.c2s.webc2s.controller.WebC2sController;
 import com.google.code.christy.lib.ConnectionPool;
 import com.google.code.christy.log.LoggerServiceTracker;
+import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 
 public class Activator implements BundleActivator
 {

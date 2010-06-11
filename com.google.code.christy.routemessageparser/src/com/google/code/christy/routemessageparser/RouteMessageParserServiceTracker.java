@@ -1,4 +1,4 @@
-package com.google.code.christy.sm.impl;
+package com.google.code.christy.routemessageparser;
 
 
 import org.osgi.framework.BundleContext;

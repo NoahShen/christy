@@ -35,6 +35,7 @@ import com.google.code.christy.c2s.ChristyStreamFeature.SupportedType;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.routemessage.RouteMessage;
+import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 import com.google.code.christy.util.AbstractPropertied;
 import com.google.code.christy.util.StringUtils;
 import com.google.code.christy.xmpp.Auth;

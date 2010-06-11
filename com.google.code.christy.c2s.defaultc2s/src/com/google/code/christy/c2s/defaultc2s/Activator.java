@@ -17,6 +17,7 @@ import com.google.code.christy.c2s.defaultc2s.controller.DefaultC2sController;
 import com.google.code.christy.c2s.defaultc2s.tls.BogusSSLContextFactory;
 import com.google.code.christy.lib.ConnectionPool;
 import com.google.code.christy.log.LoggerServiceTracker;
+import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 
 public class Activator implements BundleActivator
 {

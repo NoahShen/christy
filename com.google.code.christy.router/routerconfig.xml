@@ -20,6 +20,12 @@
 			<password>md5password</password>
 		</c2s-module>
 	</c2s-modules>
+	<other-modules>
+		<module>
+			<domain>c2s_1</domain>
+			<password>md5password</password>
+		</module>
+	</other-modules>
 	<c2s-port>8787</c2s-port>
 	<s2s-port>8788</s2s-port>
 	<sm-port>8789</sm-port>

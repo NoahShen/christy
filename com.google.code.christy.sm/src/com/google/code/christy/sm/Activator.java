@@ -7,10 +7,10 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
 import com.google.code.christy.log.LoggerServiceTracker;
+import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 import com.google.code.christy.sm.contactmgr.OfflineSubscribeMsgDbHelperTracker;
 import com.google.code.christy.sm.contactmgr.RosterItemDbHelperTracker;
 import com.google.code.christy.sm.controller.SmController;
-import com.google.code.christy.sm.impl.RouteMessageParserServiceTracker;
 import com.google.code.christy.sm.impl.SmHandlerServiceTracker;
 import com.google.code.christy.sm.impl.SmManagerImpl;
 import com.google.code.christy.sm.impl.SmToRouterInterceptorServiceTracker;

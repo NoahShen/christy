@@ -10,15 +10,14 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
 import com.google.code.christy.log.LoggerServiceTracker;
+import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 import com.google.code.christy.router.controller.RouterController;
-import com.google.code.christy.router.impl.RouteMessageParserServiceTracker;
 import com.google.code.christy.router.impl.RouterManagerImpl;
 import com.google.code.christy.router.impl.RouterToSmInterceptorServiceTracker;
 import com.google.code.christy.router.impl.RouterToSmMessageDispatcherTracker;
 
 public class Activator implements BundleActivator
 {
-
 
 	private RouterToSmMessageDispatcherTracker routerToSmMessageDispatcherTracker;
 	private RouterToSmInterceptorServiceTracker routerToSmInterceptorServiceTracker;
@@ -78,6 +77,17 @@ public class Activator implements BundleActivator
 			String password = sub.getString("password");
 			rm.registerC2sModule(name, password);
 		}
+		
+		List<?> otherModules = config.configurationsAt("other-modules.module");
+		
+		for (Iterator<?> it = otherModules.iterator(); it.hasNext();)
+		{
+			HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
+			String moduleDomain = sub.getString("domain");
+			String password = sub.getString("password");
+			rm.registerOtherModule(moduleDomain, password);
+		}
+		
 		
 		int c2sPort = config.getInt("c2s-port", 8787);
 		rm.setC2sPort(c2sPort);

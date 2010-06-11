@@ -30,6 +30,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.routemessage.RouteMessage;
+import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 import com.google.code.christy.sm.OnlineUser;
 import com.google.code.christy.sm.SmManager;
 import com.google.code.christy.sm.UserResource;
@@ -203,18 +204,30 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	@Override
 	public void setDomain(String domain)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("sm has started");
+		}
 		this.domain = domain;
 	}
 
 	@Override
 	public void setName(String name)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("sm has started");
+		}
 		this.name = name;
 	}
 
 	@Override
 	public void setRouterIp(String routerIp)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("sm has started");
+		}
 		this.routerIp = routerIp;
 	}
 
@@ -224,12 +237,20 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 	@Override
 	public void setRouterPassword(String routerPassword)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("sm has started");
+		}
 		this.routerPassword = routerPassword;
 	}
 
 	@Override
 	public void setRouterPort(int routerPort)
 	{
+		if (isStarted())
+		{
+			throw new IllegalStateException("sm has started");
+		}
 		this.routerPort = routerPort;
 	}
 
