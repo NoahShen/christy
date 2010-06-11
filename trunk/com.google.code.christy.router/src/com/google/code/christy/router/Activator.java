@@ -83,7 +83,7 @@ public class Activator implements BundleActivator
 		for (Iterator<?> it = otherModules.iterator(); it.hasNext();)
 		{
 			HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
-			String moduleDomain = sub.getString("domain");
+			String moduleDomain = sub.getString("sub-domain");
 			String password = sub.getString("password");
 			rm.registerOtherModule(moduleDomain, password);
 		}
@@ -97,6 +97,9 @@ public class Activator implements BundleActivator
 		
 		int smPort = config.getInt("sm-port", 8789);
 		rm.setSmPort(smPort);
+		
+		int modulePort = config.getInt("module-port", 8790);
+		rm.setModulePort(modulePort);
 		
 		int c2sLimit = config.getInt("c2s-limit", 0);
 		rm.setC2sLimit(c2sLimit);

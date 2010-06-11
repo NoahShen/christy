@@ -22,13 +22,14 @@
 	</c2s-modules>
 	<other-modules>
 		<module>
-			<domain>c2s_1</domain>
+			<sub-domain>pubsub.example.com</sub-domain>
 			<password>md5password</password>
 		</module>
 	</other-modules>
 	<c2s-port>8787</c2s-port>
 	<s2s-port>8788</s2s-port>
 	<sm-port>8789</sm-port>
+	<module-port>8790</module-port>
 	<c2s-limit>0</c2s-limit>
 	<sm-limit>0</sm-limit>
 </christy>

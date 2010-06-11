@@ -7,6 +7,8 @@ public interface PubSubManager extends Propertied
 {
 	public String getDomain();
 	
+	public String getSubDomain();
+	
 	public String getServiceId();
 	
 	public void start();

@@ -1,5 +1,6 @@
 package com.google.code.christy.module.pubsub.impl;
 
+import java.io.StringReader;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
@@ -11,6 +12,8 @@ import org.apache.mina.common.ThreadModel;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
+import org.xmlpull.mxp1.MXParser;
+import org.xmlpull.v1.XmlPullParser;
 
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
@@ -22,8 +25,13 @@ import com.google.code.christy.xmpp.XmlStanza;
 
 public class PubSubManagerImpl extends AbstractPropertied implements PubSubManager
 {
+	public static final String MODULEROUTER_NAMESPACE = "christy:internal:module2router";
+	
+	public static final String MODULEROUTER_AUTH_NAMESPACE = "christy:internal:module2router:auth";
 	
 	private String domain;
+	
+	private String subDomain;
 	
 	private String serviceId;
 	
@@ -31,11 +39,13 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 	
 	private String routerPassword;
 	
-	private int routerPort = 8789;
+	private int routerPort = 8790;
 	
 	private boolean started = false;
 
 	private boolean routerConnected = false;
+	
+	private IoSession routerSession;
 	
 	private LoggerServiceTracker loggerServiceTracker;
 	
@@ -51,18 +61,30 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 	}
 
-	
-
 	public String getDomain()
 	{
 		return domain;
 	}
 
-
-
 	public void setDomain(String domain)
 	{
 		this.domain = domain;
+	}
+
+	/**
+	 * @return the subDomain
+	 */
+	public String getSubDomain()
+	{
+		return subDomain;
+	}
+
+	/**
+	 * @param subDomain the subDomain to set
+	 */
+	public void setSubDomain(String subDomain)
+	{
+		this.subDomain = subDomain;
 	}
 
 
@@ -137,7 +159,18 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 	@Override
 	public void stop()
 	{
-		// TODO Auto-generated method stub
+		if (!isStarted())
+		{
+			return;
+		}
+		
+		if (routerSession != null)
+		{
+			routerSession.close();
+		}
+		
+		routerConnector = null;
+		started = false;
 	}
 
 	@Override
@@ -180,8 +213,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 	@Override
 	public void sendToRouter(RouteMessage routeMessage)
 	{
-		// TODO Auto-generated method stub
-		
+		routerSession.write(routeMessage.toXml());		
 	}
 
 	@Override
@@ -216,6 +248,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 	
 	private class RouterHandler implements IoHandler
 	{
+
 		@Override
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
@@ -228,7 +261,85 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 		{
 			loggerServiceTracker.debug("session" + session + ": messageReceived:\n" + message);
 
+			String xml = message.toString();
+			if (xml.equals("</stream:stream>"))
+			{
+				session.close();
+				return;
+			}
+
+			StringReader strReader = new StringReader(xml);
+			XmlPullParser parser = new MXParser();
+			parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
+			parser.setInput(strReader);
+
+			try
+			{
+				parser.nextTag();
+			}
+			catch (Exception e)
+			{
+				// e.printStackTrace();
+				throw e;
+			}
+
+			String elementName = parser.getName();
+			if ("stream".equals(elementName) || "stream:stream".equals(elementName))
+			{
+				handleStream(parser, session);
+			}
+			else if ("success".equals(elementName))
+			{
+				routerSession = session;
+				routerConnected = true;
+				loggerServiceTracker.info("router auth successful");
+			}
+			else if ("failed".equals(elementName))
+			{
+				loggerServiceTracker.error("password error");
+				session.close();
+			}
+			else if ("route".equals(elementName))
+			{
+				RouteMessage routeMessage = 
+					routeMessageParserServiceTracker.getRouteMessageParser().parseParser(parser);
+				handleRoute(routeMessage, session);
+			}
+			
 		}
+
+		private void handleRoute(RouteMessage routeMessage, IoSession session)
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		private void handleStream(XmlPullParser parser, IoSession session)
+		{
+			String xmlns = parser.getNamespace(null);
+			String from = parser.getAttributeValue("", "from");
+			String id = parser.getAttributeValue("", "id");
+			
+			if (!MODULEROUTER_NAMESPACE.equals(xmlns))
+			{
+				loggerServiceTracker.error("namespace error:" + xmlns);
+				session.close();
+				return;
+			}
+			if (!"router".equals(from))
+			{
+				loggerServiceTracker.error("from error:" + from);
+				session.close();
+				return;
+			}
+			session.setAttribute("streamId", id);
+			
+			loggerServiceTracker.debug("open stream successful");
+			
+			session.write("<internal xmlns='" + MODULEROUTER_NAMESPACE + "'" +
+						" subdomain='" + getSubDomain() + "' password='" + getRouterPassword() + "'/>");
+		}
+		
 		
 		@Override
 		public void messageSent(IoSession session, Object message) throws Exception
@@ -272,11 +383,11 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 		public void sessionOpened(IoSession session) throws Exception
 		{
 			loggerServiceTracker.debug("session" + session + ": sessionOpened");
-//			
-//			session.write("<stream:stream xmlns='" + SMROUTER_NAMESPACE + "'" +
-//						" xmlns:stream='http://etherx.jabber.org/streams'" +
-//						" to='router'" +
-//						" domain='" + getDomain() + "'>");
+			
+			session.write("<stream:stream xmlns='" + MODULEROUTER_NAMESPACE + "'" +
+						" xmlns:stream='http://etherx.jabber.org/streams'" +
+						" to='router'" +
+						" domain='" + getDomain() + "'>");
 		}
 	}
 	
