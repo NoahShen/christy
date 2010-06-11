@@ -1750,7 +1750,7 @@ Search.showShopCommentInputPanel = function(shopId) {
 		var i = 1;
 		for(var key in overall) {
 			shopCommentItems.append("<span style='margin:5px;'>" +
-										"<span>" + $.i18n.prop("search.shopDetail.restaurant." + key, "项目：") + "</span>" +
+										"<span>" + $.i18n.prop("search.shopDetail.restaurant." + key, key + ":") + "</span>" +
 										"<input item='" + key + "' type='text' style='width:50px;margin:5px;'/>" +
 									"</span>");
 			if (i != 0 && i % 2 == 0) {
