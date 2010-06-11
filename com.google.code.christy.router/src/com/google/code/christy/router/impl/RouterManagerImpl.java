@@ -92,6 +92,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	
 	private Map<String, SmSessionImpl> smSessions = new ConcurrentHashMap<String, SmSessionImpl>();
 	
+	private Map<String, ModuleSessionImpl> moduleSessions = new ConcurrentHashMap<String, ModuleSessionImpl>();
+	
 	private Map<String, String> registeredC2sModules = new ConcurrentHashMap<String, String>();
 
 	private Map<String, String> registeredSmModules = new ConcurrentHashMap<String, String>();
@@ -507,6 +509,18 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	{
 		smSessions.remove(smname);
 		loggerServiceTracker.debug("remove smSession:" + smname);
+	}
+	
+	void addModuleSession(String subDomain, ModuleSessionImpl moduleSession)
+	{
+		moduleSessions.put(subDomain, moduleSession);
+		loggerServiceTracker.debug("add new module session:" + subDomain);
+	}
+	
+	void removeModuleSession(String subDomain)
+	{
+		moduleSessions.remove(subDomain);
+		loggerServiceTracker.debug("remove module session:" + subDomain);
 	}
 	
 	private void notifySmAboutC2sSessions(SmSessionImpl smSession)
@@ -1113,7 +1127,6 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		public void sessionOpened(IoSession session) throws Exception
 		{
 			loggerServiceTracker.debug("session" + session + ": sessionOpened");
-			
 		}
 		
 	}
@@ -1122,52 +1135,218 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 	{
 
 		@Override
-		public void exceptionCaught(IoSession arg0, Throwable arg1) throws Exception
+		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
 			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
-		public void messageReceived(IoSession arg0, Object arg1) throws Exception
+		public void messageReceived(IoSession session, Object message) throws Exception
+		{
+			loggerServiceTracker.debug("session" + session + ": messageReceived:\n" + message);
+			String xml = message.toString();
+			if (xml.equals("</stream:stream>"))
+			{
+				ModuleSessionImpl moduleSession = (ModuleSessionImpl) session.getAttachment();
+				if (moduleSession == null)
+				{
+					session.close();
+				}
+				else
+				{
+					moduleSession.close();
+				}
+				return;
+			}
+			
+			
+			StringReader strReader = new StringReader(xml);
+			
+			XmlPullParser parser = new MXParser();
+			parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
+			parser.setInput(strReader);
+			
+			
+			try
+			{
+				parser.nextTag();
+			}
+			catch (Exception e)
+			{
+				// e.printStackTrace();
+				throw e;
+			}
+			
+
+			String elementName = parser.getName();
+			if ("stream".equals(elementName) || "stream:stream".equals(elementName))
+			{
+				ModuleSessionImpl moduleSession = (ModuleSessionImpl) session.getAttachment();
+				if (moduleSession == null)
+				{
+					modulehandleStream(parser, session);
+				}
+			}
+			else if ("internal".equals(elementName))
+			{
+				modulehandleInternal(parser, session);
+			}
+//			else if ("route".equals(elementName))
+//			{
+//				RouteMessage routeMessage = 
+//					routeMessageParserServiceTracker.getRouteMessageParser().parseParser(parser);
+//				modulehandleRoute(routeMessage, session);
+//			}
+		}
+
+		private void modulehandleInternal(XmlPullParser parser, IoSession session)
+		{
+			String streamId = session.getAttribute("streamId").toString();
+			if (streamId != null)
+			{
+				String subdomain = parser.getAttributeValue("", "subdomain");
+				String password = parser.getAttributeValue("", "password");
+				
+				if (moduleSessions.containsKey(subdomain))
+				{
+					StreamError error = new StreamError(StreamError.Condition.conflict);
+					session.write(error);
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return;
+				}
+				
+				if (!registeredOtherModules.containsKey(subdomain))
+				{
+					session.write("<error>" +
+							"<unregistered xmlns=\"christy:internal:sm2router:auth\"/>" +
+							"</error> ");
+					session.write(CloseStream.getCloseStream());
+					session.close();
+					return;
+				}
+				
+				String registeredPwd = registeredOtherModules.get(subdomain);
+				if (password.equals(registeredPwd))
+				{
+					ModuleSessionImpl moduleSessionImpl = 
+						new ModuleSessionImpl(streamId, 
+									subdomain, 
+									session, 
+									RouterManagerImpl.this);
+					session.setAttachment(moduleSessionImpl);
+					moduleSessionImpl.write("<success xmlns='" + MODULEROUTER_AUTH_NAMESPACE + "' />");
+				}
+				else
+				{
+					session.write("<failed xmlns='" + MODULEROUTER_AUTH_NAMESPACE + "'>" +
+								"<reason>password error</reason>" +
+								"</failed>");
+					session.write(CloseStream.getCloseStream());
+					session.close();
+				}
+			}
+			// not open stream
+			else
+			{
+				session.close();
+			}
+		}
+
+		private void modulehandleStream(XmlPullParser parser, IoSession session)
+		{
+			String xmlns = parser.getNamespace(null);
+			String to = parser.getAttributeValue("", "to");
+			String domain = parser.getAttributeValue("", "domain");
+			
+			if (!xmlns.equals(MODULEROUTER_NAMESPACE))
+			{
+				StreamError error = new StreamError(StreamError.Condition.invalid_namespace);
+				session.write(error);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				return;
+			}
+			
+			if (!getDomain().equals(domain))
+			{
+				StreamError error = new StreamError();
+				error.addApplicationCondition("domain-error", MODULEROUTER_NAMESPACE);
+				session.write(error);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				return;
+			}
+			
+			if (!to.equals("router"))
+			{
+				StreamError error = new StreamError(StreamError.Condition.host_gone);
+				session.write(error);
+				session.write(CloseStream.getCloseStream());
+				session.close();
+				return;
+			}
+			
+			String streamId =  "module_internalstream_" + nextsmId();
+			session.setAttribute("streamId", streamId);
+			String responseStream = "<stream:stream" +
+						" xmlns='"+ MODULEROUTER_NAMESPACE + "'" +
+						" xmlns:stream='http://etherx.jabber.org/streams'" +
+						" from='router'" +
+						" id='" + streamId + "'>";
+			session.write(responseStream);
+		}
+
+		@Override
+		public void messageSent(IoSession session, Object message) throws Exception
+		{
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				String s = null;
+				if (message instanceof String)
+				{
+					s = message.toString();
+				}
+				else if (message instanceof XmlStanza)
+				{
+					s = ((XmlStanza)message).toXml();
+				}
+				SmSessionImpl smSession = (SmSessionImpl) session.getAttachment();
+				String smName = null;
+				if (smSession != null)
+				{
+					smName = smSession.getSmName();
+				}
+				loggerServiceTracker.debug("session" + session + "[" + smName + "]: messageSent:\n" + s);
+				
+			}
+		}
+
+		@Override
+		public void sessionClosed(IoSession session) throws Exception
+		{
+			loggerServiceTracker.debug("session" + session + ": sessionClosed");
+			exit();
+		}
+
+		@Override
+		public void sessionCreated(IoSession session) throws Exception
+		{
+			loggerServiceTracker.debug("session" + session + ": sessionCreated");
+		}
+
+		@Override
+		public void sessionIdle(IoSession session, IdleStatus status) throws Exception
 		{
 			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
-		public void messageSent(IoSession arg0, Object arg1) throws Exception
+		public void sessionOpened(IoSession session) throws Exception
 		{
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void sessionClosed(IoSession arg0) throws Exception
-		{
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void sessionCreated(IoSession arg0) throws Exception
-		{
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void sessionIdle(IoSession arg0, IdleStatus arg1) throws Exception
-		{
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void sessionOpened(IoSession arg0) throws Exception
-		{
-			// TODO Auto-generated method stub
-			
+			loggerServiceTracker.debug("session" + session + ": sessionOpened");
 		}
 		
 	}

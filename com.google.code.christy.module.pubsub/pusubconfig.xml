@@ -1,7 +1,8 @@
 <christy xmlns='christy:module:pubsub'>
-	<domain>pubsub.example.com</domain>
+	<domain>example.com</domain>
+	<sub-domain>pubsub.example.com</sub-domain>
 	<service-id>123</service-id>
 	<router-ip>localhost</router-ip>
-	<router-port>8789</router-port>
+	<router-port>8790</router-port>
 	<router-password>md5password</router-password>
 </christy>

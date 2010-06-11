@@ -45,5 +45,17 @@ Import-Package: com.google.code.christy.lib,
  org.apache.mina.transport.vmpipe.support,
  org.apache.mina.util,
  org.osgi.framework;version="1.3.0",
- org.osgi.util.tracker;version="1.3.3"
+ org.osgi.util.tracker;version="1.3.3",
+ org.xmlpull.mxp1,
+ org.xmlpull.mxp1_serializer,
+ org.xmlpull.v1,
+ org.xmlpull.v1.builder,
+ org.xmlpull.v1.builder.adapter,
+ org.xmlpull.v1.builder.impl,
+ org.xmlpull.v1.dom2_builder,
+ org.xmlpull.v1.parser_pool,
+ org.xmlpull.v1.sax2,
+ org.xmlpull.v1.util,
+ org.xmlpull.v1.wrapper,
+ org.xmlpull.v1.wrapper.classic
 Eclipse-LazyStart: true

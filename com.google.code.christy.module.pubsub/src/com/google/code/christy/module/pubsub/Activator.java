@@ -38,10 +38,13 @@ public class Activator implements BundleActivator
 		XMLConfiguration config = new XMLConfiguration(appPath + "/pusubconfig.xml");
 		
 		
-		String domain = config.getString("domain", "pubsub.example.com");
+		String domain = config.getString("domain", "example.com");
 		pubSubManager.setDomain(domain);
 
-		String serviceId = config.getString("service-id", "123");
+		String subDomain = config.getString("sub-domain");
+		pubSubManager.setSubDomain(subDomain);
+		
+		String serviceId = config.getString("service-id");
 		pubSubManager.setServiceId(serviceId);
 		
 		String routerIp = config.getString("router-ip", "localhost");

@@ -513,9 +513,13 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 		
 		if (smToRouterInterceptorServiceTracker.fireSmMessageSent(routeMessage, SmManagerImpl.this, user))
 		{
-//			loggerServiceTracker.debug("Message which will send to router"
-//						+ "has been intercepted.Message:"
-//						+ routeMessage.toXml());
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("Message which will send to router"
+							+ "has been intercepted.Message:"
+							+ routeMessage.toXml());
+			}
+
 			return;
 		}
 		
@@ -642,9 +646,12 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			OnlineUserImpl onlineUser = onlineUsers.get(userNode);
 			if (smToRouterInterceptorServiceTracker.fireSmMessageReceived(routeMessage, SmManagerImpl.this, onlineUser))
 			{
-//				loggerServiceTracker.debug("Message which recieved from "
-//							+ session + "has been intercepted.Message:"
-//							+ routeMessage.toXml());
+				if (loggerServiceTracker.isDebugEnabled())
+				{
+					loggerServiceTracker.debug("Message which recieved from "
+								+ session + "has been intercepted.Message:"
+								+ routeMessage.toXml());
+				}
 				return;
 			}
 			
