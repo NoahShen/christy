@@ -336,7 +336,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			DiscoInfoExtension discoInfo = (DiscoInfoExtension) iq.getExtension(DiscoInfoExtension.ELEMENTNAME, DiscoInfoExtension.NAMESPACE);
 			if (discoInfo != null)
 			{
-				handleDiscoInfo(routeMessage, iq, session);
+				handleDiscoInfo(routeMessage, iq, discoInfo, session);
 			}
 			
 			DiscoItemsExtension discoItems = (DiscoItemsExtension) iq.getExtension(DiscoItemsExtension.ELEMENTNAME, DiscoItemsExtension.NAMESPACE);
@@ -386,7 +386,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			
 		}
 
-		private void handleDiscoInfo(RouteMessage routeMessage, Iq iq, IoSession session)
+		private void handleDiscoInfo(RouteMessage routeMessage, Iq iq, DiscoInfoExtension discoInfo, IoSession session)
 		{
 			JID from = iq.getFrom();
 			if (from == null)
@@ -406,9 +406,9 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			}
 			else
 			{
-				DiscoInfoExtension discoInfo = pubSubEngine.getDiscoInfo();
+				DiscoInfoExtension discoInfoResponse = pubSubEngine.getDiscoInfo(discoInfo.getNode());
 				iqResponse = PacketUtils.createResultIq(iq);
-				iqResponse.addExtension(discoInfo);
+				iqResponse.addExtension(discoInfoResponse);
 			}
 			
 			RouteMessage responseRouteMessage = new RouteMessage(getSubDomain(), routeMessage.getStreamId());

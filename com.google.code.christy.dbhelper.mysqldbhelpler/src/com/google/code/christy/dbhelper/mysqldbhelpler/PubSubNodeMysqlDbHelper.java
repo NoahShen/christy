@@ -19,9 +19,11 @@ public class PubSubNodeMysqlDbHelper implements PubSubNodeDbHelper
 
 	private LoggerServiceTracker loggerServiceTracker;
 	
-	private static final String GETPUBSUBNODE_SQL = "SELECT * FROM pubsubnode WHERE parent = ?";
+	private static final String GETPUBSUBNODE_SQL = "SELECT * FROM pubsubnode WHERE nodeId = ?";
 	
-	private static final String GETROOTPUBSUBNODE_SQL = "SELECT * FROM pubsubnode WHERE parent IS NULL";
+	private static final String GETPUBSUBNODES_SQL = "SELECT * FROM pubsubnode WHERE parent = ?";
+	
+	private static final String GETROOTPUBSUBNODES_SQL = "SELECT * FROM pubsubnode WHERE parent IS NULL";
 	/**
 	 * @param connectionPool
 	 * @param loggerServiceTracker 
@@ -43,11 +45,11 @@ public class PubSubNodeMysqlDbHelper implements PubSubNodeDbHelper
 			PreparedStatement preStat = null;
 			if (parent == null)
 			{
-				preStat = connection.prepareStatement(GETROOTPUBSUBNODE_SQL);
+				preStat = connection.prepareStatement(GETROOTPUBSUBNODES_SQL);
 			}
 			else
 			{
-				preStat = connection.prepareStatement(GETPUBSUBNODE_SQL);
+				preStat = connection.prepareStatement(GETPUBSUBNODES_SQL);
 				preStat.setString(1, parent);
 			}
 			
@@ -98,6 +100,61 @@ public class PubSubNodeMysqlDbHelper implements PubSubNodeDbHelper
 			}
 			
 		}
+	}
+
+	@Override
+	public PubSubNode getNode(String nodeId) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(GETPUBSUBNODE_SQL);
+			preStat.setString(1, nodeId);
+			ResultSet nodeResultSet = preStat.executeQuery();
+			
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + nodeResultSet.toString());
+			}
+			
+			if (nodeResultSet.next())
+			{
+				PubSubNode node = new PubSubNode();
+				node.setServiceId(nodeResultSet.getString("serviceId"));
+				node.setNodeId(nodeResultSet.getString("nodeId"));
+				node.setParent(nodeResultSet.getString("parent"));
+				node.setName(nodeResultSet.getString("name"));
+				node.setLeaf(nodeResultSet.getBoolean("leaf"));
+				
+				Time modificationDate = nodeResultSet.getTime("modificationDate");
+				if (modificationDate != null)
+				{
+					node.setModificationDate(modificationDate.getTime());
+				}
+				
+				Time creationDate = nodeResultSet.getTime("creationDate");
+				if (creationDate != null)
+				{
+					node.setCreationDate(creationDate.getTime());
+				}
+				
+				node.setCreator(nodeResultSet.getString("creator"));
+				node.setDescription(nodeResultSet.getString("description"));
+				return node;
+			}
+			
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+		return null;
 	}
 
 }

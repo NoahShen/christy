@@ -13,6 +13,7 @@ public class PubSubEngine
 {
 	private DiscoInfoExtension discoInfo;
 	private DiscoItemsExtension emptyDiscoItemsExtension = new DiscoItemsExtension();
+	private DiscoInfoExtension emptyDiscoInfoExtension = new DiscoInfoExtension();
 	private PubSubManagerImpl pubSubManager;
 	private PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker;
 	
@@ -24,9 +25,39 @@ public class PubSubEngine
 		discoInfo.addFeature(new DiscoInfoExtension.Feature("http://jabber.org/protocol/pubsub"));
 	}
 	
-	public DiscoInfoExtension getDiscoInfo()
+	public DiscoInfoExtension getDiscoInfo(String node)
 	{
-		return discoInfo;
+		if (node == null)
+		{
+			return discoInfo;
+		}
+		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
+		if (pubSubNodeDbHelper != null)
+		{
+			try
+			{
+				DiscoInfoExtension discoInfoExtension = new DiscoInfoExtension();
+				discoInfoExtension.setNode(node);
+				
+				PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
+				String type = "leaf";
+				if (!pubSubNode.isLeaf())
+				{
+					type = "collection";
+				}
+				
+				DiscoInfoExtension.Identity identity = new DiscoInfoExtension.Identity("pubsub", type);
+				discoInfoExtension.addIdentity(identity);
+				
+				return discoInfoExtension;
+			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return emptyDiscoInfoExtension;
 	}
 	
 	public DiscoItemsExtension getDiscoItem(String node)
