@@ -15,13 +15,20 @@ import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
+import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.module.pubsub.PubSubManager;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 import com.google.code.christy.util.AbstractPropertied;
+import com.google.code.christy.xmpp.Iq;
+import com.google.code.christy.xmpp.JID;
+import com.google.code.christy.xmpp.PacketUtils;
 import com.google.code.christy.xmpp.XmlStanza;
+import com.google.code.christy.xmpp.XmppError;
+import com.google.code.christy.xmpp.disco.DiscoInfoExtension;
+import com.google.code.christy.xmpp.disco.DiscoItemsExtension;
 
 public class PubSubManagerImpl extends AbstractPropertied implements PubSubManager
 {
@@ -53,13 +60,18 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 
 	private SocketConnector routerConnector;
 	
-	private PubSubEngine pubSubEngine = new PubSubEngine();
+	private PubSubEngine pubSubEngine;
+
 	
-	public PubSubManagerImpl(LoggerServiceTracker loggerServiceTracker, RouteMessageParserServiceTracker routeMessageParserServiceTracker)
+	public PubSubManagerImpl(LoggerServiceTracker loggerServiceTracker, 
+				RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
+				PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker)
 	{
 		super();
 		this.loggerServiceTracker = loggerServiceTracker;
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
+		
+		pubSubEngine = new PubSubEngine(this, pubSubNodeDbHelperTracker);
 	}
 
 	public String getDomain()
@@ -312,7 +324,104 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 		private void handleRoute(RouteMessage routeMessage, IoSession session)
 		{
 			XmlStanza stanza = routeMessage.getXmlStanza();
+			if (stanza instanceof Iq)
+			{
+				Iq iq = (Iq) stanza;
+				handlerIq(routeMessage, iq, session);
+			}
+		}
+
+		private void handlerIq(RouteMessage routeMessage, Iq iq, IoSession session)
+		{
+			DiscoInfoExtension discoInfo = (DiscoInfoExtension) iq.getExtension(DiscoInfoExtension.ELEMENTNAME, DiscoInfoExtension.NAMESPACE);
+			if (discoInfo != null)
+			{
+				handleDiscoInfo(routeMessage, iq, session);
+			}
 			
+			DiscoItemsExtension discoItems = (DiscoItemsExtension) iq.getExtension(DiscoItemsExtension.ELEMENTNAME, DiscoItemsExtension.NAMESPACE);
+			if (discoItems != null)
+			{
+				handleDiscoItems(routeMessage, iq, discoItems, session);
+			}
+		}
+
+		private void handleDiscoItems(RouteMessage routeMessage, Iq iq, DiscoItemsExtension discoItems, IoSession session)
+		{
+			JID from = iq.getFrom();
+			if (from == null)
+			{
+				return;
+			}
+			
+			Iq iqResponse = null;
+			if (iq.getType() != Iq.Type.get)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.bad_request));
+				if (iqResponse.getFrom() == null)
+				{
+					iqResponse.setFrom(new JID(null, getSubDomain(), null));
+				}
+			}
+			else
+			{
+				String node = discoItems.getNode();
+				DiscoItemsExtension discoItemsResponse = pubSubEngine.getDiscoItem(node);
+				iqResponse = PacketUtils.createResultIq(iq);
+				iqResponse.addExtension(discoItemsResponse);
+			}
+			
+			RouteMessage responseRouteMessage = new RouteMessage(getSubDomain(), routeMessage.getStreamId());
+			
+			//local user
+			if (from.getDomain().equals(getDomain()))
+			{
+				responseRouteMessage.setToUserNode(from.getNode());
+			}
+			
+			responseRouteMessage.setXmlStanza(iqResponse);
+			
+			sendToRouter(responseRouteMessage);
+			
+		}
+
+		private void handleDiscoInfo(RouteMessage routeMessage, Iq iq, IoSession session)
+		{
+			JID from = iq.getFrom();
+			if (from == null)
+			{
+				return;
+			}
+			
+			Iq iqResponse = null;
+			if (iq.getType() != Iq.Type.get)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.bad_request));
+				if (iqResponse.getFrom() == null)
+				{
+					iqResponse.setFrom(new JID(null, getSubDomain(), null));
+				}
+			}
+			else
+			{
+				DiscoInfoExtension discoInfo = pubSubEngine.getDiscoInfo();
+				iqResponse = PacketUtils.createResultIq(iq);
+				iqResponse.addExtension(discoInfo);
+			}
+			
+			RouteMessage responseRouteMessage = new RouteMessage(getSubDomain(), routeMessage.getStreamId());
+			
+			//local user
+			if (from.getDomain().equals(getDomain()))
+			{
+				responseRouteMessage.setToUserNode(from.getNode());
+			}
+			
+			responseRouteMessage.setXmlStanza(iqResponse);
+			
+			sendToRouter(responseRouteMessage);
 		}
 
 		private void handleStream(XmlPullParser parser, IoSession session)

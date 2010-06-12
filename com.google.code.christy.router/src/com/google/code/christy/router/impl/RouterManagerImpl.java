@@ -1216,8 +1216,13 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 		private void modulehandleRoute(RouteMessage routeMessage, IoSession session)
 		{
-			// TODO Auto-generated method stub
-			
+			String userNode = routeMessage.getToUserNode();
+			if (userNode != null)
+			{
+				RouterToSmMessageDispatcher dispatcher = dispatcherServiceTracker.getDispatcher();
+				dispatcher.sendMessage(routeMessage);
+				return;
+			}
 		}
 
 		private void modulehandleInternal(XmlPullParser parser, IoSession session)
@@ -1332,9 +1337,14 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				{
 					s = ((XmlStanza)message).toXml();
 				}
-				ModuleSessionImpl moduleSession = (ModuleSessionImpl) session.getAttachment();
 				
-				loggerServiceTracker.debug("module session" + session + "[" + moduleSession.getSubDomain() + "]: messageSent:\n" + s);
+				String subDomain = null;
+				ModuleSessionImpl moduleSession = (ModuleSessionImpl) session.getAttachment();
+				if (moduleSession != null)
+				{
+					subDomain = moduleSession.getSubDomain();
+				}
+				loggerServiceTracker.debug("module session" + session + "[" + subDomain + "]: messageSent:\n" + s);
 				
 			}
 		}
@@ -1343,7 +1353,11 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		public void sessionClosed(IoSession session) throws Exception
 		{
 			loggerServiceTracker.debug("session" + session + ": sessionClosed");
-			exit();
+			ModuleSessionImpl moduleSession = (ModuleSessionImpl) session.getAttachment();
+			if (moduleSession != null)
+			{
+				moduleSession.close();
+			}
 		}
 
 		@Override

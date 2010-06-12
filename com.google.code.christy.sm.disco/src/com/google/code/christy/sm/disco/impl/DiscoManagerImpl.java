@@ -155,7 +155,6 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 	@Override
 	public void handleClientPacket(SmManager smManager, OnlineUser onlineUser, UserResource userResource, Packet packet)
 	{
-		
 		DiscoInfoExtension discoInfo = 
 			(DiscoInfoExtension) packet.getExtension(DiscoInfoExtension.ELEMENTNAME, DiscoInfoExtension.NAMESPACE);
 		if (discoInfo != null)
@@ -166,7 +165,7 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 		
 		
 		DiscoItemsExtension discoItems = 
-			(DiscoItemsExtension) packet.getExtension(DiscoInfoExtension.ELEMENTNAME, DiscoInfoExtension.NAMESPACE);
+			(DiscoItemsExtension) packet.getExtension(DiscoItemsExtension.ELEMENTNAME, DiscoItemsExtension.NAMESPACE);
 		if (discoItems != null)
 		{
 			handleClientDiscoItems(smManager, onlineUser, userResource, packet, discoItems);
@@ -201,9 +200,12 @@ public class DiscoManagerImpl implements DiscoManager,SmHandler
 				Iq errorIq = PacketUtils.createErrorIq(requestIq);
 				errorIq.setError(new XmppError(XmppError.Condition.feature_not_implemented));
 				userResource.sendToSelfClient(errorIq);
-				return;
 			}
-			userResource.sendToOtherUser(packet);
+			else
+			{
+				userResource.sendToOtherUser(packet);
+			}
+			
 		}
 		
 		

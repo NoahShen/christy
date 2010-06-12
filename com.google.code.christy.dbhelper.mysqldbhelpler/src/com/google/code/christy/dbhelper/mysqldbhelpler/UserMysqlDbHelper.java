@@ -22,6 +22,7 @@ public class UserMysqlDbHelper implements UserDbHelper
 	private static final String REMOVEUSER_SQL = "DELETE FROM user WHERE username = ?";
 	
 	private static final String UPDATEUSER_SQL = "UPDATE user SET password = ? WHERE username = ?";
+	
 	/**
 	 * @param connectionPool
 	 */

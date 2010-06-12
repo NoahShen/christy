@@ -6,10 +6,12 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
 import com.google.code.christy.dbhelper.PrivateXmlDbHelper;
+import com.google.code.christy.dbhelper.PubSubNodeDbHelper;
 import com.google.code.christy.dbhelper.RosterItemDbHelper;
 import com.google.code.christy.dbhelper.UserDbHelper;
 import com.google.code.christy.dbhelper.VCardDbHelper;
 import com.google.code.christy.lib.ConnectionPool;
+import com.google.code.christy.log.LoggerServiceTracker;
 
 public class Activator implements BundleActivator
 {
@@ -19,6 +21,8 @@ public class Activator implements BundleActivator
 	private ServiceRegistration userMysqlDbHelperRegistration;
 	private ServiceRegistration privateXmlMysqlDbHelperRegistration;
 	private ServiceRegistration vCardMysqlDbHelperRegistration;
+	private ServiceRegistration pubSubNodeMysqlDbHelperRegistration;
+	private LoggerServiceTracker loggerServiceTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -26,7 +30,10 @@ public class Activator implements BundleActivator
 	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
 	 */
 	public void start(BundleContext context) throws Exception
-	{		
+	{
+		loggerServiceTracker = new LoggerServiceTracker(context);
+		loggerServiceTracker.open();
+		
 		String appPath = System.getProperty("appPath");
 		XMLConfiguration config = new XMLConfiguration(appPath + "/dbconfig.xml");		
 		
@@ -48,6 +55,9 @@ public class Activator implements BundleActivator
 		VCardMysqlDbHelper vCardMysqlDbHelper = new VCardMysqlDbHelper(connPool);
 		vCardMysqlDbHelperRegistration = context.registerService(VCardDbHelper.class.getName(), vCardMysqlDbHelper, null);
 		
+		PubSubNodeMysqlDbHelper pubSubNodeMysqlDbHelper = new PubSubNodeMysqlDbHelper(connPool, loggerServiceTracker);
+		pubSubNodeMysqlDbHelperRegistration = context.registerService(PubSubNodeDbHelper.class.getName(), pubSubNodeMysqlDbHelper, null);
+		
 	}
 
 	/*
@@ -57,6 +67,12 @@ public class Activator implements BundleActivator
 	 */
 	public void stop(BundleContext context) throws Exception
 	{
+		if (loggerServiceTracker != null)
+		{
+			loggerServiceTracker.close();
+			loggerServiceTracker = null;
+		}
+		
 		if (connPool != null)
 		{
 			connPool.closeConnectionPool();
@@ -86,6 +102,11 @@ public class Activator implements BundleActivator
 			vCardMysqlDbHelperRegistration = null;
 		}
 		
+		if (pubSubNodeMysqlDbHelperRegistration != null)
+		{
+			pubSubNodeMysqlDbHelperRegistration.unregister();
+			pubSubNodeMysqlDbHelperRegistration = null;
+		}
 	}
 	
 //	public static void main(String[] args) throws Exception
@@ -109,7 +130,7 @@ public class Activator implements BundleActivator
 //		userMysqlDbHelper.removeUser("Noah");
 //		userMysqlDbHelper.updateUserPlainPassword("Noah", "123");
 		
-		RosterItemMysqlDbHelper rosterItemMysqlDbHelper = new RosterItemMysqlDbHelper(connPool);
+//		RosterItemMysqlDbHelper rosterItemMysqlDbHelper = new RosterItemMysqlDbHelper(connPool);
 		
 //		RosterItem rosterItem = new RosterItem();
 //		rosterItem.setUsername("Noah");
