@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : christy
-Source Server Version : 50083
+Source Server         : connection
+Source Server Version : 50022
 Source Host           : localhost:3306
 Source Database       : christy
 
 Target Server Type    : MYSQL
-Target Server Version : 50083
+Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-05-22 16:34:55
+Date: 2010-06-12 17:25:21
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -47,6 +47,29 @@ CREATE TABLE `privatedata` (
 -- ----------------------------
 INSERT INTO `privatedata` VALUES ('noah', '[storage][storage:bookmarks]', '<storage xmlns=\"storage:bookmarks\">\n<conference autojoin=\"false\" name=\"name\" jid=\"conference.example.com\">\n<nick>Noah</nick>\n<password>password</password>\n</conference>\n<url url=\"http://www.google.com.hk\" name=\"google HK\"/>\n</storage>');
 INSERT INTO `privatedata` VALUES ('noah', '[preference][christy:user:preference]', '<preference xmlns=\"christy:user:preference\"><item name=\"showContactPos\">true</item><item name=\"shareLoc\">false</item></preference>');
+
+-- ----------------------------
+-- Table structure for `pubsubnode`
+-- ----------------------------
+DROP TABLE IF EXISTS `pubsubnode`;
+CREATE TABLE `pubsubnode` (
+  `serviceId` varchar(100) NOT NULL,
+  `nodeId` varchar(100) NOT NULL,
+  `leaf` tinyint(4) NOT NULL,
+  `creationDate` datetime NOT NULL,
+  `modificationDate` timestamp NOT NULL default '0000-00-00 00:00:00' on update CURRENT_TIMESTAMP,
+  `parent` varchar(100) default NULL,
+  `creator` varchar(255) NOT NULL,
+  `description` varchar(255) default NULL,
+  `name` varchar(50) default NULL,
+  PRIMARY KEY  (`serviceId`,`nodeId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+
+-- ----------------------------
+-- Records of pubsubnode
+-- ----------------------------
+INSERT INTO `pubsubnode` VALUES ('123', 'node1', '0', '2010-06-12 16:36:15', '2010-06-12 17:13:30', null, 'noah@example.com', 'desc', 'node1name');
+INSERT INTO `pubsubnode` VALUES ('123', 'node2', '1', '2010-06-12 17:12:51', '2010-06-12 17:13:34', 'node1', 'noah@example.com', 'des2', 'node2name');
 
 -- ----------------------------
 -- Table structure for `shop`
@@ -100,7 +123,7 @@ CREATE TABLE `shopcomment` (
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`commentId`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopcomment
@@ -110,6 +133,11 @@ INSERT INTO `shopcomment` VALUES ('2', '0', 'noah2', '95', '很奇怪的一家�
 INSERT INTO `shopcomment` VALUES ('6', '0', 'noah', '91', '9090', '2010-04-25 21:01:02', '2010-04-25 21:01:02');
 INSERT INTO `shopcomment` VALUES ('7', '0', 'noah', '92', '9292', '2010-04-25 21:23:04', '2010-04-25 21:23:04');
 INSERT INTO `shopcomment` VALUES ('8', '0', 'noah', '12', 'content', '2010-05-16 21:08:59', '2010-05-16 21:08:59');
+INSERT INTO `shopcomment` VALUES ('9', '0', 'noah', '3', null, '2010-05-26 15:21:42', '2010-05-26 15:21:42');
+INSERT INTO `shopcomment` VALUES ('10', '0', 'noah', '12', '4测试', '2010-05-26 16:10:57', '2010-05-26 16:10:57');
+INSERT INTO `shopcomment` VALUES ('11', '0', 'noah', '12', '阿道夫', '2010-05-26 17:42:44', '2010-05-26 17:42:44');
+INSERT INTO `shopcomment` VALUES ('12', '0', 'noah', '12', 'ff', '2010-06-09 11:08:31', '2010-06-09 11:08:31');
+INSERT INTO `shopcomment` VALUES ('13', '0', 'noah', '6', 'dsfg', '2010-06-09 11:20:43', '2010-06-09 11:20:43');
 
 -- ----------------------------
 -- Table structure for `shopoverall`
@@ -141,7 +169,7 @@ CREATE TABLE `shopvoter` (
   `itemName` varchar(50) NOT NULL,
   `value` int(11) NOT NULL,
   PRIMARY KEY  (`voterId`)
-) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopvoter
@@ -155,6 +183,21 @@ INSERT INTO `shopvoter` VALUES ('15', 'noah', '0', 'taste', '92');
 INSERT INTO `shopvoter` VALUES ('16', 'noah', '0', 'service', '3');
 INSERT INTO `shopvoter` VALUES ('17', 'noah', '0', 'perCapita', '43');
 INSERT INTO `shopvoter` VALUES ('18', 'noah', '0', 'taste', '3');
+INSERT INTO `shopvoter` VALUES ('19', 'noah', '0', 'service', '23');
+INSERT INTO `shopvoter` VALUES ('20', 'noah', '0', 'perCapita', '2');
+INSERT INTO `shopvoter` VALUES ('21', 'noah', '0', 'taste', '4');
+INSERT INTO `shopvoter` VALUES ('22', 'noah', '0', 'service', '12');
+INSERT INTO `shopvoter` VALUES ('23', 'noah', '0', 'perCapita', '12');
+INSERT INTO `shopvoter` VALUES ('24', 'noah', '0', 'taste', '12');
+INSERT INTO `shopvoter` VALUES ('25', 'noah', '0', 'service', '12');
+INSERT INTO `shopvoter` VALUES ('26', 'noah', '0', 'perCapita', '54');
+INSERT INTO `shopvoter` VALUES ('27', 'noah', '0', 'taste', '12');
+INSERT INTO `shopvoter` VALUES ('28', 'noah', '0', 'service', '12');
+INSERT INTO `shopvoter` VALUES ('29', 'noah', '0', 'perCapita', '43');
+INSERT INTO `shopvoter` VALUES ('30', 'noah', '0', 'taste', '12');
+INSERT INTO `shopvoter` VALUES ('31', 'noah', '0', 'service', '66');
+INSERT INTO `shopvoter` VALUES ('32', 'noah', '0', 'perCapita', '3');
+INSERT INTO `shopvoter` VALUES ('33', 'noah', '0', 'taste', '34');
 
 -- ----------------------------
 -- Table structure for `user`
@@ -163,7 +206,6 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `username` char(50) NOT NULL,
   `password` char(50) NOT NULL,
-  `email` char(50) NOT NULL,
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`username`)
@@ -172,11 +214,8 @@ CREATE TABLE `user` (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES ('Noah', '123', 'noah.shen87@gmail.com', '2010-04-10 14:29:55', '2010-05-22 16:18:17');
-INSERT INTO `user` VALUES ('Noah2', '123', 'noahs-ark@163.com', '2010-04-12 20:30:42', '2010-05-22 16:18:22');
-INSERT INTO `user` VALUES ('noah45', '123', 'noah.shen8787@gmail.com', '2010-05-22 16:21:52', '2010-05-22 16:21:52');
-INSERT INTO `user` VALUES ('noah87', '123', 'noah.shen878787@gmail.com', '2010-05-22 16:23:02', '2010-05-22 16:23:02');
-INSERT INTO `user` VALUES ('noah123', '123', '54', '2010-05-22 16:23:45', '2010-05-22 16:23:45');
+INSERT INTO `user` VALUES ('Noah', '123', '2010-04-10 14:29:55', '2010-04-10 14:30:27');
+INSERT INTO `user` VALUES ('Noah2', '123', '2010-04-12 20:30:42', '2010-04-12 20:30:51');
 
 -- ----------------------------
 -- Table structure for `userfavoriteshop`
@@ -187,7 +226,7 @@ CREATE TABLE `userfavoriteshop` (
   `username` char(50) NOT NULL,
   `shopId` int(20) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userfavoriteshop
@@ -211,7 +250,7 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster
