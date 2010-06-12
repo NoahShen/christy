@@ -7,17 +7,17 @@ import com.google.code.christy.sm.OnlineUser;
 import com.google.code.christy.sm.SmHandler;
 import com.google.code.christy.sm.SmManager;
 import com.google.code.christy.sm.UserResource;
-import com.google.code.christy.sm.disco.DiscoInfoExtension;
-import com.google.code.christy.sm.disco.DiscoInfoFeature;
-import com.google.code.christy.sm.disco.DiscoInfoIdentity;
-import com.google.code.christy.sm.disco.DiscoItem;
-import com.google.code.christy.sm.disco.DiscoItemsExtension;
 import com.google.code.christy.sm.disco.DiscoManager;
 import com.google.code.christy.xmpp.Iq;
 import com.google.code.christy.xmpp.JID;
 import com.google.code.christy.xmpp.Packet;
 import com.google.code.christy.xmpp.PacketUtils;
 import com.google.code.christy.xmpp.XmppError;
+import com.google.code.christy.xmpp.disco.DiscoInfoExtension;
+import com.google.code.christy.xmpp.disco.DiscoInfoFeature;
+import com.google.code.christy.xmpp.disco.DiscoInfoIdentity;
+import com.google.code.christy.xmpp.disco.DiscoItem;
+import com.google.code.christy.xmpp.disco.DiscoItemsExtension;
 
 
 /**

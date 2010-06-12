@@ -49,7 +49,7 @@ public class SmSessionImpl extends AbstractPropertied implements SmSession
 	}
 
 	@Override
-	public void close()
+	public synchronized void close()
 	{
 		if (iosession.isConnected())
 		{

@@ -37,7 +37,7 @@ public class C2sSessionImpl extends AbstractPropertied implements C2sSession
 	}
 
 	@Override
-	public void close()
+	public synchronized void close()
 	{
 		if (iosession.isConnected())
 		{

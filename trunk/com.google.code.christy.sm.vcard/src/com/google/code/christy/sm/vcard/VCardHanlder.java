@@ -12,6 +12,7 @@ import com.google.code.christy.xmpp.Iq;
 import com.google.code.christy.xmpp.JID;
 import com.google.code.christy.xmpp.Packet;
 import com.google.code.christy.xmpp.XmppError;
+import com.google.code.christy.xmpp.vcard.VCardPacketExtension;
 import com.google.code.christy.xmppparser.UnknownPacketExtension;
 
 public class VCardHanlder implements SmHandler

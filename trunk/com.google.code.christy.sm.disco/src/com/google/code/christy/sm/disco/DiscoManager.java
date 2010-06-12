@@ -1,5 +1,8 @@
 package com.google.code.christy.sm.disco;
 
+import com.google.code.christy.xmpp.disco.DiscoInfoExtension;
+import com.google.code.christy.xmpp.disco.DiscoItemsExtension;
+
 
 /**
  * @author noah
