@@ -6,16 +6,12 @@ import org.osgi.framework.ServiceRegistration;
 
 import com.google.code.christy.dbhelper.VCardDbHelperTracker;
 import com.google.code.christy.sm.SmHandler;
-import com.google.code.christy.sm.vcard.parser.VCardExtensionParser;
-import com.google.code.christy.sm.vcard.parser.VCardTempUpdateExtensionParser;
-import com.google.code.christy.xmppparser.ExtensionParser;
 
 public class Activator implements BundleActivator
 {
 
 	private ServiceRegistration vCardHanlderRegistration;
-	private ServiceRegistration vCardExtensionParserRegistration;
-	private ServiceRegistration vCardTempUpdateExtensionParserRegistration;
+
 	private VCardDbHelperTracker vCardDbHelperTracker;
 
 	/*
@@ -25,13 +21,6 @@ public class Activator implements BundleActivator
 	 */
 	public void start(BundleContext context) throws Exception
 	{
-		VCardExtensionParser vCardExtensionParser = new VCardExtensionParser();
-		vCardExtensionParserRegistration = 
-			context.registerService(ExtensionParser.class.getName(), vCardExtensionParser, null);
-		
-		VCardTempUpdateExtensionParser vCardTempUpdateExtensionParser = new VCardTempUpdateExtensionParser();
-		vCardTempUpdateExtensionParserRegistration = 
-			context.registerService(ExtensionParser.class.getName(), vCardTempUpdateExtensionParser, null);
 		
 		vCardDbHelperTracker = new VCardDbHelperTracker(context);
 		vCardDbHelperTracker.open();
@@ -46,19 +35,7 @@ public class Activator implements BundleActivator
 	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception
-	{
-		if (vCardExtensionParserRegistration != null)
-		{
-			vCardExtensionParserRegistration.unregister();
-			vCardExtensionParserRegistration = null;
-		}
-		
-		if (vCardTempUpdateExtensionParserRegistration != null)
-		{
-			vCardTempUpdateExtensionParserRegistration.unregister();
-			vCardTempUpdateExtensionParserRegistration = null;
-		}
-		
+	{		
 		if (vCardHanlderRegistration != null)
 		{
 			vCardHanlderRegistration.unregister();

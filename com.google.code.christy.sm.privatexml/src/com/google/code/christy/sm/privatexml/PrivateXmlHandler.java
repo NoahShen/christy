@@ -10,6 +10,7 @@ import com.google.code.christy.sm.UserResource;
 import com.google.code.christy.xmpp.Iq;
 import com.google.code.christy.xmpp.Packet;
 import com.google.code.christy.xmpp.XmppError;
+import com.google.code.christy.xmpp.privatexml.PrivateXmlExtension;
 import com.google.code.christy.xmppparser.UnknownPacketExtension;
 
 public class PrivateXmlHandler implements SmHandler

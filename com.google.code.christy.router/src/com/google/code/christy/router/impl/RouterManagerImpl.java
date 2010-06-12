@@ -604,14 +604,13 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 
 		private void c2shandleRoute(RouteMessage routeMessage, IoSession session) throws XmlPullParserException, IOException
 		{
-			RouterToSmMessageDispatcher dispatcher = dispatcherServiceTracker.getDispatcher();
 			String userNode = routeMessage.getToUserNode();
 			if (userNode != null)
 			{
+				RouterToSmMessageDispatcher dispatcher = dispatcherServiceTracker.getDispatcher();
 				dispatcher.sendMessage(routeMessage);
+				return;
 			}
-			
-			
 		}
 
 		private void c2shandleInternal(XmlPullParser parser, IoSession session)
@@ -905,6 +904,14 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 						smSession.write(routeMessage);
 					}
 				}
+				else
+				{
+					ModuleSessionImpl moduleSession = moduleSessions.get(to);
+					if (moduleSession != null)
+					{
+						moduleSession.write(routeMessage);
+					}
+				}
 			}
 			else
 			{
@@ -915,7 +922,14 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 					JID jid = packet.getTo();
 					if (!jid.getDomain().equals(getDomain()))
 					{
-						// TODO send to s2s
+						// TODO send to s2s or subDomain
+						
+						String bareJid = jid.toPrepedBareJID();
+						ModuleSessionImpl moduleSession = moduleSessions.get(bareJid);
+						if (moduleSession != null)
+						{
+							moduleSession.write(routeMessage);
+						}
 					}
 					else 
 					{
@@ -926,7 +940,7 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 					}
 				}
 			}
-			
+
 		}
 
 		private void smhandleInternal(XmlPullParser parser, IoSession session)
@@ -1137,8 +1151,8 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 		@Override
 		public void exceptionCaught(IoSession session, Throwable cause) throws Exception
 		{
-			// TODO Auto-generated method stub
-			
+			loggerServiceTracker.debug("session" + session + ": exceptionCaught:" + cause.getMessage());
+			cause.printStackTrace();
 		}
 
 		@Override
@@ -1192,12 +1206,18 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 			{
 				modulehandleInternal(parser, session);
 			}
-//			else if ("route".equals(elementName))
-//			{
-//				RouteMessage routeMessage = 
-//					routeMessageParserServiceTracker.getRouteMessageParser().parseParser(parser);
-//				modulehandleRoute(routeMessage, session);
-//			}
+			else if ("route".equals(elementName))
+			{
+				RouteMessage routeMessage = 
+					routeMessageParserServiceTracker.getRouteMessageParser().parseParser(parser);
+				modulehandleRoute(routeMessage, session);
+			}
+		}
+
+		private void modulehandleRoute(RouteMessage routeMessage, IoSession session)
+		{
+			// TODO Auto-generated method stub
+			
 		}
 
 		private void modulehandleInternal(XmlPullParser parser, IoSession session)
@@ -1312,13 +1332,9 @@ public class RouterManagerImpl extends AbstractPropertied implements RouterManag
 				{
 					s = ((XmlStanza)message).toXml();
 				}
-				SmSessionImpl smSession = (SmSessionImpl) session.getAttachment();
-				String smName = null;
-				if (smSession != null)
-				{
-					smName = smSession.getSmName();
-				}
-				loggerServiceTracker.debug("session" + session + "[" + smName + "]: messageSent:\n" + s);
+				ModuleSessionImpl moduleSession = (ModuleSessionImpl) session.getAttachment();
+				
+				loggerServiceTracker.debug("module session" + session + "[" + moduleSession.getSubDomain() + "]: messageSent:\n" + s);
 				
 			}
 		}

@@ -35,7 +35,7 @@ public class ModuleSessionImpl implements ModuleSession
 	}
 
 	@Override
-	public void close()
+	public synchronized void close()
 	{
 		if (iosession.isConnected())
 		{

@@ -3,13 +3,11 @@ package com.google.code.christy.sm.disco.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
-import com.google.code.christy.sm.disco.DiscoInfoFeature;
+import com.google.code.christy.xmpp.disco.DiscoInfoFeature;
 
 /**
  * @author noah

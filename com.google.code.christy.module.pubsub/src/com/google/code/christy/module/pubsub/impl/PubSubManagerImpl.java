@@ -53,6 +53,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 
 	private SocketConnector routerConnector;
 	
+	private PubSubEngine pubSubEngine = new PubSubEngine();
 	
 	public PubSubManagerImpl(LoggerServiceTracker loggerServiceTracker, RouteMessageParserServiceTracker routeMessageParserServiceTracker)
 	{
@@ -310,7 +311,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 
 		private void handleRoute(RouteMessage routeMessage, IoSession session)
 		{
-			// TODO Auto-generated method stub
+			XmlStanza stanza = routeMessage.getXmlStanza();
 			
 		}
 

@@ -6,15 +6,13 @@ import org.osgi.framework.ServiceRegistration;
 
 import com.google.code.christy.dbhelper.PrivateXmlDbHelperTracker;
 import com.google.code.christy.sm.SmHandler;
-import com.google.code.christy.sm.privatexml.parser.PrivateXmlExtensionParser;
-import com.google.code.christy.xmppparser.ExtensionParser;
 
 public class Activator implements BundleActivator
 {
 
 	private PrivateXmlDbHelperTracker privateXmlDbHelperTracker;
 	private ServiceRegistration privateXmlHandlerRegistration;
-	private ServiceRegistration privateXmlExtensionParserRegistration;
+
 
 	/*
 	 * (non-Javadoc)
@@ -23,8 +21,7 @@ public class Activator implements BundleActivator
 	 */
 	public void start(BundleContext context) throws Exception
 	{
-		PrivateXmlExtensionParser privateXmlExtensionParser = new PrivateXmlExtensionParser();
-		privateXmlExtensionParserRegistration = context.registerService(ExtensionParser.class.getName(), privateXmlExtensionParser, null);
+		
 		
 		privateXmlDbHelperTracker = new PrivateXmlDbHelperTracker(context);
 		privateXmlDbHelperTracker.open();
@@ -52,11 +49,6 @@ public class Activator implements BundleActivator
 			privateXmlHandlerRegistration = null;
 		}
 		
-		if (privateXmlExtensionParserRegistration != null)
-		{
-			privateXmlExtensionParserRegistration.unregister();
-			privateXmlExtensionParserRegistration = null;
-		}
 	}
 
 }

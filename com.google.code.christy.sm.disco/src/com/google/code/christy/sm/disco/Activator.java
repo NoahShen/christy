@@ -10,9 +10,7 @@ import com.google.code.christy.sm.disco.impl.DiscoInfoFeatureServiceTracker;
 import com.google.code.christy.sm.disco.impl.DiscoInfoIdentityServiceTracker;
 import com.google.code.christy.sm.disco.impl.DiscoItemServiceTracker;
 import com.google.code.christy.sm.disco.impl.DiscoManagerImpl;
-import com.google.code.christy.sm.disco.parser.DiscoInfoExtensionParser;
-import com.google.code.christy.sm.disco.parser.DiscoItemsExtensionParser;
-import com.google.code.christy.xmppparser.ExtensionParser;
+import com.google.code.christy.xmpp.disco.DiscoInfoFeature;
 
 public class Activator implements BundleActivator
 {
@@ -29,10 +27,6 @@ public class Activator implements BundleActivator
 
 	private ServiceRegistration itemFeatureRegistration;
 
-	private ServiceRegistration discoInfoExtensionParserRegistration;
-
-	private ServiceRegistration discoItemsExtensionParserRegistration;
-
 	public void start(BundleContext context) throws Exception
 	{
 		DiscoInfoFeature infoFeature = 
@@ -44,15 +38,6 @@ public class Activator implements BundleActivator
 			new DiscoInfoFeature(null, "http://jabber.org/protocol/disco#items");
 		itemFeatureRegistration = 
 			context.registerService(DiscoInfoFeature.class.getName(), itemFeature, null);
-		
-		
-		DiscoInfoExtensionParser discoInfoExtensionParser = new DiscoInfoExtensionParser();
-		discoInfoExtensionParserRegistration = 
-			context.registerService(ExtensionParser.class.getName(), discoInfoExtensionParser, null);
-		
-		DiscoItemsExtensionParser discoItemsExtensionParser = new DiscoItemsExtensionParser();
-		discoItemsExtensionParserRegistration = 
-			context.registerService(ExtensionParser.class.getName(), discoItemsExtensionParser, null);
 		
 		
 		discoInfoFeatureServiceTracker = new DiscoInfoFeatureServiceTracker(context);
@@ -111,17 +96,6 @@ public class Activator implements BundleActivator
 			itemFeatureRegistration = null;
 		}
 		
-		if (discoInfoExtensionParserRegistration != null)
-		{
-			discoInfoExtensionParserRegistration.unregister();
-			discoInfoExtensionParserRegistration = null;
-		}
-		
-		if (discoItemsExtensionParserRegistration != null)
-		{
-			discoItemsExtensionParserRegistration.unregister();
-			discoItemsExtensionParserRegistration = null;
-		}
 	}
 
 }
