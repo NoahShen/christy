@@ -4,9 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import com.google.code.christy.dbhelper.VCardDbHelper;
+import com.google.code.christy.dbhelper.VCardEntity;
 import com.google.code.christy.lib.ConnectionPool;
-import com.google.code.christy.sm.vcard.VCardDbHelper;
-import com.google.code.christy.sm.vcard.VCardEntity;
 
 public class VCardMysqlDbHelper implements VCardDbHelper
 {

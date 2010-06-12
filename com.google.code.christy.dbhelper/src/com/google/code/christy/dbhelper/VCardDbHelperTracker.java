@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.google.code.christy.sm.vcard;
+package com.google.code.christy.dbhelper;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;

@@ -1,4 +1,4 @@
-package com.google.code.christy.sm.vcard;
+package com.google.code.christy.dbhelper;
 
 public class VCardEntity
 {

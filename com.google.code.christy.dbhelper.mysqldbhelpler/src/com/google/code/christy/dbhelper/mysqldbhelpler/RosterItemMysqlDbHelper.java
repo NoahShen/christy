@@ -7,11 +7,11 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.code.christy.dbhelper.RosterItem;
+import com.google.code.christy.dbhelper.RosterItemDbHelper;
+import com.google.code.christy.dbhelper.RosterItem.Ask;
+import com.google.code.christy.dbhelper.RosterItem.Subscription;
 import com.google.code.christy.lib.ConnectionPool;
-import com.google.code.christy.sm.contactmgr.RosterItem;
-import com.google.code.christy.sm.contactmgr.RosterItemDbHelper;
-import com.google.code.christy.sm.contactmgr.RosterItem.Ask;
-import com.google.code.christy.sm.contactmgr.RosterItem.Subscription;
 import com.google.code.christy.xmpp.JID;
 
 public class RosterItemMysqlDbHelper implements RosterItemDbHelper

@@ -1,17 +1,15 @@
 package com.google.code.christy.dbhelper.mysqldbhelpler;
 
-
-import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.dbhelper.PrivateXmlDbHelper;
+import com.google.code.christy.dbhelper.RosterItemDbHelper;
+import com.google.code.christy.dbhelper.UserDbHelper;
+import com.google.code.christy.dbhelper.VCardDbHelper;
 import com.google.code.christy.lib.ConnectionPool;
-import com.google.code.christy.sm.contactmgr.RosterItemDbHelper;
-import com.google.code.christy.sm.privatexml.PrivateXmlDbHelper;
-import com.google.code.christy.sm.user.UserDbHelper;
-import com.google.code.christy.sm.vcard.VCardDbHelper;
 
 public class Activator implements BundleActivator
 {
@@ -30,15 +28,12 @@ public class Activator implements BundleActivator
 	public void start(BundleContext context) throws Exception
 	{		
 		String appPath = System.getProperty("appPath");
-		XMLConfiguration config = new XMLConfiguration(appPath + "/smconfig.xml");
-		
-		SubnodeConfiguration subConifg = config.configurationAt("dbconfig");
-		
+		XMLConfiguration config = new XMLConfiguration(appPath + "/dbconfig.xml");		
 		
 		connPool = new ConnectionPool("com.mysql.jdbc.Driver",
-				subConifg.getString("url"),
-				subConifg.getString("user"),
-				subConifg.getString("password"));
+				config.getString("url"),
+				config.getString("user"),
+				config.getString("password"));
 		connPool.createPool();
 
 		RosterItemMysqlDbHelper rosterItemMysqlDbHelper = new RosterItemMysqlDbHelper(connPool);

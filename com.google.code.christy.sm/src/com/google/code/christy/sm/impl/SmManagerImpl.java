@@ -27,6 +27,10 @@ import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import com.google.code.christy.dbhelper.OfflineSubscribeMsgDbHelperTracker;
+import com.google.code.christy.dbhelper.RosterItemDbHelperTracker;
+import com.google.code.christy.dbhelper.UserDbHelperTracker;
+import com.google.code.christy.dbhelper.UserPrivacyListDbHelperTracker;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.routemessage.RouteMessage;
@@ -35,11 +39,7 @@ import com.google.code.christy.sm.OnlineUser;
 import com.google.code.christy.sm.SmManager;
 import com.google.code.christy.sm.UserResource;
 import com.google.code.christy.sm.contactmgr.ContactManager;
-import com.google.code.christy.sm.contactmgr.OfflineSubscribeMsgDbHelperTracker;
-import com.google.code.christy.sm.contactmgr.RosterItemDbHelperTracker;
 import com.google.code.christy.sm.privacy.PrivacyManager;
-import com.google.code.christy.sm.privacy.UserPrivacyListDbHelperTracker;
-import com.google.code.christy.sm.user.UserDbHelperTracker;
 import com.google.code.christy.util.AbstractPropertied;
 import com.google.code.christy.xmpp.Iq;
 import com.google.code.christy.xmpp.IqBind;
@@ -823,12 +823,12 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 			loggerServiceTracker.debug("open stream successful");
 			
 			// TODO test code
-			String smname = getName();
-			if (id.endsWith("1"))
-			{
-				smname += "_1";
-				setName(smname);
-			}
+//			String smname = getName();
+//			if (id.endsWith("1"))
+//			{
+//				smname += "_1";
+//				setName(smname);
+//			}
 			session.write("<internal xmlns='" + SMROUTER_AUTH_NAMESPACE + "'" +
 						" smname='" + getName() + "' password='" + getRouterPassword() + "'/>");
 		}

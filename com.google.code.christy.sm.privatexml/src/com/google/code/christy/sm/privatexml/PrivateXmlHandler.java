@@ -1,5 +1,8 @@
 package com.google.code.christy.sm.privatexml;
 
+import com.google.code.christy.dbhelper.PrivateXmlDbHelper;
+import com.google.code.christy.dbhelper.PrivateXmlDbHelperTracker;
+import com.google.code.christy.dbhelper.PrivateXmlEntity;
 import com.google.code.christy.sm.OnlineUser;
 import com.google.code.christy.sm.SmHandler;
 import com.google.code.christy.sm.SmManager;

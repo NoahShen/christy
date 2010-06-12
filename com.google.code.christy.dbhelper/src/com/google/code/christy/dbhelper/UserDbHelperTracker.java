@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.google.code.christy.sm.user;
+package com.google.code.christy.dbhelper;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;

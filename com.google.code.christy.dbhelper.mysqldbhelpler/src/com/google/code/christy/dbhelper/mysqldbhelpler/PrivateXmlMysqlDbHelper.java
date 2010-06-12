@@ -4,9 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import com.google.code.christy.dbhelper.PrivateXmlDbHelper;
+import com.google.code.christy.dbhelper.PrivateXmlEntity;
 import com.google.code.christy.lib.ConnectionPool;
-import com.google.code.christy.sm.privatexml.PrivateXmlDbHelper;
-import com.google.code.christy.sm.privatexml.PrivateXmlEntity;
 
 public class PrivateXmlMysqlDbHelper implements PrivateXmlDbHelper
 {

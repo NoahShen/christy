@@ -4,6 +4,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.dbhelper.PrivateXmlDbHelperTracker;
 import com.google.code.christy.sm.SmHandler;
 import com.google.code.christy.sm.privatexml.parser.PrivateXmlExtensionParser;
 import com.google.code.christy.xmppparser.ExtensionParser;

@@ -1,4 +1,4 @@
-package com.google.code.christy.sm.privatexml;
+package com.google.code.christy.dbhelper;
 
 public class PrivateXmlEntity
 {

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.google.code.christy.sm.privacy;
+package com.google.code.christy.dbhelper;
 
 import java.io.Serializable;
 import java.util.ArrayList;

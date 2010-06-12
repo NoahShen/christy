@@ -4,6 +4,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.dbhelper.VCardDbHelperTracker;
 import com.google.code.christy.sm.SmHandler;
 import com.google.code.christy.sm.vcard.parser.VCardExtensionParser;
 import com.google.code.christy.sm.vcard.parser.VCardTempUpdateExtensionParser;
