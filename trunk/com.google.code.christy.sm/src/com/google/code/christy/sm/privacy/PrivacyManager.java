@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.google.code.christy.dbhelper.UserPrivacyList;
+import com.google.code.christy.dbhelper.UserPrivacyListDbHelper;
+import com.google.code.christy.dbhelper.UserPrivacyListDbHelperTracker;
+import com.google.code.christy.dbhelper.UserPrivacyListItem;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.sm.OnlineUser;
 import com.google.code.christy.sm.UserResource;

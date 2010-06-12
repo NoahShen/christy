@@ -4,8 +4,8 @@ import com.db4o.Db4o;
 import com.db4o.ObjectContainer;
 import com.db4o.ObjectSet;
 import com.db4o.query.Predicate;
-import com.google.code.christy.sm.contactmgr.OfflineSubscribeMsg;
-import com.google.code.christy.sm.contactmgr.OfflineSubscribeMsgDbHelper;
+import com.google.code.christy.dbhelper.OfflineSubscribeMsg;
+import com.google.code.christy.dbhelper.OfflineSubscribeMsgDbHelper;
 
 
 /**

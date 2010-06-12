@@ -6,11 +6,11 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
 import com.db4o.ObjectContainer;
-import com.google.code.christy.sm.contactmgr.OfflineSubscribeMsgDbHelper;
-import com.google.code.christy.sm.contactmgr.RosterItemDbHelper;
-import com.google.code.christy.sm.privacy.UserPrivacyListDbHelper;
-import com.google.code.christy.sm.privacy.UserPrivacyListItemDbHelper;
-import com.google.code.christy.sm.user.UserDbHelper;
+import com.google.code.christy.dbhelper.OfflineSubscribeMsgDbHelper;
+import com.google.code.christy.dbhelper.RosterItemDbHelper;
+import com.google.code.christy.dbhelper.UserDbHelper;
+import com.google.code.christy.dbhelper.UserPrivacyListDbHelper;
+import com.google.code.christy.dbhelper.UserPrivacyListItemDbHelper;
 
 public class Activator implements BundleActivator
 {

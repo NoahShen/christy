@@ -6,16 +6,16 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.dbhelper.OfflineSubscribeMsgDbHelperTracker;
+import com.google.code.christy.dbhelper.RosterItemDbHelperTracker;
+import com.google.code.christy.dbhelper.UserDbHelperTracker;
+import com.google.code.christy.dbhelper.UserPrivacyListDbHelperTracker;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
-import com.google.code.christy.sm.contactmgr.OfflineSubscribeMsgDbHelperTracker;
-import com.google.code.christy.sm.contactmgr.RosterItemDbHelperTracker;
 import com.google.code.christy.sm.controller.SmController;
 import com.google.code.christy.sm.impl.SmHandlerServiceTracker;
 import com.google.code.christy.sm.impl.SmManagerImpl;
 import com.google.code.christy.sm.impl.SmToRouterInterceptorServiceTracker;
-import com.google.code.christy.sm.privacy.UserPrivacyListDbHelperTracker;
-import com.google.code.christy.sm.user.UserDbHelperTracker;
 
 public class Activator implements BundleActivator
 {

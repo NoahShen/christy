@@ -7,8 +7,8 @@ import com.db4o.Db4o;
 import com.db4o.ObjectContainer;
 import com.db4o.ObjectSet;
 import com.db4o.query.Predicate;
-import com.google.code.christy.sm.user.User;
-import com.google.code.christy.sm.user.UserDbHelper;
+import com.google.code.christy.dbhelper.User;
+import com.google.code.christy.dbhelper.UserDbHelper;
 
 
 /**

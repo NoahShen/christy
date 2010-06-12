@@ -6,9 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
+import com.google.code.christy.dbhelper.User;
+import com.google.code.christy.dbhelper.UserDbHelper;
 import com.google.code.christy.lib.ConnectionPool;
-import com.google.code.christy.sm.user.User;
-import com.google.code.christy.sm.user.UserDbHelper;
 
 public class UserMysqlDbHelper implements UserDbHelper
 {

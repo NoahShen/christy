@@ -7,10 +7,10 @@ import com.db4o.Db4o;
 import com.db4o.ObjectContainer;
 import com.db4o.ObjectSet;
 import com.db4o.query.Predicate;
-import com.google.code.christy.sm.contactmgr.RosterItem;
-import com.google.code.christy.sm.contactmgr.RosterItemDbHelper;
-import com.google.code.christy.sm.contactmgr.RosterItem.Ask;
-import com.google.code.christy.sm.contactmgr.RosterItem.Subscription;
+import com.google.code.christy.dbhelper.RosterItem;
+import com.google.code.christy.dbhelper.RosterItemDbHelper;
+import com.google.code.christy.dbhelper.RosterItem.Ask;
+import com.google.code.christy.dbhelper.RosterItem.Subscription;
 import com.google.code.christy.xmpp.JID;
 
 

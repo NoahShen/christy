@@ -1,5 +1,8 @@
 package com.google.code.christy.sm.vcard;
 
+import com.google.code.christy.dbhelper.VCardDbHelper;
+import com.google.code.christy.dbhelper.VCardDbHelperTracker;
+import com.google.code.christy.dbhelper.VCardEntity;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.sm.OnlineUser;
 import com.google.code.christy.sm.SmHandler;
