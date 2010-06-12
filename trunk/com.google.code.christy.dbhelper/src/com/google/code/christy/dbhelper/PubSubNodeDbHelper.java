@@ -5,4 +5,6 @@ import java.util.Collection;
 public interface PubSubNodeDbHelper
 {
 	public Collection<PubSubNode> getNodes(String parent) throws Exception;
+	
+	public PubSubNode getNode(String nodeId) throws Exception;
 }
