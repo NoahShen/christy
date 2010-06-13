@@ -16,6 +16,8 @@ import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
+import com.google.code.christy.dbhelper.PubSubAffiliation;
+import com.google.code.christy.dbhelper.PubSubAffiliationDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubItemDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubSubscription;
@@ -33,6 +35,7 @@ import com.google.code.christy.xmpp.XmlStanza;
 import com.google.code.christy.xmpp.XmppError;
 import com.google.code.christy.xmpp.disco.DiscoInfoExtension;
 import com.google.code.christy.xmpp.disco.DiscoItemsExtension;
+import com.google.code.christy.xmpp.pubsub.PubSubAffiliations;
 import com.google.code.christy.xmpp.pubsub.PubSubExtension;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptions;
 
@@ -73,7 +76,8 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
 				PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker, 
 				PubSubItemDbHelperTracker pubSubItemDbHelperTracker, 
-				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker)
+				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker, 
+				PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker)
 	{
 		super();
 		this.loggerServiceTracker = loggerServiceTracker;
@@ -81,7 +85,8 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 		
 		pubSubEngine = new PubSubEngine(this, pubSubNodeDbHelperTracker, 
 						pubSubItemDbHelperTracker,
-						pubSubSubscriptionDbHelperTracker);
+						pubSubSubscriptionDbHelperTracker,
+						pubSubAffiliationDbHelperTracker);
 	}
 
 	public String getDomain()
@@ -360,6 +365,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			{
 				handlePubSubExtension(routeMessage, iq, pubSubExtension, session);
 			}
+			
 		}
 
 		private void handlePubSubExtension(RouteMessage routeMessage, Iq iq, PubSubExtension pubSubExtension, IoSession session)
@@ -374,54 +380,22 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			if (stanza != null)
 			{
 				Iq iqResponse = null;
-				if (stanza instanceof PubSubSubscriptions)
+				if (iq.getType() != Iq.Type.get)
 				{
-					if (iq.getType() != Iq.Type.get)
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.bad_request));
+					if (iqResponse.getFrom() == null)
 					{
-						iqResponse = PacketUtils.createErrorIq(iq);
-						iqResponse.setError(new XmppError(XmppError.Condition.bad_request));
-						if (iqResponse.getFrom() == null)
-						{
-							iqResponse.setFrom(new JID(null, getSubDomain(), null));
-						}
+						iqResponse.setFrom(new JID(null, getSubDomain(), null));
 					}
-					else
-					{
-						PubSubSubscriptions pubSubSubscriptions = (PubSubSubscriptions) stanza;
-						String node = pubSubSubscriptions.getNode();
-						Collection<PubSubSubscription> subs = pubSubEngine.getPubSubSubscriptions(from.toBareJID(), node);
-						
-						if (subs != null)
-						{
-							PubSubExtension pubSubExtensionResponse = new PubSubExtension(pubSubExtension.getNamespace());
-							PubSubSubscriptions pubSubSubscriptionsResponse = new PubSubSubscriptions();
-							pubSubSubscriptionsResponse.setNode(node);
-							
-							for (PubSubSubscription subscription : subs)
-							{
-								PubSubSubscriptions.Subscription sub = 
-									new PubSubSubscriptions.Subscription(subscription.getNodeId(), 
-													subscription.getJid(), 
-													PubSubSubscriptions.SubscriptionType.valueOf(subscription.getSubscription().name()));
-								sub.setSubId(subscription.getSubId());
-								pubSubSubscriptionsResponse.addSubscription(sub);
-							}
-							
-							pubSubExtensionResponse.setStanza(pubSubSubscriptionsResponse);
-							
-							iqResponse = PacketUtils.createResultIq(iq);
-							iqResponse.addExtension(pubSubExtensionResponse);
-						}
-						else
-						{
-							iqResponse = PacketUtils.createErrorIq(iq);
-							iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
-						}
-						
-						
-					}
-					
-					
+				}
+				else if (stanza instanceof PubSubSubscriptions)
+				{
+					iqResponse = handlePubSubSubscriptions(from, stanza, iq, pubSubExtension);
+				}
+				else if (stanza instanceof PubSubAffiliations)
+				{
+					iqResponse = handlePubSubAffiliations(from, stanza, iq, pubSubExtension);
 				}
 				
 
@@ -438,6 +412,78 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				sendToRouter(responseRouteMessage);
 			}
 			
+		}
+
+		private Iq handlePubSubAffiliations(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
+		{
+
+			Iq iqResponse = null;
+			PubSubAffiliations pubSubAffiliations = (PubSubAffiliations) stanza;
+			String node = pubSubAffiliations.getNode();
+			Collection<PubSubAffiliation> affiliations = pubSubEngine.getPubSubAffiliation(from.toBareJID(), node);
+			
+			if (affiliations != null)
+			{
+				PubSubExtension pubSubExtensionResponse = new PubSubExtension(pubSubExtension.getNamespace());
+				PubSubAffiliations pubSubAffiliationsResponse = new PubSubAffiliations();
+				pubSubAffiliationsResponse.setNode(node);
+				
+				for (PubSubAffiliation pubSubAffiliation : affiliations)
+				{
+					PubSubAffiliations.Affiliation affi = 
+						new PubSubAffiliations.Affiliation(pubSubAffiliation.getNodeId(), 
+										PubSubAffiliations.AffiliationType.valueOf(pubSubAffiliation.getAffiliationType().name()));
+					pubSubAffiliationsResponse.addAffiliation(affi);
+				}
+				
+				pubSubExtensionResponse.setStanza(pubSubAffiliationsResponse);
+				
+				iqResponse = PacketUtils.createResultIq(iq);
+				iqResponse.addExtension(pubSubExtensionResponse);
+			}
+			else
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
+			}
+			
+			return iqResponse;
+		}
+
+		private Iq handlePubSubSubscriptions(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
+		{
+			Iq iqResponse = null;
+			PubSubSubscriptions pubSubSubscriptions = (PubSubSubscriptions) stanza;
+			String node = pubSubSubscriptions.getNode();
+			Collection<PubSubSubscription> subs = pubSubEngine.getPubSubSubscriptions(from.toBareJID(), node);
+			
+			if (subs != null)
+			{
+				PubSubExtension pubSubExtensionResponse = new PubSubExtension(pubSubExtension.getNamespace());
+				PubSubSubscriptions pubSubSubscriptionsResponse = new PubSubSubscriptions();
+				pubSubSubscriptionsResponse.setNode(node);
+				
+				for (PubSubSubscription subscription : subs)
+				{
+					PubSubSubscriptions.Subscription sub = 
+						new PubSubSubscriptions.Subscription(subscription.getNodeId(), 
+										subscription.getJid(), 
+										PubSubSubscriptions.SubscriptionType.valueOf(subscription.getSubscription().name()));
+					sub.setSubId(subscription.getSubId());
+					pubSubSubscriptionsResponse.addSubscription(sub);
+				}
+				
+				pubSubExtensionResponse.setStanza(pubSubSubscriptionsResponse);
+				
+				iqResponse = PacketUtils.createResultIq(iq);
+				iqResponse.addExtension(pubSubExtensionResponse);
+			}
+			else
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
+			}
+			return iqResponse;
 		}
 
 		private void handleDiscoItems(RouteMessage routeMessage, Iq iq, DiscoItemsExtension discoItems, IoSession session)

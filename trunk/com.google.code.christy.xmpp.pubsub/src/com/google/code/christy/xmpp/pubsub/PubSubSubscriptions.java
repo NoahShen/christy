@@ -79,7 +79,7 @@ public class PubSubSubscriptions implements XmlStanza
 		pubSubSubscriptions.subs = new ArrayList<Subscription>();
 		for (Subscription sub : subs)
 		{
-			pubSubSubscriptions.addSubscription((Subscription) sub.clone());
+			pubSubSubscriptions.subs.add((Subscription) sub.clone());
 		}
 		return pubSubSubscriptions;
 	}

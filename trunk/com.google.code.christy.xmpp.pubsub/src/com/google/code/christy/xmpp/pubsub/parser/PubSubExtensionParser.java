@@ -6,6 +6,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import com.google.code.christy.xmpp.PacketExtension;
+import com.google.code.christy.xmpp.pubsub.PubSubAffiliations;
 import com.google.code.christy.xmpp.pubsub.PubSubExtension;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptions;
 import com.google.code.christy.xmppparser.ExtensionParser;
@@ -46,6 +47,10 @@ public class PubSubExtensionParser implements ExtensionParser
 				{
 					extension.setStanza(parseSubscription(parser));
 				}
+				else if ("affiliations".equals(elementName))
+				{
+					extension.setStanza(parseAffiliation(parser));
+				}
 			}
 			else if (eventType == XmlPullParser.END_TAG)
 			{
@@ -57,6 +62,42 @@ public class PubSubExtensionParser implements ExtensionParser
 		}
 		
 		return extension;
+	}
+
+	private PubSubAffiliations parseAffiliation(XmlPullParser parser) throws XmlPullParserException, IOException
+	{
+		String node = parser.getAttributeValue("", "node");
+		
+		PubSubAffiliations pubSubAffiliations = new PubSubAffiliations();
+		pubSubAffiliations.setNode(node);
+		
+		boolean done = false;
+		while (!done)
+		{
+			int eventType = parser.next();
+			String elementName = parser.getName();
+			if (eventType == XmlPullParser.START_TAG)
+			{
+				if ("affiliation".equals(elementName))
+				{
+					String subNode = parser.getAttributeValue("", "node");
+					String affiliationTypeStr = parser.getAttributeValue("", "affiliation");
+					PubSubAffiliations.Affiliation affiliation = 
+						new PubSubAffiliations.Affiliation(subNode, PubSubAffiliations.AffiliationType.valueOf(affiliationTypeStr));
+					
+					pubSubAffiliations.addAffiliation(affiliation);
+				}
+			}
+			else if (eventType == XmlPullParser.END_TAG)
+			{
+				if ("affiliations".equals(elementName))
+				{
+					done = true;
+				}
+			}
+		}
+		
+		return pubSubAffiliations;
 	}
 
 	private PubSubSubscriptions parseSubscription(XmlPullParser parser) throws XmlPullParserException, IOException
