@@ -15,6 +15,7 @@ import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
+import com.google.code.christy.dbhelper.PubSubItemDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
@@ -65,13 +66,14 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 	
 	public PubSubManagerImpl(LoggerServiceTracker loggerServiceTracker, 
 				RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
-				PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker)
+				PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker, 
+				PubSubItemDbHelperTracker pubSubItemDbHelperTracker)
 	{
 		super();
 		this.loggerServiceTracker = loggerServiceTracker;
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 		
-		pubSubEngine = new PubSubEngine(this, pubSubNodeDbHelperTracker);
+		pubSubEngine = new PubSubEngine(this, pubSubNodeDbHelperTracker, pubSubItemDbHelperTracker);
 	}
 
 	public String getDomain()
@@ -368,8 +370,17 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			{
 				String node = discoItems.getNode();
 				DiscoItemsExtension discoItemsResponse = pubSubEngine.getDiscoItem(node);
-				iqResponse = PacketUtils.createResultIq(iq);
-				iqResponse.addExtension(discoItemsResponse);
+				if (discoItemsResponse == null)
+				{
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
+				}
+				else
+				{
+					iqResponse = PacketUtils.createResultIq(iq);
+					iqResponse.addExtension(discoItemsResponse);
+				}
+				
 			}
 			
 			RouteMessage responseRouteMessage = new RouteMessage(getSubDomain(), routeMessage.getStreamId());
@@ -407,8 +418,17 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			else
 			{
 				DiscoInfoExtension discoInfoResponse = pubSubEngine.getDiscoInfo(discoInfo.getNode());
-				iqResponse = PacketUtils.createResultIq(iq);
-				iqResponse.addExtension(discoInfoResponse);
+				if (discoInfoResponse == null)
+				{
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
+				}
+				else
+				{
+					iqResponse = PacketUtils.createResultIq(iq);
+					iqResponse.addExtension(discoInfoResponse);
+				}
+				
 			}
 			
 			RouteMessage responseRouteMessage = new RouteMessage(getSubDomain(), routeMessage.getStreamId());

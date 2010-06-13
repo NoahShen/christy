@@ -24,6 +24,7 @@ public class PubSubNodeMysqlDbHelper implements PubSubNodeDbHelper
 	private static final String GETPUBSUBNODES_SQL = "SELECT * FROM pubsubnode WHERE parent = ?";
 	
 	private static final String GETROOTPUBSUBNODES_SQL = "SELECT * FROM pubsubnode WHERE parent IS NULL";
+	
 	/**
 	 * @param connectionPool
 	 * @param loggerServiceTracker 
@@ -36,7 +37,7 @@ public class PubSubNodeMysqlDbHelper implements PubSubNodeDbHelper
 	}
 	
 	@Override
-	public Collection<PubSubNode> getNodes(String parent) throws Exception
+	public Collection<PubSubNode> getChildNodes(String parent) throws Exception
 	{
 		Connection connection = null;
 		try
