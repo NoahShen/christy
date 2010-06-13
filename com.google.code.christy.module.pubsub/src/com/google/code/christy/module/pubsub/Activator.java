@@ -5,6 +5,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.dbhelper.PubSubAffiliationDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubItemDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelperTracker;
@@ -21,6 +22,7 @@ public class Activator implements BundleActivator
 	private PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker;
 	private PubSubItemDbHelperTracker pubSubItemDbHelperTracker;
 	private PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker;
+	private PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -44,12 +46,16 @@ public class Activator implements BundleActivator
 		pubSubSubscriptionDbHelperTracker = new PubSubSubscriptionDbHelperTracker(context);
 		pubSubSubscriptionDbHelperTracker.open();
 		
+		pubSubAffiliationDbHelperTracker = new PubSubAffiliationDbHelperTracker(context);
+		pubSubAffiliationDbHelperTracker.open();
+		
 		PubSubManagerImpl pubSubManager = 
 			new PubSubManagerImpl(loggerServiceTracker, 
 					routeMessageParserServiceTracker,
 					pubSubNodeDbHelperTracker,
 					pubSubItemDbHelperTracker,
-					pubSubSubscriptionDbHelperTracker);
+					pubSubSubscriptionDbHelperTracker,
+					pubSubAffiliationDbHelperTracker);
 		
 		String appPath = System.getProperty("appPath");
 		XMLConfiguration config = new XMLConfiguration(appPath + "/pusubconfig.xml");
@@ -119,6 +125,12 @@ public class Activator implements BundleActivator
 		{
 			pubSubSubscriptionDbHelperTracker.close();
 			pubSubSubscriptionDbHelperTracker = null;
+		}
+		
+		if (pubSubAffiliationDbHelperTracker != null)
+		{
+			pubSubAffiliationDbHelperTracker.close();
+			pubSubAffiliationDbHelperTracker = null;
 		}
 	}
 

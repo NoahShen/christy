@@ -3,6 +3,9 @@ package com.google.code.christy.module.pubsub.impl;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.google.code.christy.dbhelper.PubSubAffiliation;
+import com.google.code.christy.dbhelper.PubSubAffiliationDbHelper;
+import com.google.code.christy.dbhelper.PubSubAffiliationDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubItem;
 import com.google.code.christy.dbhelper.PubSubItemDbHelper;
 import com.google.code.christy.dbhelper.PubSubItemDbHelperTracker;
@@ -25,16 +28,19 @@ public class PubSubEngine
 	private PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker;
 	private PubSubItemDbHelperTracker pubSubItemDbHelperTracker;
 	private PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker;
+	private PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker;
 	
 	public PubSubEngine(PubSubManagerImpl pubSubManager, 
 				PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker, 
 				PubSubItemDbHelperTracker pubSubItemDbHelperTracker, 
-				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker)
+				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker, 
+				PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker)
 	{
 		this.pubSubManager = pubSubManager; 
 		this.pubSubNodeDbHelperTracker = pubSubNodeDbHelperTracker;
 		this.pubSubItemDbHelperTracker = pubSubItemDbHelperTracker;
 		this.pubSubSubscriptionDbHelperTracker = pubSubSubscriptionDbHelperTracker;
+		this.pubSubAffiliationDbHelperTracker = pubSubAffiliationDbHelperTracker;
 		
 		discoInfo = new DiscoInfoExtension();
 		discoInfo.addFeature(new DiscoInfoExtension.Feature("http://jabber.org/protocol/pubsub"));
@@ -161,5 +167,35 @@ public class PubSubEngine
 		return Collections.emptyList();
 	}
 	
+	
+	public Collection<PubSubAffiliation> getPubSubAffiliation(String jid, String node)
+	{
+		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
+		PubSubAffiliationDbHelper pubSubAffiliationDbHelper = pubSubAffiliationDbHelperTracker.getPubSubAffiliationDbHelper();
+		if (pubSubNodeDbHelper != null && pubSubAffiliationDbHelper != null)
+		{
+			try
+			{
+				if (node != null)
+				{
+					PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
+					if (pubSubNode == null)
+					{
+						return null;
+					}
+				}
+				
+				Collection<PubSubAffiliation> pubSubAffiliations = pubSubAffiliationDbHelper.getPubSubAffiliation(jid, node);
+				return pubSubAffiliations;
+				
+			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return Collections.emptyList();
+	}
 	
 }
