@@ -39,8 +39,11 @@ public class ExtensionParserServiceTracker extends ServiceTracker
 		for (Object obj : services)
 		{
 			ExtensionParser parser = (ExtensionParser) obj;
-			if (parser.getElementName().equals(elementName) 
-					&& parser.getNamespace().equals(namespace))
+			String parserElem = parser.getElementName();
+			String parserNs = parser.getNamespace();
+			if (parserElem.equals(elementName) 
+				// namespace(http://a.com/b) => nsmaspace(http://a.com/b#c)
+				&& (parserNs.equals(namespace) || namespace.contains(parserNs)))
 			{
 				return parser;
 			}

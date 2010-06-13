@@ -1,6 +1,7 @@
 package com.google.code.christy.module.pubsub.impl;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import com.google.code.christy.dbhelper.PubSubItem;
 import com.google.code.christy.dbhelper.PubSubItemDbHelper;
@@ -8,6 +9,9 @@ import com.google.code.christy.dbhelper.PubSubItemDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNode;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelper;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
+import com.google.code.christy.dbhelper.PubSubSubscription;
+import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelper;
+import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelperTracker;
 import com.google.code.christy.xmpp.JID;
 import com.google.code.christy.xmpp.disco.DiscoInfoExtension;
 import com.google.code.christy.xmpp.disco.DiscoItemsExtension;
@@ -20,14 +24,18 @@ public class PubSubEngine
 	private PubSubManagerImpl pubSubManager;
 	private PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker;
 	private PubSubItemDbHelperTracker pubSubItemDbHelperTracker;
+	private PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker;
 	
 	public PubSubEngine(PubSubManagerImpl pubSubManager, 
 				PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker, 
-				PubSubItemDbHelperTracker pubSubItemDbHelperTracker)
+				PubSubItemDbHelperTracker pubSubItemDbHelperTracker, 
+				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker)
 	{
 		this.pubSubManager = pubSubManager; 
 		this.pubSubNodeDbHelperTracker = pubSubNodeDbHelperTracker;
 		this.pubSubItemDbHelperTracker = pubSubItemDbHelperTracker;
+		this.pubSubSubscriptionDbHelperTracker = pubSubSubscriptionDbHelperTracker;
+		
 		discoInfo = new DiscoInfoExtension();
 		discoInfo.addFeature(new DiscoInfoExtension.Feature("http://jabber.org/protocol/pubsub"));
 	}
@@ -120,6 +128,37 @@ public class PubSubEngine
 		}
 		emptyDiscoItemsExtension.setNode(node);
 		return emptyDiscoItemsExtension;
+	}
+	
+	
+	public Collection<PubSubSubscription> getPubSubSubscriptions(String subscriber, String node)
+	{
+		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
+		PubSubSubscriptionDbHelper pubSubSubscriptionDbHelper = pubSubSubscriptionDbHelperTracker.getPubSubSubscriptionDbHelper();
+		if (pubSubNodeDbHelper != null && pubSubSubscriptionDbHelper != null)
+		{
+			try
+			{
+				if (node != null)
+				{
+					PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
+					if (pubSubNode == null)
+					{
+						return null;
+					}
+				}
+				
+				Collection<PubSubSubscription> subs = pubSubSubscriptionDbHelper.getPubSubSubscriptions(subscriber, node);
+				return subs;
+				
+			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return Collections.emptyList();
 	}
 	
 	

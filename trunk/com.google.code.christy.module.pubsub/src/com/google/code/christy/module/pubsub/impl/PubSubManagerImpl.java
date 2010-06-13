@@ -2,6 +2,7 @@ package com.google.code.christy.module.pubsub.impl;
 
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.concurrent.Executors;
 
 import org.apache.mina.common.ConnectFuture;
@@ -17,6 +18,8 @@ import org.xmlpull.v1.XmlPullParser;
 
 import com.google.code.christy.dbhelper.PubSubItemDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
+import com.google.code.christy.dbhelper.PubSubSubscription;
+import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelperTracker;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
 import com.google.code.christy.module.pubsub.PubSubManager;
@@ -30,6 +33,8 @@ import com.google.code.christy.xmpp.XmlStanza;
 import com.google.code.christy.xmpp.XmppError;
 import com.google.code.christy.xmpp.disco.DiscoInfoExtension;
 import com.google.code.christy.xmpp.disco.DiscoItemsExtension;
+import com.google.code.christy.xmpp.pubsub.PubSubExtension;
+import com.google.code.christy.xmpp.pubsub.PubSubSubscriptions;
 
 public class PubSubManagerImpl extends AbstractPropertied implements PubSubManager
 {
@@ -67,13 +72,16 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 	public PubSubManagerImpl(LoggerServiceTracker loggerServiceTracker, 
 				RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
 				PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker, 
-				PubSubItemDbHelperTracker pubSubItemDbHelperTracker)
+				PubSubItemDbHelperTracker pubSubItemDbHelperTracker, 
+				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker)
 	{
 		super();
 		this.loggerServiceTracker = loggerServiceTracker;
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 		
-		pubSubEngine = new PubSubEngine(this, pubSubNodeDbHelperTracker, pubSubItemDbHelperTracker);
+		pubSubEngine = new PubSubEngine(this, pubSubNodeDbHelperTracker, 
+						pubSubItemDbHelperTracker,
+						pubSubSubscriptionDbHelperTracker);
 	}
 
 	public String getDomain()
@@ -346,6 +354,90 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			{
 				handleDiscoItems(routeMessage, iq, discoItems, session);
 			}
+			
+			PubSubExtension pubSubExtension = (PubSubExtension) iq.getExtension(PubSubExtension.ELEMENTNAME, PubSubExtension.NAMESPACE);
+			if (pubSubExtension != null)
+			{
+				handlePubSubExtension(routeMessage, iq, pubSubExtension, session);
+			}
+		}
+
+		private void handlePubSubExtension(RouteMessage routeMessage, Iq iq, PubSubExtension pubSubExtension, IoSession session)
+		{
+			JID from = iq.getFrom();
+			if (from == null)
+			{
+				return;
+			}
+			
+			XmlStanza stanza = pubSubExtension.getStanza();
+			if (stanza != null)
+			{
+				Iq iqResponse = null;
+				if (stanza instanceof PubSubSubscriptions)
+				{
+					if (iq.getType() != Iq.Type.get)
+					{
+						iqResponse = PacketUtils.createErrorIq(iq);
+						iqResponse.setError(new XmppError(XmppError.Condition.bad_request));
+						if (iqResponse.getFrom() == null)
+						{
+							iqResponse.setFrom(new JID(null, getSubDomain(), null));
+						}
+					}
+					else
+					{
+						PubSubSubscriptions pubSubSubscriptions = (PubSubSubscriptions) stanza;
+						String node = pubSubSubscriptions.getNode();
+						Collection<PubSubSubscription> subs = pubSubEngine.getPubSubSubscriptions(from.toBareJID(), node);
+						
+						if (subs != null)
+						{
+							PubSubExtension pubSubExtensionResponse = new PubSubExtension(pubSubExtension.getNamespace());
+							PubSubSubscriptions pubSubSubscriptionsResponse = new PubSubSubscriptions();
+							pubSubSubscriptionsResponse.setNode(node);
+							
+							for (PubSubSubscription subscription : subs)
+							{
+								PubSubSubscriptions.Subscription sub = 
+									new PubSubSubscriptions.Subscription(subscription.getNodeId(), 
+													subscription.getJid(), 
+													PubSubSubscriptions.SubscriptionType.valueOf(subscription.getSubscription().name()));
+								sub.setSubId(subscription.getSubId());
+								pubSubSubscriptionsResponse.addSubscription(sub);
+							}
+							
+							pubSubExtensionResponse.setStanza(pubSubSubscriptionsResponse);
+							
+							iqResponse = PacketUtils.createResultIq(iq);
+							iqResponse.addExtension(pubSubExtensionResponse);
+						}
+						else
+						{
+							iqResponse = PacketUtils.createErrorIq(iq);
+							iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
+						}
+						
+						
+					}
+					
+					
+				}
+				
+
+				RouteMessage responseRouteMessage = new RouteMessage(getSubDomain(), routeMessage.getStreamId());
+				
+				//local user
+				if (from.getDomain().equals(getDomain()))
+				{
+					responseRouteMessage.setToUserNode(from.getNode());
+				}
+				
+				responseRouteMessage.setXmlStanza(iqResponse);
+				
+				sendToRouter(responseRouteMessage);
+			}
+			
 		}
 
 		private void handleDiscoItems(RouteMessage routeMessage, Iq iq, DiscoItemsExtension discoItems, IoSession session)

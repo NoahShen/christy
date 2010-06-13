@@ -12,7 +12,7 @@ public class PubSubExtension implements PacketExtension
 
 	public static final String ELEMENTNAME = "pubsub";
 
-	public static final String PUBSUB_NAMESPACE = "http://jabber.org/protocol/pubsub";
+	public static final String NAMESPACE = "http://jabber.org/protocol/pubsub";
 	
 	private String namespace;
 	

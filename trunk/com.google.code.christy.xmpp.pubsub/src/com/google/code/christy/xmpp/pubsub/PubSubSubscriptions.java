@@ -64,7 +64,7 @@ public class PubSubSubscriptions implements XmlStanza
 			{
 				buf.append(sub.toXml());
 			}
-			buf.append("<subscriptions/>");
+			buf.append("</subscriptions>");
 		}
 		
 		

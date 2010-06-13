@@ -941,7 +941,6 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 					XmlStanza stanza = routeMessage.getXmlStanza();
 					if (wrapper.isFromClient())
 					{
-
 						if (routeMessage.isCloseStream())
 						{
 							handleCloseStream(onlineUser, userResource, routeMessage);
@@ -968,9 +967,8 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 						Packet packet = (Packet) stanza;
 						if (!smHandlerServiceTracker.handleClientPacket(SmManagerImpl.this, onlineUser, userResource, packet))
 						{
-							
 							JID to = packet.getTo();
-							if (to != null && !to.getDomain().equals(getDomain()))
+							if (to != null)
 							{
 								userResource.sendToOtherUser(packet);
 							}
@@ -1000,7 +998,7 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 						if (!smHandlerServiceTracker.handleOtherUserPacket(SmManagerImpl.this, onlineUser, userResource, packet))
 						{
 							JID to = packet.getTo();
-							if (to != null && !to.getDomain().equals(getDomain()))
+							if (to != null)
 							{
 								userResource.sendToSelfClient(packet);
 							}
@@ -1066,12 +1064,12 @@ public class SmManagerImpl extends AbstractPropertied implements SmManager
 				return true;
 			}
 			
-			Iq.Type type = iq.getType();
-			if (type == Iq.Type.result)
-			{
-				// TODO handle result-iq from client
-				return true;
-			}
+//			Iq.Type type = iq.getType();
+//			if (type == Iq.Type.result)
+//			{
+//				// TODO handle result-iq from client
+//				return true;
+//			}
 			return false;
 		}
 		
