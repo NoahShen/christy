@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-06-13 12:33:44
+Date: 2010-06-13 16:01:57
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -109,7 +109,6 @@ CREATE TABLE `pubsubsubscription` (
   `expire` char(15) default NULL,
   `includeBody` tinyint(4) NOT NULL,
   `showValues` varchar(30) default NULL,
-  `subscriptionType` varchar(10) NOT NULL,
   `subscriptionDepth` tinyint(4) NOT NULL,
   `keyword` varchar(200) default NULL,
   PRIMARY KEY  (`serviceId`,`nodeId`,`subId`)
@@ -118,6 +117,7 @@ CREATE TABLE `pubsubsubscription` (
 -- ----------------------------
 -- Records of pubsubsubscription
 -- ----------------------------
+INSERT INTO `pubsubsubscription` VALUES ('123', 'node2', '123', 'pubsub.example.com', 'noah@example.com', 'subscribed', '1', '1', '1', '1', '1', '1', '1', null);
 
 -- ----------------------------
 -- Table structure for `shop`
