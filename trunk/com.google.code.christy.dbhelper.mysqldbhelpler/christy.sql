@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-06-12 17:42:55
+Date: 2010-06-13 12:33:44
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -49,6 +49,27 @@ INSERT INTO `privatedata` VALUES ('noah', '[storage][storage:bookmarks]', '<stor
 INSERT INTO `privatedata` VALUES ('noah', '[preference][christy:user:preference]', '<preference xmlns=\"christy:user:preference\"><item name=\"showContactPos\">true</item><item name=\"shareLoc\">false</item></preference>');
 
 -- ----------------------------
+-- Table structure for `pubsubitem`
+-- ----------------------------
+DROP TABLE IF EXISTS `pubsubitem`;
+CREATE TABLE `pubsubitem` (
+  `serviceId` varchar(100) NOT NULL,
+  `nodeId` varchar(100) NOT NULL,
+  `itemId` varchar(100) NOT NULL,
+  `jid` varchar(255) NOT NULL,
+  `creationDate` datetime NOT NULL,
+  `payload` mediumtext,
+  PRIMARY KEY  (`serviceId`,`nodeId`,`itemId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of pubsubitem
+-- ----------------------------
+INSERT INTO `pubsubitem` VALUES ('123', 'node2', '0', 'pubsub.example.com', '2010-06-13 10:40:40', null);
+INSERT INTO `pubsubitem` VALUES ('123', 'node2', '1', 'pubsub.example.com', '2010-06-13 10:41:07', null);
+INSERT INTO `pubsubitem` VALUES ('123', 'node2', '2', 'pubsub.example.com', '2010-06-13 10:41:36', null);
+
+-- ----------------------------
 -- Table structure for `pubsubnode`
 -- ----------------------------
 DROP TABLE IF EXISTS `pubsubnode`;
@@ -70,6 +91,33 @@ CREATE TABLE `pubsubnode` (
 -- ----------------------------
 INSERT INTO `pubsubnode` VALUES ('123', 'node1', '0', '2010-06-12 16:36:15', '2010-06-12 17:13:30', null, 'noah@example.com', 'desc', 'node1name');
 INSERT INTO `pubsubnode` VALUES ('123', 'node2', '1', '2010-06-12 17:12:51', '2010-06-12 17:13:34', 'node1', 'noah@example.com', 'des2', 'node2name');
+
+-- ----------------------------
+-- Table structure for `pubsubsubscription`
+-- ----------------------------
+DROP TABLE IF EXISTS `pubsubsubscription`;
+CREATE TABLE `pubsubsubscription` (
+  `serviceId` varchar(100) NOT NULL,
+  `nodeId` varchar(100) NOT NULL,
+  `subId` varchar(100) NOT NULL,
+  `jid` varchar(255) NOT NULL,
+  `subscriber` varchar(255) NOT NULL,
+  `subscription` enum('none','unconfigured','subscribed') NOT NULL,
+  `deliver` tinyint(4) NOT NULL,
+  `digest` tinyint(4) NOT NULL,
+  `digest_frequency` int(11) NOT NULL,
+  `expire` char(15) default NULL,
+  `includeBody` tinyint(4) NOT NULL,
+  `showValues` varchar(30) default NULL,
+  `subscriptionType` varchar(10) NOT NULL,
+  `subscriptionDepth` tinyint(4) NOT NULL,
+  `keyword` varchar(200) default NULL,
+  PRIMARY KEY  (`serviceId`,`nodeId`,`subId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of pubsubsubscription
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for `shop`

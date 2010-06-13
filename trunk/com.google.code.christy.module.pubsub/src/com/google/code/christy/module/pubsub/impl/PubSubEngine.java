@@ -2,6 +2,9 @@ package com.google.code.christy.module.pubsub.impl;
 
 import java.util.Collection;
 
+import com.google.code.christy.dbhelper.PubSubItem;
+import com.google.code.christy.dbhelper.PubSubItemDbHelper;
+import com.google.code.christy.dbhelper.PubSubItemDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNode;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelper;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
@@ -16,11 +19,15 @@ public class PubSubEngine
 	private DiscoInfoExtension emptyDiscoInfoExtension = new DiscoInfoExtension();
 	private PubSubManagerImpl pubSubManager;
 	private PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker;
+	private PubSubItemDbHelperTracker pubSubItemDbHelperTracker;
 	
-	public PubSubEngine(PubSubManagerImpl pubSubManager, PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker)
+	public PubSubEngine(PubSubManagerImpl pubSubManager, 
+				PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker, 
+				PubSubItemDbHelperTracker pubSubItemDbHelperTracker)
 	{
 		this.pubSubManager = pubSubManager; 
 		this.pubSubNodeDbHelperTracker = pubSubNodeDbHelperTracker;
+		this.pubSubItemDbHelperTracker = pubSubItemDbHelperTracker;
 		discoInfo = new DiscoInfoExtension();
 		discoInfo.addFeature(new DiscoInfoExtension.Feature("http://jabber.org/protocol/pubsub"));
 	}
@@ -40,6 +47,10 @@ public class PubSubEngine
 				discoInfoExtension.setNode(node);
 				
 				PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
+				if (pubSubNode == null)
+				{
+					return null;
+				}
 				String type = "leaf";
 				if (!pubSubNode.isLeaf())
 				{
@@ -63,20 +74,42 @@ public class PubSubEngine
 	public DiscoItemsExtension getDiscoItem(String node)
 	{
 		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
-		if (pubSubNodeDbHelper != null)
+		PubSubItemDbHelper pubSubItemDbHelper = pubSubItemDbHelperTracker.getPubSubItemDbHelper();
+		if (pubSubNodeDbHelper != null && pubSubItemDbHelper != null)
 		{
 			try
 			{
 				DiscoItemsExtension discoItemsExtension = new DiscoItemsExtension();
 				discoItemsExtension.setNode(node);
-				Collection<PubSubNode> nodes = pubSubNodeDbHelper.getNodes(node);
-				for(PubSubNode pubSubNode : nodes)
+				
+				PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
+				if (pubSubNode == null)
 				{
-					DiscoItemsExtension.Item item = 
-						new DiscoItemsExtension.Item(new JID(null, pubSubManager.getSubDomain(), null), pubSubNode.getName());
-					item.setNode(pubSubNode.getNodeId());
-					discoItemsExtension.addItem(item);
+					return null;
 				}
+				
+				if (pubSubNode.isLeaf())
+				{
+					Collection<PubSubItem> items = pubSubItemDbHelper.getPubSbuItem(node);
+					for(PubSubItem pubSubItem : items)
+					{
+						DiscoItemsExtension.Item item = 
+							new DiscoItemsExtension.Item(new JID(pubSubItem.getJid()), pubSubItem.getItemId());
+						discoItemsExtension.addItem(item);
+					}
+				}
+				else
+				{
+					Collection<PubSubNode> nodes = pubSubNodeDbHelper.getChildNodes(node);
+					for(PubSubNode pubSubNode2 : nodes)
+					{
+						DiscoItemsExtension.Item item = 
+							new DiscoItemsExtension.Item(new JID(null, pubSubManager.getSubDomain(), null), pubSubNode2.getName());
+						item.setNode(pubSubNode2.getNodeId());
+						discoItemsExtension.addItem(item);
+					}
+				}
+				
 				return discoItemsExtension;
 			}
 			catch (Exception e)
@@ -88,4 +121,6 @@ public class PubSubEngine
 		emptyDiscoItemsExtension.setNode(node);
 		return emptyDiscoItemsExtension;
 	}
+	
+	
 }
