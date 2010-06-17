@@ -1,0 +1,39 @@
+<iq type='get'
+    to='pubsub.example.com'
+    id='items1'>
+  <query xmlns='http://jabber.org/protocol/disco#info'
+         node='node2'/>
+</iq>
+
+<iq type='get'
+    to='pubsub.example.com'
+    id='items1'>
+  <query xmlns='http://jabber.org/protocol/disco#items'
+         node='node2'/>
+</iq>
+
+<iq type='get'
+    to='pubsub.example.com'
+    id='subscriptions1'>
+  <pubsub xmlns='http://jabber.org/protocol/pubsub'>
+    <subscriptions/>
+  </pubsub>
+</iq>
+
+<iq type='get'
+    to='pubsub.example.com'
+    id='affil1'>
+  <pubsub xmlns='http://jabber.org/protocol/pubsub'>
+    <affiliations/>
+  </pubsub>
+</iq>
+
+<iq type='set'
+    to='pubsub.example.com'
+    id='sub1'>
+  <pubsub xmlns='http://jabber.org/protocol/pubsub'>
+    <subscribe
+        node='node3'
+        jid='noah@example.com'/>
+  </pubsub>
+</iq>

@@ -451,7 +451,8 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			{
 				try
 				{
-					PubSubSubscription pubSubSubscription = pubSubEngine.subscribeNode(subscriberJid.toBareJID(), node);
+					// TODO check case sentity
+					PubSubSubscription pubSubSubscription = pubSubEngine.subscribeNode(subscriberJid.toPrepedBareJID(), node);
 					iqResponse = PacketUtils.createResultIq(iq);
 					PubSubExtension pubSubExtensionResponse = new PubSubExtension(PubSubExtension.NAMESPACE);
 					
