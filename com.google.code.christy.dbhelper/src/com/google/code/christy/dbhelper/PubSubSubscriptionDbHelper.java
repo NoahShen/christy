@@ -7,4 +7,6 @@ public interface PubSubSubscriptionDbHelper
 	public Collection<PubSubSubscription> getPubSubSubscriptions(String subscriber, String nodeId) throws Exception;
 	
 	public void addPubSubSubscription(PubSubSubscription subscription) throws Exception;
+	
+	public void removePubSubSubscription(String jid, String nodeId, String subId) throws Exception;
 }

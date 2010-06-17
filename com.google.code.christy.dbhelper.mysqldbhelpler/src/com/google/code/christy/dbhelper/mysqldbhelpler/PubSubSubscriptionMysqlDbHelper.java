@@ -25,6 +25,8 @@ public class PubSubSubscriptionMysqlDbHelper implements PubSubSubscriptionDbHelp
 	
 	private static final String ADDPUBSUBSUBSCRIPTION_SQL = "INSERT INTO pubsubsubscription (serviceId, nodeId, subId, jid, subscriber, subscription) VALUES (?, ?, ?, ?, ?, ?)";
 	
+	private static final String REMOVEPUBSUBSUBSCRIPTIONS_SQL = "DELETE FROM pubsubsubscription WHERE subscriber = ? AND nodeId = ? AND subId = ?";
+	
 	/**
 	 * @param connectionPool
 	 * @param loggerServiceTracker 
@@ -112,6 +114,35 @@ public class PubSubSubscriptionMysqlDbHelper implements PubSubSubscriptionDbHelp
 			
 			preStat.executeUpdate();
 			
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+
+	@Override
+	public void removePubSubSubscription(String jid, String nodeId, String subId) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(REMOVEPUBSUBSUBSCRIPTIONS_SQL);
+			preStat.setString(1, jid);
+			preStat.setString(2, nodeId);
+			preStat.setString(3, subId);
+
+			preStat.executeUpdate();
+			
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+			}
 		}
 		finally
 		{

@@ -225,5 +225,26 @@ public class PubSubEngine
  		return null;
  		
 	}
+
+	public void unsubscribeNode(String jid, String node, String subId) throws Exception
+	{
+		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
+		PubSubSubscriptionDbHelper pubSubSubscriptionDbHelper = pubSubSubscriptionDbHelperTracker.getPubSubSubscriptionDbHelper();
+		if (pubSubNodeDbHelper == null 
+				|| pubSubSubscriptionDbHelper == null)
+		{
+			throw new Exception("pubSubNodeDbHelper or pubSubSubscriptionDbHelper is null");
+		}
+		
+		PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
+ 		if (pubSubNode == null)
+		{
+			throw new NodeNotExistException();
+		}
+ 		
+ 		pubSubSubscriptionDbHelper.removePubSubSubscription(jid, node, subId);
+ 		
+ 		
+	}
 	
 }
