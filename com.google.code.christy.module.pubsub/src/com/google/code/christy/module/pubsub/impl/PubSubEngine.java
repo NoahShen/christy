@@ -1,7 +1,6 @@
 package com.google.code.christy.module.pubsub.impl;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import com.google.code.christy.dbhelper.PubSubAffiliation;
 import com.google.code.christy.dbhelper.PubSubAffiliationDbHelper;
@@ -22,8 +21,6 @@ import com.google.code.christy.xmpp.disco.DiscoItemsExtension;
 public class PubSubEngine
 {
 	private DiscoInfoExtension discoInfo;
-	private DiscoItemsExtension emptyDiscoItemsExtension = new DiscoItemsExtension();
-	private DiscoInfoExtension emptyDiscoInfoExtension = new DiscoInfoExtension();
 	private PubSubManagerImpl pubSubManager;
 	private PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker;
 	private PubSubItemDbHelperTracker pubSubItemDbHelperTracker;
@@ -46,86 +43,80 @@ public class PubSubEngine
 		discoInfo.addFeature(new DiscoInfoExtension.Feature("http://jabber.org/protocol/pubsub"));
 	}
 	
-	public DiscoInfoExtension getDiscoInfo(String node)
+	public DiscoInfoExtension getDiscoInfo(String node) throws Exception
 	{
 		if (node == null)
 		{
 			return discoInfo;
 		}
 		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
-		if (pubSubNodeDbHelper != null)
+		
+		if (pubSubNodeDbHelper == null)
 		{
-			try
-			{
-				DiscoInfoExtension discoInfoExtension = new DiscoInfoExtension();
-				discoInfoExtension.setNode(node);
-				
-				PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
-				if (pubSubNode == null)
-				{
-					return null;
-				}
-				String type = "leaf";
-				if (!pubSubNode.isLeaf())
-				{
-					type = "collection";
-				}
-				
-				DiscoInfoExtension.Identity identity = new DiscoInfoExtension.Identity("pubsub", type);
-				discoInfoExtension.addIdentity(identity);
-				
-				return discoInfoExtension;
-			}
-			catch (Exception e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			throw new Exception("pubSubNodeDbHelper is null");
 		}
-		return emptyDiscoInfoExtension;
+		
+		DiscoInfoExtension discoInfoExtension = new DiscoInfoExtension();
+		discoInfoExtension.setNode(node);
+		
+		PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
+		if (pubSubNode == null)
+		{
+			throw new NodeNotExistException();
+		}
+		String type = "leaf";
+		if (!pubSubNode.isLeaf())
+		{
+			type = "collection";
+		}
+		
+		DiscoInfoExtension.Identity identity = new DiscoInfoExtension.Identity("pubsub", type);
+		discoInfoExtension.addIdentity(identity);
+		
+		return discoInfoExtension;
 	}
 	
 	public DiscoItemsExtension getDiscoItem(String node) throws Exception
 	{
 		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
 		PubSubItemDbHelper pubSubItemDbHelper = pubSubItemDbHelperTracker.getPubSubItemDbHelper();
-		if (pubSubNodeDbHelper != null && pubSubItemDbHelper != null)
+		if (pubSubNodeDbHelper == null || pubSubNodeDbHelper == null)
 		{
-			DiscoItemsExtension discoItemsExtension = new DiscoItemsExtension();
-			discoItemsExtension.setNode(node);
-			
-			PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
-			if (pubSubNode == null)
-			{
-				throw new NodeNotExistException();
-			}
-			
-			if (pubSubNode.isLeaf())
-			{
-				Collection<PubSubItem> items = pubSubItemDbHelper.getPubSbuItem(node);
-				for(PubSubItem pubSubItem : items)
-				{
-					DiscoItemsExtension.Item item = 
-						new DiscoItemsExtension.Item(new JID(pubSubItem.getJid()), pubSubItem.getItemId());
-					discoItemsExtension.addItem(item);
-				}
-			}
-			else
-			{
-				Collection<PubSubNode> nodes = pubSubNodeDbHelper.getChildNodes(node);
-				for(PubSubNode pubSubNode2 : nodes)
-				{
-					DiscoItemsExtension.Item item = 
-						new DiscoItemsExtension.Item(new JID(null, pubSubManager.getSubDomain(), null), pubSubNode2.getName());
-					item.setNode(pubSubNode2.getNodeId());
-					discoItemsExtension.addItem(item);
-				}
-			}
-			
-			return discoItemsExtension;
+			throw new Exception("pubSubNodeDbHelper or pubSubNodeDbHelper is null");
 		}
-		emptyDiscoItemsExtension.setNode(node);
-		return emptyDiscoItemsExtension;
+		
+		DiscoItemsExtension discoItemsExtension = new DiscoItemsExtension();
+		discoItemsExtension.setNode(node);
+		
+		PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
+		if (pubSubNode == null)
+		{
+			throw new NodeNotExistException();
+		}
+		
+		if (pubSubNode.isLeaf())
+		{
+			Collection<PubSubItem> items = pubSubItemDbHelper.getPubSbuItem(node);
+			for(PubSubItem pubSubItem : items)
+			{
+				DiscoItemsExtension.Item item = 
+					new DiscoItemsExtension.Item(new JID(pubSubItem.getJid()), pubSubItem.getItemId());
+				discoItemsExtension.addItem(item);
+			}
+		}
+		else
+		{
+			Collection<PubSubNode> nodes = pubSubNodeDbHelper.getChildNodes(node);
+			for(PubSubNode pubSubNode2 : nodes)
+			{
+				DiscoItemsExtension.Item item = 
+					new DiscoItemsExtension.Item(new JID(null, pubSubManager.getSubDomain(), null), pubSubNode2.getName());
+				item.setNode(pubSubNode2.getNodeId());
+				discoItemsExtension.addItem(item);
+			}
+		}
+		
+		return discoItemsExtension;
 	}
 	
 	
@@ -133,21 +124,22 @@ public class PubSubEngine
 	{
 		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
 		PubSubSubscriptionDbHelper pubSubSubscriptionDbHelper = pubSubSubscriptionDbHelperTracker.getPubSubSubscriptionDbHelper();
-		if (pubSubNodeDbHelper != null && pubSubSubscriptionDbHelper != null)
+		if (pubSubNodeDbHelper == null || pubSubSubscriptionDbHelper == null)
 		{
-			if (node != null)
-			{
-				PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
-				if (pubSubNode == null)
-				{
-					throw new NodeNotExistException();
-				}
-			}
-			
-			Collection<PubSubSubscription> subs = pubSubSubscriptionDbHelper.getPubSubSubscriptions(subscriber, node);
-			return subs;
+			throw new Exception("pubSubNodeDbHelper or pubSubSubscriptionDbHelper is null");
 		}
-		return Collections.emptyList();
+		
+		if (node != null)
+		{
+			PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
+			if (pubSubNode == null)
+			{
+				throw new NodeNotExistException();
+			}
+		}
+		
+		Collection<PubSubSubscription> subs = pubSubSubscriptionDbHelper.getPubSubSubscriptions(subscriber, node);
+		return subs;
 	}
 	
 	
@@ -155,21 +147,22 @@ public class PubSubEngine
 	{
 		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
 		PubSubAffiliationDbHelper pubSubAffiliationDbHelper = pubSubAffiliationDbHelperTracker.getPubSubAffiliationDbHelper();
-		if (pubSubNodeDbHelper != null && pubSubAffiliationDbHelper != null)
+		if (pubSubNodeDbHelper == null || pubSubAffiliationDbHelper == null)
 		{
-			if (node != null)
-			{
-				PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
-		 		if (pubSubNode == null)
-				{
-					throw new NodeNotExistException();
-				}
-			}
-			
-			Collection<PubSubAffiliation> pubSubAffiliations = pubSubAffiliationDbHelper.getPubSubAffiliation(jid, node);
-			return pubSubAffiliations;
+			throw new Exception("pubSubNodeDbHelper or pubSubAffiliationDbHelper is null");
 		}
-		return Collections.emptyList();
+		
+		if (node != null)
+		{
+			PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
+	 		if (pubSubNode == null)
+			{
+				throw new NodeNotExistException();
+			}
+		}
+		
+		Collection<PubSubAffiliation> pubSubAffiliations = pubSubAffiliationDbHelper.getPubSubAffiliation(jid, node);
+		return pubSubAffiliations;
 	}
 	
 	public void subscribeNode(String subscriber, String node) throws Exception
@@ -187,6 +180,7 @@ public class PubSubEngine
 			throw new NodeNotExistException();
 		}
  		
+ 		// TODO
  		
 	}
 	
