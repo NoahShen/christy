@@ -41,6 +41,7 @@ import com.google.code.christy.xmpp.pubsub.PubSubExtension;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscribe;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptionItem;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptions;
+import com.google.code.christy.xmpp.pubsub.PubSubUnsubscribe;
 
 public class PubSubManagerImpl extends AbstractPropertied implements PubSubManager
 {
@@ -411,7 +412,11 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				}
 				else if (stanza instanceof PubSubSubscribe)
 				{
-					iqResponse = handlePubSubSubscriptionItem(from, stanza, iq, pubSubExtension);
+					iqResponse = handlePubSubSubscribe(from, stanza, iq, pubSubExtension);
+				}
+				else if (stanza instanceof PubSubUnsubscribe)
+				{
+					iqResponse = handlePubSubUnsubscribe(from, stanza, iq, pubSubExtension);
 				}
 
 				
@@ -419,7 +424,71 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			return iqResponse;
 		}
 
-		private Iq handlePubSubSubscriptionItem(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
+		private Iq handlePubSubUnsubscribe(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
+		{
+			Iq iqResponse = null;
+			Iq.Type type = iq.getType();
+			if (type != Iq.Type.set)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.bad_request));
+				if (iqResponse.getFrom() == null)
+				{
+					iqResponse.setFrom(new JID(null, getSubDomain(), null));
+				}
+				return iqResponse;
+			}
+			
+			PubSubUnsubscribe pubSubUnsubscribe = (PubSubUnsubscribe) stanza;
+			String node = pubSubUnsubscribe.getNode();
+			JID jid = pubSubUnsubscribe.getJid();
+			String subId = pubSubUnsubscribe.getSubId();
+			if (!from.equalsWithBareJid(jid))
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				
+				XmppError error = new XmppError(XmppError.Condition.bad_request);
+				error.addOtherCondition("invalid-jid", "http://jabber.org/protocol/pubsub#errors");
+				
+				iqResponse.setError(error);
+			}
+			else if (subId == null)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				
+				XmppError error = new XmppError(XmppError.Condition.bad_request);
+				error.addOtherCondition("subid-required", "http://jabber.org/protocol/pubsub#errors");
+				
+				iqResponse.setError(error);
+			}
+			else
+			{
+				try
+				{
+					// TODO check case sentity
+					pubSubEngine.unsubscribeNode(jid.toPrepedBareJID(), node, subId);
+					iqResponse = PacketUtils.createResultIq(iq);
+
+					return iqResponse;
+				}
+				catch (NodeNotExistException e)
+				{
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
+				}
+				catch (Exception e)
+				{
+					// TODO
+					e.printStackTrace();
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.internal_server_error));
+				}
+			}
+			
+			return iqResponse;
+		}
+
+		private Iq handlePubSubSubscribe(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
 		{
 			Iq iqResponse = null;
 			Iq.Type type = iq.getType();

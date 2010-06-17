@@ -37,3 +37,15 @@
         jid='noah@example.com'/>
   </pubsub>
 </iq>
+
+
+<iq type='set'
+    to='pubsub.example.com'
+    id='unsub1'>
+  <pubsub xmlns='http://jabber.org/protocol/pubsub'>
+     <unsubscribe
+         node='node2'
+         jid='noah@example.com'
+         subid='123'/>
+  </pubsub>
+</iq>

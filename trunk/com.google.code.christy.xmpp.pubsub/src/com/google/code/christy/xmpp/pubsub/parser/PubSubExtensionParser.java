@@ -12,6 +12,7 @@ import com.google.code.christy.xmpp.pubsub.PubSubExtension;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscribe;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptionItem;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptions;
+import com.google.code.christy.xmpp.pubsub.PubSubUnsubscribe;
 import com.google.code.christy.xmppparser.ExtensionParser;
 import com.google.code.christy.xmppparser.XmppParser;
 
@@ -58,6 +59,10 @@ public class PubSubExtensionParser implements ExtensionParser
 				{
 					extension.setStanza(parseSubscribe(parser));
 				}
+				else if ("unsubscribe".equals(elementName))
+				{
+					extension.setStanza(parseUnsubscribe(parser));
+				}
 			}
 			else if (eventType == XmlPullParser.END_TAG)
 			{
@@ -69,6 +74,34 @@ public class PubSubExtensionParser implements ExtensionParser
 		}
 		
 		return extension;
+	}
+
+	private PubSubUnsubscribe parseUnsubscribe(XmlPullParser parser) throws XmlPullParserException, IOException
+	{
+		String node = parser.getAttributeValue("", "node");
+		String jidStr = parser.getAttributeValue("", "jid");
+		String subId = parser.getAttributeValue("", "subid");
+		
+		PubSubUnsubscribe pubSubUnsubscribe = new PubSubUnsubscribe(node, new JID(jidStr));
+		pubSubUnsubscribe.setSubId(subId);
+		
+		boolean done = false;
+		while (!done)
+		{
+			int eventType = parser.next();
+			String elementName = parser.getName();
+			if (eventType == XmlPullParser.START_TAG)
+			{
+			}
+			else if (eventType == XmlPullParser.END_TAG)
+			{
+				if ("unsubscribe".equals(elementName))
+				{
+					done = true;
+				}
+			}
+		}
+		return pubSubUnsubscribe;
 	}
 
 	private PubSubSubscribe parseSubscribe(XmlPullParser parser) throws XmlPullParserException, IOException
