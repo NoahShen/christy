@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : christy
-Source Server Version : 50083
+Source Server         : connection
+Source Server Version : 50022
 Source Host           : localhost:3306
 Source Database       : christy
 
 Target Server Type    : MYSQL
-Target Server Version : 50083
+Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-06-16 22:25:09
+Date: 2010-06-17 12:12:01
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -110,6 +110,35 @@ INSERT INTO `pubsubnode` VALUES ('123', 'node1', '0', '2010-06-12 16:36:15', '20
 INSERT INTO `pubsubnode` VALUES ('123', 'node2', '1', '2010-06-12 17:12:51', '2010-06-12 17:13:34', 'node1', 'noah@example.com', 'des2', 'node2name');
 
 -- ----------------------------
+-- Table structure for `pubsubnodeconfig`
+-- ----------------------------
+DROP TABLE IF EXISTS `pubsubnodeconfig`;
+CREATE TABLE `pubsubnodeconfig` (
+  `serviceId` varchar(100) NOT NULL,
+  `nodeId` varchar(100) NOT NULL,
+  `creationDate` datetime NOT NULL,
+  `modificationDate` timestamp NOT NULL default '0000-00-00 00:00:00' on update CURRENT_TIMESTAMP,
+  `deliverPayloads` tinyint(4) NOT NULL,
+  `maxPayloadSize` int(11) default NULL,
+  `persistItems` tinyint(4) default NULL,
+  `maxItems` int(11) default NULL,
+  `notifyConfigChanges` tinyint(4) NOT NULL,
+  `notifyDelete` tinyint(4) NOT NULL,
+  `notifyRetract` tinyint(4) NOT NULL,
+  `sendItemSubscribe` tinyint(4) NOT NULL,
+  `publisherModel` varchar(15) NOT NULL,
+  `subscriptionEnabled` tinyint(4) NOT NULL,
+  `configSubscription` tinyint(4) NOT NULL,
+  `accessModel` varchar(10) NOT NULL,
+  PRIMARY KEY  (`serviceId`,`nodeId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of pubsubnodeconfig
+-- ----------------------------
+INSERT INTO `pubsubnodeconfig` VALUES ('123', 'node2', '2010-06-17 12:09:42', '2010-06-17 12:09:45', '1', null, null, null, '1', '1', '1', '1', 'open', '1', '0', 'open');
+
+-- ----------------------------
 -- Table structure for `pubsubsubscription`
 -- ----------------------------
 DROP TABLE IF EXISTS `pubsubsubscription`;
@@ -188,7 +217,7 @@ CREATE TABLE `shopcomment` (
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`commentId`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopcomment
@@ -234,7 +263,7 @@ CREATE TABLE `shopvoter` (
   `itemName` varchar(50) NOT NULL,
   `value` int(11) NOT NULL,
   PRIMARY KEY  (`voterId`)
-) ENGINE=MyISAM AUTO_INCREMENT=34 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopvoter
@@ -291,7 +320,7 @@ CREATE TABLE `userfavoriteshop` (
   `username` char(50) NOT NULL,
   `shopId` int(20) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userfavoriteshop
@@ -315,7 +344,7 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster
