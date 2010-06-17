@@ -430,6 +430,8 @@ public class XmppError implements XmlStanza
 		public static final Condition unexpected_condition = new Condition("unexpected-condition");
 
 		public static final Condition request_timeout = new Condition("request-timeout");
+		
+		public static final Condition policy_violation = new Condition("policy-violation");
 
 		private String value;
 
@@ -508,7 +510,8 @@ public class XmppError implements XmlStanza
 			instances.put(Condition.unexpected_condition, new XmppError.ErrorSpecification(Condition.unexpected_condition,
 					Type.WAIT, 400));
 			instances.put(Condition.request_timeout, new XmppError.ErrorSpecification(Condition.request_timeout, Type.CANCEL, 408));
-
+			
+			instances.put(Condition.policy_violation, new XmppError.ErrorSpecification(Condition.policy_violation, Type.WAIT, 404));
 			return instances;
 		}
 

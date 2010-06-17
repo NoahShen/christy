@@ -1115,6 +1115,10 @@ public class XMPPParserImpl implements XmppParser
 				{
 					error = new XmppError(XmppError.Condition.unexpected_condition);
 				}
+				else if (XmppError.Condition.policy_violation.toString().equals(parser.getName()))
+				{
+					error = new XmppError(XmppError.Condition.policy_violation);
+				}
 				else if ("text".equals(parser.getName()))
 				{
 					if (error != null)

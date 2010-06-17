@@ -7,10 +7,13 @@ import org.osgi.framework.ServiceRegistration;
 
 import com.google.code.christy.dbhelper.PubSubAffiliationDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubItemDbHelperTracker;
+import com.google.code.christy.dbhelper.PubSubNodeConfigDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelperTracker;
 import com.google.code.christy.log.LoggerServiceTracker;
+import com.google.code.christy.module.pubsub.impl.OpenSubscribeModel;
 import com.google.code.christy.module.pubsub.impl.PubSubManagerImpl;
+import com.google.code.christy.module.pubsub.impl.SubscribeModelTracker;
 import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 
 public class Activator implements BundleActivator
@@ -23,6 +26,9 @@ public class Activator implements BundleActivator
 	private PubSubItemDbHelperTracker pubSubItemDbHelperTracker;
 	private PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker;
 	private PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker;
+	private PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker;
+	private SubscribeModelTracker subscribeModelTracker;
+	private ServiceRegistration openSubscribeModelRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -30,7 +36,7 @@ public class Activator implements BundleActivator
 	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
 	 */
 	public void start(BundleContext context) throws Exception
-	{
+	{		
 		routeMessageParserServiceTracker = new RouteMessageParserServiceTracker(context);
 		routeMessageParserServiceTracker.open();
 		
@@ -49,13 +55,24 @@ public class Activator implements BundleActivator
 		pubSubAffiliationDbHelperTracker = new PubSubAffiliationDbHelperTracker(context);
 		pubSubAffiliationDbHelperTracker.open();
 		
+		pubSubNodeConfigDbHelperTracker = new PubSubNodeConfigDbHelperTracker(context);
+		pubSubNodeConfigDbHelperTracker.open();
+		
+		subscribeModelTracker = new SubscribeModelTracker(context);
+		subscribeModelTracker.open();
+		
+		OpenSubscribeModel openSubscribeModel = new OpenSubscribeModel();
+		openSubscribeModelRegistration = context.registerService(SubscribeModel.class.getName(), openSubscribeModel, null);
+		
 		PubSubManagerImpl pubSubManager = 
 			new PubSubManagerImpl(loggerServiceTracker, 
 					routeMessageParserServiceTracker,
 					pubSubNodeDbHelperTracker,
 					pubSubItemDbHelperTracker,
 					pubSubSubscriptionDbHelperTracker,
-					pubSubAffiliationDbHelperTracker);
+					pubSubAffiliationDbHelperTracker,
+					pubSubNodeConfigDbHelperTracker,
+					subscribeModelTracker);
 		
 		String appPath = System.getProperty("appPath");
 		XMLConfiguration config = new XMLConfiguration(appPath + "/pusubconfig.xml");
@@ -131,6 +148,18 @@ public class Activator implements BundleActivator
 		{
 			pubSubAffiliationDbHelperTracker.close();
 			pubSubAffiliationDbHelperTracker = null;
+		}
+		
+		if (subscribeModelTracker != null)
+		{
+			subscribeModelTracker.close();
+			subscribeModelTracker = null;
+		}
+		
+		if (openSubscribeModelRegistration != null)
+		{
+			openSubscribeModelRegistration.unregister();
+			openSubscribeModelRegistration = null;
 		}
 	}
 
