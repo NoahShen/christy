@@ -523,8 +523,8 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			}
 			catch (Exception e)
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.internal_server_error));
 			}
 			
 			return iqResponse;
@@ -560,8 +560,8 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				}
 				catch (Exception e)
 				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.internal_server_error));
 				}
 				
 			}
@@ -584,16 +584,25 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			}
 			else
 			{
-				DiscoInfoExtension discoInfoResponse = pubSubEngine.getDiscoInfo(discoInfo.getNode());
-				if (discoInfoResponse == null)
+				DiscoInfoExtension discoInfoResponse;
+				try
+				{
+					discoInfoResponse = pubSubEngine.getDiscoInfo(discoInfo.getNode());
+					iqResponse = PacketUtils.createResultIq(iq);
+					iqResponse.addExtension(discoInfoResponse);
+					
+					iqResponse = PacketUtils.createResultIq(iq);
+					iqResponse.addExtension(discoInfoResponse);
+				}
+				catch (NodeNotExistException e)
 				{
 					iqResponse = PacketUtils.createErrorIq(iq);
 					iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
 				}
-				else
+				catch (Exception e)
 				{
-					iqResponse = PacketUtils.createResultIq(iq);
-					iqResponse.addExtension(discoInfoResponse);
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.internal_server_error));
 				}
 				
 			}
