@@ -19,6 +19,7 @@ import org.xmlpull.v1.XmlPullParser;
 import com.google.code.christy.dbhelper.PubSubAffiliation;
 import com.google.code.christy.dbhelper.PubSubAffiliationDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubItemDbHelperTracker;
+import com.google.code.christy.dbhelper.PubSubNodeConfigDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubSubscription;
 import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelperTracker;
@@ -79,7 +80,9 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker, 
 				PubSubItemDbHelperTracker pubSubItemDbHelperTracker, 
 				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker, 
-				PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker)
+				PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker, 
+				PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker, 
+				SubscribeModelTracker subscribeModelTracker)
 	{
 		super();
 		this.loggerServiceTracker = loggerServiceTracker;
@@ -88,7 +91,9 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 		pubSubEngine = new PubSubEngine(this, pubSubNodeDbHelperTracker, 
 						pubSubItemDbHelperTracker,
 						pubSubSubscriptionDbHelperTracker,
-						pubSubAffiliationDbHelperTracker);
+						pubSubAffiliationDbHelperTracker,
+						pubSubNodeConfigDbHelperTracker,
+						subscribeModelTracker);
 	}
 
 	public String getDomain()
@@ -396,16 +401,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			XmlStanza stanza = pubSubExtension.getStanza();
 			if (stanza != null)
 			{
-				if (iq.getType() != Iq.Type.get)
-				{
-					iqResponse = PacketUtils.createErrorIq(iq);
-					iqResponse.setError(new XmppError(XmppError.Condition.bad_request));
-					if (iqResponse.getFrom() == null)
-					{
-						iqResponse.setFrom(new JID(null, getSubDomain(), null));
-					}
-				}
-				else if (stanza instanceof PubSubSubscriptions)
+				if (stanza instanceof PubSubSubscriptions)
 				{
 					iqResponse = handlePubSubSubscriptions(from, stanza, iq, pubSubExtension);
 				}
@@ -426,11 +422,23 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 		private Iq handlePubSubSubscriptionItem(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
 		{
 			Iq iqResponse = null;
+			Iq.Type type = iq.getType();
+			if (type != Iq.Type.set)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.bad_request));
+				if (iqResponse.getFrom() == null)
+				{
+					iqResponse.setFrom(new JID(null, getSubDomain(), null));
+				}
+				return iqResponse;
+			}
+
 			PubSubSubscribe pubSubSubscribe = (PubSubSubscribe) stanza;
 			String node = pubSubSubscribe.getNode();
 			JID subscriberJid = pubSubSubscribe.getSubscriberJid();
 			
-			if (from.equalsWithBareJid(subscriberJid))
+			if (!from.equalsWithBareJid(subscriberJid))
 			{
 				iqResponse = PacketUtils.createErrorIq(iq);
 				
@@ -441,7 +449,39 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			}
 			else
 			{
-				
+				try
+				{
+					PubSubSubscription pubSubSubscription = pubSubEngine.subscribeNode(subscriberJid.toBareJID(), node);
+					iqResponse = PacketUtils.createResultIq(iq);
+					PubSubExtension pubSubExtensionResponse = new PubSubExtension(PubSubExtension.NAMESPACE);
+					
+					PubSubSubscriptionItem item = new PubSubSubscriptionItem(pubSubSubscription.getNodeId(), 
+											pubSubSubscription.getJid(), 
+											PubSubSubscriptionItem.SubscriptionType.valueOf(pubSubSubscription.getSubscription().name()));
+					item.setSubId(pubSubSubscription.getSubId());
+					
+					pubSubExtensionResponse.setStanza(item);
+					iqResponse.addExtension(pubSubExtensionResponse);
+				}
+				catch (NodeNotExistException e)
+				{
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
+				}
+				catch (TooManySubscriptionsException e)
+				{
+					iqResponse = PacketUtils.createErrorIq(iq);
+					XmppError error = new XmppError(XmppError.Condition.policy_violation);
+					error.addOtherCondition("too-many-subscriptions", "http://jabber.org/protocol/pubsub#errors");
+					iqResponse.setError(error);
+				}
+				catch (Exception e)
+				{
+					// TODO
+					e.printStackTrace();
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.internal_server_error));
+				}
 			}
 			
 			return iqResponse;

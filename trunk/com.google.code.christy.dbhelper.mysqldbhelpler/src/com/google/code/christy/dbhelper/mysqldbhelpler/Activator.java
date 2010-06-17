@@ -8,6 +8,7 @@ import org.osgi.framework.ServiceRegistration;
 import com.google.code.christy.dbhelper.PrivateXmlDbHelper;
 import com.google.code.christy.dbhelper.PubSubAffiliationDbHelper;
 import com.google.code.christy.dbhelper.PubSubItemDbHelper;
+import com.google.code.christy.dbhelper.PubSubNodeConfigDbHelper;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelper;
 import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelper;
 import com.google.code.christy.dbhelper.RosterItemDbHelper;
@@ -29,6 +30,7 @@ public class Activator implements BundleActivator
 	private ServiceRegistration pubSubItemMysqlDbHelperRegistration;
 	private ServiceRegistration pubSubSubscriptionMysqlDbHelperRegistration;
 	private ServiceRegistration pubSubAffiliationMysqlDbHelperRegistration;
+	private ServiceRegistration pubSubNodeConfigMysqlDbHelperRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -74,6 +76,9 @@ public class Activator implements BundleActivator
 		
 		PubSubAffiliationMysqlDbHelper pubSubAffiliationMysqlDbHelper = new PubSubAffiliationMysqlDbHelper(connPool, loggerServiceTracker);
 		pubSubAffiliationMysqlDbHelperRegistration = context.registerService(PubSubAffiliationDbHelper.class.getName(), pubSubAffiliationMysqlDbHelper, null);
+		
+		PubSubNodeConfigMysqlDbHelper pubSubNodeConfigMysqlDbHelper = new PubSubNodeConfigMysqlDbHelper(connPool, loggerServiceTracker);
+		pubSubNodeConfigMysqlDbHelperRegistration = context.registerService(PubSubNodeConfigDbHelper.class.getName(), pubSubNodeConfigMysqlDbHelper, null);
 	}
 
 	/*
@@ -140,6 +145,12 @@ public class Activator implements BundleActivator
 		{
 			pubSubAffiliationMysqlDbHelperRegistration.unregister();
 			pubSubAffiliationMysqlDbHelperRegistration = null;
+		}
+		
+		if (pubSubNodeConfigMysqlDbHelperRegistration != null)
+		{
+			pubSubNodeConfigMysqlDbHelperRegistration.unregister();
+			pubSubNodeConfigMysqlDbHelperRegistration = null;
 		}
 	}
 	

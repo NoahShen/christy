@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-06-17 12:12:01
+Date: 2010-06-17 16:56:26
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -108,6 +108,7 @@ CREATE TABLE `pubsubnode` (
 -- ----------------------------
 INSERT INTO `pubsubnode` VALUES ('123', 'node1', '0', '2010-06-12 16:36:15', '2010-06-12 17:13:30', null, 'noah@example.com', 'desc', 'node1name');
 INSERT INTO `pubsubnode` VALUES ('123', 'node2', '1', '2010-06-12 17:12:51', '2010-06-12 17:13:34', 'node1', 'noah@example.com', 'des2', 'node2name');
+INSERT INTO `pubsubnode` VALUES ('123', 'node3', '1', '2010-06-17 16:41:36', '2010-06-17 16:41:39', 'node1', 'noah@example.com', 'descnode3', 'node3name');
 
 -- ----------------------------
 -- Table structure for `pubsubnodeconfig`
@@ -129,7 +130,7 @@ CREATE TABLE `pubsubnodeconfig` (
   `publisherModel` varchar(15) NOT NULL,
   `subscriptionEnabled` tinyint(4) NOT NULL,
   `configSubscription` tinyint(4) NOT NULL,
-  `accessModel` varchar(10) NOT NULL,
+  `subscribeModel` varchar(10) NOT NULL,
   PRIMARY KEY  (`serviceId`,`nodeId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -137,6 +138,7 @@ CREATE TABLE `pubsubnodeconfig` (
 -- Records of pubsubnodeconfig
 -- ----------------------------
 INSERT INTO `pubsubnodeconfig` VALUES ('123', 'node2', '2010-06-17 12:09:42', '2010-06-17 12:09:45', '1', null, null, null, '1', '1', '1', '1', 'open', '1', '0', 'open');
+INSERT INTO `pubsubnodeconfig` VALUES ('123', 'node3', '2010-06-17 16:43:26', '2010-06-17 16:43:30', '1', null, null, null, '1', '1', '1', '1', 'open', '1', '0', 'open');
 
 -- ----------------------------
 -- Table structure for `pubsubsubscription`
@@ -149,13 +151,13 @@ CREATE TABLE `pubsubsubscription` (
   `jid` varchar(255) NOT NULL,
   `subscriber` varchar(255) NOT NULL,
   `subscription` enum('none','unconfigured','subscribed') NOT NULL,
-  `deliver` tinyint(4) NOT NULL,
-  `digest` tinyint(4) NOT NULL,
-  `digest_frequency` int(11) NOT NULL,
+  `deliver` tinyint(4) default NULL,
+  `digest` tinyint(4) default NULL,
+  `digest_frequency` int(11) default NULL,
   `expire` char(15) default NULL,
-  `includeBody` tinyint(4) NOT NULL,
+  `includeBody` tinyint(4) default NULL,
   `showValues` varchar(30) default NULL,
-  `subscriptionDepth` tinyint(4) NOT NULL,
+  `subscriptionDepth` tinyint(4) default NULL,
   `keyword` varchar(200) default NULL,
   PRIMARY KEY  (`serviceId`,`nodeId`,`subId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -164,6 +166,7 @@ CREATE TABLE `pubsubsubscription` (
 -- Records of pubsubsubscription
 -- ----------------------------
 INSERT INTO `pubsubsubscription` VALUES ('123', 'node2', '123', 'pubsub.example.com', 'noah@example.com', 'subscribed', '1', '1', '1', '1', '1', '1', '1', null);
+INSERT INTO `pubsubsubscription` VALUES ('123', 'node3', '2531e52f5087be95ffc2a8b25dfdd297', 'pubsub.example.com', 'noah@example.com', 'subscribed', null, null, null, null, null, null, null, null);
 
 -- ----------------------------
 -- Table structure for `shop`

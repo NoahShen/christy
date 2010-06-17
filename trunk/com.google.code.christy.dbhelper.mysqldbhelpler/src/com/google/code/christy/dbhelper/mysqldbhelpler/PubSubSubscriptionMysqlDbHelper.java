@@ -3,6 +3,7 @@ package com.google.code.christy.dbhelper.mysqldbhelpler;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -22,6 +23,7 @@ public class PubSubSubscriptionMysqlDbHelper implements PubSubSubscriptionDbHelp
 	
 	private static final String GETALLPUBSUBSUBSCRIPTIONS_SQL = "SELECT * FROM pubsubsubscription WHERE subscriber = ?";
 	
+	private static final String ADDPUBSUBSUBSCRIPTION_SQL = "INSERT INTO pubsubsubscription (serviceId, nodeId, subId, jid, subscriber, subscription) VALUES (?, ?, ?, ?, ?, ?)";
 	
 	/**
 	 * @param connectionPool
@@ -54,8 +56,7 @@ public class PubSubSubscriptionMysqlDbHelper implements PubSubSubscriptionDbHelp
 				preStat.setString(2, nodeId);
 			}
 			
-			
-			
+
 			ResultSet subscriptionsResultSet = preStat.executeQuery();
 			
 			if (loggerServiceTracker.isDebugEnabled())
@@ -82,6 +83,35 @@ public class PubSubSubscriptionMysqlDbHelper implements PubSubSubscriptionDbHelp
 				
 			}
 			return pubSubSubscriptionList;
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+
+	@Override
+	public void addPubSubSubscription(PubSubSubscription subscription) throws SQLException
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			
+			PreparedStatement preStat = connection.prepareStatement(ADDPUBSUBSUBSCRIPTION_SQL);
+			preStat.setString(1, subscription.getServiceId());
+			preStat.setString(2, subscription.getNodeId());
+			preStat.setString(3, subscription.getSubId());
+			preStat.setString(4, subscription.getJid());
+			preStat.setString(5, subscription.getSubscriber());
+			preStat.setString(6, subscription.getSubscription().name());
+			
+			preStat.executeUpdate();
+			
 		}
 		finally
 		{
