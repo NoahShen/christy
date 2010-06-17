@@ -15,7 +15,7 @@ public class PubSubSubscriptions implements XmlStanza
 
 	private String node;
 	
-	private List<Subscription> subs = new ArrayList<Subscription>();
+	private List<PubSubSubscriptionItem> subs = new ArrayList<PubSubSubscriptionItem>();
 	
 	public String getNode()
 	{
@@ -27,17 +27,17 @@ public class PubSubSubscriptions implements XmlStanza
 		this.node = node;
 	}
 
-	public void addSubscription(Subscription sub)
+	public void addPubSubSubscription(PubSubSubscriptionItem sub)
 	{
 		subs.add(sub);
 	}
 	
-	public void removeSubscription(Subscription sub)
+	public void removePubSubSubscription(PubSubSubscriptionItem sub)
 	{
 		subs.remove(sub);
 	}
 	
-	public Collection<Subscription> getSubscriptions()
+	public Collection<PubSubSubscriptionItem> getSubscriptions()
 	{
 		return subs;
 	}
@@ -60,7 +60,7 @@ public class PubSubSubscriptions implements XmlStanza
 		else
 		{
 			buf.append(">");
-			for (Subscription sub : subs)
+			for (PubSubSubscriptionItem sub : subs)
 			{
 				buf.append(sub.toXml());
 			}
@@ -76,128 +76,13 @@ public class PubSubSubscriptions implements XmlStanza
 	{
 		PubSubSubscriptions pubSubSubscriptions = (PubSubSubscriptions) super.clone();
 		pubSubSubscriptions.node = this.node;
-		pubSubSubscriptions.subs = new ArrayList<Subscription>();
-		for (Subscription sub : subs)
+		pubSubSubscriptions.subs = new ArrayList<PubSubSubscriptionItem>();
+		for (PubSubSubscriptionItem sub : subs)
 		{
-			pubSubSubscriptions.subs.add((Subscription) sub.clone());
+			pubSubSubscriptions.subs.add((PubSubSubscriptionItem) sub.clone());
 		}
 		return pubSubSubscriptions;
 	}
 	
-	public static class Subscription implements XmlStanza
-	{
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -852218418997032739L;
-
-		private String node;
-		
-		private String jid;
-		
-		private SubscriptionType subscriptionType;
-		
-		private String subId;
-		
-		public Subscription(String node, String jid, SubscriptionType subscriptionType)
-		{
-			super();
-			this.node = node;
-			this.jid = jid;
-			this.subscriptionType = subscriptionType;
-		}
-
-		public String getNode()
-		{
-			return node;
-		}
-
-		public void setNode(String node)
-		{
-			this.node = node;
-		}
-
-		public String getJid()
-		{
-			return jid;
-		}
-
-		public void setJid(String jid)
-		{
-			this.jid = jid;
-		}
-
-		public SubscriptionType getSubscriptionType()
-		{
-			return subscriptionType;
-		}
-
-		public void setSubscriptionType(SubscriptionType subscriptionType)
-		{
-			this.subscriptionType = subscriptionType;
-		}
-
-		public String getSubId()
-		{
-			return subId;
-		}
-
-		public void setSubId(String subId)
-		{
-			this.subId = subId;
-		}
-
-		@Override
-		public String toXml()
-		{
-			StringBuilder buf = new StringBuilder();
-			buf.append("<subscription");
-			if (getNode() != null)
-			{
-				buf.append(" node=\"").append(getNode()).append("\"");
-			}
-			
-			if (getJid() != null)
-			{
-				buf.append(" jid=\"").append(getJid()).append("\"");
-			}
-			
-			if (getSubscriptionType() != null)
-			{
-				buf.append(" subscription=\"").append(getSubscriptionType().name()).append("\"");
-			}
-			
-			if (getSubId() != null)
-			{
-				buf.append(" subid=\"").append(getSubId()).append("\"");
-			}
-			
-			buf.append("/>");
-			
-			
-			return buf.toString();
-		}
-		
-		@Override
-		public Object clone() throws CloneNotSupportedException
-		{
-			Subscription subscription = (Subscription) super.clone();
-			subscription.node = this.node;
-			subscription.jid = this.jid;
-			subscription.subId = this.subId;
-			subscription.subscriptionType = this.subscriptionType;
-			return subscription;
-		}
-		
-	}
-	
-	public enum SubscriptionType
-	{
-		subscribed,
-		
-		unconfigured,
-		
-		none
-	}
 
 }

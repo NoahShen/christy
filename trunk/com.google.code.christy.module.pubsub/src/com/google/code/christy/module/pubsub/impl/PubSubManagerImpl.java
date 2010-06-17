@@ -37,6 +37,8 @@ import com.google.code.christy.xmpp.disco.DiscoInfoExtension;
 import com.google.code.christy.xmpp.disco.DiscoItemsExtension;
 import com.google.code.christy.xmpp.pubsub.PubSubAffiliations;
 import com.google.code.christy.xmpp.pubsub.PubSubExtension;
+import com.google.code.christy.xmpp.pubsub.PubSubSubscribe;
+import com.google.code.christy.xmpp.pubsub.PubSubSubscriptionItem;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptions;
 
 public class PubSubManagerImpl extends AbstractPropertied implements PubSubManager
@@ -348,38 +350,52 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 
 		private void handlerIq(RouteMessage routeMessage, Iq iq, IoSession session)
 		{
-			DiscoInfoExtension discoInfo = (DiscoInfoExtension) iq.getExtension(DiscoInfoExtension.ELEMENTNAME, DiscoInfoExtension.NAMESPACE);
-			if (discoInfo != null)
-			{
-				handleDiscoInfo(routeMessage, iq, discoInfo, session);
-			}
+			Iq iqResponse = null;
 			
-			DiscoItemsExtension discoItems = (DiscoItemsExtension) iq.getExtension(DiscoItemsExtension.ELEMENTNAME, DiscoItemsExtension.NAMESPACE);
-			if (discoItems != null)
-			{
-				handleDiscoItems(routeMessage, iq, discoItems, session);
-			}
-			
-			PubSubExtension pubSubExtension = (PubSubExtension) iq.getExtension(PubSubExtension.ELEMENTNAME, PubSubExtension.NAMESPACE);
-			if (pubSubExtension != null)
-			{
-				handlePubSubExtension(routeMessage, iq, pubSubExtension, session);
-			}
-			
-		}
-
-		private void handlePubSubExtension(RouteMessage routeMessage, Iq iq, PubSubExtension pubSubExtension, IoSession session)
-		{
 			JID from = iq.getFrom();
 			if (from == null)
 			{
 				return;
 			}
 			
+			DiscoInfoExtension discoInfo = (DiscoInfoExtension) iq.getExtension(DiscoInfoExtension.ELEMENTNAME, DiscoInfoExtension.NAMESPACE);
+			if (discoInfo != null)
+			{
+				iqResponse = handleDiscoInfo(from, routeMessage, iq, discoInfo, session);
+			}
+			
+			DiscoItemsExtension discoItems = (DiscoItemsExtension) iq.getExtension(DiscoItemsExtension.ELEMENTNAME, DiscoItemsExtension.NAMESPACE);
+			if (discoItems != null)
+			{
+				iqResponse = handleDiscoItems(from, routeMessage, iq, discoItems, session);
+			}
+			
+			PubSubExtension pubSubExtension = (PubSubExtension) iq.getExtension(PubSubExtension.ELEMENTNAME, PubSubExtension.NAMESPACE);
+			if (pubSubExtension != null)
+			{
+				iqResponse = handlePubSubExtension(from, routeMessage, iq, pubSubExtension, session);
+			}
+			
+			RouteMessage responseRouteMessage = new RouteMessage(getSubDomain(), routeMessage.getStreamId());
+			
+			//local user
+			if (from.getDomain().equals(getDomain()))
+			{
+				responseRouteMessage.setToUserNode(from.getNode());
+			}
+			
+			responseRouteMessage.setXmlStanza(iqResponse);
+			
+			sendToRouter(responseRouteMessage);
+			
+		}
+
+		private Iq handlePubSubExtension(JID from, RouteMessage routeMessage, Iq iq, PubSubExtension pubSubExtension, IoSession session)
+		{
+			Iq iqResponse = null;
 			XmlStanza stanza = pubSubExtension.getStanza();
 			if (stanza != null)
 			{
-				Iq iqResponse = null;
 				if (iq.getType() != Iq.Type.get)
 				{
 					iqResponse = PacketUtils.createErrorIq(iq);
@@ -397,21 +413,38 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				{
 					iqResponse = handlePubSubAffiliations(from, stanza, iq, pubSubExtension);
 				}
-				
-
-				RouteMessage responseRouteMessage = new RouteMessage(getSubDomain(), routeMessage.getStreamId());
-				
-				//local user
-				if (from.getDomain().equals(getDomain()))
+				else if (stanza instanceof PubSubSubscribe)
 				{
-					responseRouteMessage.setToUserNode(from.getNode());
+					iqResponse = handlePubSubSubscriptionItem(from, stanza, iq, pubSubExtension);
 				}
+
 				
-				responseRouteMessage.setXmlStanza(iqResponse);
+			}
+			return iqResponse;
+		}
+
+		private Iq handlePubSubSubscriptionItem(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
+		{
+			Iq iqResponse = null;
+			PubSubSubscribe pubSubSubscribe = (PubSubSubscribe) stanza;
+			String node = pubSubSubscribe.getNode();
+			JID subscriberJid = pubSubSubscribe.getSubscriberJid();
+			
+			if (from.equalsWithBareJid(subscriberJid))
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
 				
-				sendToRouter(responseRouteMessage);
+				XmppError error = new XmppError(XmppError.Condition.bad_request);
+				error.addOtherCondition("invalid-jid", "http://jabber.org/protocol/pubsub#errors");
+				
+				iqResponse.setError(error);
+			}
+			else
+			{
+				
 			}
 			
+			return iqResponse;
 		}
 
 		private Iq handlePubSubAffiliations(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
@@ -420,10 +453,10 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			Iq iqResponse = null;
 			PubSubAffiliations pubSubAffiliations = (PubSubAffiliations) stanza;
 			String node = pubSubAffiliations.getNode();
-			Collection<PubSubAffiliation> affiliations = pubSubEngine.getPubSubAffiliation(from.toBareJID(), node);
-			
-			if (affiliations != null)
+			Collection<PubSubAffiliation> affiliations;
+			try
 			{
+				affiliations = pubSubEngine.getPubSubAffiliation(from.toBareJID(), node);
 				PubSubExtension pubSubExtensionResponse = new PubSubExtension(pubSubExtension.getNamespace());
 				PubSubAffiliations pubSubAffiliationsResponse = new PubSubAffiliations();
 				pubSubAffiliationsResponse.setNode(node);
@@ -441,10 +474,15 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				iqResponse = PacketUtils.createResultIq(iq);
 				iqResponse.addExtension(pubSubExtensionResponse);
 			}
-			else
+			catch (NodeNotExistException e)
 			{
 				iqResponse = PacketUtils.createErrorIq(iq);
 				iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
+			}
+			catch (Exception e)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.internal_server_error));
 			}
 			
 			return iqResponse;
@@ -455,22 +493,22 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			Iq iqResponse = null;
 			PubSubSubscriptions pubSubSubscriptions = (PubSubSubscriptions) stanza;
 			String node = pubSubSubscriptions.getNode();
-			Collection<PubSubSubscription> subs = pubSubEngine.getPubSubSubscriptions(from.toBareJID(), node);
-			
-			if (subs != null)
+			Collection<PubSubSubscription> subs;
+			try
 			{
+				subs = pubSubEngine.getPubSubSubscriptions(from.toBareJID(), node);
 				PubSubExtension pubSubExtensionResponse = new PubSubExtension(pubSubExtension.getNamespace());
 				PubSubSubscriptions pubSubSubscriptionsResponse = new PubSubSubscriptions();
 				pubSubSubscriptionsResponse.setNode(node);
 				
 				for (PubSubSubscription subscription : subs)
 				{
-					PubSubSubscriptions.Subscription sub = 
-						new PubSubSubscriptions.Subscription(subscription.getNodeId(), 
+					PubSubSubscriptionItem sub = 
+						new PubSubSubscriptionItem(subscription.getNodeId(), 
 										subscription.getJid(), 
-										PubSubSubscriptions.SubscriptionType.valueOf(subscription.getSubscription().name()));
+										PubSubSubscriptionItem.SubscriptionType.valueOf(subscription.getSubscription().name()));
 					sub.setSubId(subscription.getSubId());
-					pubSubSubscriptionsResponse.addSubscription(sub);
+					pubSubSubscriptionsResponse.addPubSubSubscription(sub);
 				}
 				
 				pubSubExtensionResponse.setStanza(pubSubSubscriptionsResponse);
@@ -478,21 +516,22 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				iqResponse = PacketUtils.createResultIq(iq);
 				iqResponse.addExtension(pubSubExtensionResponse);
 			}
-			else
+			catch (NodeNotExistException e)
 			{
 				iqResponse = PacketUtils.createErrorIq(iq);
 				iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
 			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			return iqResponse;
 		}
 
-		private void handleDiscoItems(RouteMessage routeMessage, Iq iq, DiscoItemsExtension discoItems, IoSession session)
+		private Iq handleDiscoItems(JID from, RouteMessage routeMessage, Iq iq, DiscoItemsExtension discoItems, IoSession session)
 		{
-			JID from = iq.getFrom();
-			if (from == null)
-			{
-				return;
-			}
 			
 			Iq iqResponse = null;
 			if (iq.getType() != Iq.Type.get)
@@ -507,42 +546,32 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			else
 			{
 				String node = discoItems.getNode();
-				DiscoItemsExtension discoItemsResponse = pubSubEngine.getDiscoItem(node);
-				if (discoItemsResponse == null)
+				DiscoItemsExtension discoItemsResponse;
+				try
+				{
+					discoItemsResponse = pubSubEngine.getDiscoItem(node);
+					iqResponse = PacketUtils.createResultIq(iq);
+					iqResponse.addExtension(discoItemsResponse);
+				}
+				catch (NodeNotExistException e)
 				{
 					iqResponse = PacketUtils.createErrorIq(iq);
 					iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
 				}
-				else
+				catch (Exception e)
 				{
-					iqResponse = PacketUtils.createResultIq(iq);
-					iqResponse.addExtension(discoItemsResponse);
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 				
 			}
 			
-			RouteMessage responseRouteMessage = new RouteMessage(getSubDomain(), routeMessage.getStreamId());
-			
-			//local user
-			if (from.getDomain().equals(getDomain()))
-			{
-				responseRouteMessage.setToUserNode(from.getNode());
-			}
-			
-			responseRouteMessage.setXmlStanza(iqResponse);
-			
-			sendToRouter(responseRouteMessage);
+			return iqResponse;
 			
 		}
 
-		private void handleDiscoInfo(RouteMessage routeMessage, Iq iq, DiscoInfoExtension discoInfo, IoSession session)
-		{
-			JID from = iq.getFrom();
-			if (from == null)
-			{
-				return;
-			}
-			
+		private Iq handleDiscoInfo(JID from, RouteMessage routeMessage, Iq iq, DiscoInfoExtension discoInfo, IoSession session)
+		{			
 			Iq iqResponse = null;
 			if (iq.getType() != Iq.Type.get)
 			{
@@ -569,17 +598,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				
 			}
 			
-			RouteMessage responseRouteMessage = new RouteMessage(getSubDomain(), routeMessage.getStreamId());
-			
-			//local user
-			if (from.getDomain().equals(getDomain()))
-			{
-				responseRouteMessage.setToUserNode(from.getNode());
-			}
-			
-			responseRouteMessage.setXmlStanza(iqResponse);
-			
-			sendToRouter(responseRouteMessage);
+			return iqResponse;
 		}
 
 		private void handleStream(XmlPullParser parser, IoSession session)
