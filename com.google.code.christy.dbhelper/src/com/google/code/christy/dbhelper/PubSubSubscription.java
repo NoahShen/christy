@@ -1,5 +1,8 @@
 package com.google.code.christy.dbhelper;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class PubSubSubscription
 {
 	private String serviceId;
@@ -13,6 +16,20 @@ public class PubSubSubscription
 	private String subscriber;
 
 	private Subscription subscription;
+	
+	private boolean deliver;
+	
+	private boolean digest;
+	
+	private int digestFrequency;
+	
+	private int expire;
+	
+	private boolean includeBody;
+	
+	private Set<String> showValues = new HashSet<String>();
+	
+	private String subscriptionDepth;
 	
 	public PubSubSubscription()
 	{
@@ -79,7 +96,77 @@ public class PubSubSubscription
 	{
 		this.subscription = subscription;
 	}
+		public boolean isDeliver()
+	{
+		return deliver;
+	}
+
+	public void setDeliver(boolean deliver)
+	{
+		this.deliver = deliver;
+	}
+
+	public boolean isDigest()
+	{
+		return digest;
+	}
+
+	public void setDigest(boolean digest)
+	{
+		this.digest = digest;
+	}
+
+	public int getDigestFrequency()
+	{
+		return digestFrequency;
+	}
+
+	public void setDigestFrequency(int digestFrequency)
+	{
+		this.digestFrequency = digestFrequency;
+	}
+
+	public int getExpire()
+	{
+		return expire;
+	}
+
+	public void setExpire(int expire)
+	{
+		this.expire = expire;
+	}
+
+	public boolean isIncludeBody()
+	{
+		return includeBody;
+	}
+
+	public void setIncludeBody(boolean includeBody)
+	{
+		this.includeBody = includeBody;
+	}
+
+	public Set<String> getShowValues()
+	{
+		return showValues;
+	}
+
+	public void setShowValues(Set<String> showValues)
+	{
+		this.showValues = showValues;
+	}
+
+	public String getSubscriptionDepth()
+	{
+		return subscriptionDepth;
+	}
+
+	public void setSubscriptionDepth(String subscriptionDepth)
+	{
+		this.subscriptionDepth = subscriptionDepth;
+	}
 	
+
 	public enum Subscription
 	{
 		subscribed,
@@ -88,5 +175,7 @@ public class PubSubSubscription
 		
 		none
 	}
+
+
 
 }

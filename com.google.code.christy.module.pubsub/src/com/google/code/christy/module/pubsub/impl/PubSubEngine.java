@@ -1,6 +1,7 @@
 package com.google.code.christy.module.pubsub.impl;
 
 import java.util.Collection;
+import java.util.Map;
 
 import com.google.code.christy.dbhelper.PubSubAffiliation;
 import com.google.code.christy.dbhelper.PubSubAffiliationDbHelper;
@@ -139,18 +140,40 @@ public class PubSubEngine
 		{
 			throw new Exception("pubSubNodeDbHelper or pubSubSubscriptionDbHelper is null");
 		}
-		
-		if (node != null)
-		{
-			PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
-			if (pubSubNode == null)
-			{
-				throw new NodeNotExistException();
-			}
-		}
+
 		
 		Collection<PubSubSubscription> subs = pubSubSubscriptionDbHelper.getPubSubSubscriptions(subscriber, node);
 		return subs;
+	}
+	
+	public PubSubSubscription getPubSubSubscription(String subscriber, String node, String subId) throws Exception
+	{
+		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
+		PubSubSubscriptionDbHelper pubSubSubscriptionDbHelper = pubSubSubscriptionDbHelperTracker.getPubSubSubscriptionDbHelper();
+		if (pubSubNodeDbHelper == null || pubSubSubscriptionDbHelper == null)
+		{
+			throw new Exception("pubSubNodeDbHelper or pubSubSubscriptionDbHelper is null");
+		}
+
+
+		if (node == null)
+		{
+			throw new NullPointerException("node is null");
+		}
+		
+		PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
+		if (pubSubNode == null)
+		{
+			throw new NodeNotExistException();
+		}
+		
+		
+		PubSubSubscription sub = pubSubSubscriptionDbHelper.getPubSubSubscription(subscriber, node, subId);
+		if (sub == null)
+		{
+			throw new InvalidSubIdException();
+		}
+		return sub;
 	}
 	
 	
@@ -161,15 +184,6 @@ public class PubSubEngine
 		if (pubSubNodeDbHelper == null || pubSubAffiliationDbHelper == null)
 		{
 			throw new Exception("pubSubNodeDbHelper or pubSubAffiliationDbHelper is null");
-		}
-		
-		if (node != null)
-		{
-			PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
-	 		if (pubSubNode == null)
-			{
-				throw new NodeNotExistException();
-			}
 		}
 		
 		Collection<PubSubAffiliation> pubSubAffiliations = pubSubAffiliationDbHelper.getPubSubAffiliation(jid, node);
@@ -244,7 +258,28 @@ public class PubSubEngine
  		
  		pubSubSubscriptionDbHelper.removePubSubSubscription(jid, node, subId);
  		
- 		
 	}
 	
+	public void updateSubscriptionConfigure(String jid, String nodeId, String subId, Map<String, Object> config) throws Exception
+	{
+		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
+		PubSubSubscriptionDbHelper pubSubSubscriptionDbHelper = pubSubSubscriptionDbHelperTracker.getPubSubSubscriptionDbHelper();
+		if (pubSubNodeDbHelper == null || pubSubSubscriptionDbHelper == null)
+		{
+			throw new Exception("pubSubNodeDbHelper or pubSubSubscriptionDbHelper is null");
+		}
+
+		if (nodeId == null)
+		{
+			throw new NullPointerException("node is null");
+		}
+		
+		PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(nodeId);
+		if (pubSubNode == null)
+		{
+			throw new NodeNotExistException();
+		}
+		
+		pubSubSubscriptionDbHelper.updatePubSubSubscription(jid, nodeId, subId, config);
+	}
 }
