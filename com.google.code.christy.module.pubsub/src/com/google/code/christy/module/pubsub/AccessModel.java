@@ -7,9 +7,11 @@ import com.google.code.christy.dbhelper.PubSubNode;
  * @author Noah
  * 
  */
-public interface SubscribeModel
+public interface AccessModel
 {
 	public boolean canSubscribe(PubSubNode node, String subscriber) throws Exception;
-
+	
+	public boolean canAccessItems(PubSubNode node, String subscriber) throws Exception;
+	
 	public String getName();
 }

@@ -22,6 +22,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 import com.google.code.christy.dbhelper.PubSubAffiliation;
 import com.google.code.christy.dbhelper.PubSubAffiliationDbHelperTracker;
+import com.google.code.christy.dbhelper.PubSubItem;
 import com.google.code.christy.dbhelper.PubSubItemDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNodeConfigDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
@@ -44,6 +45,7 @@ import com.google.code.christy.xmpp.disco.DiscoInfoExtension;
 import com.google.code.christy.xmpp.disco.DiscoItemsExtension;
 import com.google.code.christy.xmpp.pubsub.PubSubAffiliations;
 import com.google.code.christy.xmpp.pubsub.PubSubExtension;
+import com.google.code.christy.xmpp.pubsub.PubSubItems;
 import com.google.code.christy.xmpp.pubsub.PubSubOptions;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscribe;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptionItem;
@@ -82,6 +84,8 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 	
 	private PubSubEngine pubSubEngine;
 
+	private int maxItems;
+
 	
 	public PubSubManagerImpl(LoggerServiceTracker loggerServiceTracker, 
 				RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
@@ -90,7 +94,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker, 
 				PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker, 
 				PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker, 
-				SubscribeModelTracker subscribeModelTracker)
+				AccessModelTracker accessModelTracker)
 	{
 		super();
 		this.loggerServiceTracker = loggerServiceTracker;
@@ -101,7 +105,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 						pubSubSubscriptionDbHelperTracker,
 						pubSubAffiliationDbHelperTracker,
 						pubSubNodeConfigDbHelperTracker,
-						subscribeModelTracker);
+						accessModelTracker);
 	}
 
 	public String getDomain()
@@ -288,6 +292,19 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 		}
 		this.routerPort = routerPort;
 	}
+
+	public void setMaxItems(int maxItems)
+	{
+		this.maxItems = maxItems;
+	}
+	
+	/**
+	 * @return the maxItems
+	 */
+	public int getMaxItems()
+	{
+		return maxItems;
+	}
 	
 	private class RouterHandler implements IoHandler
 	{
@@ -435,7 +452,86 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				{
 					iqResponse = handlePubSubOptions(from, stanza, iq, pubSubExtension);
 				}
+				else if (stanza instanceof PubSubItems)
+				{
+					iqResponse = handlePubSubItems(from, stanza, iq, pubSubExtension);
+				}
 			}
+			
+			return iqResponse;
+		}
+
+		private Iq handlePubSubItems(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
+		{
+			Iq iqResponse = null;
+			Iq.Type type = iq.getType();
+			if (type != Iq.Type.get)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.bad_request));
+				if (iqResponse.getFrom() == null)
+				{
+					iqResponse.setFrom(new JID(null, getSubDomain(), null));
+				}
+				return iqResponse;
+			}
+			
+			PubSubItems pubSubItems = (PubSubItems) stanza;
+			
+			String nodeId = pubSubItems.getNode();
+			String subId = pubSubItems.getSubId();
+			int maxItems = pubSubItems.getMaxItems();
+			String itemId = null;
+			if (!pubSubItems.getItems().isEmpty())
+			{
+				itemId = pubSubItems.getItems().get(0).getId();
+			}
+			
+			try
+			{
+				// TODO check case sentity
+				Collection<PubSubItem> items = pubSubEngine.getPubSubItems(from.toBareJID(), nodeId, subId, itemId, (maxItems == 0 ? PubSubManagerImpl.this.getMaxItems() : maxItems));
+				
+				PubSubExtension pubSubExtensionResponse = new PubSubExtension(pubSubExtension.getNamespace());
+				PubSubItems pubSubItemsResponse = new PubSubItems(nodeId);
+				pubSubItemsResponse.setSubId(subId);
+				pubSubItemsResponse.setMaxItems(maxItems);
+				
+				for (PubSubItem pubSubItem : items)
+				{
+					PubSubItems.Item item = new PubSubItems.Item(pubSubItem.getItemId());
+					item.setPayload(pubSubItem.getPayload());
+					pubSubItemsResponse.addItem(item);
+				}
+				pubSubExtensionResponse.addStanza(pubSubItemsResponse);
+				
+				iqResponse = PacketUtils.createResultIq(iq);
+				iqResponse.addExtension(pubSubExtensionResponse);
+				
+			}
+			catch (NodeNotExistException e)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
+			}
+			catch (CannotAccessException e)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.not_authorized));
+			}
+			catch (InvalidSubIdException e)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				XmppError error = new XmppError(XmppError.Condition.no_acceptable);
+				error.addOtherCondition("invalid-subid", "http://jabber.org/protocol/pubsub#errors");
+				iqResponse.setError(error);
+			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			
 			return iqResponse;
 		}

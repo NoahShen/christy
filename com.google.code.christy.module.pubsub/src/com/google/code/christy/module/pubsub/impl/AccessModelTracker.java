@@ -3,17 +3,17 @@ package com.google.code.christy.module.pubsub.impl;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
 
-import com.google.code.christy.module.pubsub.SubscribeModel;
+import com.google.code.christy.module.pubsub.AccessModel;
 
-public class SubscribeModelTracker extends ServiceTracker
+public class AccessModelTracker extends ServiceTracker
 {
 
-	public SubscribeModelTracker(BundleContext context)
+	public AccessModelTracker(BundleContext context)
 	{
-		super(context, SubscribeModel.class.getName(), null);
+		super(context, AccessModel.class.getName(), null);
 	}
 
-	public SubscribeModel getSubscribeModel(String name)
+	public AccessModel getSubscribeModel(String name)
 	{
 		Object[] services = getServices();
 		if (services == null || services.length == 0)
@@ -23,7 +23,7 @@ public class SubscribeModelTracker extends ServiceTracker
 		
 		for (Object service : services)
 		{
-			SubscribeModel model = (SubscribeModel) service;
+			AccessModel model = (AccessModel) service;
 			if (model.getName().equals(name))
 			{
 				return model;

@@ -1,5 +1,6 @@
 package com.google.code.christy.module.pubsub.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -18,7 +19,7 @@ import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubSubscription;
 import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelper;
 import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelperTracker;
-import com.google.code.christy.module.pubsub.SubscribeModel;
+import com.google.code.christy.module.pubsub.AccessModel;
 import com.google.code.christy.util.StringUtils;
 import com.google.code.christy.xmpp.JID;
 import com.google.code.christy.xmpp.disco.DiscoInfoExtension;
@@ -33,7 +34,7 @@ public class PubSubEngine
 	private PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker;
 	private PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker;
 	private PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker;
-	private SubscribeModelTracker subscribeModelTracker;
+	private AccessModelTracker accessModelTracker;
 	
 	public PubSubEngine(PubSubManagerImpl pubSubManager, 
 				PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker, 
@@ -41,7 +42,7 @@ public class PubSubEngine
 				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker, 
 				PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker, 
 				PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker, 
-				SubscribeModelTracker subscribeModelTracker)
+				AccessModelTracker accessModelTracker)
 	{
 		this.pubSubManager = pubSubManager; 
 		this.pubSubNodeDbHelperTracker = pubSubNodeDbHelperTracker;
@@ -49,7 +50,7 @@ public class PubSubEngine
 		this.pubSubSubscriptionDbHelperTracker = pubSubSubscriptionDbHelperTracker;
 		this.pubSubAffiliationDbHelperTracker = pubSubAffiliationDbHelperTracker;
 		this.pubSubNodeConfigDbHelperTracker = pubSubNodeConfigDbHelperTracker;
-		this.subscribeModelTracker = subscribeModelTracker;
+		this.accessModelTracker = accessModelTracker;
 		
 		discoInfo = new DiscoInfoExtension();
 		discoInfo.addFeature(new DiscoInfoExtension.Feature("http://jabber.org/protocol/pubsub"));
@@ -108,7 +109,7 @@ public class PubSubEngine
 		
 		if (pubSubNode.isLeaf())
 		{
-			Collection<PubSubItem> items = pubSubItemDbHelper.getPubSbuItem(node);
+			Collection<PubSubItem> items = pubSubItemDbHelper.getPubSubItems(node, pubSubManager.getMaxItems());
 			for(PubSubItem pubSubItem : items)
 			{
 				DiscoItemsExtension.Item item = 
@@ -216,7 +217,7 @@ public class PubSubEngine
  		
  		PubSubNodeConfig pubSubNodeConfig = pubSubNodeConfigDbHelper.getPubSubNodeConfig(node);
  		String subscribeModel = pubSubNodeConfig.getSubscribeModel();
- 		SubscribeModel model = subscribeModelTracker.getSubscribeModel(subscribeModel);
+ 		AccessModel model = accessModelTracker.getSubscribeModel(subscribeModel);
  		if (model == null)
  		{
  			throw new Exception("Can not get SubscribeModel[" + subscribeModel + "]");
@@ -281,5 +282,69 @@ public class PubSubEngine
 		}
 		
 		pubSubSubscriptionDbHelper.updatePubSubSubscription(jid, nodeId, subId, config);
+	}
+	
+	public Collection<PubSubItem> getPubSubItems(String jid, String nodeId, String subId, String itemId, int maxItems) throws Exception
+	{
+		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
+		PubSubSubscriptionDbHelper pubSubSubscriptionDbHelper = pubSubSubscriptionDbHelperTracker.getPubSubSubscriptionDbHelper();
+		PubSubItemDbHelper pubSubItemDbHelper = pubSubItemDbHelperTracker.getPubSubItemDbHelper();
+		PubSubNodeConfigDbHelper pubSubNodeConfigDbHelper = pubSubNodeConfigDbHelperTracker.getPubSubNodeConfigDbHelper();
+		if (pubSubNodeDbHelper == null 
+			|| pubSubSubscriptionDbHelper == null
+			|| pubSubItemDbHelper == null
+			|| pubSubNodeConfigDbHelper == null)
+		{
+			throw new Exception("pubSubNodeDbHelper" +
+						" or pubSubSubscriptionDbHelper" +
+						" or pubSubItemDbHelper" +
+						" or pubSubNodeConfigDbHelper" +
+						" is null");
+		}
+
+		if (nodeId == null)
+		{
+			throw new NullPointerException("node is null");
+		}
+		
+		PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(nodeId);
+		if (pubSubNode == null)
+		{
+			throw new NodeNotExistException();
+		}
+		
+		PubSubNodeConfig pubSubNodeConfig = pubSubNodeConfigDbHelper.getPubSubNodeConfig(nodeId);
+ 		String subscribeModel = pubSubNodeConfig.getSubscribeModel();
+ 		
+		AccessModel model = accessModelTracker.getSubscribeModel(subscribeModel);
+ 		if (model == null)
+ 		{
+ 			throw new Exception("Can not get SubscribeModel[" + subscribeModel + "]");
+ 		}
+ 		
+ 		if (!model.canAccessItems(pubSubNode, jid))
+ 		{
+ 			throw new CannotAccessException();
+ 		}
+ 		
+		PubSubSubscription sub = pubSubSubscriptionDbHelper.getPubSubSubscription(jid, nodeId, subId);
+		if (sub == null)
+		{
+			throw new InvalidSubIdException();
+		}
+		
+		Collection<PubSubItem> items = null;
+		if (itemId == null)
+		{
+			items = pubSubItemDbHelper.getPubSubItems(nodeId, maxItems);
+		}
+		else
+		{
+			PubSubItem item = pubSubItemDbHelper.getPubSubItem(nodeId, itemId);
+			items = new ArrayList<PubSubItem>(1);
+			items.add(item);
+		}
+		
+		return items;
 	}
 }

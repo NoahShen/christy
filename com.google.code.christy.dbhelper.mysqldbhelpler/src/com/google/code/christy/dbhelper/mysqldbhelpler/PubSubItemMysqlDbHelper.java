@@ -19,7 +19,9 @@ public class PubSubItemMysqlDbHelper implements PubSubItemDbHelper
 
 	private LoggerServiceTracker loggerServiceTracker;
 	
-	private static final String GETPUBSUBITEM_SQL = "SELECT * FROM pubsubitem WHERE nodeId = ?";
+	private static final String GETPUBSUBITEM_SQL = "SELECT * FROM pubsubitem WHERE nodeId = ? ORDER BY creationDate DESC LIMIT ?";
+	
+	private static final String GETONEPUBSUBITEM_SQL = "SELECT * FROM pubsubitem WHERE nodeId = ? AND itemId = ?";
 	
 	/**
 	 * @param connectionPool
@@ -33,7 +35,7 @@ public class PubSubItemMysqlDbHelper implements PubSubItemDbHelper
 	}
 	
 	@Override
-	public Collection<PubSubItem> getPubSbuItem(String nodeId) throws Exception
+	public Collection<PubSubItem> getPubSubItems(String nodeId, int max) throws Exception
 	{
 		Connection connection = null;
 		try
@@ -41,6 +43,7 @@ public class PubSubItemMysqlDbHelper implements PubSubItemDbHelper
 			connection = connectionPool.getConnection();
 			PreparedStatement preStat = connection.prepareStatement(GETPUBSUBITEM_SQL);			
 			preStat.setString(1, nodeId);
+			preStat.setInt(2, max);
 			
 			ResultSet itemResultSet = preStat.executeQuery();
 			
@@ -63,7 +66,7 @@ public class PubSubItemMysqlDbHelper implements PubSubItemDbHelper
 				{
 					item.setCreationDate(creationDate.getTime());
 				}
-				
+				item.setPayload(itemResultSet.getString("payload"));
 				
 				itemList.add(item);
 				
@@ -78,6 +81,55 @@ public class PubSubItemMysqlDbHelper implements PubSubItemDbHelper
 			}
 			
 		}
+	}
+
+	@Override
+	public PubSubItem getPubSubItem(String nodeId, String itemId) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(GETONEPUBSUBITEM_SQL);			
+			preStat.setString(1, nodeId);
+			preStat.setString(2, itemId);
+			
+			ResultSet itemResultSet = preStat.executeQuery();
+			
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + itemResultSet.toString());
+			}
+			
+			if (itemResultSet.next())
+			{
+				PubSubItem item = new PubSubItem();
+				item.setServiceId(itemResultSet.getString("serviceId"));
+				item.setNodeId(itemResultSet.getString("nodeId"));
+				item.setItemId(itemResultSet.getString("itemId"));
+				item.setJid(itemResultSet.getString("jid"));
+				Time creationDate = itemResultSet.getTime("creationDate");
+				if (creationDate != null)
+				{
+					item.setCreationDate(creationDate.getTime());
+				}
+				item.setPayload(itemResultSet.getString("payload"));
+				
+				return item;
+				
+			}
+			
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+		return null;
 	}
 
 }
