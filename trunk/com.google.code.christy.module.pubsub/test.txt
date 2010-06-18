@@ -102,3 +102,22 @@
      </options>
   </pubsub>
 </iq>
+
+
+<iq type='get'
+    to='pubsub.example.com'
+    id='items2'>
+  <pubsub xmlns='http://jabber.org/protocol/pubsub'>
+    <items node='node2' max_items='2' subid='123'/>
+  </pubsub>
+</iq>
+
+<iq type='get'
+    to='pubsub.example.com'
+    id='items2'>
+  <pubsub xmlns='http://jabber.org/protocol/pubsub'>
+    <items node='node2' subid='123'>
+	  <item id="1"/>
+	</items>
+  </pubsub>
+</iq>

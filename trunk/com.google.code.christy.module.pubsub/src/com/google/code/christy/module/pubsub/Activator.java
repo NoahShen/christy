@@ -11,9 +11,9 @@ import com.google.code.christy.dbhelper.PubSubNodeConfigDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelperTracker;
 import com.google.code.christy.log.LoggerServiceTracker;
-import com.google.code.christy.module.pubsub.impl.OpenSubscribeModel;
+import com.google.code.christy.module.pubsub.impl.OpenAccessModel;
 import com.google.code.christy.module.pubsub.impl.PubSubManagerImpl;
-import com.google.code.christy.module.pubsub.impl.SubscribeModelTracker;
+import com.google.code.christy.module.pubsub.impl.AccessModelTracker;
 import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 
 public class Activator implements BundleActivator
@@ -27,8 +27,8 @@ public class Activator implements BundleActivator
 	private PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker;
 	private PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker;
 	private PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker;
-	private SubscribeModelTracker subscribeModelTracker;
-	private ServiceRegistration openSubscribeModelRegistration;
+	private AccessModelTracker accessModelTracker;
+	private ServiceRegistration openAccessModelRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -58,11 +58,11 @@ public class Activator implements BundleActivator
 		pubSubNodeConfigDbHelperTracker = new PubSubNodeConfigDbHelperTracker(context);
 		pubSubNodeConfigDbHelperTracker.open();
 		
-		subscribeModelTracker = new SubscribeModelTracker(context);
-		subscribeModelTracker.open();
+		accessModelTracker = new AccessModelTracker(context);
+		accessModelTracker.open();
 		
-		OpenSubscribeModel openSubscribeModel = new OpenSubscribeModel();
-		openSubscribeModelRegistration = context.registerService(SubscribeModel.class.getName(), openSubscribeModel, null);
+		OpenAccessModel openAccessModel = new OpenAccessModel();
+		openAccessModelRegistration = context.registerService(AccessModel.class.getName(), openAccessModel, null);
 		
 		PubSubManagerImpl pubSubManager = 
 			new PubSubManagerImpl(loggerServiceTracker, 
@@ -72,7 +72,7 @@ public class Activator implements BundleActivator
 					pubSubSubscriptionDbHelperTracker,
 					pubSubAffiliationDbHelperTracker,
 					pubSubNodeConfigDbHelperTracker,
-					subscribeModelTracker);
+					accessModelTracker);
 		
 		String appPath = System.getProperty("appPath");
 		XMLConfiguration config = new XMLConfiguration(appPath + "/pusubconfig.xml");
@@ -95,6 +95,9 @@ public class Activator implements BundleActivator
 		
 		int routerPort = config.getInt("router-port", 8789);
 		pubSubManager.setRouterPort(routerPort);
+		
+		int maxItems = config.getInt("max-items", 10);
+		pubSubManager.setMaxItems(maxItems);
 		
 		pubSubManager.start();
 		
@@ -150,16 +153,16 @@ public class Activator implements BundleActivator
 			pubSubAffiliationDbHelperTracker = null;
 		}
 		
-		if (subscribeModelTracker != null)
+		if (accessModelTracker != null)
 		{
-			subscribeModelTracker.close();
-			subscribeModelTracker = null;
+			accessModelTracker.close();
+			accessModelTracker = null;
 		}
 		
-		if (openSubscribeModelRegistration != null)
+		if (openAccessModelRegistration != null)
 		{
-			openSubscribeModelRegistration.unregister();
-			openSubscribeModelRegistration = null;
+			openAccessModelRegistration.unregister();
+			openAccessModelRegistration = null;
 		}
 	}
 

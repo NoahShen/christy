@@ -4,5 +4,7 @@ import java.util.Collection;
 
 public interface PubSubItemDbHelper
 {
-	public Collection<PubSubItem> getPubSbuItem(String nodeId) throws Exception;
+	public Collection<PubSubItem> getPubSubItems(String nodeId, int max) throws Exception;
+	
+	public PubSubItem getPubSubItem(String nodeId, String itemId) throws Exception;
 }
