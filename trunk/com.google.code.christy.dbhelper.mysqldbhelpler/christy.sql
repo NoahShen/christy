@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : christy
-Source Server Version : 50083
+Source Server         : connection
+Source Server Version : 50022
 Source Host           : localhost:3306
 Source Database       : christy
 
 Target Server Type    : MYSQL
-Target Server Version : 50083
+Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-06-17 22:22:17
+Date: 2010-06-18 16:22:53
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -154,19 +154,18 @@ CREATE TABLE `pubsubsubscription` (
   `deliver` tinyint(4) default NULL,
   `digest` tinyint(4) default NULL,
   `digest_frequency` int(11) default NULL,
-  `expire` char(15) default NULL,
+  `expire` int(15) default NULL,
   `includeBody` tinyint(4) default NULL,
   `showValues` varchar(30) default NULL,
   `subscriptionDepth` tinyint(4) default NULL,
-  `keyword` varchar(200) default NULL,
   PRIMARY KEY  (`serviceId`,`nodeId`,`subId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of pubsubsubscription
 -- ----------------------------
-INSERT INTO `pubsubsubscription` VALUES ('123', 'node2', '123', 'pubsub.example.com', 'noah@example.com', 'subscribed', null, null, null, null, null, null, null, null);
-INSERT INTO `pubsubsubscription` VALUES ('123', 'node3', '2531e52f5087be95ffc2a8b25dfdd297', 'pubsub.example.com', 'noah@example.com', 'subscribed', null, null, null, null, null, null, null, null);
+INSERT INTO `pubsubsubscription` VALUES ('123', 'node2', '123', 'pubsub.example.com', 'noah@example.com', 'subscribed', '1', '0', null, null, '0', 'chat;online;away;', null);
+INSERT INTO `pubsubsubscription` VALUES ('123', 'node3', '2531e52f5087be95ffc2a8b25dfdd297', 'pubsub.example.com', 'noah@example.com', 'subscribed', '1', '0', null, null, '0', 'chat;online;away;', null);
 
 -- ----------------------------
 -- Table structure for `shop`
@@ -220,7 +219,7 @@ CREATE TABLE `shopcomment` (
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`commentId`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopcomment
@@ -266,7 +265,7 @@ CREATE TABLE `shopvoter` (
   `itemName` varchar(50) NOT NULL,
   `value` int(11) NOT NULL,
   PRIMARY KEY  (`voterId`)
-) ENGINE=MyISAM AUTO_INCREMENT=34 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopvoter
@@ -323,7 +322,7 @@ CREATE TABLE `userfavoriteshop` (
   `username` char(50) NOT NULL,
   `shopId` int(20) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userfavoriteshop
@@ -347,7 +346,7 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster

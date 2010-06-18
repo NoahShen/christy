@@ -1,5 +1,8 @@
 package com.google.code.christy.xmpp.pubsub;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.code.christy.xmpp.PacketExtension;
 import com.google.code.christy.xmpp.XmlStanza;
 
@@ -16,7 +19,7 @@ public class PubSubExtension implements PacketExtension
 	
 	private String namespace;
 	
-	private XmlStanza stanza;
+	private List<XmlStanza> stanzas = new ArrayList<XmlStanza>();
 	
 	public PubSubExtension(String namespace)
 	{
@@ -36,14 +39,19 @@ public class PubSubExtension implements PacketExtension
 		return namespace;
 	}
 
-	public XmlStanza getStanza()
+	public List<XmlStanza> getStanzas()
 	{
-		return stanza;
+		return stanzas;
 	}
 
-	public void setStanza(XmlStanza stanza)
+	public void addStanza(XmlStanza stanza)
 	{
-		this.stanza = stanza;
+		this.stanzas.add(stanza);
+	}
+	
+	public void remove(XmlStanza stanza)
+	{
+		this.stanzas.remove(stanza);
 	}
 
 	@Override
@@ -51,10 +59,14 @@ public class PubSubExtension implements PacketExtension
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append("<" + getElementName() + " " + "xmlns=\"" + getNamespace() + "\"");
-		if (getStanza() != null)
+		if (getStanzas() != null)
 		{
 			buf.append(">");
-			buf.append(getStanza().toXml());
+			for (XmlStanza stanza : getStanzas())
+			{
+				buf.append(stanza.toXml());
+			}
+			
 			buf.append("</" + getElementName() + ">");
 		}
 		else
@@ -71,7 +83,11 @@ public class PubSubExtension implements PacketExtension
 	{
 		PubSubExtension pubSubExtension = (PubSubExtension) super.clone();
 		pubSubExtension.namespace = this.namespace;
-		pubSubExtension.stanza = (XmlStanza) this.stanza.clone();
+		pubSubExtension.stanzas = new ArrayList<XmlStanza>();
+		for (XmlStanza stanza : this.stanzas)
+		{
+			pubSubExtension.stanzas.add((XmlStanza) stanza.clone());
+		}
 		return pubSubExtension;
 	}
 }

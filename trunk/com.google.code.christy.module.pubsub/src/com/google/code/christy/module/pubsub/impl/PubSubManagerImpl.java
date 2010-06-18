@@ -3,6 +3,10 @@ package com.google.code.christy.module.pubsub.impl;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 
 import org.apache.mina.common.ConnectFuture;
@@ -34,10 +38,13 @@ import com.google.code.christy.xmpp.JID;
 import com.google.code.christy.xmpp.PacketUtils;
 import com.google.code.christy.xmpp.XmlStanza;
 import com.google.code.christy.xmpp.XmppError;
+import com.google.code.christy.xmpp.dataform.DataForm;
+import com.google.code.christy.xmpp.dataform.FormField;
 import com.google.code.christy.xmpp.disco.DiscoInfoExtension;
 import com.google.code.christy.xmpp.disco.DiscoItemsExtension;
 import com.google.code.christy.xmpp.pubsub.PubSubAffiliations;
 import com.google.code.christy.xmpp.pubsub.PubSubExtension;
+import com.google.code.christy.xmpp.pubsub.PubSubOptions;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscribe;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptionItem;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptions;
@@ -382,26 +389,32 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				iqResponse = handlePubSubExtension(from, routeMessage, iq, pubSubExtension, session);
 			}
 			
-			RouteMessage responseRouteMessage = new RouteMessage(getSubDomain(), routeMessage.getStreamId());
-			
-			//local user
-			if (from.getDomain().equals(getDomain()))
+			if (iqResponse != null)
 			{
-				responseRouteMessage.setToUserNode(from.getNode());
+				RouteMessage responseRouteMessage = new RouteMessage(getSubDomain(), routeMessage.getStreamId());
+				
+				//local user
+				if (from.getDomain().equals(getDomain()))
+				{
+					responseRouteMessage.setToUserNode(from.getNode());
+				}
+				
+				responseRouteMessage.setXmlStanza(iqResponse);
+				
+				sendToRouter(responseRouteMessage);
 			}
 			
-			responseRouteMessage.setXmlStanza(iqResponse);
-			
-			sendToRouter(responseRouteMessage);
 			
 		}
 
 		private Iq handlePubSubExtension(JID from, RouteMessage routeMessage, Iq iq, PubSubExtension pubSubExtension, IoSession session)
 		{
 			Iq iqResponse = null;
-			XmlStanza stanza = pubSubExtension.getStanza();
-			if (stanza != null)
+			List<XmlStanza> stanzas = pubSubExtension.getStanzas();
+			XmlStanza stanza = null;
+			if (stanzas != null && !stanzas.isEmpty())
 			{
+				stanza = stanzas.get(0);
 				if (stanza instanceof PubSubSubscriptions)
 				{
 					iqResponse = handlePubSubSubscriptions(from, stanza, iq, pubSubExtension);
@@ -418,9 +431,313 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				{
 					iqResponse = handlePubSubUnsubscribe(from, stanza, iq, pubSubExtension);
 				}
-
-				
+				else if (stanza instanceof PubSubOptions)
+				{
+					iqResponse = handlePubSubOptions(from, stanza, iq, pubSubExtension);
+				}
 			}
+			
+			return iqResponse;
+		}
+
+		private Iq handlePubSubOptions(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
+		{
+			Iq iqResponse = null;
+			Iq.Type type = iq.getType();
+			if (type == Iq.Type.get)
+			{
+				iqResponse = handleGetPubSubOptions(from, stanza, iq, pubSubExtension);
+			}
+			else if (type == Iq.Type.set)
+			{
+				iqResponse = handleSetPubSubOptions(from, stanza, iq, pubSubExtension);
+			}
+			return iqResponse;
+		}
+
+		private Iq handleSetPubSubOptions(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
+		{
+			Iq iqResponse = null;
+			
+			PubSubOptions pubSubOptions = (PubSubOptions) stanza;
+			String node = pubSubOptions.getNode();
+			JID jid = pubSubOptions.getJid();
+			String subId = pubSubOptions.getSubId();
+			if (!from.equalsWithBareJid(jid))
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				
+				XmppError error = new XmppError(XmppError.Condition.bad_request);
+				error.addOtherCondition("invalid-jid", "http://jabber.org/protocol/pubsub#errors");
+				
+				iqResponse.setError(error);
+			}
+			else if (subId == null)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				
+				XmppError error = new XmppError(XmppError.Condition.bad_request);
+				error.addOtherCondition("subid-required", "http://jabber.org/protocol/pubsub#errors");
+				
+				iqResponse.setError(error);
+			}
+			else
+			{
+				try
+				{
+					DataForm dataForm = pubSubOptions.getDataForm();
+					Map<String, Object> config = new HashMap<String, Object>();
+					if (dataForm != null && dataForm.getType() == DataForm.Type.submit)
+					{
+						for (FormField field : dataForm.getFields())
+						{
+							String var = field.getVariable();
+							
+							if ("pubsub#deliver".equals(var))
+							{
+								String valueStr = field.getValues().next();
+								int value = parseBoolean(valueStr);
+								config.put("deliver", value);
+							}
+							else if ("pubsub#digest".equals(var))
+							{
+								String valueStr = field.getValues().next();
+								int value = parseBoolean(valueStr);
+								config.put("digest", value);
+							}
+							else if ("pubsub#digest_frequency".equals(var))
+							{
+								String valueStr = field.getValues().next();
+								config.put("digest_frequency", Integer.parseInt(valueStr));
+							}
+							else if ("pubsub#expire".equals(var))
+							{
+								String valueStr = field.getValues().next();
+								config.put("expire", Integer.parseInt(valueStr));
+							}
+							else if ("pubsub#include_body".equals(var))
+							{
+								String valueStr = field.getValues().next();
+								int value = parseBoolean(valueStr);
+								config.put("includeBody", value);
+							}
+							else if ("pubsub#show-values".equals(var))
+							{
+								Iterator<String> it = field.getValues();
+								StringBuilder value = new StringBuilder();
+								while(it.hasNext())
+								{
+									value.append(it.next() + ";");
+								}
+								config.put("showValues", value);
+							}
+							else if ("pubsub#subscription_depth".equals(var))
+							{
+								String value = field.getValues().next();
+								config.put("subscriptionDepth", value);
+							}
+							
+						}
+						// TODO check case sentity
+						pubSubEngine.updateSubscriptionConfigure(jid.toPrepedBareJID(), node, subId, config);
+						
+						iqResponse = PacketUtils.createResultIq(iq);
+					}
+					else
+					{
+						iqResponse = PacketUtils.createErrorIq(iq);
+						iqResponse.setError(new XmppError(XmppError.Condition.bad_request));
+					}
+				}
+				catch (NodeNotExistException e)
+				{
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
+				}
+				catch (TooManySubscriptionsException e)
+				{
+					iqResponse = PacketUtils.createErrorIq(iq);
+					XmppError error = new XmppError(XmppError.Condition.policy_violation);
+					error.addOtherCondition("too-many-subscriptions", "http://jabber.org/protocol/pubsub#errors");
+					iqResponse.setError(error);
+				}
+				catch (Exception e)
+				{
+					// TODO
+					e.printStackTrace();
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.internal_server_error));
+				}
+			}
+			
+			return iqResponse;
+		}
+
+		private Iq handleGetPubSubOptions(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
+		{
+			Iq iqResponse = null;
+			
+			PubSubOptions pubSubOptions = (PubSubOptions) stanza;
+			String node = pubSubOptions.getNode();
+			JID jid = pubSubOptions.getJid();
+			String subId = pubSubOptions.getSubId();
+			if (!from.equalsWithBareJid(jid))
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				
+				XmppError error = new XmppError(XmppError.Condition.bad_request);
+				error.addOtherCondition("invalid-jid", "http://jabber.org/protocol/pubsub#errors");
+				
+				iqResponse.setError(error);
+			}
+			else if (subId == null)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				
+				XmppError error = new XmppError(XmppError.Condition.bad_request);
+				error.addOtherCondition("subid-required", "http://jabber.org/protocol/pubsub#errors");
+				
+				iqResponse.setError(error);
+			}
+			else
+			{
+				try
+				{
+					// TODO check case sentity
+					PubSubSubscription pubSubSubscription = pubSubEngine.getPubSubSubscription(jid.toPrepedBareJID(), node, subId);
+					
+					if (pubSubSubscription == null)
+					{
+						// Subscription should have a default config
+						throw new NodeNotExistException();
+					}
+					
+					PubSubExtension pubSubExtensionResponse = new PubSubExtension(PubSubExtension.NAMESPACE);
+					
+					PubSubOptions pubSubOptionsResponse = new PubSubOptions(node, jid);
+					pubSubOptionsResponse.setSubId(subId);
+					
+					//---FORM_TYPE
+					DataForm dataForm = new DataForm();
+					dataForm.setType(DataForm.Type.form);
+					
+					FormField field = new FormField("FORM_TYPE");
+					field.setType(FormField.TYPE_HIDDEN);
+					field.addValue("http://jabber.org/protocol/pubsub#subscribe_options");
+					
+					dataForm.addField(field);
+					
+					//---pubsub#deliver
+					FormField deliverField = new FormField("pubsub#deliver");
+					deliverField.setLabel("Whether an entity wants to receive or disable notifications");
+					deliverField.setType(FormField.TYPE_BOOLEAN);
+					deliverField.addValue(String.valueOf(pubSubSubscription.isDeliver()));
+					
+					dataForm.addField(deliverField);
+					
+					//---pubsub#digest
+					FormField digestField = new FormField("pubsub#digest");
+					digestField.setLabel("Whether an entity wants to receive digests (aggregations) of notifications or all notifications individually");
+					digestField.setType(FormField.TYPE_BOOLEAN);
+					digestField.addValue(String.valueOf(pubSubSubscription.isDigest()));
+					
+					dataForm.addField(digestField);
+					
+					//---pubsub#digest_frequency
+					FormField digestFrequencyField = new FormField("pubsub#digest_frequency");
+					digestFrequencyField.setLabel("The minimum number of milliseconds between sending any two notification digests");
+					digestFrequencyField.setType(FormField.TYPE_TEXT_SINGLE);
+					digestFrequencyField.addValue(String.valueOf(pubSubSubscription.getDigestFrequency()));
+					
+					dataForm.addField(digestFrequencyField);
+					
+					//---pubsub#expire
+					FormField expireField = new FormField("pubsub#expire");
+					expireField.setLabel("The DateTime at which a leased subscription will end or has ended");
+					expireField.setType(FormField.TYPE_TEXT_SINGLE);
+					expireField.addValue(String.valueOf(pubSubSubscription.getExpire()));
+					
+					dataForm.addField(expireField);
+					
+					//---pubsub#include_body
+					FormField includeBodyField = new FormField("pubsub#include_body");
+					includeBodyField.setLabel("Whether an entity wants to receive an XMPP message body in addition to the payload format");
+					includeBodyField.setType(FormField.TYPE_BOOLEAN);
+					includeBodyField.addValue(String.valueOf(pubSubSubscription.isIncludeBody()));
+					
+					dataForm.addField(includeBodyField);
+					
+					//---pubsub#show-values
+					FormField showValuesField = new FormField("pubsub#show-values");
+					showValuesField.setLabel("The presence states for which an entity wants to receive notifications");
+					showValuesField.setType(FormField.TYPE_LIST_MULTI);
+					
+					FormField.Option chatOption = new FormField.Option("Want to Chat", "chat");
+					showValuesField.addOption(chatOption);
+					FormField.Option onlineOption = new FormField.Option("Available", "online");
+					showValuesField.addOption(onlineOption);
+					FormField.Option awayOption = new FormField.Option("Away", "away");
+					showValuesField.addOption(awayOption);
+					FormField.Option dndOption = new FormField.Option("Do Not Disturb", "dnd");
+					showValuesField.addOption(dndOption);
+					
+					for (String value : pubSubSubscription.getShowValues())
+					{
+						showValuesField.addValue(value);
+					}					
+					
+					dataForm.addField(showValuesField);
+					
+					//---pubsub#subscription_depth
+					FormField subscriptionDepthField = new FormField("pubsub#subscription_depth");
+					subscriptionDepthField.setLabel("Receive notification from direct child nodes only or all descendent nodes");
+					subscriptionDepthField.setType(FormField.TYPE_LIST_SINGLE);
+					
+					FormField.Option childOnlyOption = new FormField.Option("Receive notification from direct child nodes only", "1");
+					showValuesField.addOption(childOnlyOption);
+					
+					FormField.Option allNodeOption = new FormField.Option("Receive notification from all descendent nodes", "all");
+					showValuesField.addOption(allNodeOption);
+					
+					if (pubSubSubscription.getSubscriptionDepth() != null)
+					{
+						subscriptionDepthField.addValue(pubSubSubscription.getSubscriptionDepth());
+					}
+					
+					
+					dataForm.addField(subscriptionDepthField);
+					
+					
+					pubSubOptionsResponse.setDataForm(dataForm);
+					
+					pubSubExtensionResponse.addStanza(pubSubOptionsResponse);
+					
+					iqResponse = PacketUtils.createResultIq(iq);
+					
+					iqResponse.addExtension(pubSubExtensionResponse);
+					return iqResponse;
+				}
+				catch (InvalidSubIdException e)
+				{
+					iqResponse = PacketUtils.createErrorIq(iq);
+					XmppError error = new XmppError(XmppError.Condition.no_acceptable);
+					error.addOtherCondition("invalid-subid", "http://jabber.org/protocol/pubsub#errors");
+					iqResponse.setError(error);
+				}
+				catch (NodeNotExistException e)
+				{
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
+				}
+				catch (Exception e)
+				{
+					// TODO
+					e.printStackTrace();
+					iqResponse = PacketUtils.createErrorIq(iq);
+					iqResponse.setError(new XmppError(XmppError.Condition.internal_server_error));
+				}
+			}
+			
 			return iqResponse;
 		}
 
@@ -521,7 +838,73 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				try
 				{
 					// TODO check case sentity
-					PubSubSubscription pubSubSubscription = pubSubEngine.subscribeNode(subscriberJid.toPrepedBareJID(), node);
+					String jid = subscriberJid.toPrepedBareJID();
+					PubSubSubscription pubSubSubscription = pubSubEngine.subscribeNode(jid, node);
+					
+					DataForm configForm = null;
+					List<XmlStanza> stanzas = pubSubExtension.getStanzas();
+					if (stanzas.size() > 1)
+					{
+						PubSubOptions options = (PubSubOptions) stanzas.get(1);
+						DataForm dataForm = options.getDataForm();
+						Map<String, Object> config = new HashMap<String, Object>();
+						if (dataForm != null && dataForm.getType() == DataForm.Type.submit)
+						{
+							for (FormField field : dataForm.getFields())
+							{
+								String var = field.getVariable();
+								
+								if ("pubsub#deliver".equals(var))
+								{
+									String valueStr = field.getValues().next();
+									int value = parseBoolean(valueStr);
+									config.put("deliver", value);
+								}
+								else if ("pubsub#digest".equals(var))
+								{
+									String valueStr = field.getValues().next();
+									int value = parseBoolean(valueStr);
+									config.put("digest", value);
+								}
+								else if ("pubsub#digest_frequency".equals(var))
+								{
+									String valueStr = field.getValues().next();
+									config.put("digest_frequency", Integer.parseInt(valueStr));
+								}
+								else if ("pubsub#expire".equals(var))
+								{
+									String valueStr = field.getValues().next();
+									config.put("expire", Integer.parseInt(valueStr));
+								}
+								else if ("pubsub#include_body".equals(var))
+								{
+									String valueStr = field.getValues().next();
+									int value = parseBoolean(valueStr);
+									config.put("includeBody", value);
+								}
+								else if ("pubsub#show-values".equals(var))
+								{
+									Iterator<String> it = field.getValues();
+									StringBuilder value = new StringBuilder();
+									while(it.hasNext())
+									{
+										value.append(it.next() + ";");
+									}
+									config.put("showValues", value);
+								}
+								else if ("pubsub#subscription_depth".equals(var))
+								{
+									String value = field.getValues().next();
+									config.put("subscriptionDepth", value);
+								}
+								
+							}
+							pubSubEngine.updateSubscriptionConfigure(jid, node, pubSubSubscription.getSubId(), config);
+							configForm = dataForm;
+							configForm.setType(DataForm.Type.result);
+						}
+					}
+					
 					iqResponse = PacketUtils.createResultIq(iq);
 					PubSubExtension pubSubExtensionResponse = new PubSubExtension(PubSubExtension.NAMESPACE);
 					
@@ -530,7 +913,12 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 											PubSubSubscriptionItem.SubscriptionType.valueOf(pubSubSubscription.getSubscription().name()));
 					item.setSubId(pubSubSubscription.getSubId());
 					
-					pubSubExtensionResponse.setStanza(item);
+					pubSubExtensionResponse.addStanza(item);
+					if (configForm != null)
+					{
+						
+						pubSubExtensionResponse.addStanza(configForm);
+					}
 					iqResponse.addExtension(pubSubExtensionResponse);
 				}
 				catch (NodeNotExistException e)
@@ -557,6 +945,12 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			return iqResponse;
 		}
 
+		private int parseBoolean(String valueStr)
+		{
+			return ("true".equalsIgnoreCase(valueStr) || "1".equals(valueStr)) ? 1 : 0;
+			
+		}
+
 		private Iq handlePubSubAffiliations(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
 		{
 
@@ -579,7 +973,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 					pubSubAffiliationsResponse.addAffiliation(affi);
 				}
 				
-				pubSubExtensionResponse.setStanza(pubSubAffiliationsResponse);
+				pubSubExtensionResponse.addStanza(pubSubAffiliationsResponse);
 				
 				iqResponse = PacketUtils.createResultIq(iq);
 				iqResponse.addExtension(pubSubExtensionResponse);
@@ -621,7 +1015,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 					pubSubSubscriptionsResponse.addPubSubSubscription(sub);
 				}
 				
-				pubSubExtensionResponse.setStanza(pubSubSubscriptionsResponse);
+				pubSubExtensionResponse.addStanza(pubSubSubscriptionsResponse);
 				
 				iqResponse = PacketUtils.createResultIq(iq);
 				iqResponse.addExtension(pubSubExtensionResponse);
@@ -633,6 +1027,8 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			}
 			catch (Exception e)
 			{
+				// TODO
+				e.printStackTrace();
 				iqResponse = PacketUtils.createErrorIq(iq);
 				iqResponse.setError(new XmppError(XmppError.Condition.internal_server_error));
 			}
