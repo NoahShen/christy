@@ -4,6 +4,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.xmpp.pubsub.parser.PubSubEventExtensionParser;
 import com.google.code.christy.xmpp.pubsub.parser.PubSubExtensionParser;
 import com.google.code.christy.xmppparser.ExtensionParser;
 
@@ -11,6 +12,7 @@ public class Activator implements BundleActivator
 {
 
 	private ServiceRegistration pubSubExtensionParserRegistration;
+	private ServiceRegistration pubSubEventExtensionParserRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -21,6 +23,10 @@ public class Activator implements BundleActivator
 	{
 		PubSubExtensionParser pubSubExtensionParser = new PubSubExtensionParser();
 		pubSubExtensionParserRegistration = context.registerService(ExtensionParser.class.getName(), pubSubExtensionParser, null);
+		
+		PubSubEventExtensionParser pubSubEventExtensionParser = new PubSubEventExtensionParser();
+		pubSubEventExtensionParserRegistration = context.registerService(ExtensionParser.class.getName(), pubSubEventExtensionParser, null);
+		
 	}
 
 	/*
@@ -34,6 +40,12 @@ public class Activator implements BundleActivator
 		{
 			pubSubExtensionParserRegistration.unregister();
 			pubSubExtensionParserRegistration = null;
+		}
+		
+		if (pubSubEventExtensionParserRegistration != null)
+		{
+			pubSubEventExtensionParserRegistration.unregister();
+			pubSubEventExtensionParserRegistration = null;
 		}
 	}
 

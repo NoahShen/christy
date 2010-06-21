@@ -21,6 +21,7 @@ import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 
+import com.google.code.christy.dbhelper.LastPublishTimeDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubAffiliation;
 import com.google.code.christy.dbhelper.PubSubAffiliationDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubItem;
@@ -89,6 +90,9 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 
 	private int maxItems;
 
+	private long sendSleep = 60000; // sec
+
+	private PubSubItemSender pubSubItemSender;
 	
 	public PubSubManagerImpl(LoggerServiceTracker loggerServiceTracker, 
 				RouteMessageParserServiceTracker routeMessageParserServiceTracker, 
@@ -97,19 +101,26 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker, 
 				PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker, 
 				PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker, 
-				AccessModelTracker accessModelTracker, PublisherModelTracker publisherModelTracker)
+				AccessModelTracker accessModelTracker, PublisherModelTracker publisherModelTracker,
+				LastPublishTimeDbHelperTracker lastPublishTimeDbHelperTracker)
 	{
 		super();
 		this.loggerServiceTracker = loggerServiceTracker;
 		this.routeMessageParserServiceTracker = routeMessageParserServiceTracker;
 		
-		pubSubEngine = new PubSubEngine(this, pubSubNodeDbHelperTracker, 
+		pubSubEngine = new PubSubEngine(this, 
+						pubSubNodeDbHelperTracker, 
 						pubSubItemDbHelperTracker,
 						pubSubSubscriptionDbHelperTracker,
 						pubSubAffiliationDbHelperTracker,
 						pubSubNodeConfigDbHelperTracker,
 						accessModelTracker,
 						publisherModelTracker);
+		
+		pubSubItemSender = new PubSubItemSender(this,
+						pubSubItemDbHelperTracker,
+						lastPublishTimeDbHelperTracker,
+						pubSubSubscriptionDbHelperTracker);
 	}
 
 	public String getDomain()
@@ -202,6 +213,8 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			exit();
 			return;
 		}
+		
+		pubSubItemSender.start();
 		
 		started = true;
 		loggerServiceTracker.info("connecting to router successful");
@@ -308,6 +321,17 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 	public int getMaxItems()
 	{
 		return maxItems;
+	}
+	
+
+	public long getSendSleep()
+	{
+		return sendSleep;
+	}
+
+	public void setSendSleep(long sendSleep)
+	{
+		this.sendSleep = sendSleep;
 	}
 	
 	private class RouterHandler implements IoHandler
@@ -1377,6 +1401,6 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 						" domain='" + getDomain() + "'>");
 		}
 	}
-	
+
 	
 }

@@ -7,4 +7,5 @@
 	<router-password>md5password</router-password>
 	
 	<max-items>10</max-items>
+	<send-sleep>10000</send-sleep>
 </christy>

@@ -33,6 +33,8 @@ public class PubSubSubscriptionMysqlDbHelper implements PubSubSubscriptionDbHelp
 	
 	private static final String GETONEPUBSUBSUBSCRIPTION_SQL = "SELECT * FROM pubsubsubscription WHERE subscriber = ? AND nodeId = ? AND subId = ?";
 	
+	private static final String GETSUBSCRIBEDJID_SQL = "SELECT subscriber FROM pubsubsubscription WHERE nodeId = ?";
+	
 	/**
 	 * @param connectionPool
 	 * @param loggerServiceTracker 
@@ -312,6 +314,42 @@ public class PubSubSubscriptionMysqlDbHelper implements PubSubSubscriptionDbHelp
 				loggerServiceTracker.debug("SQL:" + preStat.toString());
 			}
 			
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+
+	@Override
+	public Collection<String> getSubscribedJid(String nodeId) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(GETSUBSCRIBEDJID_SQL);
+			preStat.setString(1, nodeId);
+			
+
+			ResultSet subscriptionsResultSet = preStat.executeQuery();
+			
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + subscriptionsResultSet.toString());
+			}
+			
+			List<String> subscribedJids = new ArrayList<String>();
+			while (subscriptionsResultSet.next())
+			{
+				subscribedJids.add(subscriptionsResultSet.getString("subscriber"));
+			}
+			return subscribedJids;
 		}
 		finally
 		{
