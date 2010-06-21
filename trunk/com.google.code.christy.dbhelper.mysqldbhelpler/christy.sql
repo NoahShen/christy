@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-06-21 12:06:22
+Date: 2010-06-21 17:17:10
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -30,6 +30,20 @@ CREATE TABLE `enterpriseuser` (
 -- Records of enterpriseuser
 -- ----------------------------
 INSERT INTO `enterpriseuser` VALUES ('ENoah', '123456', '2010-04-18 10:17:14', '2010-04-18 10:17:22');
+
+-- ----------------------------
+-- Table structure for `lastpublishtime`
+-- ----------------------------
+DROP TABLE IF EXISTS `lastpublishtime`;
+CREATE TABLE `lastpublishtime` (
+  `time` datetime NOT NULL default '0000-00-00 00:00:00',
+  PRIMARY KEY  (`time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of lastpublishtime
+-- ----------------------------
+INSERT INTO `lastpublishtime` VALUES ('2010-06-21 11:33:51');
 
 -- ----------------------------
 -- Table structure for `privatedata`

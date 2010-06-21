@@ -3,7 +3,7 @@ package com.google.code.christy.dbhelper.mysqldbhelpler;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -24,6 +24,10 @@ public class PubSubItemMysqlDbHelper implements PubSubItemDbHelper
 	private static final String GETONEPUBSUBITEM_SQL = "SELECT * FROM pubsubitem WHERE nodeId = ? AND itemId = ?";
 	
 	private static final String ADDPUBSUBITEM_SQL = "INSERT INTO pubsubitem VALUES (?, ?, ?, ?, ?, NOW())";
+	
+	private static final String GETONEPUBSUBITEMBYTIME_SQL = "SELECT * FROM pubsubitem WHERE creationDate > ? ORDER BY creationDate DESC";
+
+	
 	/**
 	 * @param connectionPool
 	 * @param loggerServiceTracker 
@@ -62,7 +66,7 @@ public class PubSubItemMysqlDbHelper implements PubSubItemDbHelper
 				item.setNodeId(itemResultSet.getString("nodeId"));
 				item.setItemId(itemResultSet.getString("itemId"));
 				item.setJid(itemResultSet.getString("jid"));
-				Time creationDate = itemResultSet.getTime("creationDate");
+				Timestamp creationDate = itemResultSet.getTimestamp("creationDate");
 				if (creationDate != null)
 				{
 					item.setCreationDate(creationDate.getTime());
@@ -110,7 +114,7 @@ public class PubSubItemMysqlDbHelper implements PubSubItemDbHelper
 				item.setNodeId(itemResultSet.getString("nodeId"));
 				item.setItemId(itemResultSet.getString("itemId"));
 				item.setJid(itemResultSet.getString("jid"));
-				Time creationDate = itemResultSet.getTime("creationDate");
+				Timestamp creationDate = itemResultSet.getTimestamp("creationDate");
 				if (creationDate != null)
 				{
 					item.setCreationDate(creationDate.getTime());
@@ -166,6 +170,55 @@ public class PubSubItemMysqlDbHelper implements PubSubItemDbHelper
 			if (connection != null)
 			{
 				connection.setAutoCommit(true);
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+
+	@Override
+	public List<PubSubItem> getPubSubItemByTime(long time) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(GETONEPUBSUBITEMBYTIME_SQL);			
+			preStat.setTimestamp(1, new Timestamp(time));
+			
+			ResultSet itemResultSet = preStat.executeQuery();
+			
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + itemResultSet.toString());
+			}
+			
+			List<PubSubItem> itemList = new ArrayList<PubSubItem>();
+			while (itemResultSet.next())
+			{
+				PubSubItem item = new PubSubItem();
+				item.setServiceId(itemResultSet.getString("serviceId"));
+				item.setNodeId(itemResultSet.getString("nodeId"));
+				item.setItemId(itemResultSet.getString("itemId"));
+				item.setJid(itemResultSet.getString("jid"));
+				Timestamp creationDate = itemResultSet.getTimestamp("creationDate");
+				if (creationDate != null)
+				{
+					item.setCreationDate(creationDate.getTime());
+				}
+				item.setPayload(itemResultSet.getString("payload"));
+				
+				itemList.add(item);
+				
+			}
+			return itemList;
+			
+		}
+		finally
+		{
+			if (connection != null)
+			{
 				connectionPool.returnConnection(connection);
 			}
 			

@@ -14,4 +14,6 @@ public interface PubSubSubscriptionDbHelper
 	public void removePubSubSubscription(String jid, String nodeId, String subId) throws Exception;
 	
 	public void updatePubSubSubscription(String jid, String nodeId, String subId, Map<String, Object> config) throws Exception;
+	
+	public Collection<String> getSubscribedJid(String nodeId) throws Exception;
 }

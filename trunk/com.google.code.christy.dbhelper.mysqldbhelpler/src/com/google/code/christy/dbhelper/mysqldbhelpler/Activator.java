@@ -5,6 +5,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.dbhelper.LastPublishTimeDbHelper;
 import com.google.code.christy.dbhelper.PrivateXmlDbHelper;
 import com.google.code.christy.dbhelper.PubSubAffiliationDbHelper;
 import com.google.code.christy.dbhelper.PubSubItemDbHelper;
@@ -31,6 +32,7 @@ public class Activator implements BundleActivator
 	private ServiceRegistration pubSubSubscriptionMysqlDbHelperRegistration;
 	private ServiceRegistration pubSubAffiliationMysqlDbHelperRegistration;
 	private ServiceRegistration pubSubNodeConfigMysqlDbHelperRegistration;
+	private ServiceRegistration lastPublishTimeMysqlDbHelperRegistration;
 
 	/*
 	 * (non-Javadoc)
@@ -79,6 +81,10 @@ public class Activator implements BundleActivator
 		
 		PubSubNodeConfigMysqlDbHelper pubSubNodeConfigMysqlDbHelper = new PubSubNodeConfigMysqlDbHelper(connPool, loggerServiceTracker);
 		pubSubNodeConfigMysqlDbHelperRegistration = context.registerService(PubSubNodeConfigDbHelper.class.getName(), pubSubNodeConfigMysqlDbHelper, null);
+		
+		LastPublishTimeMysqlDbHelper lastPublishTimeMysqlDbHelper = new LastPublishTimeMysqlDbHelper(connPool, loggerServiceTracker);
+		lastPublishTimeMysqlDbHelperRegistration = context.registerService(LastPublishTimeDbHelper.class.getName(), lastPublishTimeMysqlDbHelper, null);
+
 	}
 
 	/*
@@ -151,6 +157,12 @@ public class Activator implements BundleActivator
 		{
 			pubSubNodeConfigMysqlDbHelperRegistration.unregister();
 			pubSubNodeConfigMysqlDbHelperRegistration = null;
+		}
+		
+		if (lastPublishTimeMysqlDbHelperRegistration != null)
+		{
+			lastPublishTimeMysqlDbHelperRegistration.unregister();
+			lastPublishTimeMysqlDbHelperRegistration = null;
 		}
 	}
 	

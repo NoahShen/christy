@@ -5,6 +5,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
+import com.google.code.christy.dbhelper.LastPublishTimeDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubAffiliationDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubItemDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNodeConfigDbHelperTracker;
@@ -33,6 +34,7 @@ public class Activator implements BundleActivator
 	private ServiceRegistration openAccessModelRegistration;
 	private ServiceRegistration openPublisherModelRegistration;
 	private PublisherModelTracker publisherModelTracker;
+	private LastPublishTimeDbHelperTracker lastPublishTimeDbHelperTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -73,7 +75,10 @@ public class Activator implements BundleActivator
 		
 		OpenPublisherModel openPublisherModel = new OpenPublisherModel();
 		openPublisherModelRegistration = context.registerService(PublisherModel.class.getName(), openPublisherModel, null);
-			
+		
+		lastPublishTimeDbHelperTracker = new LastPublishTimeDbHelperTracker(context);
+		lastPublishTimeDbHelperTracker.open();
+		
 		PubSubManagerImpl pubSubManager = 
 			new PubSubManagerImpl(loggerServiceTracker, 
 					routeMessageParserServiceTracker,
@@ -83,7 +88,8 @@ public class Activator implements BundleActivator
 					pubSubAffiliationDbHelperTracker,
 					pubSubNodeConfigDbHelperTracker,
 					accessModelTracker,
-					publisherModelTracker);
+					publisherModelTracker,
+					lastPublishTimeDbHelperTracker);
 		
 		String appPath = System.getProperty("appPath");
 		XMLConfiguration config = new XMLConfiguration(appPath + "/pusubconfig.xml");
@@ -109,6 +115,9 @@ public class Activator implements BundleActivator
 		
 		int maxItems = config.getInt("max-items", 10);
 		pubSubManager.setMaxItems(maxItems);
+		
+		int sendSleep = config.getInt("send-sleep", 5000);
+		pubSubManager.setSendSleep(sendSleep);
 		
 		pubSubManager.start();
 		
@@ -186,6 +195,12 @@ public class Activator implements BundleActivator
 		{
 			openPublisherModelRegistration.unregister();
 			openPublisherModelRegistration = null;
+		}
+		
+		if (lastPublishTimeDbHelperTracker != null)
+		{
+			lastPublishTimeDbHelperTracker.close();
+			lastPublishTimeDbHelperTracker = null;
 		}
 	}
 
