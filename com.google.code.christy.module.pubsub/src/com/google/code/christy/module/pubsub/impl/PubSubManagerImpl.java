@@ -2,6 +2,7 @@ package com.google.code.christy.module.pubsub.impl;
 
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ import com.google.code.christy.module.pubsub.PubSubManager;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 import com.google.code.christy.util.AbstractPropertied;
+import com.google.code.christy.util.StringUtils;
 import com.google.code.christy.xmpp.Iq;
 import com.google.code.christy.xmpp.JID;
 import com.google.code.christy.xmpp.PacketUtils;
@@ -47,6 +49,7 @@ import com.google.code.christy.xmpp.pubsub.PubSubAffiliations;
 import com.google.code.christy.xmpp.pubsub.PubSubExtension;
 import com.google.code.christy.xmpp.pubsub.PubSubItems;
 import com.google.code.christy.xmpp.pubsub.PubSubOptions;
+import com.google.code.christy.xmpp.pubsub.PubSubPublish;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscribe;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptionItem;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptions;
@@ -94,7 +97,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker, 
 				PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker, 
 				PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker, 
-				AccessModelTracker accessModelTracker)
+				AccessModelTracker accessModelTracker, PublisherModelTracker publisherModelTracker)
 	{
 		super();
 		this.loggerServiceTracker = loggerServiceTracker;
@@ -105,7 +108,8 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 						pubSubSubscriptionDbHelperTracker,
 						pubSubAffiliationDbHelperTracker,
 						pubSubNodeConfigDbHelperTracker,
-						accessModelTracker);
+						accessModelTracker,
+						publisherModelTracker);
 	}
 
 	public String getDomain()
@@ -456,7 +460,90 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				{
 					iqResponse = handlePubSubItems(from, stanza, iq, pubSubExtension);
 				}
+				else if (stanza instanceof PubSubPublish)
+				{
+					iqResponse = handlePubSubPublish(from, stanza, iq, pubSubExtension);
+				}
 			}
+			
+			return iqResponse;
+		}
+
+		private Iq handlePubSubPublish(JID from, XmlStanza stanza, Iq iq, PubSubExtension pubSubExtension)
+		{
+			Iq iqResponse = null;
+			Iq.Type type = iq.getType();
+			if (type != Iq.Type.set)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.bad_request));
+				if (iqResponse.getFrom() == null)
+				{
+					iqResponse.setFrom(new JID(null, getSubDomain(), null));
+				}
+				return iqResponse;
+			}
+			
+			// TODO check case sentity
+			String jid = from.toPrepedBareJID();
+			
+			PubSubPublish pubSubPublish = (PubSubPublish) stanza;
+			String node = pubSubPublish.getNode();
+			
+			List<PubSubItem> items = new ArrayList<PubSubItem>();
+			for (PubSubPublish.Item item : pubSubPublish.getItems())
+			{
+				PubSubItem pubSubItem = new PubSubItem();
+				pubSubItem.setServiceId(PubSubManagerImpl.this.getServiceId());
+				pubSubItem.setNodeId(node);
+				pubSubItem.setJid(jid);
+				pubSubItem.setPayload(item.getPayload());
+				String itemId = item.getId();
+				if (itemId == null)
+				{
+					itemId = StringUtils.hash(node + System.nanoTime(), "MD5");
+				}
+				pubSubItem.setItemId(itemId);
+				
+				items.add(pubSubItem);
+			}
+			
+			try
+			{
+				pubSubEngine.publishItem(jid, node, items.toArray(new PubSubItem[]{}));
+				
+				PubSubExtension pubSubExtensionResponse = new PubSubExtension(pubSubExtension.getNamespace());
+				
+				PubSubPublish pubSubPublishResponse = new PubSubPublish(node);
+				for (PubSubItem item : items)
+				{
+					PubSubPublish.Item pubSubItem = new PubSubPublish.Item(item.getItemId());
+					pubSubPublishResponse.addItem(pubSubItem);
+				}
+				
+				pubSubExtensionResponse.addStanza(pubSubPublishResponse);
+				
+				iqResponse = PacketUtils.createResultIq(iq);
+				iqResponse.addExtension(pubSubExtensionResponse);
+			}
+			catch (NodeNotExistException e)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.item_not_found));
+			}
+			catch (CannotPublishException e)
+			{
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.forbidden));
+			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.internal_server_error));
+			}
+			
 			
 			return iqResponse;
 		}
@@ -530,6 +617,8 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				iqResponse = PacketUtils.createErrorIq(iq);
+				iqResponse.setError(new XmppError(XmppError.Condition.internal_server_error));
 			}
 			
 			

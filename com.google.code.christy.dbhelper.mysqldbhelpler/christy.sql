@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : christy
-Source Server Version : 50083
+Source Server         : connection
+Source Server Version : 50022
 Source Host           : localhost:3306
 Source Database       : christy
 
 Target Server Type    : MYSQL
-Target Server Version : 50083
+Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-06-18 22:52:27
+Date: 2010-06-21 12:06:22
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -74,17 +74,19 @@ CREATE TABLE `pubsubitem` (
   `nodeId` varchar(100) NOT NULL,
   `itemId` varchar(100) NOT NULL,
   `jid` varchar(255) NOT NULL,
-  `creationDate` datetime NOT NULL,
   `payload` mediumtext,
+  `creationDate` datetime NOT NULL,
   PRIMARY KEY  (`serviceId`,`nodeId`,`itemId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of pubsubitem
 -- ----------------------------
-INSERT INTO `pubsubitem` VALUES ('123', 'node2', '0', 'pubsub.example.com', '2010-06-13 10:40:40', null);
-INSERT INTO `pubsubitem` VALUES ('123', 'node2', '1', 'pubsub.example.com', '2010-06-13 10:41:07', null);
-INSERT INTO `pubsubitem` VALUES ('123', 'node2', '2', 'pubsub.example.com', '2010-06-13 10:41:36', null);
+INSERT INTO `pubsubitem` VALUES ('123', 'node2', '0', 'noah@example.com', null, '2010-06-21 10:27:56');
+INSERT INTO `pubsubitem` VALUES ('123', 'node2', '1', 'noah@example.com', null, '2010-06-21 10:27:59');
+INSERT INTO `pubsubitem` VALUES ('123', 'node2', '2', 'noah@example.com', null, '2010-06-21 10:28:01');
+INSERT INTO `pubsubitem` VALUES ('123', 'node2', 'bnd81g37d61f49fgn581', 'noah@example.com', '<entry xmlns=\"http://www.w3.org/2005/Atom\">\n          <title>Soliloquy</title>\n          <summary>\nTo be, or not to be: that is the question:\nWhether \'tis nobler in the mind to suffer\nThe slings and arrows of outrageous fortune,\nOr to take arms against a sea of troubles,\nAnd by opposing end them?\n          </summary>\n          <link rel=\"alternate\" type=\"text/html\" href=\"http://denmark.lit/2003/12/13/atom03\"/>\n          <id>tag:denmark.lit,2003:entry-32397</id>\n          <published>2003-12-13T18:30:02Z</published>\n          <updated>2003-12-13T18:30:02Z</updated>\n        </entry>', '2010-06-21 11:33:01');
+INSERT INTO `pubsubitem` VALUES ('123', 'node3', 'bnd81g37d61f49fgn581', 'noah@example.com', '<entry xmlns=\"http://www.w3.org/2005/Atom\">\n          <title>Soliloquy</title>\n          <summary>\nTo be, or not to be: that is the question:\nWhether \'tis nobler in the mind to suffer\nThe slings and arrows of outrageous fortune,\nOr to take arms against a sea of troubles,\nAnd by opposing end them?\n          </summary>\n          <link rel=\"alternate\" type=\"text/html\" href=\"http://denmark.lit/2003/12/13/atom03\"/>\n          <id>tag:denmark.lit,2003:entry-32397</id>\n          <published>2003-12-13T18:30:02Z</published>\n          <updated>2003-12-13T18:30:02Z</updated>\n        </entry>', '2010-06-21 11:33:51');
 
 -- ----------------------------
 -- Table structure for `pubsubnode`
@@ -219,7 +221,7 @@ CREATE TABLE `shopcomment` (
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`commentId`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopcomment
@@ -265,7 +267,7 @@ CREATE TABLE `shopvoter` (
   `itemName` varchar(50) NOT NULL,
   `value` int(11) NOT NULL,
   PRIMARY KEY  (`voterId`)
-) ENGINE=MyISAM AUTO_INCREMENT=34 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of shopvoter
@@ -322,7 +324,7 @@ CREATE TABLE `userfavoriteshop` (
   `username` char(50) NOT NULL,
   `shopId` int(20) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userfavoriteshop
@@ -346,7 +348,7 @@ CREATE TABLE `userroster` (
   `ask` enum('unsubscribe','subscribe') default NULL,
   `subscription` enum('remove','both','from','to','none') NOT NULL,
   PRIMARY KEY  (`rosterId`)
-) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of userroster
