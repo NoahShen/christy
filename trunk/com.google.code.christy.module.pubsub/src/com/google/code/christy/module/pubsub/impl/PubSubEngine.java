@@ -20,6 +20,7 @@ import com.google.code.christy.dbhelper.PubSubSubscription;
 import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelper;
 import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelperTracker;
 import com.google.code.christy.module.pubsub.AccessModel;
+import com.google.code.christy.module.pubsub.PublisherModel;
 import com.google.code.christy.util.StringUtils;
 import com.google.code.christy.xmpp.JID;
 import com.google.code.christy.xmpp.disco.DiscoInfoExtension;
@@ -35,6 +36,7 @@ public class PubSubEngine
 	private PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker;
 	private PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker;
 	private AccessModelTracker accessModelTracker;
+	private PublisherModelTracker publisherModelTracker;
 	
 	public PubSubEngine(PubSubManagerImpl pubSubManager, 
 				PubSubNodeDbHelperTracker pubSubNodeDbHelperTracker, 
@@ -42,7 +44,8 @@ public class PubSubEngine
 				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker, 
 				PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker, 
 				PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker, 
-				AccessModelTracker accessModelTracker)
+				AccessModelTracker accessModelTracker, 
+				PublisherModelTracker publisherModelTracker)
 	{
 		this.pubSubManager = pubSubManager; 
 		this.pubSubNodeDbHelperTracker = pubSubNodeDbHelperTracker;
@@ -51,6 +54,7 @@ public class PubSubEngine
 		this.pubSubAffiliationDbHelperTracker = pubSubAffiliationDbHelperTracker;
 		this.pubSubNodeConfigDbHelperTracker = pubSubNodeConfigDbHelperTracker;
 		this.accessModelTracker = accessModelTracker;
+		this.publisherModelTracker = publisherModelTracker;
 		
 		discoInfo = new DiscoInfoExtension();
 		discoInfo.addFeature(new DiscoInfoExtension.Feature("http://jabber.org/protocol/pubsub"));
@@ -149,6 +153,11 @@ public class PubSubEngine
 	
 	public PubSubSubscription getPubSubSubscription(String subscriber, String node, String subId) throws Exception
 	{
+		if (node == null)
+		{
+			throw new NullPointerException("node is null");
+		}
+		
 		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
 		PubSubSubscriptionDbHelper pubSubSubscriptionDbHelper = pubSubSubscriptionDbHelperTracker.getPubSubSubscriptionDbHelper();
 		if (pubSubNodeDbHelper == null || pubSubSubscriptionDbHelper == null)
@@ -156,12 +165,6 @@ public class PubSubEngine
 			throw new Exception("pubSubNodeDbHelper or pubSubSubscriptionDbHelper is null");
 		}
 
-
-		if (node == null)
-		{
-			throw new NullPointerException("node is null");
-		}
-		
 		PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(node);
 		if (pubSubNode == null)
 		{
@@ -193,6 +196,11 @@ public class PubSubEngine
 	
 	public PubSubSubscription subscribeNode(String subscriber, String node) throws Exception
 	{
+		if (node == null)
+		{
+			throw new NullPointerException("node is null");
+		}
+		
 		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
 		PubSubNodeConfigDbHelper pubSubNodeConfigDbHelper = pubSubNodeConfigDbHelperTracker.getPubSubNodeConfigDbHelper();
 		PubSubSubscriptionDbHelper pubSubSubscriptionDbHelper = pubSubSubscriptionDbHelperTracker.getPubSubSubscriptionDbHelper();
@@ -217,7 +225,7 @@ public class PubSubEngine
  		
  		PubSubNodeConfig pubSubNodeConfig = pubSubNodeConfigDbHelper.getPubSubNodeConfig(node);
  		String subscribeModel = pubSubNodeConfig.getSubscribeModel();
- 		AccessModel model = accessModelTracker.getSubscribeModel(subscribeModel);
+ 		AccessModel model = accessModelTracker.getAccessModel(subscribeModel);
  		if (model == null)
  		{
  			throw new Exception("Can not get SubscribeModel[" + subscribeModel + "]");
@@ -243,6 +251,11 @@ public class PubSubEngine
 
 	public void unsubscribeNode(String jid, String node, String subId) throws Exception
 	{
+		if (node == null)
+		{
+			throw new NullPointerException("node is null");
+		}
+		
 		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
 		PubSubSubscriptionDbHelper pubSubSubscriptionDbHelper = pubSubSubscriptionDbHelperTracker.getPubSubSubscriptionDbHelper();
 		if (pubSubNodeDbHelper == null 
@@ -263,6 +276,11 @@ public class PubSubEngine
 	
 	public void updateSubscriptionConfigure(String jid, String nodeId, String subId, Map<String, Object> config) throws Exception
 	{
+		if (nodeId == null)
+		{
+			throw new NullPointerException("node is null");
+		}
+		
 		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
 		PubSubSubscriptionDbHelper pubSubSubscriptionDbHelper = pubSubSubscriptionDbHelperTracker.getPubSubSubscriptionDbHelper();
 		if (pubSubNodeDbHelper == null || pubSubSubscriptionDbHelper == null)
@@ -270,10 +288,6 @@ public class PubSubEngine
 			throw new Exception("pubSubNodeDbHelper or pubSubSubscriptionDbHelper is null");
 		}
 
-		if (nodeId == null)
-		{
-			throw new NullPointerException("node is null");
-		}
 		
 		PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(nodeId);
 		if (pubSubNode == null)
@@ -286,6 +300,11 @@ public class PubSubEngine
 	
 	public Collection<PubSubItem> getPubSubItems(String jid, String nodeId, String subId, String itemId, int maxItems) throws Exception
 	{
+		if (nodeId == null)
+		{
+			throw new NullPointerException("node is null");
+		}
+		
 		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
 		PubSubSubscriptionDbHelper pubSubSubscriptionDbHelper = pubSubSubscriptionDbHelperTracker.getPubSubSubscriptionDbHelper();
 		PubSubItemDbHelper pubSubItemDbHelper = pubSubItemDbHelperTracker.getPubSubItemDbHelper();
@@ -302,10 +321,6 @@ public class PubSubEngine
 						" is null");
 		}
 
-		if (nodeId == null)
-		{
-			throw new NullPointerException("node is null");
-		}
 		
 		PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(nodeId);
 		if (pubSubNode == null)
@@ -314,12 +329,12 @@ public class PubSubEngine
 		}
 		
 		PubSubNodeConfig pubSubNodeConfig = pubSubNodeConfigDbHelper.getPubSubNodeConfig(nodeId);
- 		String subscribeModel = pubSubNodeConfig.getSubscribeModel();
+ 		String accessModel = pubSubNodeConfig.getSubscribeModel();
  		
-		AccessModel model = accessModelTracker.getSubscribeModel(subscribeModel);
+		AccessModel model = accessModelTracker.getAccessModel(accessModel);
  		if (model == null)
  		{
- 			throw new Exception("Can not get SubscribeModel[" + subscribeModel + "]");
+ 			throw new Exception("Can not get AccessModel[" + accessModel + "]");
  		}
  		
  		if (!model.canAccessItems(pubSubNode, jid))
@@ -346,5 +361,43 @@ public class PubSubEngine
 		}
 		
 		return items;
+	}
+	
+	public void publishItem(String publisher, String nodeId, PubSubItem... items) throws Exception
+	{
+		PubSubNodeDbHelper pubSubNodeDbHelper = pubSubNodeDbHelperTracker.getPubSubNodeDbHelper();
+		PubSubItemDbHelper pubSubItemDbHelper = pubSubItemDbHelperTracker.getPubSubItemDbHelper();
+		PubSubNodeConfigDbHelper pubSubNodeConfigDbHelper = pubSubNodeConfigDbHelperTracker.getPubSubNodeConfigDbHelper();
+		if (pubSubNodeDbHelper == null 
+			|| pubSubItemDbHelper == null
+			|| pubSubNodeConfigDbHelper == null)
+		{
+			throw new Exception("pubSubNodeDbHelper" +
+						" or pubSubItemDbHelper" +
+						" or pubSubNodeConfigDbHelper" +
+						" is null");
+		}
+		
+		PubSubNode pubSubNode = pubSubNodeDbHelper.getNode(nodeId);
+		if (pubSubNode == null)
+		{
+			throw new NodeNotExistException();
+		}
+		
+		PubSubNodeConfig pubSubNodeConfig = pubSubNodeConfigDbHelper.getPubSubNodeConfig(nodeId);
+ 		String publisherModel = pubSubNodeConfig.getPublisherModel();
+ 		
+ 		PublisherModel model = publisherModelTracker.getPublisherModel(publisherModel);
+ 		if (model == null)
+ 		{
+ 			throw new Exception("Can not get PublisherModel[" + publisherModel + "]");
+ 		}
+ 		
+ 		if (!model.canPublish(pubSubNode, publisher))
+ 		{
+ 			throw new CannotPublishException();
+ 		}
+ 		
+ 		pubSubItemDbHelper.addPubSubItem(items);
 	}
 }

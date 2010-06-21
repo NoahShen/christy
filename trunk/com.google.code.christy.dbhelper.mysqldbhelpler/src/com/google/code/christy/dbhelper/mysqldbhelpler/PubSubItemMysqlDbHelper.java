@@ -23,6 +23,7 @@ public class PubSubItemMysqlDbHelper implements PubSubItemDbHelper
 	
 	private static final String GETONEPUBSUBITEM_SQL = "SELECT * FROM pubsubitem WHERE nodeId = ? AND itemId = ?";
 	
+	private static final String ADDPUBSUBITEM_SQL = "INSERT INTO pubsubitem VALUES (?, ?, ?, ?, ?, NOW())";
 	/**
 	 * @param connectionPool
 	 * @param loggerServiceTracker 
@@ -130,6 +131,45 @@ public class PubSubItemMysqlDbHelper implements PubSubItemDbHelper
 			
 		}
 		return null;
+	}
+
+	@Override
+	public void addPubSubItem(PubSubItem... pubSubItems) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			connection.setAutoCommit(false);
+			
+			for (PubSubItem pubSubItem : pubSubItems)
+			{
+				PreparedStatement preStat = connection.prepareStatement(ADDPUBSUBITEM_SQL);
+				preStat.setString(1, pubSubItem.getServiceId());
+				preStat.setString(2, pubSubItem.getNodeId());
+				preStat.setString(3, pubSubItem.getItemId());
+				preStat.setString(4, pubSubItem.getJid());
+				preStat.setString(5, pubSubItem.getPayload());
+
+				preStat.executeUpdate();
+				
+				if (loggerServiceTracker.isDebugEnabled())
+				{
+					loggerServiceTracker.debug("SQL:" + preStat.toString());
+				}
+			}
+						
+			connection.commit();
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connection.setAutoCommit(true);
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
 	}
 
 }

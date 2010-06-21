@@ -12,8 +12,10 @@ import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelperTracker;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.module.pubsub.impl.OpenAccessModel;
+import com.google.code.christy.module.pubsub.impl.OpenPublisherModel;
 import com.google.code.christy.module.pubsub.impl.PubSubManagerImpl;
 import com.google.code.christy.module.pubsub.impl.AccessModelTracker;
+import com.google.code.christy.module.pubsub.impl.PublisherModelTracker;
 import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 
 public class Activator implements BundleActivator
@@ -29,6 +31,8 @@ public class Activator implements BundleActivator
 	private PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker;
 	private AccessModelTracker accessModelTracker;
 	private ServiceRegistration openAccessModelRegistration;
+	private ServiceRegistration openPublisherModelRegistration;
+	private PublisherModelTracker publisherModelTracker;
 
 	/*
 	 * (non-Javadoc)
@@ -64,6 +68,12 @@ public class Activator implements BundleActivator
 		OpenAccessModel openAccessModel = new OpenAccessModel();
 		openAccessModelRegistration = context.registerService(AccessModel.class.getName(), openAccessModel, null);
 		
+		publisherModelTracker = new PublisherModelTracker(context);
+		publisherModelTracker.open();
+		
+		OpenPublisherModel openPublisherModel = new OpenPublisherModel();
+		openPublisherModelRegistration = context.registerService(PublisherModel.class.getName(), openPublisherModel, null);
+			
 		PubSubManagerImpl pubSubManager = 
 			new PubSubManagerImpl(loggerServiceTracker, 
 					routeMessageParserServiceTracker,
@@ -72,7 +82,8 @@ public class Activator implements BundleActivator
 					pubSubSubscriptionDbHelperTracker,
 					pubSubAffiliationDbHelperTracker,
 					pubSubNodeConfigDbHelperTracker,
-					accessModelTracker);
+					accessModelTracker,
+					publisherModelTracker);
 		
 		String appPath = System.getProperty("appPath");
 		XMLConfiguration config = new XMLConfiguration(appPath + "/pusubconfig.xml");
@@ -163,6 +174,18 @@ public class Activator implements BundleActivator
 		{
 			openAccessModelRegistration.unregister();
 			openAccessModelRegistration = null;
+		}
+		
+		if (publisherModelTracker != null)
+		{
+			publisherModelTracker.close();
+			publisherModelTracker = null;
+		}
+		
+		if (openPublisherModelRegistration != null)
+		{
+			openPublisherModelRegistration.unregister();
+			openPublisherModelRegistration = null;
 		}
 	}
 

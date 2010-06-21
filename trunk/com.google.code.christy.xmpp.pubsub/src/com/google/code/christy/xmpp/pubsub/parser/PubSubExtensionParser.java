@@ -13,6 +13,7 @@ import com.google.code.christy.xmpp.pubsub.PubSubAffiliations;
 import com.google.code.christy.xmpp.pubsub.PubSubExtension;
 import com.google.code.christy.xmpp.pubsub.PubSubItems;
 import com.google.code.christy.xmpp.pubsub.PubSubOptions;
+import com.google.code.christy.xmpp.pubsub.PubSubPublish;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscribe;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptionItem;
 import com.google.code.christy.xmpp.pubsub.PubSubSubscriptions;
@@ -77,6 +78,10 @@ public class PubSubExtensionParser implements ExtensionParser
 				{
 					extension.addStanza(parseItems(parser, xmppParser));
 				}
+				else if ("publish".equals(elementName))
+				{
+					extension.addStanza(parsePublish(parser, xmppParser));
+				}
 				else
 				{
 					extension.addStanza(xmppParser.parseUnknownExtension(parser, elementName, namespace));
@@ -92,6 +97,43 @@ public class PubSubExtensionParser implements ExtensionParser
 		}
 		
 		return extension;
+	}
+
+	private PubSubPublish parsePublish(XmlPullParser parser, XmppParser xmppParser) throws Exception
+	{
+		String node = parser.getAttributeValue("", "node");
+		
+		PubSubPublish pubSubPublish = new PubSubPublish(node);
+		
+		boolean done = false;
+		while (!done)
+		{
+			int eventType = parser.next();
+			String elementName = parser.getName();
+			if (eventType == XmlPullParser.START_TAG)
+			{
+				if ("item".equals(elementName))
+				{
+					String id = parser.getAttributeValue("", "id");
+					PubSubPublish.Item item = new PubSubPublish.Item(id);
+					UnknownPacketExtension payload = parseItemContent(parser, xmppParser);
+					if (payload != null)
+					{
+						item.setPayload(payload.toXml());
+					}
+					
+					pubSubPublish.addItem(item);
+				}
+			}
+			else if (eventType == XmlPullParser.END_TAG)
+			{
+				if ("publish".equals(elementName))
+				{
+					done = true;
+				}
+			}
+		}
+		return pubSubPublish;
 	}
 
 	private PubSubItems parseItems(XmlPullParser parser, XmppParser xmppParser) throws Exception
