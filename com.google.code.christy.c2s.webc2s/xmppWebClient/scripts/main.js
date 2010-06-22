@@ -206,6 +206,9 @@ Main.init = function() {
 							"<u id='profileTab'>" + $.i18n.prop("tabs.profile", "资料") + "</u>" +
  						"</div>" +
  						"<div>" +
+ 							"<div id='preferencesProfilePanel' class='ui-tab-content' style='display:none;'>" +
+	 							"123" +
+	 						"</div>" +
  							"<div id='im' class='ui-tab-content ui-tab-active'>" +
  							"</div>" +
 	 						"<div id='search' class='ui-tab-content' style='display:none;'>" +
@@ -214,6 +217,7 @@ Main.init = function() {
 	 						"</div>" +
 	 						"<div id='profile' class='ui-tab-content' style='display:none;'>" +
 	 						"</div>" +
+	 						
  						"</div>" +
  					"</div>" +
  				"</div>");
@@ -222,8 +226,14 @@ Main.init = function() {
 	
 	$("body").append(mainDiv);
 	
+    IM.init();
+    Search.init();
+    Map.init();
+    Profile.init();
+    Preferences.init();
+    
 	Main.tabs = new $.fn.tab({
-        tabList:"#tabs .ui-tab-container .clearfix u",
+        tabList:"#tabs .ui-tab-container .clearfix u, #preferencesProfile",
         contentList:"#tabs .ui-tab-container .ui-tab-content",
 //        showType:"fade",
         callBackStartEvent:function(index) {
@@ -257,17 +267,11 @@ Main.init = function() {
 					Profile.queryFavoriteShop(1, Profile.pageCount, true, true);
 					Profile.isFirst = true;
 				}
-				
 			}
         }
     });
-    Main.tabs.triggleTab(0);
     
-    IM.init();
-    Search.init();
-    Map.init();
-    Profile.init();
-    Preferences.init();
+    Main.tabs.triggleTab(1);
     
     //adjustment message area
 	$(window).resize(function(){
@@ -2794,6 +2798,15 @@ Preferences.init = function() {
 													$.i18n.prop("contact.showContactPos", "显示联系人位置") +
 												"</label>" +
 											"</div>" + 
+										"</td>" +
+									"</tr>" +
+									"<tr>" +
+										"<td>" +
+											"<div style='text-align:center;'>" +
+												"<a id='preferencesProfile' href='javascript:void(0);'>" +
+													$.i18n.prop("preferences.profile", "资料") + 
+												"</a>" +
+											"</div>" +
 										"</td>" +
 									"</tr>" +
 									"<tr>" +
