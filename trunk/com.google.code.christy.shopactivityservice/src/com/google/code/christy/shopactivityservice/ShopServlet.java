@@ -728,7 +728,7 @@ public class ShopServlet extends HttpServlet
 		{
 			loggerServiceTracker.debug("Start creating Index");
 			
-			IndexWriter writer = new IndexWriter(FSDirectory.open(new File(appPath + "/luceneTest/")), 
+			IndexWriter writer = new IndexWriter(FSDirectory.open(new File(appPath + "/shopSearchIndex/")), 
 							getAnalyzer(), 
 							true,
 							MaxFieldLength.UNLIMITED);
