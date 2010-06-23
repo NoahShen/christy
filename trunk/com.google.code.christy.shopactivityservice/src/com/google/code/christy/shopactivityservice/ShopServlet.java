@@ -49,6 +49,8 @@ public class ShopServlet extends HttpServlet
 	
 	private ShopDbhelper shopDbhelper;
 	
+	private ActivityDbHelper activityDbHelper;
+	
 	private UserDbhelper userDbhelper;
 
 	private Seacher seacher;
@@ -59,12 +61,14 @@ public class ShopServlet extends HttpServlet
 				LoggerServiceTracker loggerServiceTracker, 
 				ShopDbhelper shopLocDbhelper,
 				UserDbhelper userDbhelper,
+				ActivityDbHelper activityDbHelper,
 				CacheServiceTracker cacheServiceTracker)
 	{
 		super();
 		this.c2sManagerTracker = c2sManagerTracker;
 		this.loggerServiceTracker = loggerServiceTracker;
 		this.shopDbhelper = shopLocDbhelper;
+		this.activityDbHelper = activityDbHelper;
 		this.userDbhelper = userDbhelper;
 		this.cacheServiceTracker = cacheServiceTracker;
 		
@@ -544,6 +548,108 @@ public class ShopServlet extends HttpServlet
 
 	private void handleSearch(HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
+		String searchType = req.getParameter("type");
+		if ("activity".equals(searchType))
+		{
+			searchActivities(searchType, req, resp);
+		}
+		else
+		{
+			searchShops(searchType, req, resp);
+		}
+		
+	}
+
+	private void searchActivities(String searchType, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		
+		
+		Object[] result = null;
+		String pageStr = req.getParameter("page");
+		String countStr = req.getParameter("count");
+		
+		int page = pageStr == null ?  1 : Integer.parseInt(pageStr);
+		int count = countStr == null ?  10 : Integer.parseInt(countStr);
+		
+		String eastingStr = req.getParameter("easting");
+		String northingStr = req.getParameter("northing");
+		
+		int easting = Integer.parseInt(eastingStr);
+		int northing = Integer.parseInt(northingStr);
+		
+		String distanceStr = req.getParameter("distance");
+		int distance = Integer.parseInt(distanceStr);
+		
+		String getTotalStr = req.getParameter("gettotal");
+		boolean getTotal = false;
+		if (getTotalStr != null)
+		{
+			getTotal = true;
+		}
+		try
+		{
+			result = activityDbHelper.getActivityByLoc(searchType, easting, northing, distance, page, count, getTotal);
+		}
+		catch (Exception e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		
+		
+		if (result != null)
+		{
+			Integer resultCount = (Integer) result[0];
+			Activity[] activities = (Activity[]) result[1];
+			
+			JSONObject resultJsonObj = new JSONObject();
+			JSONArray array = new JSONArray();
+			for (Activity activity : activities)
+			{
+				JSONObject jsonObj = new JSONObject();
+				try
+				{
+					jsonObj.put("activityId", activity.getActivityId());
+					jsonObj.put("shopId", activity.getShopId());
+					jsonObj.put("title", activity.getTitle());
+					jsonObj.put("intro", activity.getIntro());
+					if (activity.getDistanceFromUser() != null)
+					{
+						jsonObj.put("distance", activity.getDistanceFromUser().doubleValue());
+					}
+					array.put(jsonObj);
+				}
+				catch (JSONException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+			try
+			{
+				if (resultCount != null)
+				{
+					resultJsonObj.put("total", resultCount);
+				}
+				resultJsonObj.put("activities", array);
+				// TODO
+				System.out.println(resultJsonObj.toString());
+				
+				resp.getWriter().write(resultJsonObj.toString());
+			}
+			catch (JSONException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+	}
+
+	private void searchShops(String searchType, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
 		String searchKey = req.getParameter("searchKey");
 		String eastingStr = req.getParameter("easting");
 		String northingStr = req.getParameter("northing");
@@ -551,11 +657,11 @@ public class ShopServlet extends HttpServlet
 		Object[] result = null;
 		if (searchKey != null)
 		{		
-			result = searchByKey(req, resp, searchKey);
+			result = searchByKey(searchType, req, resp, searchKey);
 		} 
 		else if (eastingStr != null && northingStr != null)
 		{
-			result = searchByLoc(req, resp, Integer.parseInt(eastingStr), Integer.parseInt(northingStr));
+			result = searchByLoc(searchType, req, resp, Integer.parseInt(eastingStr), Integer.parseInt(northingStr));
 		}
 		
 		
@@ -605,13 +711,10 @@ public class ShopServlet extends HttpServlet
 			}
 			
 		}
-		
 	}
 
-	private Object[] searchByLoc(HttpServletRequest req, HttpServletResponse resp, int easting, int northing)
+	private Object[] searchByLoc(String searchType, HttpServletRequest req, HttpServletResponse resp, int easting, int northing)
 	{
-
-		String shopType = req.getParameter("type");
 		
 		String pageStr = req.getParameter("page");
 		String countStr = req.getParameter("count");
@@ -630,7 +733,7 @@ public class ShopServlet extends HttpServlet
 		}
 		try
 		{
-			Object[] result = shopDbhelper.getShopByLoc(shopType, easting, northing, distance, page, count, getTotal);
+			Object[] result = shopDbhelper.getShopByLoc(searchType, easting, northing, distance, page, count, getTotal);
 			return result;
 		}
 		catch (Exception e1)
@@ -643,7 +746,7 @@ public class ShopServlet extends HttpServlet
 		
 	}
 
-	private Object[] searchByKey(HttpServletRequest req, HttpServletResponse resp, String searchKey)
+	private Object[] searchByKey(String searchType, HttpServletRequest req, HttpServletResponse resp, String searchKey)
 	{
 //		String shopType = req.getParameter("type");
 		

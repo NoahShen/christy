@@ -137,10 +137,11 @@ div[messagearea] {
 	color: red;
 }
 
-.search-nearby {
+.search-item-title {
 	padding-left: 7px;
 	padding-top: 7px;
 }
+
 
 .search-bar {
 	background: url("/resource/subTab_active.gif") repeat-x scroll 0 0 transparent;
@@ -192,6 +193,15 @@ div[messagearea] {
 }
 
 .market-type-item {
+	background-image: url("/resource/supermarket.png");
+	background-repeat: no-repeat;
+	background-position: left;
+	width: 32px;
+	height: 37px;
+	float: left;
+}
+
+.activity-type-item {
 	background-image: url("/resource/supermarket.png");
 	background-repeat: no-repeat;
 	background-position: left;

@@ -245,7 +245,7 @@ Main.init = function() {
 			}
         },
         callBackShowEvent:function(index) {
-        	if (index == 0) {
+        	if (index == 1) {
         		var chatPanel = $("#chatPanel");
         		var jidStr = chatPanel.children("div:visible").attr("chatcontactjid");
         		if (jidStr) {
@@ -254,7 +254,7 @@ Main.init = function() {
         		
         	}
         	//init map
-			else if (index == 2) {
+			else if (index == 3) {
 				var mapCanvas = $("#mapCanvas");
 				if (!mapCanvas.attr("src")) {
 					mapCanvas.attr("src", "/mapcanvas.html");
@@ -262,7 +262,7 @@ Main.init = function() {
 				}
 			}
 			// init favorite
-			else if (index == 3) {
+			else if (index == 4) {
 				if (!Profile.isFirst) {
 					Profile.queryFavoriteShop(1, Profile.pageCount, true, true);
 					Profile.isFirst = true;
@@ -1381,7 +1381,7 @@ Search.init = function() {
 									"</tr>" +
 								"</table>" +								
 							"</div>" +
-							"<div class='search-nearby'>" +
+							"<div class='search-item-title'>" +
 								"<div>" + $.i18n.prop("search.searchInput.searchNearby", "搜索附近") + "<div>" +
 								"<table id='searchType' style='width:100%;'>" +
 									"<tr>" +
@@ -1424,6 +1424,16 @@ Search.init = function() {
 											"</div>" + 
 										"</td>" +
 									"</tr>" +
+									"<tr>" +
+										"<td>" +
+											"<div id='activity' class='search-type'>" +
+												"<div class='activity-type-item'></div>" +
+												"<div class='forward'>" +
+													$.i18n.prop("search.searchType.activity", "折扣/促销活动") + 
+												"</div>" +
+											"</div>" + 
+										"</td>" +
+									"</tr>" +
 								"</table>" +
 							"</div>" + 
 						"</div>");
@@ -1458,6 +1468,7 @@ Search.init = function() {
 	
 	searchInnerPanel.append(searchInput);
 	
+	// =====start of shopResultContainer
 	var shopResultContainer = $("<div id='shopResultContainer'></div>");
 	shopResultContainer.hide();
 	
@@ -1481,6 +1492,9 @@ Search.init = function() {
 
 	searchInnerPanel.append(shopResultContainer);
 	
+	// =====end of shopResultContainer
+	
+	// =====start of shopDetail
 	var shopDetail = $("<div id='shopDetail'></div>");
 	shopDetail.hide();
 	
@@ -1517,7 +1531,7 @@ Search.init = function() {
 	var shopDetailPanel = $("<div id='shopDetailPanel'></div>");
 	shopDetail.append(shopDetailPanel);
 	searchInnerPanel.append(shopDetail);
-	
+	// =====end of shopDetail
 	
 	var shopCommentsContainer = $("<div id='shopCommentsContainer'></div>");
 	shopCommentsContainer.hide();
@@ -1654,6 +1668,32 @@ Search.init = function() {
 	commentOnShopContainer.append(commentOnShopPanel);
 	
 	searchInnerPanel.append(commentOnShopContainer);
+	
+	// =====start of activityResultContainer
+	var activityResultContainer = $("<div id='activityResultContainer'></div>");
+	activityResultContainer.hide();
+	
+	var activityResultBar = $("<div id='activityResultBar' style='width:100%;text-align:center;' class='search-bar'>" +
+								"<div style='position:absolute;left:0px;'>" +
+									"<a id='activityBackToSearch' href='javascript:void(0);'>&lt;&lt;" + $.i18n.prop("search.back", "返回") + "</a>" +
+								"</div>" +
+								"<div id='activitSearchTitle'></div>" +
+							"</div>");
+	
+	var activityBackToSearch = shopResultBar.find("#activityBackToSearch");
+	activityBackToSearch.click(function() {
+		searchInput.siblings().hide();
+		searchInput.show();
+	});
+	
+	activityResultContainer.append(activityResultBar);
+	
+	var activityResult = $("<div id='activityResult'></div>");
+	activityResultContainer.append(activityResult);
+
+	searchInnerPanel.append(activityResultContainer);
+	
+	// =====end of activityResultContainer
 	
 	searchPanel.append(searchInnerPanel);
 };
@@ -1847,7 +1887,7 @@ Search.searchShops = function(query, page, count, type, updatePage, getTotal, se
 						total: Math.ceil(searchResult.total / count),
 						current: 1,
 						onChanged: function(page) {
-							Search.searchShops(query, page, count, type, false, false);
+							Search.searchShops(query, page, count, type, false, false, searchTitle);
 						}
 				});
 			}
@@ -2099,6 +2139,86 @@ Search.showShopDetail = function(shopDetail) {
 	shopDetail.siblings().hide();
 	shopDetail.show();
 
+};
+
+
+Search.searchActivities = function(position, page, count, updatePage, getTotal, searchTitle) {
+	
+	var activityResult = $("#activityResult");
+	activityResult.text($.i18n.prop("search.searching", "正在搜索..."));
+	
+	var activityResultContainer = $("#activityResultContainer");
+	activityResultContainer.siblings().hide();
+	activityResultContainer.show();
+			
+	var data = {
+		action: "search",
+		type: "activity",
+		page: page,
+		count: count
+	};
+	if (getTotal) {
+		data.gettotal = 1;
+	}
+	
+	if (typeof query == "string") {
+		data.searchKey = query;
+	} else {
+		data.easting = query.easting;
+		data.northing = query.northing;
+		data.distance = Search.distance;
+	}
+	
+	$.ajax({
+		url: "/shop/",
+		dataType: "json",
+		cache: false,
+		type: "get",
+		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+		data: data,
+		success: function(searchResult){
+			Search.currentResult = searchResult;
+			activityResult.empty();
+			
+			$("#activitSearchTitle").text(searchTitle);
+			var shops = searchResult.shops;
+			for (var i = 0; i < shops.length; ++i) {
+				var activityPanel = Search.createActivityInfo(shops[i]);
+				activityResult.append(activityPanel);
+			}
+			
+			if (updatePage) {
+				var activityPagination = activityResultContainer.children("#activityPagination");
+				
+				if (shops.length == 0) {
+					activityResult.append($.i18n.prop("search.noResult", "未搜索到相关的结果"));
+					activityPagination.empty();
+					return;
+				}			
+				
+				if (activityPagination.size() == 0) {
+					var activityPagination = $("<div id='activityPagination' style='text-align: center;'></div>");
+					activityResultContainer.append(activityPagination)
+				}
+				
+				var pagination = new $.fn.Pagination({
+						renderTo: activityPagination,
+						total: Math.ceil(searchResult.total / count),
+						current: 1,
+						onChanged: function(page) {
+							Search.searchActivities(query, page, count, type, false, false, searchTitle);
+						}
+				});
+			}
+		},
+		error: function(xmlHttpRequest, textStatus, errorThrown) {
+			activityResult.empty();
+		},
+		complete: function(xmlHttpRequest, textStatus) {
+			
+		}
+	});
+	
 };
 
 Map = {};
@@ -2494,7 +2614,6 @@ Profile.init = function() {
         callBackHideEvent: function(index) {
         	if (index == 0) {
         		favoriteRefresh.hide();
-//        		favoriteRefresh.css("display", "none");
         	} else if (index == 1) {
         		commentsRefresh.hide();
         		commentsRefresh.css("display", "none");
@@ -2503,10 +2622,8 @@ Profile.init = function() {
         callBackShowEvent: function(index) {
         	if (index == 0) {
         		favoriteRefresh.show();
-//				favoriteRefresh.css("display", "inline");
 			} else if (index == 1) {
 				commentsRefresh.show();
-//        		commentsRefresh.css("display", "inline");
         		if (!Profile.hasQueriedComments) {
 					Profile.queryMyComments(1, Profile.pageCount, true, true);
 					Profile.hasQueriedComments = true;
