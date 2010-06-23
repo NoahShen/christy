@@ -218,7 +218,7 @@ public class ShopDbhelper
 				loggerServiceTracker.debug("Result:" + shopResSet.toString());
 			}
 			Shop shop = null;
-			while (shopResSet.next()) 
+			if (shopResSet.next()) 
 			{
 				long id = shopResSet.getLong("shopId");
 				if (shop == null)
