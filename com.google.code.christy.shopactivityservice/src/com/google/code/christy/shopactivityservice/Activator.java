@@ -4,6 +4,7 @@ import java.util.Hashtable;
 
 import javax.servlet.http.HttpServlet;
 
+import org.apache.commons.configuration.XMLConfiguration;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -37,19 +38,23 @@ public class Activator implements BundleActivator
 		c2SManagerTracker = new C2SManagerTracker(context);
 		c2SManagerTracker.open();
 		
+		String appPath = System.getProperty("appPath");
+		XMLConfiguration config = new XMLConfiguration(appPath + "/shopactivitydbconfig.xml");		
+		
 		connPool = new ConnectionPool("com.mysql.jdbc.Driver",
-						"jdbc:mysql://localhost/christy?useUnicode=true&characterEncoding=UTF-8",
-						"root",
-						"123456");
-		connPool .createPool();
+				config.getString("url"),
+				config.getString("user"),
+				config.getString("password"));
+		connPool.createPool();
 		
 		ShopDbhelper shopDbhelper = new ShopDbhelper(loggerServiceTracker, connPool);
 		UserDbhelper userDbhelper = new UserDbhelper(loggerServiceTracker, connPool);
+		ActivityDbHelper activityDbHelper = new ActivityDbHelper(loggerServiceTracker, connPool);
 		
 		cacheServiceTracker = new CacheServiceTracker(context);
 		cacheServiceTracker.open();
 		
-		ShopServlet shopServlet = new ShopServlet(c2SManagerTracker, loggerServiceTracker, shopDbhelper, userDbhelper, cacheServiceTracker);
+		ShopServlet shopServlet = new ShopServlet(c2SManagerTracker, loggerServiceTracker, shopDbhelper, userDbhelper, activityDbHelper, cacheServiceTracker);
 		Hashtable<String, String> properties = new Hashtable<String, String>();
 		properties.put("contextPath", "/shop");
 		properties.put("pathSpec", "/");
