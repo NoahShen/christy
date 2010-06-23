@@ -2019,12 +2019,12 @@ Search.showShopDetail = function(shopDetail) {
 										"<div>" +
 											"<span>" + baseInfo.name + "</span>" +
 											"<span>"+ baseInfo.hasCoupon + "</span>" +
-											"<input id='adddFavorite' type='button' class='button-base' value='" +
-												$.i18n.prop("search.shopDetail.adddFavorite", "收藏") + 
-											"' />" +
-											"<input id='showShopPos' type='button' class='button-base' value='" +
-												$.i18n.prop("search.shopDetail.showShopPos", "地图") + 
-											"' />" +
+//											"<input id='adddFavorite' type='button' class='button-base' value='" +
+//												$.i18n.prop("search.shopDetail.adddFavorite", "收藏") + 
+//											"' />" +
+//											"<input id='showShopPos' type='button' class='button-base' value='" +
+//												$.i18n.prop("search.shopDetail.showShopPos", "地图") + 
+//											"' />" +
 										"</div>" +
 										"<div>" +
 											"<span>" + 
@@ -2049,7 +2049,41 @@ Search.showShopDetail = function(shopDetail) {
 							"</table>" +
 						"</div>");
 	
-	shopBaseInfo.find("#adddFavorite").click(function() {
+	shopDetailPanel.append(shopBaseInfo);
+
+	var contactIntro = $("<table>" +
+							"<tr>" +
+								"<td style='word-break:break-all;'>" +
+									"<div>" +
+										$.i18n.prop("search.shopDetail.address", "地址：") +
+										baseInfo.addr + 
+									"</div>" +
+									"<div>" +
+										$.i18n.prop("search.shopDetail.tel", "电话：") +
+										baseInfo.phone + 
+									"</div>" +
+								"</td>" +
+							"</tr>" +
+							"<tr>" +
+								"<td style='word-break:break-all;'>" +
+									shopDetail.intro +
+								"</td>" +
+							"</tr>" +
+						"</table>");
+					
+	shopDetailPanel.append(contactIntro);
+	
+	var actionBar = $("<div class='actionBar'>" +
+							"<input id='adddFavorite' type='button' class='button-base actionBar-button' value='" +
+								$.i18n.prop("search.shopDetail.adddFavorite", "收藏") + 
+							"' />" +
+							"<input id='showShopPos' type='button' class='button-base actionBar-button' value='" +
+								$.i18n.prop("search.shopDetail.showShopPos", "地图") + 
+							"' />" +
+						"</div>");
+	
+	
+	actionBar.find("#adddFavorite").click(function() {
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
 		if (!conn) {
@@ -2094,7 +2128,7 @@ Search.showShopDetail = function(shopDetail) {
 		
 	});
 	
-	shopBaseInfo.find("#showShopPos").click(function() {
+	actionBar.find("#showShopPos").click(function() {
 		var lat = baseInfo.lat;
 		var lon = baseInfo.lon;
 		
@@ -2148,30 +2182,8 @@ Search.showShopDetail = function(shopDetail) {
 		
 	});
 	
-	shopDetailPanel.append(shopBaseInfo);
-
-	var contactIntro = $("<table>" +
-							"<tr>" +
-								"<td style='word-break:break-all;'>" +
-									"<div>" +
-										$.i18n.prop("search.shopDetail.address", "地址：") +
-										baseInfo.addr + 
-									"</div>" +
-									"<div>" +
-										$.i18n.prop("search.shopDetail.tel", "电话：") +
-										baseInfo.phone + 
-									"</div>" +
-								"</td>" +
-							"</tr>" +
-							"<tr>" +
-								"<td style='word-break:break-all;'>" +
-									shopDetail.intro +
-								"</td>" +
-							"</tr>" +
-						"</table>");
-					
-	shopDetailPanel.append(contactIntro);
-
+	shopDetailPanel.append(actionBar);
+	
 	$("#shopName").text(baseInfo.name);
 
 	
