@@ -1439,7 +1439,7 @@ Search.init = function() {
 						"</div>");
 	searchInput.find("#searchByLoc").click(function() {
 		Map.startSelectPos(function(lat, lon) {
-			Main.tabs.triggleTab(1);
+			Main.tabs.triggleTab(2);
 			var utm = GeoUtils.convertLatLon2UTM(lat, lon);
 			Search.searchShops(utm, 1, Search.pageCount, 
 								"all", true, true, 
@@ -1450,12 +1450,21 @@ Search.init = function() {
 	searchInput.find("#searchType .search-type").click(function() {
 		var typeJqObj = $(this);
 		var type = typeJqObj.attr("id");
-			
-		GeoUtils.getCurrentPosition(function(p) {
-			Search.searchShops(p, 1, Search.pageCount, 
-								type, true, true,
-								$.i18n.prop("search.searchTitle.searchNearby", "搜索附近"));
-		}, function(){}, true);		
+		
+		if (type == "activity") {
+			GeoUtils.getCurrentPosition(function(p) {
+				Search.searchActivities(p, 1, Search.pageCount, 
+									true, true,
+									$.i18n.prop("search.searchTitle.searchNearby", "搜索附近"));
+			}, function(){}, true);		
+		} else {
+			GeoUtils.getCurrentPosition(function(p) {
+				Search.searchShops(p, 1, Search.pageCount, 
+									type, true, true,
+									$.i18n.prop("search.searchTitle.searchNearby", "搜索附近"));
+			}, function(){}, true);		
+		}
+		
 	});
 	
 	searchInput.find("#doSearch").click(function() {
@@ -1680,7 +1689,7 @@ Search.init = function() {
 								"<div id='activitSearchTitle'></div>" +
 							"</div>");
 	
-	var activityBackToSearch = shopResultBar.find("#activityBackToSearch");
+	var activityBackToSearch = activityResultBar.find("#activityBackToSearch");
 	activityBackToSearch.click(function() {
 		searchInput.siblings().hide();
 		searchInput.show();
@@ -1694,6 +1703,37 @@ Search.init = function() {
 	searchInnerPanel.append(activityResultContainer);
 	
 	// =====end of activityResultContainer
+	
+	
+	// =====start of activityDetail
+	var activityDetail = $("<div id='activityDetail'></div>");
+	activityDetail.hide();
+	
+	var activityDetailBar = $("<div id='activityDetailBar' style='width:100%;text-align:center;' class='search-bar'>" +
+								"<div style='position:absolute;left:0px;'>" +
+									"<a id='backToActivityResult' href='javascript:void(0);'>&lt;&lt;" + $.i18n.prop("search.back", "返回") + "</a>" +
+								"</div>" +
+								"<div id='activityName'></div>" +
+							"</div>");
+							
+	activityDetailBar.find("#backToActivityResult").click(function() {
+		if ($("#activityResult").children().size() > 0) {
+			activityResultContainer.siblings().hide();
+			activityResultContainer.show();
+		} else {
+			searchInput.siblings().hide();
+			searchInput.show();
+		}
+		
+	});
+	
+	activityDetail.append(activityDetailBar);
+	
+	var activityDetailPanel = $("<div id='activityDetailPanel'></div>");
+	activityDetail.append(activityDetailPanel);
+	
+	searchInnerPanel.append(activityDetail);
+	// =====end of activityDetail
 	
 	searchPanel.append(searchInnerPanel);
 };
@@ -1950,7 +1990,7 @@ Search.getShopDetail = function(shopId, changeTab) {
 			Search.currentShopDetail = shopDetail;
 			Search.showShopDetail(shopDetail);
 			if (changeTab) {
-				Main.tabs.triggleTab(1);
+				Main.tabs.triggleTab(2);
 			}
 		},
 		error: function(xmlHttpRequest, textStatus, errorThrown) {
@@ -2161,13 +2201,9 @@ Search.searchActivities = function(position, page, count, updatePage, getTotal, 
 		data.gettotal = 1;
 	}
 	
-	if (typeof query == "string") {
-		data.searchKey = query;
-	} else {
-		data.easting = query.easting;
-		data.northing = query.northing;
-		data.distance = Search.distance;
-	}
+	data.easting = position.easting;
+	data.northing = position.northing;
+	data.distance = Search.distance;
 	
 	$.ajax({
 		url: "/shop/",
@@ -2181,16 +2217,16 @@ Search.searchActivities = function(position, page, count, updatePage, getTotal, 
 			activityResult.empty();
 			
 			$("#activitSearchTitle").text(searchTitle);
-			var shops = searchResult.shops;
-			for (var i = 0; i < shops.length; ++i) {
-				var activityPanel = Search.createActivityInfo(shops[i]);
+			var activities = searchResult.activities;
+			for (var i = 0; i < activities.length; ++i) {
+				var activityPanel = Search.createActivityInfo(activities[i]);
 				activityResult.append(activityPanel);
 			}
 			
 			if (updatePage) {
 				var activityPagination = activityResultContainer.children("#activityPagination");
 				
-				if (shops.length == 0) {
+				if (activities.length == 0) {
 					activityResult.append($.i18n.prop("search.noResult", "未搜索到相关的结果"));
 					activityPagination.empty();
 					return;
@@ -2220,6 +2256,140 @@ Search.searchActivities = function(position, page, count, updatePage, getTotal, 
 	});
 	
 };
+
+
+Search.createActivityInfo = function(activityInfo) {
+	var distance = "";
+	if (activityInfo.distance != null) {
+		distance = "<span class='distance-style'>" + 
+						$.i18n.prop("search.result.aboutMeter", "约{0}米", [Math.round(activityInfo.distance)]) + 
+					"</span>";
+	}
+	
+	var startDate = "";
+	if (activityInfo.startDate) {
+		startDate = new Date(activityInfo.startDate).format("yyyy-MM-dd");
+	}
+	
+	var endDate = "";
+	if (activityInfo.endDate) {
+		endDate = new Date(activityInfo.endDate).format("yyyy-MM-dd");
+	}
+	var activityInfoPanel = $("<div activityId='" + activityInfo.activityId + "' shopId='" + activityInfo.shopId + "' class='forward list-item'>" +
+								"<table>" +
+									"<tr>" +
+										"<td>" +
+											"<div>" + activityInfo.title + distance + "</div>" +
+											"<div>" + activityInfo.intro + "</div>" +
+											"<div>" +
+												$.i18n.prop("search.activityResult.periodOfValidity", "有效期：") +
+												startDate + 
+												" " + $.i18n.prop("search.activityResult.to", "至") + " " + 
+												endDate + 
+											"</div>" +
+										"</td>" +
+									"</tr>" +
+								"</table>" +
+								
+							"</div>");
+	activityInfoPanel.click(function(){
+		var activityId = $(this).attr("activityId");
+		Search.getActivityDetail(activityId, false);
+	});
+	
+	return activityInfoPanel;
+};
+
+Search.getActivityDetail = function(activityId, changeTab) {
+	$.ajax({
+		url: "/shop/",
+		dataType: "json",
+		cache: false,
+		type: "get",
+		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+		data: {
+			action: "getactivitydetail",
+			activityid: activityId
+		},
+		success: function(activityDetail){
+			Search.currentActivityDetail = activityDetail;
+			Search.showActivityDetail(activityDetail);
+			if (changeTab) {
+				Main.tabs.triggleTab(2);
+			}
+		},
+		error: function(xmlHttpRequest, textStatus, errorThrown) {
+			
+		},
+		complete: function(xmlHttpRequest, textStatus) {
+			
+		}
+	});
+};
+
+
+Search.showActivityDetail = function(activityDetail) {
+	var activityDetailPanel = $("#activityDetailPanel");
+	activityDetailPanel.empty();
+	
+
+	var startDate = "";
+	if (activityDetail.startDate) {
+		startDate = new Date(activityDetail.startDate).format("yyyy-MM-dd");
+	}
+	
+	var endDate = "";
+	if (activityDetail.endDate) {
+		endDate = new Date(activityDetail.endDate).format("yyyy-MM-dd");
+	}
+	
+	var activityDetailHtml = $("<div activityId='" + activityDetail.activityId + "' shopId='" + activityDetail.shopId + "'>" +
+									"<table>" +
+										"<tr>" +
+											"<td>" +
+												"<div>" + activityDetail.title + "</div>" +
+												"<div>" +
+													"<img />" +
+												"</div>" + 
+												"<div>" +
+													"<div>" + 
+														activityDetail.content + 
+													"</div>" +
+													"<div>" +
+														$.i18n.prop("search.activityResult.periodOfValidity", "有效期：") +
+														startDate + 
+														" " + $.i18n.prop("search.activityResult.to", "至") + " " + 
+														endDate + 
+													"</div>" +
+												"</div>" +
+											"</td>" +
+										"</tr>" +
+									"</table>" +
+								"</div>");
+	
+	if (activityDetail.activityImg) {
+		var imgJqObj = activityDetailHtml.find("img");
+		imgJqObj.attr("src", activityDetail.activityImg);
+		imgJqObj.load(function(){
+			var thisImg = $(this);
+			if (thisImg.width() > getPageWidth()) {
+				thisImg.width(getPageWidth() * 0.9);
+			}
+		});
+	}
+	
+	activityDetailPanel.append(activityDetailHtml);
+
+
+	$("#activityName").text(activityDetail.title);
+
+	
+	var activityDetail = $("#activityDetail");
+	activityDetail.siblings().hide();
+	activityDetail.show();
+
+};
+
 
 Map = {};
 Map.MAP_CONTROLBAR_HEIGHT = 20
@@ -2360,7 +2530,7 @@ Map.showMap = function(mapShownCallBack) {
 		}
 		Map.mapLoadedCallBack.push(mapShownCallBack);
 	}
-	Main.tabs.triggleTab(2);
+	Main.tabs.triggleTab(3);
 };
 
 Map.mapFrameLoaded = function() {

@@ -161,8 +161,8 @@ div[messagearea] {
 	background-image: url("/resource/forword.png");
 	background-repeat: no-repeat;
 	background-position: right;
+	line-height:37px;
 	width: 100%;
-	line-height: 37px;
 }
 
 .restaurant-type-item {

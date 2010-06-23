@@ -133,6 +133,48 @@ public class ShopServlet extends HttpServlet
 		{
 			handleRegister(req, resp);
 		}
+		else if ("getactivitydetail".equals(action))
+		{
+			handlegetActivityDetail(req, resp);
+		}
+	}
+
+	private void handlegetActivityDetail(HttpServletRequest req, HttpServletResponse resp)
+	{
+
+		String activityId = req.getParameter("activityid");
+
+		try
+		{
+			Cache cache = cacheServiceTracker.getCache("activityDetailCache");
+			Activity activity = (Activity) cache.get(activityId);
+			if (activity == null)
+			{
+				activity = activityDbHelper.getActivityByLoc(Long.parseLong(activityId));
+				cache.put(activityId, activity);
+			}
+			
+			JSONObject activityInfo = new JSONObject();
+			activityInfo.put("activityId", activity.getActivityId());
+			activityInfo.put("shopId", activity.getShopId());
+			activityInfo.put("title", activity.getTitle());
+			activityInfo.put("activityImg", activity.getActivityImg());
+			activityInfo.put("content", activity.getContent());
+			activityInfo.put("lat", activity.getLatitude());
+			activityInfo.put("lon", activity.getLongitude());
+			activityInfo.put("startDate", activity.getStartDate());
+			activityInfo.put("endDate", activity.getEndDate());
+			
+			resp.getWriter().write(activityInfo.toString());
+				
+			
+		}
+		catch (Exception e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 	}
 
 	private void handleRegister(HttpServletRequest req, HttpServletResponse resp)
@@ -614,6 +656,8 @@ public class ShopServlet extends HttpServlet
 					jsonObj.put("shopId", activity.getShopId());
 					jsonObj.put("title", activity.getTitle());
 					jsonObj.put("intro", activity.getIntro());
+					jsonObj.put("startDate", activity.getStartDate());
+					jsonObj.put("endDate", activity.getEndDate());
 					if (activity.getDistanceFromUser() != null)
 					{
 						jsonObj.put("distance", activity.getDistanceFromUser().doubleValue());
@@ -634,9 +678,7 @@ public class ShopServlet extends HttpServlet
 					resultJsonObj.put("total", resultCount);
 				}
 				resultJsonObj.put("activities", array);
-				// TODO
-				System.out.println(resultJsonObj.toString());
-				
+
 				resp.getWriter().write(resultJsonObj.toString());
 			}
 			catch (JSONException e)
