@@ -206,8 +206,7 @@ Main.init = function() {
 							"<u id='profileTab'>" + $.i18n.prop("tabs.profile", "资料") + "</u>" +
  						"</div>" +
  						"<div>" +
- 							"<div id='preferencesProfilePanel' class='ui-tab-content' style='display:none;'>" +
-	 							"123" +
+ 							"<div id='profile' class='ui-tab-content' style='display:none;'>" +
 	 						"</div>" +
  							"<div id='im' class='ui-tab-content ui-tab-active'>" +
  							"</div>" +
@@ -215,7 +214,8 @@ Main.init = function() {
 	 						"</div>" +
 	 						"<div id='map' class='ui-tab-content' style='display:none;'>" +
 	 						"</div>" +
-	 						"<div id='profile' class='ui-tab-content' style='display:none;'>" +
+	 						"<div id='preferencesProfilePanel' class='ui-tab-content' style='display:none;'>" +
+	 							"123" +
 	 						"</div>" +
 	 						
  						"</div>" +
@@ -245,6 +245,7 @@ Main.init = function() {
 			}
         },
         callBackShowEvent:function(index) {
+        	
         	if (index == 1) {
         		var chatPanel = $("#chatPanel");
         		var jidStr = chatPanel.children("div:visible").attr("chatcontactjid");
@@ -262,7 +263,7 @@ Main.init = function() {
 				}
 			}
 			// init favorite
-			else if (index == 4) {
+			else if (index == 0) {
 				if (!Profile.isFirst) {
 					Profile.queryFavoriteShop(1, Profile.pageCount, true, true);
 					Profile.isFirst = true;
@@ -1989,6 +1990,10 @@ Search.getShopDetail = function(shopId, changeTab) {
 		var shopDetail = $("#shopDetail");
 		shopDetail.siblings().hide();
 		shopDetail.show();
+		
+		if (changeTab) {
+			Main.tabs.triggleTab(2);
+		}
 		return;
 	}
 	
@@ -2354,6 +2359,10 @@ Search.getActivityDetail = function(activityId, changeTab, back2Shop) {
 		var activityDetail = $("#activityDetail");
 		activityDetail.siblings().hide();
 		activityDetail.show();
+		
+		if (changeTab) {
+			Main.tabs.triggleTab(2);
+		}
 		return;
 	}
 	
@@ -3173,7 +3182,11 @@ Preferences.init = function() {
 									"</tr>" +
 								"</table>" +
 							"</div>");
-						
+	preferencesItems.find("#preferencesProfile").click(function(){
+		var sys = $("#sys");
+		sys.click();
+	});
+
 	preferencesItems.find("#savePreferences").click(function(){
 		var iq = new Iq(IqType.SET);
 	
