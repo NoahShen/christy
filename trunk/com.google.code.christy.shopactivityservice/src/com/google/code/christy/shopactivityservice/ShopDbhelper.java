@@ -69,6 +69,8 @@ public class ShopDbhelper
 
 	private static final String ADDFAVORITESHOP_SQL = "INSERT INTO userfavoriteshop (username, shopId) VALUES (?, ?)";
 
+	private static final String CONTAINFAVORITESHOP_SQL = "SELECT * FROM userfavoriteshop WHERE username = ? AND shopId = ?";
+	
 	private LoggerServiceTracker loggerServiceTracker;
 	
 	public ShopDbhelper(LoggerServiceTracker loggerServiceTracker, ConnectionPool connectionPool)
@@ -713,9 +715,37 @@ public class ShopDbhelper
 			if (loggerServiceTracker.isDebugEnabled())
 			{
 				loggerServiceTracker.debug("SQL:" + preStat.toString());
+			}
+			
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+	}
+	
+	public boolean containFavoriteShop(String username, long shopId) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(CONTAINFAVORITESHOP_SQL);
+			preStat.setString(1, username);
+			preStat.setLong(2, shopId);
+			ResultSet rs = preStat.executeQuery();
+			
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
 				loggerServiceTracker.debug("Result:" + preStat.toString());
 			}
 			
+			return rs.next();
 		}
 		finally
 		{
