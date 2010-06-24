@@ -18,7 +18,10 @@ public class ActivityDbHelper
 	
 	private static final String GETACTIVITYBYLOCCOUNT_SQL = "SELECT COUNT(*) FROM (SELECT *, SQRT(POW(? - easting, 2) + POW(? - northing, 2)) AS distance FROM activity HAVING distance <= (? * 1000)) R";
 
-	private static final String GETACTIVITYETAIL_SQL = "SELECT * FROM activity WHERE activityId = ?";
+	private static final String GETACTIVITYDETAIL_SQL = "SELECT * FROM activity WHERE activityId = ?";
+	
+	private static final String GETACTIVITYBYSHOP_SQL = "SELECT activityId FROM activity WHERE shopId = ?";
+
 	
 	private ConnectionPool connectionPool;
 	
@@ -133,13 +136,13 @@ public class ActivityDbHelper
 	}
 
 
-	public Activity getActivityByLoc(long activityId) throws SQLException
+	public Activity getActivity(long activityId) throws SQLException
 	{
 		Connection connection = null;
 		try
 		{
 			connection = connectionPool.getConnection();
-			PreparedStatement preStat = connection.prepareStatement(GETACTIVITYETAIL_SQL);
+			PreparedStatement preStat = connection.prepareStatement(GETACTIVITYDETAIL_SQL);
 			preStat.setLong(1, activityId);
 			ResultSet activityResSet = preStat.executeQuery();
 			if (loggerServiceTracker.isDebugEnabled())
@@ -195,4 +198,38 @@ public class ActivityDbHelper
 		}
 		return null;
 	}
+	
+	public Long getActivityIdByShop(long shopId) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(GETACTIVITYBYSHOP_SQL);
+			preStat.setLong(1, shopId);
+			ResultSet activityIdResSet = preStat.executeQuery();
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("Result:" + activityIdResSet.toString());
+			}
+
+			if (activityIdResSet.next()) 
+			{
+				long activityId = activityIdResSet.getLong("activityId");
+				return activityId;
+			}
+			
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+		return null;
+	}
+	
 }

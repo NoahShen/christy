@@ -1711,12 +1711,18 @@ Search.init = function() {
 	
 	var activityDetailBar = $("<div id='activityDetailBar' style='width:100%;text-align:center;' class='search-bar'>" +
 								"<div style='position:absolute;left:0px;'>" +
-									"<a id='backToActivityResult' href='javascript:void(0);'>&lt;&lt;" + $.i18n.prop("search.back", "返回") + "</a>" +
+									"<a id='activityDetailBack' href='javascript:void(0);'>&lt;&lt;" + $.i18n.prop("search.back", "返回") + "</a>" +
 								"</div>" +
 								"<div id='activityName'></div>" +
 							"</div>");
 							
-	activityDetailBar.find("#backToActivityResult").click(function() {
+	activityDetailBar.find("#activityDetailBack").click(function() {
+		if (activityDetailBar.attr("back2shop")) {
+			shopDetail.siblings().hide();
+			shopDetail.show();
+			return;
+		}
+		
 		if ($("#activityResult").children().size() > 0) {
 			activityResultContainer.siblings().hide();
 			activityResultContainer.show();
@@ -1742,7 +1748,7 @@ Search.viewsShopComments = function(shopId, page, count, updatePage) {
 	$.ajax({
 		url: "/shop/",
 		dataType: "json",
-		cache: false,
+//		cache: false,
 		type: "get",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 		data: {
@@ -1893,7 +1899,7 @@ Search.searchShops = function(query, page, count, type, updatePage, getTotal, se
 	$.ajax({
 		url: "/shop/",
 		dataType: "json",
-		cache: false,
+//		cache: false,
 		type: "get",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 		data: data,
@@ -1976,10 +1982,20 @@ Search.createShopInfo = function(shopInfo) {
 };
 
 Search.getShopDetail = function(shopId, changeTab) {
+	
+	var shopDetailPanel = $("#shopDetailPanel");
+	var shop = shopDetailPanel.children("div:first");
+	if (shop.attr("shopid") == shopId) {
+		var shopDetail = $("#shopDetail");
+		shopDetail.siblings().hide();
+		shopDetail.show();
+		return;
+	}
+	
 	$.ajax({
 		url: "/shop/",
 		dataType: "json",
-		cache: false,
+//		cache: false,
 		type: "get",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 		data: {
@@ -2018,13 +2034,6 @@ Search.showShopDetail = function(shopDetail) {
 									"<td>" +
 										"<div>" +
 											"<span>" + baseInfo.name + "</span>" +
-											"<span>"+ baseInfo.hasCoupon + "</span>" +
-//											"<input id='adddFavorite' type='button' class='button-base' value='" +
-//												$.i18n.prop("search.shopDetail.adddFavorite", "收藏") + 
-//											"' />" +
-//											"<input id='showShopPos' type='button' class='button-base' value='" +
-//												$.i18n.prop("search.shopDetail.showShopPos", "地图") + 
-//											"' />" +
 										"</div>" +
 										"<div>" +
 											"<span>" + 
@@ -2073,9 +2082,18 @@ Search.showShopDetail = function(shopDetail) {
 					
 	shopDetailPanel.append(contactIntro);
 	
+	var activityButton = null;
+	if (baseInfo.hasActivity) {
+		activityButton = $("<input id='showActivity' type='button' class='button-base actionBar-button' value='" +
+								$.i18n.prop("search.shopDetail.showActivity", "优惠") + 
+							"' />");
+		activityButton.click(function(){
+			Search.getActivityDetail(baseInfo.activityId, false, true);
+		});
+	}
 	var actionBar = $("<div class='actionBar'>" +
 							"<input id='adddFavorite' type='button' class='button-base actionBar-button' value='" +
-								$.i18n.prop("search.shopDetail.adddFavorite", "收藏") + 
+								$.i18n.prop("search.shopDetail.addFavorite", "收藏") + 
 							"' />" +
 							"<input id='showShopPos' type='button' class='button-base actionBar-button' value='" +
 								$.i18n.prop("search.shopDetail.showShopPos", "地图") + 
@@ -2110,7 +2128,11 @@ Search.showShopDetail = function(shopDetail) {
 				if (returnValue.result == "success") {
 					opts.message = $.i18n.prop("search.shopDetail.addFavoriteSuccess", "收藏成功!");
 				} else {
-					opts.message = $.i18n.prop("search.shopDetail.addFavoriteFailed", "收藏失败!");
+					var message = $.i18n.prop("search.shopDetail.addFavoriteFailed", "收藏失败!");
+					if (returnValue.reason == "alreadyFavorite") {
+						message = $.i18n.prop("search.shopDetail.alreadyFavorite", "该商户已经被收藏！");
+					}
+					opts.message = message;
 					opts.css.backgroundColor = "red";
 				}
 				$.blockUI(opts);
@@ -2182,6 +2204,11 @@ Search.showShopDetail = function(shopDetail) {
 		
 	});
 	
+	if (activityButton != null) {
+		actionBar.append(activityButton);
+	}
+	
+	
 	shopDetailPanel.append(actionBar);
 	
 	$("#shopName").text(baseInfo.name);
@@ -2220,7 +2247,7 @@ Search.searchActivities = function(position, page, count, updatePage, getTotal, 
 	$.ajax({
 		url: "/shop/",
 		dataType: "json",
-		cache: false,
+//		cache: false,
 		type: "get",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 		data: data,
@@ -2312,11 +2339,28 @@ Search.createActivityInfo = function(activityInfo) {
 	return activityInfoPanel;
 };
 
-Search.getActivityDetail = function(activityId, changeTab) {
+Search.getActivityDetail = function(activityId, changeTab, back2Shop) {
+	
+	var activityDetailBar = $("#activityDetailBar");
+	if (back2Shop) {
+		activityDetailBar.attr("back2shop", "1");
+	} else {
+		activityDetailBar.removeAttr("back2shop");
+	}
+	
+	var activityDetailPanel = $("#activityDetailPanel");
+	var activity = activityDetailPanel.children("div:first");
+	if (activity.attr("activityid") == activityId) {
+		var activityDetail = $("#activityDetail");
+		activityDetail.siblings().hide();
+		activityDetail.show();
+		return;
+	}
+	
 	$.ajax({
 		url: "/shop/",
 		dataType: "json",
-		cache: false,
+//		cache: false,
 		type: "get",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 		data: {
@@ -2325,7 +2369,7 @@ Search.getActivityDetail = function(activityId, changeTab) {
 		},
 		success: function(activityDetail){
 			Search.currentActivityDetail = activityDetail;
-			Search.showActivityDetail(activityDetail);
+			Search.showActivityDetail(activityDetail, back2Shop);
 			if (changeTab) {
 				Main.tabs.triggleTab(2);
 			}
@@ -2355,7 +2399,7 @@ Search.showActivityDetail = function(activityDetail) {
 		endDate = new Date(activityDetail.endDate).format("yyyy-MM-dd");
 	}
 	
-	var activityDetailHtml = $("<div activityId='" + activityDetail.activityId + "' shopId='" + activityDetail.shopId + "'>" +
+	var activityDetailHtml = $("<div activityid='" + activityDetail.activityId + "' shopid='" + activityDetail.shopId + "'>" +
 									"<table>" +
 										"<tr>" +
 											"<td>" +
@@ -2392,9 +2436,21 @@ Search.showActivityDetail = function(activityDetail) {
 	
 	activityDetailPanel.append(activityDetailHtml);
 
-
+	var actionBar = $("<div class='actionBar'>" +
+							"<input id='activityShowShop' type='button' class='button-base actionBar-button' value='" +
+								$.i18n.prop("search.activityDetail.showShop", "商户") + 
+							"' />" +
+						"</div>");
+	actionBar.find("#activityShowShop").click(function(){
+		var shopId = activityDetailHtml.attr("shopid");
+		Search.getShopDetail(shopId, false);
+	});
+	
+	activityDetailPanel.append(actionBar);
+	
 	$("#activityName").text(activityDetail.title);
-
+	
+	activityDetailPanel.append(actionBar);
 	
 	var activityDetail = $("#activityDetail");
 	activityDetail.siblings().hide();
@@ -2841,7 +2897,7 @@ Profile.queryMyComments = function(pageIndex, max, updatePage, getTotal) {
 	$.ajax({
 		url: "/shop/",
 		dataType: "json",
-		cache: false,
+//		cache: false,
 		type: "post",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 		data: data,
@@ -2921,7 +2977,7 @@ Profile.queryFavoriteShop = function(pageIndex, count, updatePage, getTotal) {
 	$.ajax({
 		url: "/shop/",
 		dataType: "json",
-		cache: false,
+//		cache: false,
 		type: "post",
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 		data: data,

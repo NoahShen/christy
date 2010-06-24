@@ -150,7 +150,7 @@ public class ShopServlet extends HttpServlet
 			Activity activity = (Activity) cache.get(activityId);
 			if (activity == null)
 			{
-				activity = activityDbHelper.getActivityByLoc(Long.parseLong(activityId));
+				activity = activityDbHelper.getActivity(Long.parseLong(activityId));
 				cache.put(activityId, activity);
 			}
 			
@@ -211,20 +211,24 @@ public class ShopServlet extends HttpServlet
 			jsonObj.put("result", "success");
 			resp.getWriter().write(jsonObj.toString());
 		}
-		catch (JSONException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		catch (Exception e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			
+			
+			try
+			{
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("result", "failed");
+				resp.getWriter().write(jsonObj.toString());
+			}
+			catch (Exception e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
 		}
 	}
 
@@ -239,10 +243,21 @@ public class ShopServlet extends HttpServlet
 			return;
 		}
 		String username = req.getParameter("username").toLowerCase();
-		String shopId = req.getParameter("shopid");
+		String shopIdStr = req.getParameter("shopid");
 		try
 		{
-			shopDbhelper.addFavoriteShop(username, Long.parseLong(shopId));
+			long shopId = Long.parseLong(shopIdStr);
+			if (shopDbhelper.containFavoriteShop(username, shopId))
+			{
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("result", "failed");
+				jsonObj.put("reason", "alreadyFavorite");
+				resp.getWriter().write(jsonObj.toString());
+				return;
+			}
+			
+			shopDbhelper.addFavoriteShop(username, shopId);
+			
 			JSONObject jsonObj = new JSONObject();
 			jsonObj.put("result", "success");
 			resp.getWriter().write(jsonObj.toString());
@@ -251,6 +266,20 @@ public class ShopServlet extends HttpServlet
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			
+			
+			try
+			{
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("result", "failed");
+				resp.getWriter().write(jsonObj.toString());
+			}
+			catch (JSONException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
 		}
 	}
 
@@ -540,24 +569,31 @@ public class ShopServlet extends HttpServlet
 
 	private void handleGetShopDetail(HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
-		String shopId = req.getParameter("shopid");
-
+		String shopIdStr = req.getParameter("shopid");
+		long shopId = Long.parseLong(shopIdStr);
 		try
 		{
 			Cache cache = cacheServiceTracker.getCache("shopDetailCache");
-			Shop shop = (Shop) cache.get(shopId);
+			Shop shop = (Shop) cache.get(shopIdStr);
 			if (shop == null)
 			{
-				shop = shopDbhelper.getShopDetail(Long.parseLong(shopId));
-				cache.put(shopId, shop);
+				shop = shopDbhelper.getShopDetail(shopId);
+				cache.put(shopIdStr, shop);
 			}
+			
+			Long activityId = activityDbHelper.getActivityIdByShop(shopId);
 			JSONObject jsonObj = new JSONObject();
 			
 			JSONObject basicInfo = new JSONObject();
 			basicInfo.put("id", shopId);
 			basicInfo.put("name", shop.getTitle());
 			basicInfo.put("imgSrc", shop.getShopImg());
-			basicInfo.put("hasCoupon", true);
+			if (activityId != null)
+			{
+				basicInfo.put("hasActivity", true);
+				basicInfo.put("activityId", activityId);
+			}
+			
 			basicInfo.put("addr", shop.getDistrict() + " " + shop.getStreet());
 			basicInfo.put("phone", shop.getTel());
 			basicInfo.put("lat", shop.getLatitude());
