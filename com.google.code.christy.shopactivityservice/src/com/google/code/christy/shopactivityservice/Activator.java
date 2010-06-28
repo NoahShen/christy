@@ -11,6 +11,7 @@ import org.osgi.framework.ServiceRegistration;
 
 import com.google.code.christy.lib.ConnectionPool;
 import com.google.code.christy.log.LoggerServiceTracker;
+import com.google.code.christy.shopactivityservice.subscription.EmailSubscriptionDbHelper;
 
 public class Activator implements BundleActivator
 {
@@ -50,11 +51,19 @@ public class Activator implements BundleActivator
 		ShopDbhelper shopDbhelper = new ShopDbhelper(loggerServiceTracker, connPool);
 		UserDbhelper userDbhelper = new UserDbhelper(loggerServiceTracker, connPool);
 		ActivityDbHelper activityDbHelper = new ActivityDbHelper(loggerServiceTracker, connPool);
+		EmailSubscriptionDbHelper emailSubscriptionDbHelper = new EmailSubscriptionDbHelper(loggerServiceTracker, connPool);
 		
 		cacheServiceTracker = new CacheServiceTracker(context);
 		cacheServiceTracker.open();
 		
-		ShopServlet shopServlet = new ShopServlet(c2SManagerTracker, loggerServiceTracker, shopDbhelper, userDbhelper, activityDbHelper, cacheServiceTracker);
+		ShopServlet shopServlet = new ShopServlet(c2SManagerTracker, 
+							loggerServiceTracker, 
+							shopDbhelper, 
+							userDbhelper, 
+							activityDbHelper, 
+							emailSubscriptionDbHelper, 
+							cacheServiceTracker);
+		
 		Hashtable<String, String> properties = new Hashtable<String, String>();
 		properties.put("contextPath", "/shop");
 		properties.put("pathSpec", "/");

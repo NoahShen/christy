@@ -215,9 +215,7 @@ Main.init = function() {
 	 						"<div id='map' class='ui-tab-content' style='display:none;'>" +
 	 						"</div>" +
 	 						"<div id='subscription' class='ui-tab-content' style='display:none;'>" +
-	 							"subscription" +
 	 						"</div>" +
-	 						
  						"</div>" +
  					"</div>" +
  				"</div>");
@@ -231,6 +229,7 @@ Main.init = function() {
     Map.init();
     Profile.init();
     Preferences.init();
+    Subscription.init();
     
 	Main.tabs = new $.fn.tab({
         tabList:"#tabs .ui-tab-container .clearfix u, #preferencesProfile",
@@ -264,9 +263,17 @@ Main.init = function() {
 			}
 			// init favorite
 			else if (index == 0) {
-				if (!Profile.isFirst) {
+				if (!Profile.shown) {
 					Profile.queryFavoriteShop(1, Profile.pageCount, true, true);
-					Profile.isFirst = true;
+					Profile.shown = true;
+				}
+			}
+			
+			// init favorite
+			else if (index == 4) {
+				if (!Subscription.shown) {
+					Subscription.checkEmailSubscription();
+					Subscription.shown = true;
 				}
 			}
         }
@@ -2097,7 +2104,7 @@ Search.showShopDetail = function(shopDetail) {
 		});
 	}
 	var actionBar = $("<div class='actionBar'>" +
-							"<input id='adddFavorite' type='button' class='button-base actionBar-button' value='" +
+							"<input id='addFavorite' type='button' class='button-base actionBar-button' value='" +
 								$.i18n.prop("search.shopDetail.addFavorite", "收藏") + 
 							"' />" +
 							"<input id='showShopPos' type='button' class='button-base actionBar-button' value='" +
@@ -2106,7 +2113,7 @@ Search.showShopDetail = function(shopDetail) {
 						"</div>");
 	
 	
-	actionBar.find("#adddFavorite").click(function() {
+	actionBar.find("#addFavorite").click(function() {
 		var connectionMgr = XmppConnectionMgr.getInstance();
 		var conn = connectionMgr.getAllConnections()[0];
 		if (!conn) {
@@ -3148,15 +3155,17 @@ Preferences.init = function() {
 								"<table>" +
 									"<tr>" +
 										"<td>" +
-											"<input id='shareloc' name='shareloc' type='checkbox' checked='checked'/>" +
-											"<label id='shareloc_label' for='shareloc'>" +
-												$.i18n.prop("preferences.shareLoc", "共享位置信息") +
-											"</label>" +
+											"<div style='text-align:center;'>" +
+												"<input id='shareloc' name='shareloc' type='checkbox' checked='checked'/>" +
+												"<label id='shareloc_label' for='shareloc'>" +
+													$.i18n.prop("preferences.shareLoc", "共享位置信息") +
+												"</label>" +
+											"</div>" + 
 										"</td>" +
 									"</tr>" +
 									"<tr>" +
 										"<td>" +
-											"<div>" +
+											"<div style='text-align:center;'>" +
 												"<input id='showContactPos' name='showContactPos' type='checkbox' checked='checked'/>" +
 												"<label id='showContactPos_label' for='showContactPos'>" +
 													$.i18n.prop("contact.showContactPos", "显示联系人位置") +
@@ -3285,4 +3294,158 @@ Preferences.updatePreferencesUI = function() {
 	var showContactPosCheckbox = $("#showContactPos");
 	showContactPosCheckbox.attr("checked", showContactPosValue);
 	
+};
+
+Subscription = {};
+Subscription.init = function() {
+	var subscription = $("#subscription");
+	
+	var subscriptionTabs = $("<div id='subscriptionTabs'>" +
+			 					"<div class='subscription-ui-tab-container'>" +
+			 						"<div class='clearfix'>" +
+										"<div class='subscription-ui-tab-parent-active'>" +
+											"<span id='emailSubscription' class='subscription-tab subscription-ui-tab-active'>" + 
+												$.i18n.prop("subscription.tabs.emailSubscription", "Email订阅") + 
+											"</span>" +
+										"</div>" +
+										"<div>" +
+											"<span id='subscriptionItems' class='subscription-tab'>" + 
+												$.i18n.prop("subscription.tabs.shopsSubscription", "商户订阅") + 
+											"</span>" +
+										"</div>" +
+									"</div>" +
+									"<div>" +
+										"<div id='emailSubscriptionPanel' class='subscription-ui-tab-content subscription-ui-tab-active'>" +
+										"</div>" +
+				 						"<div id='subscriptionItemsPanel' class='subscription-ui-tab-content' style='display:none;'>" +
+				 						"</div>" +
+									"</div>" +
+			 					"</div>" +
+			 				"</div>");
+
+	subscription.append(subscriptionTabs);
+	
+	Subscription.tabs = new $.fn.tab({
+        tabList: "#subscriptionTabs .subscription-ui-tab-container .clearfix .subscription-tab",
+        contentList: "#subscriptionTabs .subscription-ui-tab-container .subscription-ui-tab-content",
+        tabActiveClass: "subscription-ui-tab-active",
+        tabDisableClass: "subscription-ui-tab-disable",
+        tabParentActiveClass: "subscription-ui-tab-parent-active",
+		callBackHideEvent: function(index) {
+        	
+        },
+        callBackShowEvent: function(index) {
+        	
+        }
+    });
+    Subscription.tabs.triggleTab(0);
+};
+
+Subscription.checkEmailSubscription = function() {
+	var connectionMgr = XmppConnectionMgr.getInstance();
+	var streamId = connectionMgr.getStreamId();
+	var conn = connectionMgr.getAllConnections()[0];
+	var username = conn.getJid().getNode();
+	
+	var data = {
+		action: "getemailsubscription",
+		username: username,
+		streamid: streamId
+	};
+	
+	$.ajax({
+		url: "/shop/",
+		dataType: "json",
+//		cache: false,
+		type: "post",
+		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+		data: data,
+		success: function(queryResult){
+			var emailSubscriptionPanel = $("#emailSubscriptionPanel");
+			
+			var emailSubsForm = emailSubscriptionPanel.children();
+			if (emailSubsForm.size() == 0) {
+				emailSubsForm = $("<div id='emailSubsForm' style='text-align:center;margin-top:10px;'>" +
+										"<div>" +
+											$.i18n.prop("subscription.email.receiveNewActivity", "订阅最新的优惠信息") + 
+										"</div>" +
+										"<br/>" +
+										"<div>" +
+											$.i18n.prop("subscription.email.receiveFrom", "订阅到") + 
+											"<span id='subsEmail'></span>" +
+										"</div>" + 
+										"<br/>" + 
+										"<input id='subOrUnsubEmail' type='button' class='button-base' value='" + $.i18n.prop("subscription.email.subscribe", "订阅") + "'/>" + 
+									"</div>");
+										
+				emailSubscriptionPanel.append(emailSubsForm);
+			}
+			
+			$("#subsEmail").text(queryResult.email);
+			var subOrUnsubEmail = $("#subOrUnsubEmail");
+			var action = "";
+			var messageSuccess = "";
+			var messageFailed = "";
+			if (queryResult.subscribed) {
+				action = "unsubscribeemail";
+				
+				messageSuccess = $.i18n.prop("subscription.email.unsubscribeSuccess", "退订成功!");
+				messageFailed = $.i18n.prop("subscription.email.unsubscribeFailed", "退订失败!");
+				
+				subOrUnsubEmail.val($.i18n.prop("subscription.unsubscribe", "取消订阅"));
+			} else {
+				action = "subscribeemail";
+
+				messageSuccess = $.i18n.prop("subscription.email.subscribeSuccess", "订阅成功!");
+				messageFailed = $.i18n.prop("subscription.email.subscribeFailed", "订阅失败!");
+				
+				subOrUnsubEmail.val($.i18n.prop("subscription.subscribe", "订阅"));
+			}
+			subOrUnsubEmail.unbind("click");
+			subOrUnsubEmail.click(function(){
+				$.ajax({
+					url: "/shop/",
+					dataType: "json",
+					cache: false,
+					type: "post",
+					contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+					data: {
+						action: action,
+						username: username,
+						streamid: streamId
+					},
+					success: function(returnValue) {
+						var opts = MainUtils.cloneObj(Main.notifyOpts);
+						if (returnValue.result == "success") {
+							opts.message = messageSuccess;
+							Subscription.checkEmailSubscription();
+						} else {
+							var message = messageFailed;
+							if (returnValue.reason == "alreadyFavorite") {
+								message = $.i18n.prop("search.shopDetail.alreadyFavorite", "该商户已经被收藏！");
+							}
+							opts.message = message;
+							opts.css.backgroundColor = "red";
+						}
+						$.blockUI(opts);
+					},
+					error: function(xmlHttpRequest, textStatus, errorThrown) {
+						var opts = MainUtils.cloneObj(Main.notifyOpts);
+						opts.message = messageFailed;
+						opts.css.backgroundColor = "red";
+						$.blockUI(opts);
+					},
+					complete: function(xmlHttpRequest, textStatus) {
+						
+					}
+				});
+			});
+		},
+		error: function(xmlHttpRequest, textStatus, errorThrown) {
+			
+		},
+		complete: function(xmlHttpRequest, textStatus) {
+			
+		}
+	});
 };

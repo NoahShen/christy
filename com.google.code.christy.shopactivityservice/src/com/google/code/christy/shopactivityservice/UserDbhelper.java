@@ -16,6 +16,8 @@ public class UserDbhelper
 	
 	private static final String GETUSERBYEMAIL_SQL = "SELECT username FROM user WHERE email = ?";
 	
+	private static final String GETEMAILBYNAME_SQL = "SELECT email FROM user WHERE username = ?";
+	
 	private ConnectionPool connectionPool;
 	
 	private LoggerServiceTracker loggerServiceTracker;
@@ -55,6 +57,38 @@ public class UserDbhelper
 			}
 			
 		}
+	}
+	
+	public String getEmailByUsername(String username) throws Exception
+	{
+		Connection connection = null;
+		try
+		{
+			connection = connectionPool.getConnection();
+			PreparedStatement preStat = connection.prepareStatement(GETEMAILBYNAME_SQL);
+			preStat.setString(1, username);
+			ResultSet emailRs = preStat.executeQuery();
+			
+			if (loggerServiceTracker.isDebugEnabled())
+			{
+				loggerServiceTracker.debug("SQL:" + preStat.toString());
+				loggerServiceTracker.debug("ResultSet:" + emailRs.toString());
+			}
+			
+			if (emailRs.next())
+			{
+				return emailRs.getString("email");
+			}
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				connectionPool.returnConnection(connection);
+			}
+			
+		}
+		return null;
 	}
 
 
