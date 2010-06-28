@@ -29,6 +29,8 @@ public class PubSubItemSender
 
 	private SendThread sendThread;
 	
+	private long oldLastTime;
+	
 	public PubSubItemSender(PubSubManagerImpl pubSubManager, 
 				PubSubItemDbHelperTracker pubSubItemDbHelperTracker,
 				LastPublishTimeDbHelperTracker lastPublishTimeDbHelperTracker,
@@ -70,6 +72,12 @@ public class PubSubItemSender
 		LastPublishTime lastPublishTime = lastPublishTimeDbHelper.getLastPublishTime();
 		long lastTime = lastPublishTime.getTime();
 		
+		if (oldLastTime == lastTime)
+		{
+			return;
+		}
+		
+		oldLastTime = lastTime;
 		List<PubSubItem> pubSubItems = pubSubItemDbHelper.getPubSubItemByTime(lastTime);
 		if (pubSubItems.isEmpty())
 		{
