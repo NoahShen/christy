@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50022
 File Encoding         : 65001
 
-Date: 2010-06-24 17:24:18
+Date: 2010-06-28 17:17:19
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -42,6 +42,21 @@ CREATE TABLE `activity` (
 -- Records of activity
 -- ----------------------------
 INSERT INTO `activity` VALUES ('1', '0', '折扣', '折扣intro', '折扣', '/resource/cuxiao.jpg', '121.443297', '31.221891', '51', 'R', '351724', '3455237', '2010-05-23 10:48:45', '2010-07-23 10:48:39', '2010-06-22 21:17:20', '2010-06-23 15:54:47');
+
+-- ----------------------------
+-- Table structure for `emailsubscription`
+-- ----------------------------
+DROP TABLE IF EXISTS `emailsubscription`;
+CREATE TABLE `emailsubscription` (
+  `username` char(50) NOT NULL,
+  `receiveNewActivity` tinyint(4) NOT NULL,
+  PRIMARY KEY  (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of emailsubscription
+-- ----------------------------
+INSERT INTO `emailsubscription` VALUES ('noah', '1');
 
 -- ----------------------------
 -- Table structure for `enterpriseuser`
@@ -347,6 +362,7 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `username` char(50) NOT NULL,
   `password` char(50) NOT NULL,
+  `email` char(50) NOT NULL,
   `creationDate` datetime NOT NULL,
   `modificationDate` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`username`)
@@ -355,8 +371,8 @@ CREATE TABLE `user` (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES ('Noah', '123', '2010-04-10 14:29:55', '2010-04-10 14:30:27');
-INSERT INTO `user` VALUES ('Noah2', '123', '2010-04-12 20:30:42', '2010-04-12 20:30:51');
+INSERT INTO `user` VALUES ('Noah', '123', 'noah@example.com', '2010-04-10 14:29:55', '2010-06-28 15:31:52');
+INSERT INTO `user` VALUES ('Noah2', '123', 'noah2@example.com', '2010-04-12 20:30:42', '2010-06-28 15:32:05');
 
 -- ----------------------------
 -- Table structure for `userfavoriteshop`

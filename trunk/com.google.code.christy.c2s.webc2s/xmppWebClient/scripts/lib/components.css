@@ -116,6 +116,40 @@
 	background: #ff0000;
 }
 
+.subscription-ui-tab-container {
+	width: 100%;
+}
+
+.subscription-ui-tab-container .clearfix {
+	background:url("/resource/subTab.gif") repeat-x scroll 0 0 transparent;
+}
+
+
+.subscription-ui-tab-container .clearfix > div {
+	float: left;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	width: 27%;
+	line-height: 30px;
+}
+
+
+.subscription-ui-tab-container .clearfix > div .subscription-tab {
+	width: 100%;
+}
+
+.subscription-ui-tab-container .clearfix > div .subscription-ui-tab-active {
+}
+
+.subscription-ui-tab-container .clearfix .subscription-ui-tab-parent-active {
+	background-image:url("/resource/subTab_active.gif");
+}
+
+
+.subscription-ui-tab-container .clearfix > div .subscription-ui-tab-disable {
+	background: #ff0000;
+}
 /** =========end of Tab **/
 
 

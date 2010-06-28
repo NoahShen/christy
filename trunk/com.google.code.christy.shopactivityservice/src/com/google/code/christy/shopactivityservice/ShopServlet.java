@@ -33,6 +33,8 @@ import org.json.JSONObject;
 
 import com.google.code.christy.cache.Cache;
 import com.google.code.christy.log.LoggerServiceTracker;
+import com.google.code.christy.shopactivityservice.subscription.EmailSubscription;
+import com.google.code.christy.shopactivityservice.subscription.EmailSubscriptionDbHelper;
 
 public class ShopServlet extends HttpServlet
 {
@@ -56,12 +58,15 @@ public class ShopServlet extends HttpServlet
 	private Seacher seacher;
 	
 	private CacheServiceTracker cacheServiceTracker;
+
+	private EmailSubscriptionDbHelper emailSubscriptionDbHelper;
 	
 	public ShopServlet(C2SManagerTracker c2sManagerTracker, 
 				LoggerServiceTracker loggerServiceTracker, 
 				ShopDbhelper shopLocDbhelper,
 				UserDbhelper userDbhelper,
 				ActivityDbHelper activityDbHelper,
+				EmailSubscriptionDbHelper emailSubscriptionDbHelper, 
 				CacheServiceTracker cacheServiceTracker)
 	{
 		super();
@@ -70,6 +75,7 @@ public class ShopServlet extends HttpServlet
 		this.shopDbhelper = shopLocDbhelper;
 		this.activityDbHelper = activityDbHelper;
 		this.userDbhelper = userDbhelper;
+		this.emailSubscriptionDbHelper = emailSubscriptionDbHelper;
 		this.cacheServiceTracker = cacheServiceTracker;
 		
 		this.seacher = new Seacher();
@@ -135,11 +141,138 @@ public class ShopServlet extends HttpServlet
 		}
 		else if ("getactivitydetail".equals(action))
 		{
-			handlegetActivityDetail(req, resp);
+			handleGetActivityDetail(req, resp);
+		}
+		else if ("getemailsubscription".equals(action))
+		{
+			handleGetEmailSubscription(req, resp);
+		}
+		else if ("subscribeemail".equals(action))
+		{
+			handleSubscribeEmail(req, resp);
+		}
+		else if ("unsubscribeemail".equals(action))
+		{
+			handleUnsubscribeEmail(req, resp);
 		}
 	}
 
-	private void handlegetActivityDetail(HttpServletRequest req, HttpServletResponse resp)
+	private void handleUnsubscribeEmail(HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		String streamId = req.getParameter("streamid");
+		
+		if (!c2sManagerTracker.containStreamId(streamId))
+		{
+			resp.setContentType("text/html;charset=UTF-8");
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND, "invalided streamId");
+			return;
+		}
+		String username = req.getParameter("username").toLowerCase();
+		
+		try
+		{
+			emailSubscriptionDbHelper.unsubscribeEmail(username);
+			
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("result", "success");
+			resp.getWriter().write(jsonObj.toString());
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+			JSONObject jsonObj = new JSONObject();
+			try
+			{
+				jsonObj.put("result", "failed");
+			}
+			catch (JSONException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			resp.getWriter().write(jsonObj.toString());
+		}
+	}
+
+	private void handleSubscribeEmail(HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		String streamId = req.getParameter("streamid");
+		
+		if (!c2sManagerTracker.containStreamId(streamId))
+		{
+			resp.setContentType("text/html;charset=UTF-8");
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND, "invalided streamId");
+			return;
+		}
+		String username = req.getParameter("username").toLowerCase();
+		
+		try
+		{
+			emailSubscriptionDbHelper.subscribeEmail(username);
+			
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("result", "success");
+			resp.getWriter().write(jsonObj.toString());
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+			JSONObject jsonObj = new JSONObject();
+			try
+			{
+				jsonObj.put("result", "failed");
+			}
+			catch (JSONException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			resp.getWriter().write(jsonObj.toString());
+		}
+	}
+
+	private void handleGetEmailSubscription(HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
+		String streamId = req.getParameter("streamid");
+		
+		if (!c2sManagerTracker.containStreamId(streamId))
+		{
+			resp.setContentType("text/html;charset=UTF-8");
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND, "invalided streamId");
+			return;
+		}
+		String username = req.getParameter("username").toLowerCase();
+		
+		try
+		{
+			String email = userDbhelper.getEmailByUsername(username);
+			EmailSubscription emailSubs = emailSubscriptionDbHelper.getEmailSubscription(username);
+			
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("email", email);
+			if (emailSubs != null)
+			{
+				jsonObj.put("subscribed", "true");
+				jsonObj.put("receiveNewActivity", emailSubs.isReceiveNewActivity());
+				
+			}
+			
+			
+			
+			resp.getWriter().write(jsonObj.toString());
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void handleGetActivityDetail(HttpServletRequest req, HttpServletResponse resp)
 	{
 
 		String activityId = req.getParameter("activityid");
