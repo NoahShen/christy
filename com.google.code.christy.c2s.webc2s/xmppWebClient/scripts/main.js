@@ -203,7 +203,7 @@ Main.init = function() {
  							"<u id='contactTab' class='ui-tab-active'>" + $.i18n.prop("tabs.contact", "联系人") + "<span id='unreadCount'><span></u>" +
 							"<u id='searchTab'>" + $.i18n.prop("tabs.search", "搜索") + "</u>" +
 							"<u id='mapTab'>" + $.i18n.prop("tabs.map", "地图") + "</u>" +
-							"<u id='profileTab'>" + $.i18n.prop("tabs.profile", "资料") + "</u>" +
+							"<u id='subTab'>" + $.i18n.prop("tabs.sub", "订阅") + "</u>" +
  						"</div>" +
  						"<div>" +
  							"<div id='profile' class='ui-tab-content' style='display:none;'>" +
@@ -214,8 +214,8 @@ Main.init = function() {
 	 						"</div>" +
 	 						"<div id='map' class='ui-tab-content' style='display:none;'>" +
 	 						"</div>" +
-	 						"<div id='preferencesProfilePanel' class='ui-tab-content' style='display:none;'>" +
-	 							"123" +
+	 						"<div id='subscription' class='ui-tab-content' style='display:none;'>" +
+	 							"subscription" +
 	 						"</div>" +
 	 						
  						"</div>" +
