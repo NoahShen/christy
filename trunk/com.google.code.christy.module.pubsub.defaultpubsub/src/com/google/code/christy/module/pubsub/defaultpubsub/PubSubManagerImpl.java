@@ -32,7 +32,9 @@ import com.google.code.christy.dbhelper.PubSubSubscription;
 import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelperTracker;
 import com.google.code.christy.log.LoggerServiceTracker;
 import com.google.code.christy.mina.XmppCodecFactory;
+import com.google.code.christy.module.pubsub.AccessModelTracker;
 import com.google.code.christy.module.pubsub.PubSubManager;
+import com.google.code.christy.module.pubsub.PublisherModelTracker;
 import com.google.code.christy.routemessage.RouteMessage;
 import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 import com.google.code.christy.util.AbstractPropertied;
@@ -101,7 +103,8 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				PubSubSubscriptionDbHelperTracker pubSubSubscriptionDbHelperTracker, 
 				PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker, 
 				PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker, 
-				AccessModelTracker accessModelTracker, PublisherModelTracker publisherModelTracker,
+				AccessModelTracker accessModelTracker, 
+				PublisherModelTracker publisherModelTracker,
 				LastPublishTimeDbHelperTracker lastPublishTimeDbHelperTracker)
 	{
 		super();
@@ -508,8 +511,7 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 				return iqResponse;
 			}
 			
-			// TODO check case sentity
-			String jid = from.toPrepedBareJID();
+			String jid = from.toBareJID();
 			
 			PubSubPublish pubSubPublish = (PubSubPublish) stanza;
 			String node = pubSubPublish.getNode();
@@ -600,7 +602,6 @@ public class PubSubManagerImpl extends AbstractPropertied implements PubSubManag
 			
 			try
 			{
-				// TODO check case sentity
 				Collection<PubSubItem> items = pubSubEngine.getPubSubItems(from.toBareJID(), nodeId, subId, itemId, (maxItems == 0 ? PubSubManagerImpl.this.getMaxItems() : maxItems));
 				
 				PubSubExtension pubSubExtensionResponse = new PubSubExtension(pubSubExtension.getNamespace());

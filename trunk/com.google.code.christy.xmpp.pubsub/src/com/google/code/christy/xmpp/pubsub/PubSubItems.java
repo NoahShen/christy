@@ -146,6 +146,11 @@ public class PubSubItems implements XmlStanza
 		
 		private String payload;
 		
+		public Item()
+		{
+			super();
+		}
+
 		/**
 		 * @param id
 		 */

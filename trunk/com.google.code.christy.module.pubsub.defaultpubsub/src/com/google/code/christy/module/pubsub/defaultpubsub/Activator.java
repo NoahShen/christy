@@ -12,9 +12,9 @@ import com.google.code.christy.dbhelper.PubSubNodeConfigDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubNodeDbHelperTracker;
 import com.google.code.christy.dbhelper.PubSubSubscriptionDbHelperTracker;
 import com.google.code.christy.log.LoggerServiceTracker;
-import com.google.code.christy.module.pubsub.AccessModel;
+import com.google.code.christy.module.pubsub.AccessModelTracker;
 import com.google.code.christy.module.pubsub.PubSubManager;
-import com.google.code.christy.module.pubsub.PublisherModel;
+import com.google.code.christy.module.pubsub.PublisherModelTracker;
 import com.google.code.christy.routemessageparser.RouteMessageParserServiceTracker;
 
 public class Activator implements BundleActivator
@@ -29,8 +29,6 @@ public class Activator implements BundleActivator
 	private PubSubAffiliationDbHelperTracker pubSubAffiliationDbHelperTracker;
 	private PubSubNodeConfigDbHelperTracker pubSubNodeConfigDbHelperTracker;
 	private AccessModelTracker accessModelTracker;
-	private ServiceRegistration openAccessModelRegistration;
-	private ServiceRegistration openPublisherModelRegistration;
 	private PublisherModelTracker publisherModelTracker;
 	private LastPublishTimeDbHelperTracker lastPublishTimeDbHelperTracker;
 
@@ -65,14 +63,10 @@ public class Activator implements BundleActivator
 		accessModelTracker = new AccessModelTracker(context);
 		accessModelTracker.open();
 		
-		OpenAccessModel openAccessModel = new OpenAccessModel();
-		openAccessModelRegistration = context.registerService(AccessModel.class.getName(), openAccessModel, null);
-		
 		publisherModelTracker = new PublisherModelTracker(context);
 		publisherModelTracker.open();
 		
-		OpenPublisherModel openPublisherModel = new OpenPublisherModel();
-		openPublisherModelRegistration = context.registerService(PublisherModel.class.getName(), openPublisherModel, null);
+		
 		
 		lastPublishTimeDbHelperTracker = new LastPublishTimeDbHelperTracker(context);
 		lastPublishTimeDbHelperTracker.open();
@@ -96,7 +90,7 @@ public class Activator implements BundleActivator
 		String domain = config.getString("domain", "example.com");
 		pubSubManager.setDomain(domain);
 
-		String subDomain = config.getString("sub-domain");
+		String subDomain = config.getString("sub-domain", "pubsub.example.com");
 		pubSubManager.setSubDomain(subDomain);
 		
 		String serviceId = config.getString("service-id");
@@ -177,11 +171,6 @@ public class Activator implements BundleActivator
 			accessModelTracker = null;
 		}
 		
-		if (openAccessModelRegistration != null)
-		{
-			openAccessModelRegistration.unregister();
-			openAccessModelRegistration = null;
-		}
 		
 		if (publisherModelTracker != null)
 		{
@@ -189,11 +178,6 @@ public class Activator implements BundleActivator
 			publisherModelTracker = null;
 		}
 		
-		if (openPublisherModelRegistration != null)
-		{
-			openPublisherModelRegistration.unregister();
-			openPublisherModelRegistration = null;
-		}
 		
 		if (lastPublishTimeDbHelperTracker != null)
 		{
