@@ -1,4 +1,4 @@
-package com.google.code.christy.module.pubsub.impl;
+package com.google.code.christy.module.pubsub.defaultpubsub;
 
 public class NodeNotExistException extends Exception
 {

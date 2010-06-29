@@ -1,4 +1,4 @@
-package com.google.code.christy.module.pubsub.impl;
+package com.google.code.christy.module.pubsub;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;

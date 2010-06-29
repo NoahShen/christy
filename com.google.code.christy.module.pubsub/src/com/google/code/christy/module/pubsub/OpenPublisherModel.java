@@ -1,4 +1,4 @@
-package com.google.code.christy.module.pubsub.impl;
+package com.google.code.christy.module.pubsub;
 
 import com.google.code.christy.dbhelper.PubSubNode;
 import com.google.code.christy.module.pubsub.PublisherModel;

@@ -1,4 +1,4 @@
-package com.google.code.christy.module.pubsub.impl;
+package com.google.code.christy.module.pubsub.defaultpubsub;
 
 import java.util.Collection;
 import java.util.List;
