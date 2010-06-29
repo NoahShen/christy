@@ -5899,13 +5899,7 @@ parser.addExtensionParser(new GeoLocExtensionParser());
 
 
 
-
-
-
-
-
-
-// start of Preferences
+// start of PreferencesExtension
 
 PreferencesExtension = PacketExtension.extend({
 	init: function() {
@@ -5953,10 +5947,10 @@ PreferencesExtension = PacketExtension.extend({
 PreferencesExtension.ELEMENTNAME = "preference";
 PreferencesExtension.NAMESPACE = "christy:user:preference";
 
-// end of GeoLocExtension
+// end of PreferencesExtension
 
 
-// start of GeoLocExtensionParser
+// start of PreferencesExtensionParser
 
 PreferencesExtensionParser = XmppParser.ExtensionParser.extend({
 	init: function() {
@@ -5992,7 +5986,142 @@ PreferencesExtensionParser = XmppParser.ExtensionParser.extend({
 PreferencesExtensionParser.ELEMENTNAME = "preference";
 PreferencesExtensionParser.NAMESPACE = "christy:user:preference";
 
-// end of Preferences
+// end of PreferencesExtensionParser
 
 var parser = XmppParser.getInstance();
 parser.addExtensionParser(new PreferencesExtensionParser());
+
+
+
+//
+//// start of PubSubExtension
+//
+//PubSubExtension = PacketExtension.extend({
+//	init: function(namespace) {
+//		this.namespace = namespace;
+//		this.stanzas = [];
+//	},
+//	
+//	getElementName: function(){
+//		return PreferencesExtension.ELEMENTNAME;
+//	},
+//	
+//	getNamespace: function(){
+//		return this.namespace;
+//	},
+//	
+//	addStanza: function(stanza) {
+//		this.stanzas.push(stanza);
+//	},
+//	
+//	removeStanza: function(stanza) {
+//		for (var i = 0; i < this.stanzas.length; ++i){
+//			if (this.stanzas[i] == stanza){
+//				this.stanzas.splice(i,1);
+//				break;
+//			}
+//		}
+//	},
+//	
+//	
+//	toXml: function() {
+//		var xml = "";
+//		xml += "<" + this.getElementName() + " xmlns=\"" + getNamespace() + "\"";
+//		if (this.stanzas.length > 0) {
+//			xml += ">";
+//			for (var i = 0; i < this.stanzas.length; ++i){
+//				xml += this.stanzas[i].toXml();
+//			}
+//			xml += "</" + getElementName() + ">";
+//		} else {
+//			xml += "/>";
+//		}
+//		
+//		return xml;
+//	}
+//});
+//
+//PubSubExtension.ELEMENTNAME = "pubsub";
+//PubSubExtension.NAMESPACE = "http://jabber.org/protocol/pubsub";
+//
+//
+//PubSubSubscribe = XmlStanza.extend({
+//	init: function(node, subscriberJid) {
+//		this.node = node;
+//		this.subscriberJid = subscriberJid;
+//	},
+//	
+//
+//	getNode: function() {
+//		return this.node;
+//	},
+//
+//
+//	getSubscriberJid: function() {
+//		return subscriberJid;
+//	},
+//	
+//	toXml: function() {
+//		var xml = "";
+//		xml += "<subscribe";
+//		
+//		if (this.getNode() != null) {
+//			xml += " node=\"" + this.getNode() + "\"";
+//		}
+//		
+//		if (this.getSubscriberJid() != null) {
+//			xml += " jid=\"" + this.getSubscriberJid().toBareJID() + "\"";
+//		}
+//		
+//		xml += "/>";
+//		
+//		return xml;
+//	}
+//});
+//
+//// end of PubSubExtension
+//
+//
+//// start of PubSubExtensionParser
+//
+//PreferencesExtensionParser = XmppParser.ExtensionParser.extend({
+//	init: function() {
+//	},
+//	
+//	getElementName: function() {
+//		return PubSubExtensionParser.ELEMENTNAME
+//	},
+//	
+//	getNamespace: function() {
+//		return PubSubExtensionParser.NAMESPACE;
+//	},
+//	
+//	parseExtension: function(xmppParser, xmlElement) {
+//		var namespace = xmlElement.getAttribute("xmlns");
+//		var pubSubExtension = new PubSubExtension(namespace);
+//		var childNodes = xmlElement.childNodes;
+//		for (var i = 0; i < childNodes.length; ++i) {
+//			var childEle = childNodes[i];
+//			// ELEMENT_NODE
+//			if (childEle.nodeType == 1) {
+//				var elementName = childEle.nodeName;
+//				if ("subscribe" == elementName) {
+//					var node = childEle.getAttribute("node");
+//					var jid = childEle.getAttribute("jid");
+//					var pubSubSubscribe = new PubSubSubscribe(node, JID.createJID(jid));
+//					pubSubExtension.addStanza(pubSubSubscribe);
+//				}
+//			}
+//		}
+//		return pubSubExtension;
+//	}
+//});
+//
+//
+//PubSubExtensionParser.ELEMENTNAME = "pubsub";
+//PubSubExtensionParser.NAMESPACE = "http://jabber.org/protocol/pubsub";
+//
+//// end of PubSubExtensionParser
+//
+//var parser = XmppParser.getInstance();
+//parser.addExtensionParser(new PreferencesExtensionParser());
