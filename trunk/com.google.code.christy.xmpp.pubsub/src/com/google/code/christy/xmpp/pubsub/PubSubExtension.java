@@ -49,7 +49,7 @@ public class PubSubExtension implements PacketExtension
 		this.stanzas.add(stanza);
 	}
 	
-	public void remove(XmlStanza stanza)
+	public void removeStanza(XmlStanza stanza)
 	{
 		this.stanzas.remove(stanza);
 	}
