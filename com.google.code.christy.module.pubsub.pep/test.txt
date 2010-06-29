@@ -22,3 +22,19 @@ And by opposing end them?
     </publish>
   </pubsub>
 </iq>
+
+<message to='noah@example.com' type='headline' id='tunefoo1'>
+  <event xmlns='http://jabber.org/protocol/pubsub#event'>
+    <items node='http://jabber.org/protocol/tune'>
+      <item>
+        <tune xmlns='http://jabber.org/protocol/tune'>
+          <artist>Gerald Finzi</artist>
+          <length>255</length>
+          <source>Music for "Love's Labors Lost" (Suite for small orchestra)</source>
+          <title>Introduction (Allegro vigoroso)</title>
+          <track>1</track>
+        </tune>
+      </item>
+    </items>
+  </event>
+</message>

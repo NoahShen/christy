@@ -3462,6 +3462,12 @@ XmppConnectionMgr = jClass.extend({
 				var bodyElement = xml.documentElement;
 				var parser = XmppParser.getInstance();
 				var responseBody = parser.parseStanza(bodyElement);
+				
+				//TODO 
+				if (window.console) {
+					window.console.log("received:" + responseBody.toXml());
+				}
+				
 				aThis.handleBody(responseBody);
 			},
 			error: function (xmlHttpRequest, textStatus, errorThrown) {
@@ -5993,58 +5999,57 @@ parser.addExtensionParser(new PreferencesExtensionParser());
 
 
 
-//
-//// start of PubSubExtension
-//
-//PubSubExtension = PacketExtension.extend({
-//	init: function(namespace) {
-//		this.namespace = namespace;
-//		this.stanzas = [];
-//	},
-//	
-//	getElementName: function(){
-//		return PreferencesExtension.ELEMENTNAME;
-//	},
-//	
-//	getNamespace: function(){
-//		return this.namespace;
-//	},
-//	
-//	addStanza: function(stanza) {
-//		this.stanzas.push(stanza);
-//	},
-//	
-//	removeStanza: function(stanza) {
-//		for (var i = 0; i < this.stanzas.length; ++i){
-//			if (this.stanzas[i] == stanza){
-//				this.stanzas.splice(i,1);
-//				break;
-//			}
-//		}
-//	},
-//	
-//	
-//	toXml: function() {
-//		var xml = "";
-//		xml += "<" + this.getElementName() + " xmlns=\"" + getNamespace() + "\"";
-//		if (this.stanzas.length > 0) {
-//			xml += ">";
-//			for (var i = 0; i < this.stanzas.length; ++i){
-//				xml += this.stanzas[i].toXml();
-//			}
-//			xml += "</" + getElementName() + ">";
-//		} else {
-//			xml += "/>";
-//		}
-//		
-//		return xml;
-//	}
-//});
-//
-//PubSubExtension.ELEMENTNAME = "pubsub";
-//PubSubExtension.NAMESPACE = "http://jabber.org/protocol/pubsub";
-//
-//
+// start of PubSubExtension
+
+PubSubExtension = PacketExtension.extend({
+	init: function(namespace) {
+		this.namespace = namespace;
+		this.stanzas = [];
+	},
+	
+	getElementName: function(){
+		return PreferencesExtension.ELEMENTNAME;
+	},
+	
+	getNamespace: function(){
+		return this.namespace;
+	},
+	
+	addStanza: function(stanza) {
+		this.stanzas.push(stanza);
+	},
+	
+	removeStanza: function(stanza) {
+		for (var i = 0; i < this.stanzas.length; ++i){
+			if (this.stanzas[i] == stanza){
+				this.stanzas.splice(i,1);
+				break;
+			}
+		}
+	},
+	
+	
+	toXml: function() {
+		var xml = "";
+		xml += "<" + this.getElementName() + " xmlns=\"" + getNamespace() + "\"";
+		if (this.stanzas.length > 0) {
+			xml += ">";
+			for (var i = 0; i < this.stanzas.length; ++i){
+				xml += this.stanzas[i].toXml();
+			}
+			xml += "</" + getElementName() + ">";
+		} else {
+			xml += "/>";
+		}
+		
+		return xml;
+	}
+});
+
+PubSubExtension.ELEMENTNAME = "pubsub";
+PubSubExtension.NAMESPACE = "http://jabber.org/protocol/pubsub";
+
+
 //PubSubSubscribe = XmlStanza.extend({
 //	init: function(node, subscriberJid) {
 //		this.node = node;
@@ -6078,50 +6083,371 @@ parser.addExtensionParser(new PreferencesExtensionParser());
 //		return xml;
 //	}
 //});
-//
-//// end of PubSubExtension
-//
-//
-//// start of PubSubExtensionParser
-//
-//PreferencesExtensionParser = XmppParser.ExtensionParser.extend({
-//	init: function() {
-//	},
-//	
-//	getElementName: function() {
-//		return PubSubExtensionParser.ELEMENTNAME
-//	},
-//	
-//	getNamespace: function() {
-//		return PubSubExtensionParser.NAMESPACE;
-//	},
-//	
-//	parseExtension: function(xmppParser, xmlElement) {
-//		var namespace = xmlElement.getAttribute("xmlns");
-//		var pubSubExtension = new PubSubExtension(namespace);
-//		var childNodes = xmlElement.childNodes;
-//		for (var i = 0; i < childNodes.length; ++i) {
-//			var childEle = childNodes[i];
-//			// ELEMENT_NODE
-//			if (childEle.nodeType == 1) {
-//				var elementName = childEle.nodeName;
-//				if ("subscribe" == elementName) {
-//					var node = childEle.getAttribute("node");
-//					var jid = childEle.getAttribute("jid");
-//					var pubSubSubscribe = new PubSubSubscribe(node, JID.createJID(jid));
-//					pubSubExtension.addStanza(pubSubSubscribe);
-//				}
-//			}
-//		}
-//		return pubSubExtension;
-//	}
-//});
-//
-//
-//PubSubExtensionParser.ELEMENTNAME = "pubsub";
-//PubSubExtensionParser.NAMESPACE = "http://jabber.org/protocol/pubsub";
-//
-//// end of PubSubExtensionParser
-//
-//var parser = XmppParser.getInstance();
-//parser.addExtensionParser(new PreferencesExtensionParser());
+
+PubSubItem = XmlStanza.extend({
+	init: function(id) {
+		this.id = id;
+	},
+	
+	getId: function() {
+		return this.id;
+	},
+
+	getPayload: function() {
+		return this.payload;
+	},
+	
+	setPayload: function(payload) {
+		this.payload = payload;
+	},
+
+	generateXml: function(element) {
+		var xml = "";
+		if (element.nodeType == 1) {
+			xml += "<" + element.nodeName;
+			var attributes = element.attributes;
+			for (var i = 0; i < attributes.length; ++i) {
+				var attribute = attributes[i];
+				xml += " " + attribute.nodeName + "=\"" + attribute.nodeValue + "\"";
+				
+			}
+			xml += ">";
+			var childNodes = element.childNodes;
+			for (var i = 0; i < childNodes.length; ++i) {
+				var childNode = childNodes[i];
+				if (childNode.nodeType == 1) {
+					xml += this.generateXml(childNode);
+				} else if (childNode.nodeType == 3) {
+					xml += childNode.nodeValue;
+				}
+			}
+			
+			xml += "</" + element.nodeName + ">";
+		}
+		return xml;
+	},
+	
+	toXml: function() {
+		var xml = "";
+		xml += "<item";
+		
+		if (this.getId() != null) {
+			xml += " id=\"" + this.getId() + "\"";
+		}
+		
+		if (this.getPayload() == null) {
+			xml += "/>";
+		} else {
+			xml += ">";
+			xml += this.generateXml(this.getPayload());
+			xml += "</item>";
+		}
+		return xml;
+	}
+});
+
+PubSubPublish = XmlStanza.extend({
+	init: function(node) {
+		this.node = node;
+		this.items = [];
+	},
+	
+
+	getNode: function() {
+		return this.node;
+	},
+
+
+	addItem: function(item) {
+		this.items.push(item);
+	},
+	
+	removeItem: function(item) {
+		for (var i = 0; i < this.items.length; ++i){
+				if (this.items[i] == item){
+					this.items.splice(i,1);
+					break;
+				}
+		}
+	},
+	
+	getItems: function() {
+		return this.items;
+	},
+	
+	toXml: function() {
+		var xml = "";
+		xml += "<publish";
+		
+		if (this.getNode() != null) {
+			xml += " node=\"" + this.getNode() + "\"";
+		}
+		
+		if (this.items.length > 0) {
+			xml += ">";
+			for (var i = 0; i < this.items.length; ++i){
+				xml += this.items[i].toXml();
+			}
+			xml += "</publish>";
+		} else {
+			xml += "/>";
+		}		
+		return xml;
+	}
+});
+
+// end of PubSubExtension
+
+
+// start of PubSubExtensionParser
+
+PubSubExtensionParser = XmppParser.ExtensionParser.extend({
+	init: function() {
+	},
+	
+	getElementName: function() {
+		return PubSubExtensionParser.ELEMENTNAME
+	},
+	
+	getNamespace: function() {
+		return PubSubExtensionParser.NAMESPACE;
+	},
+	
+	parseExtension: function(xmppParser, xmlElement) {
+		var namespace = xmlElement.getAttribute("xmlns");
+		var pubSubExtension = new PubSubExtension(namespace);
+		var childNodes = xmlElement.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle = childNodes[i];
+			// ELEMENT_NODE
+			if (childEle.nodeType == 1) {
+				var elementName = childEle.nodeName;
+				if ("subscribe" == elementName) {
+					var node = childEle.getAttribute("node");
+					var jid = childEle.getAttribute("jid");
+					var pubSubSubscribe = new PubSubSubscribe(node, JID.createJID(jid));
+					pubSubExtension.addStanza(pubSubSubscribe);
+				} else if ("publish" == elementName) {
+					this.parsePublish(childEle);
+				}
+			}
+		}
+		return pubSubExtension;
+	},
+	
+	parsePublish: function(publishEle) {
+		var node = publishEle.getAttribute("node");
+		
+		var pubSubPublish = new PubSubPublish(node);
+		
+		var childNodes = publishEle.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle = childNodes[i];
+			// ELEMENT_NODE
+			if (childEle.nodeType == 1) {
+				var elementName = childEle.nodeName;
+				if ("item" == elementName) {
+					var id = childEle.getAttribute("id");
+					var item = new PubSubItem(id);
+					var childNodes2 = childEle.childNodes;
+					for (var j = 0; j < childNodes2.length; ++j) {
+						var childEle2 = childNodes2[i];
+						if (childEle2.nodeType == 1) {
+							item.setPayload(childEle2);
+							break;
+						}
+					}
+					pubSubPublish.addItem(item);
+				}
+			}
+		}
+		return pubSubPublish;
+	}
+});
+
+
+PubSubExtensionParser.ELEMENTNAME = "pubsub";
+PubSubExtensionParser.NAMESPACE = "http://jabber.org/protocol/pubsub";
+
+// end of PubSubExtensionParser
+
+var parser = XmppParser.getInstance();
+parser.addExtensionParser(new PubSubExtensionParser());
+
+
+// start of PubSubEventExtension
+
+PubSubItems = XmlStanza.extend({
+	init: function(node) {
+		this.node = node;
+		this.items = [];
+	},
+	
+
+	getNode: function() {
+		return this.node;
+	},
+
+
+	addItem: function(item) {
+		this.items.push(item);
+	},
+	
+	removeItem: function(item) {
+		for (var i = 0; i < this.items.length; ++i){
+				if (this.items[i] == item){
+					this.items.splice(i,1);
+					break;
+				}
+		}
+	},
+	
+	getItems: function() {
+		return this.items;
+	},
+	
+	toXml: function() {
+		var xml = "";
+		xml += "<items";
+		
+		if (this.getNode() != null) {
+			xml += " node=\"" + this.getNode() + "\"";
+		}
+		
+		if (this.items.length > 0) {
+			xml += ">";
+			for (var i = 0; i < this.items.length; ++i){
+				xml += this.items[i].toXml();
+			}
+			xml += "</items>";
+		} else {
+			xml += "/>";
+		}		
+		return xml;
+	}
+});
+
+PubSubEventExtension = XmlStanza.extend({
+	init: function() {
+		this.stanzas = [];
+	},
+	
+	getElementName: function(){
+		return PubSubEventExtension.ELEMENTNAME;
+	},
+	
+	getNamespace: function(){
+		return PubSubEventExtension.NAMESPACE;
+	},
+	
+	getStanzas: function() {
+		return this.stanzas;
+	},
+
+	addStanza: function(stanza) {
+		this.stanzas.push(stanza);
+	},
+	
+	removeStanza: function(stanza) {
+		for (var i = 0; i < this.stanzas.length; ++i){
+			if (this.stanzas[i] == stanza){
+				this.stanzas.splice(i,1);
+				break;
+			}
+		}
+	},
+	
+	toXml: function() {
+		var xml = "";
+		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\"";
+		if (this.getStanzas().length > 0) {
+			xml += ">";
+			for (var i = 0; i < this.stanzas.length; ++i) {
+				xml += this.stanzas[i].toXml();
+			}
+			xml += "</" + this.getElementName() + ">";
+		} else {
+			xml += "/>";
+		}
+		
+		
+		return xml;
+	}
+
+});
+
+PubSubEventExtension.ELEMENTNAME = "event";
+PubSubEventExtension.NAMESPACE = "http://jabber.org/protocol/pubsub#event";
+
+// end of PubSubEventExtension
+
+
+// start of PubSubEventExtensionParser
+
+PubSubEventExtensionParser = XmppParser.ExtensionParser.extend({
+	init: function() {
+	},
+	
+	getElementName: function() {
+		return PubSubEventExtensionParser.ELEMENTNAME
+	},
+	
+	getNamespace: function() {
+		return PubSubEventExtensionParser.NAMESPACE;
+	},
+	
+	parseExtension: function(xmppParser, xmlElement) {
+		var pubSubEventExtension = new PubSubEventExtension();
+		var childNodes = xmlElement.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle = childNodes[i];
+			// ELEMENT_NODE
+			if (childEle.nodeType == 1) {
+				var elementName = childEle.nodeName;
+				if ("items" == elementName) {
+					var pubSubItems = this.parseEventItems(childEle);
+					pubSubEventExtension.addStanza(pubSubItems);
+				}
+			}
+		}
+		return pubSubEventExtension;
+	},
+	
+	parseEventItems: function(eventItemEle) {
+		var node = eventItemEle.getAttribute("node");
+		
+		var pubSubItems = new PubSubItems(node);
+		
+		var childNodes = eventItemEle.childNodes;
+		for (var i = 0; i < childNodes.length; ++i) {
+			var childEle = childNodes[i];
+			// ELEMENT_NODE
+			if (childEle.nodeType == 1) {
+				var elementName = childEle.nodeName;
+				if ("item" == elementName) {
+					var id = childEle.getAttribute("id");
+					var item = new PubSubItem(id);
+					var childNodes2 = childEle.childNodes;
+					for (var j = 0; j < childNodes2.length; ++j) {
+						var childEle2 = childNodes2[i];
+						if (childEle2.nodeType == 1) {
+							item.setPayload(childEle2);
+							break;
+						}
+					}
+					pubSubItems.addItem(item);
+				}
+			}
+		}
+		return pubSubItems;
+	}
+});
+
+
+PubSubEventExtensionParser.ELEMENTNAME = "event";
+PubSubEventExtensionParser.NAMESPACE = "http://jabber.org/protocol/pubsub#event";
+
+// end of PubSubEventExtensionParser
+
+var parser = XmppParser.getInstance();
+parser.addExtensionParser(new PubSubEventExtensionParser());
