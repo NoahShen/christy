@@ -6,4 +6,8 @@
 	<router-password>md5password</router-password>
 	<online-users-limit>0</online-users-limit>
 	<resource-limit-perUser>0</resource-limit-perUser>
+	
+	<properties>
+		<pep-service>pep.example.com</pep-service>
+	</properties>
 </christy>

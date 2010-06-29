@@ -35,40 +35,40 @@ public class Activator implements BundleActivator
 		rosterItemDbHelperTracker = new RosterItemDbHelperTracker(context);
 		rosterItemDbHelperTracker.open();
 		
-		PEPPubSubManager pubSubManager = 
-			new PEPPubSubManager(loggerServiceTracker, 
+		PEPManager pepManager = 
+			new PEPManager(loggerServiceTracker, 
 					routeMessageParserServiceTracker,
 					rosterItemDbHelperTracker);
 		
 		String appPath = System.getProperty("appPath");
-		XMLConfiguration config = new XMLConfiguration(appPath + "/pusubconfig.xml");
+		XMLConfiguration config = new XMLConfiguration(appPath + "/pepconfig.xml");
 		
 		
 		String domain = config.getString("domain", "example.com");
-		pubSubManager.setDomain(domain);
+		pepManager.setDomain(domain);
 
 		String subDomain = config.getString("sub-domain", "pep.example.com");
-		pubSubManager.setSubDomain(subDomain);
+		pepManager.setSubDomain(subDomain);
 		
 		String serviceId = config.getString("service-id");
-		pubSubManager.setServiceId(serviceId);
+		pepManager.setServiceId(serviceId);
 		
 		String routerIp = config.getString("router-ip", "localhost");
-		pubSubManager.setRouterIp(routerIp);
+		pepManager.setRouterIp(routerIp);
 		
 		String routerPassword = config.getString("router-password", "md5password");
-		pubSubManager.setRouterPassword(routerPassword);
+		pepManager.setRouterPassword(routerPassword);
 		
 		int routerPort = config.getInt("router-port", 8789);
-		pubSubManager.setRouterPort(routerPort);
+		pepManager.setRouterPort(routerPort);
 		
 		int maxItems = config.getInt("max-items", 10);
-		pubSubManager.setMaxItems(maxItems);
+		pepManager.setMaxItems(maxItems);
 
 		
-		pubSubManager.start();
+		pepManager.start();
 		
-		pubSubManagerRegistration = context.registerService(PubSubManager.class.getName(), pubSubManager, null);
+		pubSubManagerRegistration = context.registerService(PubSubManager.class.getName(), pepManager, null);
 	}
 
 	/*

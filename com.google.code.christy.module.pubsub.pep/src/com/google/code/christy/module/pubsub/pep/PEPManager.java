@@ -36,7 +36,7 @@ import com.google.code.christy.xmpp.pubsub.PubSubExtension;
 import com.google.code.christy.xmpp.pubsub.PubSubItems;
 import com.google.code.christy.xmpp.pubsub.PubSubPublish;
 
-public class PEPPubSubManager extends AbstractPropertied implements PubSubManager
+public class PEPManager extends AbstractPropertied implements PubSubManager
 {
 	public static final String MODULEROUTER_NAMESPACE = "christy:internal:module2router";
 	
@@ -71,7 +71,7 @@ public class PEPPubSubManager extends AbstractPropertied implements PubSubManage
 	private RosterItemDbHelperTracker rosterItemDbHelperTracker;
 
 	
-	public PEPPubSubManager(LoggerServiceTracker loggerServiceTracker, 
+	public PEPManager(LoggerServiceTracker loggerServiceTracker, 
 				RouteMessageParserServiceTracker routeMessageParserServiceTracker,
 				RosterItemDbHelperTracker rosterItemDbHelperTracker)
 	{
@@ -415,8 +415,6 @@ public class PEPPubSubManager extends AbstractPropertied implements PubSubManage
 			
 			PubSubPublish pubSubPublish = (PubSubPublish) stanza;
 			
-			
-			
 			RosterItemDbHelper rosterItemDbHelper = rosterItemDbHelperTracker.getRosterItemDbHelper();
 			if (rosterItemDbHelper != null)
 			{
@@ -441,7 +439,7 @@ public class PEPPubSubManager extends AbstractPropertied implements PubSubManage
 				
 				message.addExtension(event);
 				
-				RouteMessage routeMessage = new RouteMessage(PEPPubSubManager.this.getSubDomain());
+				RouteMessage routeMessage = new RouteMessage(PEPManager.this.getSubDomain());
 				routeMessage.setXmlStanza(message);
 				try
 				{
@@ -455,12 +453,12 @@ public class PEPPubSubManager extends AbstractPropertied implements PubSubManage
 							message.setStanzaId(null);
 							JID rosterJID = item.getRosterJID();
 							message.setTo(item.getRosterJID());
-							if (rosterJID.getDomain().equals(PEPPubSubManager.this.getDomain()))
+							if (rosterJID.getDomain().equals(PEPManager.this.getDomain()))
 							{
 								routeMessage.setToUserNode(rosterJID.getNode());
 							}
 							
-							
+							sendToRouter(routeMessage);
 						}
 					}
 					
