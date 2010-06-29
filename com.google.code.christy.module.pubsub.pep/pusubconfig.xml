@@ -1,0 +1,10 @@
+<christy xmlns='christy:module:pubsub'>
+	<domain>example.com</domain>
+	<sub-domain>pubsub.example.com</sub-domain>
+	<service-id>123</service-id>
+	<router-ip>localhost</router-ip>
+	<router-port>8790</router-port>
+	<router-password>md5password</router-password>
+	
+	<max-items>10</max-items>
+</christy>
