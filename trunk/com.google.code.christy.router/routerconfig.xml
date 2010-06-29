@@ -25,6 +25,10 @@
 			<sub-domain>pubsub.example.com</sub-domain>
 			<password>md5password</password>
 		</module>
+		<module>
+			<sub-domain>pep.example.com</sub-domain>
+			<password>md5password</password>
+		</module>
 	</other-modules>
 	<c2s-port>8787</c2s-port>
 	<s2s-port>8788</s2s-port>

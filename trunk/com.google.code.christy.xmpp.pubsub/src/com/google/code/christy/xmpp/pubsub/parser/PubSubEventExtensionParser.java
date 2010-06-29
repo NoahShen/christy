@@ -11,9 +11,9 @@ import com.google.code.christy.xmppparser.XmppParser;
 
 public class PubSubEventExtensionParser implements ExtensionParser
 {
-	public static final String ELEMENTNAME = "pubsub";
+	public static final String ELEMENTNAME = "event";
 
-	public static final String NAMESPACE = "http://jabber.org/protocol/pubsub";
+	public static final String NAMESPACE = "http://jabber.org/protocol/pubsub#event";
 	
 	@Override
 	public String getElementName()

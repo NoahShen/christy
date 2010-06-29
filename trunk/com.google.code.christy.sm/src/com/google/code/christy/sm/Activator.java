@@ -1,6 +1,9 @@
 package com.google.code.christy.sm;
 
 
+import java.util.Iterator;
+
+import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -96,6 +99,15 @@ public class Activator implements BundleActivator
 		
 		int resourceLimitPerUser = config.getInt("resource-limit-perUser", 0);
 		smManager.setResourceLimitPerUser(resourceLimitPerUser);
+		
+		SubnodeConfiguration subConifg = config.configurationAt("properties");
+		Iterator<?> it = subConifg.getKeys();
+		while (it.hasNext())
+		{
+			String key = (String) it.next();
+			smManager.setProperty(key, subConifg.getString(key));
+		}
+		
 		
 		smManager.start();
 		
