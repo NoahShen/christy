@@ -103,6 +103,13 @@ public class PubSubPublish implements XmlStanza
 		private String payload;
 		
 		/**
+		 * 
+		 */
+		public Item()
+		{
+		}
+
+		/**
 		 * @param id
 		 */
 		public Item(String id)
