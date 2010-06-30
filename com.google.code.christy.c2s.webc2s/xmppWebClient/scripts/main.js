@@ -2849,7 +2849,9 @@ Map.showContactPos = function() {
 						var position = {
 							message: contact.getShowName(),
 							lat: lat,
-							lon: lon
+							lon: lon,
+							image: "/resource/contact.png",
+							imageSize: {width: 13, height: 18}
 						};
 						positions.push(position);
 					}
