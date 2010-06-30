@@ -3806,7 +3806,7 @@ XmppConnectionMgr = jClass.extend({
         return null;
 	},
 	
-	addConnectionListener: function(eventTypes, listenerFunc) {
+	addConnectionListener: function(eventTypes, listenerFunc, filter) {
 		// wrapper
 		var types = eventTypes
 		if (!isArray(eventTypes)) {
@@ -3814,7 +3814,8 @@ XmppConnectionMgr = jClass.extend({
 		}
 		this.listeners.push({
 			eventTypes: types,
-			handler: listenerFunc
+			handler: listenerFunc,
+			filter: filter
 		})
 	},
 	
@@ -3832,8 +3833,13 @@ XmppConnectionMgr = jClass.extend({
 	
 	fireConnectionEvent: function(event) {
 		for (var i = 0; i < this.listeners.length; ++i){
-			if (this.listeners[i].eventTypes.contains(event.eventType)){
-				this.listeners[i].handler(event);
+			var listener = this.listeners[i];
+			if (listener.eventTypes.contains(event.eventType)){
+				if (listener.filter == null
+					|| listener.filter.accept(event.connection, event.stanza)) {
+					listener.handler(event);
+				}
+				
 			}
 		}
 	}
@@ -5834,9 +5840,13 @@ GeoLocExtension = PacketExtension.extend({
 	toXml: function() {
 		var xml = "";
 		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\">";
-		if (this.getType() == GeoLocType.UTM) {
+		if (this.getType() == GeoLocType.UTM
+			&& this.getEasting() 
+			&& this.getNorthing()) {
 			xml += "<utm easting=\"" + this.getEasting() + "\" northing=\"" + this.getNorthing() + "\"/>";
-		} else if (this.getType() == GeoLocType.LATLON) {
+		} else if (this.getType() == GeoLocType.LATLON
+			&& this.getLat() 
+			&& this.getLon()) {
 			xml += "<latlon lat=\"" + this.getLat() + "\" lon=\"" + this.getLon() + "\"/>";
 		}
 		
@@ -6008,7 +6018,7 @@ PubSubExtension = PacketExtension.extend({
 	},
 	
 	getElementName: function(){
-		return PreferencesExtension.ELEMENTNAME;
+		return PubSubExtension.ELEMENTNAME;
 	},
 	
 	getNamespace: function(){
@@ -6028,16 +6038,19 @@ PubSubExtension = PacketExtension.extend({
 		}
 	},
 	
+	getStanzas: function() {
+		return this.stanzas;
+	},
 	
 	toXml: function() {
 		var xml = "";
-		xml += "<" + this.getElementName() + " xmlns=\"" + getNamespace() + "\"";
+		xml += "<" + this.getElementName() + " xmlns=\"" + this.getNamespace() + "\"";
 		if (this.stanzas.length > 0) {
 			xml += ">";
 			for (var i = 0; i < this.stanzas.length; ++i){
 				xml += this.stanzas[i].toXml();
 			}
-			xml += "</" + getElementName() + ">";
+			xml += "</" + this.getElementName() + ">";
 		} else {
 			xml += "/>";
 		}
@@ -6139,7 +6152,13 @@ PubSubItem = XmlStanza.extend({
 			xml += "/>";
 		} else {
 			xml += ">";
-			xml += this.generateXml(this.getPayload());
+			
+			if (this.getPayload() instanceof PacketExtension) {
+				xml += this.getPayload().toXml();
+			} else {
+				xml += this.generateXml(this.getPayload());
+			}
+			
 			xml += "</item>";
 		}
 		return xml;
@@ -6247,21 +6266,38 @@ PubSubExtensionParser = XmppParser.ExtensionParser.extend({
 			if (childEle.nodeType == 1) {
 				var elementName = childEle.nodeName;
 				if ("item" == elementName) {
-					var id = childEle.getAttribute("id");
-					var item = new PubSubItem(id);
-					var childNodes2 = childEle.childNodes;
-					for (var j = 0; j < childNodes2.length; ++j) {
-						var childEle2 = childNodes2[i];
-						if (childEle2.nodeType == 1) {
-							item.setPayload(childEle2);
-							break;
-						}
-					}
+					var item = this.parseItemContent(childEle);
 					pubSubPublish.addItem(item);
 				}
 			}
 		}
 		return pubSubPublish;
+	},
+	
+	parseItemContent: function(itemEle) {
+		var id = itemEle.getAttribute("id");
+		var item = new PubSubItem(id);
+		
+		
+		var childNodes = itemEle.childNodes;
+		for (var j = 0; j < childNodes.length; ++j) {
+			var childEle = childNodes[j];
+			if (childEle.nodeType == 1) {
+				var elementName = childEle.nodeName;
+				var namespace = childEle.getAttribute("xmlns");
+				var parser = XmppParser.getInstance();
+				var extensionParser = parser.getExtensionParser(elementName, namespace);
+				if (extensionParser != null) {
+					var packetExtension = extensionParser.parseExtension(this, childEle);
+					item.setPayload(packetExtension);
+				} else {
+					item.setPayload(childEle);
+				}
+				break;
+			}
+		}
+		
+		return item;
 	}
 });
 
@@ -6425,21 +6461,38 @@ PubSubEventExtensionParser = XmppParser.ExtensionParser.extend({
 			if (childEle.nodeType == 1) {
 				var elementName = childEle.nodeName;
 				if ("item" == elementName) {
-					var id = childEle.getAttribute("id");
-					var item = new PubSubItem(id);
-					var childNodes2 = childEle.childNodes;
-					for (var j = 0; j < childNodes2.length; ++j) {
-						var childEle2 = childNodes2[i];
-						if (childEle2.nodeType == 1) {
-							item.setPayload(childEle2);
-							break;
-						}
-					}
+					var item = this.parseItemContent(childEle);
 					pubSubItems.addItem(item);
 				}
 			}
 		}
 		return pubSubItems;
+	},
+	
+	parseItemContent: function(itemEle) {
+		var id = itemEle.getAttribute("id");
+		var item = new PubSubItem(id);
+		
+		
+		var childNodes = itemEle.childNodes;
+		for (var j = 0; j < childNodes.length; ++j) {
+			var childEle = childNodes[j];
+			if (childEle.nodeType == 1) {
+				var elementName = childEle.nodeName;
+				var namespace = childEle.getAttribute("xmlns");
+				var parser = XmppParser.getInstance();
+				var extensionParser = parser.getExtensionParser(elementName, namespace);
+				if (extensionParser != null) {
+					var packetExtension = extensionParser.parseExtension(this, childEle);
+					item.setPayload(packetExtension);
+				} else {
+					item.setPayload(childEle);
+				}
+				break;
+			}
+		}
+		
+		return item;
 	}
 });
 

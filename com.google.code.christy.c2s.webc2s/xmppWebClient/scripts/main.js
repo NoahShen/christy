@@ -1,3 +1,19 @@
+EventMessageFilter = StanzaFilter.extend({
+	init: function(stanzaClass) {
+		this.stanzaClass = stanzaClass;
+	},
+	
+	accept: function(connection, stanza) {
+		if (stanza != null && stanza instanceof Message) {
+			var message = stanza;
+			var extension = message.getPacketExtension(PubSubEventExtension.ELEMENTNAME, PubSubEventExtension.NAMESPACE);
+			return extension != null;
+		}
+		return false;
+	}
+	
+});
+	
 MainUtils = {}
 MainUtils.JIDPattern = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
 MainUtils.verifyJid = function(jidStr) {
@@ -289,17 +305,76 @@ Main.init = function() {
 	Main.geoLocIntervalId = setInterval(Main.updateMyPos, Main.updateLocInterval * 1000);
 	
 	Preferences.addItemChangedListener({
-		preferenceNames: ["showContactPos"],
+		preferenceNames: ["showContactPos", "shareLoc"],
 		handler: function(preferenceName, oldValue, newValue) {
-			if (newValue != "true") {
-				Map.hideContactPos();
-			} else {
-				Map.showContactPos();
+			if ("showContactPos" == preferenceName) {
+				if (newValue != "true") {
+					Map.hideContactPos();
+				} else {
+					Map.showContactPos();
+				}
+			} else if ("shareLoc" == preferenceName) {
+				if (newValue != "true") {
+					var connectionMgr = XmppConnectionMgr.getInstance();
+					var conn = connectionMgr.getAllConnections()[0];
+					if (conn) {
+						var geoLocExtension = new GeoLocExtension();
+						geoLocExtension.setType(GeoLocType.LATLON);
+						
+						var iq = new Iq(IqType.SET);
+						
+						var pubSubExtension = new PubSubExtension(PubSubExtension.NAMESPACE);
+						
+						var pubSubPublish = new PubSubPublish(GeoLocExtension.NAMESPACE);
+						
+						var pubSubItem = new PubSubItem();
+						pubSubItem.setPayload(geoLocExtension);
+						
+						pubSubPublish.addItem(pubSubItem);
+						
+						pubSubExtension.addStanza(pubSubPublish);
+						
+						iq.addPacketExtension(pubSubExtension);
+						conn.sendStanza(iq);
+					}
+				}
 			}
+			
 		}
 	});
+
 	
 	var connectionMgr = XmppConnectionMgr.getInstance();
+	connectionMgr.addConnectionListener([ConnectionEventType.StanzaReceived], function(event) {
+		var message = event.stanza;
+		var connection = event.connection;
+		
+		var from = message.getFrom();
+		var contact = connection.getContact(from);
+		
+		if (contact) {
+			var pubSubExtension = message.getPacketExtension(PubSubEventExtension.ELEMENTNAME, PubSubEventExtension.NAMESPACE);
+			var items = pubSubExtension.getStanzas()[0];
+			if (items) {
+				var item = items.getItems()[0];
+				if (item) {
+					var payload = item.getPayload();
+					if (payload instanceof GeoLocExtension) {
+						contact.geoLoc = payload;
+						if (Preferences.preferencesItems["showContactPos"] == "true") {
+							Map.showContactPos();
+						}
+					}
+				}
+			}
+		}
+		
+		
+		
+		
+				
+	}, new EventMessageFilter());
+	
 	connectionMgr.addConnectionListener([
 			ConnectionEventType.ContactUpdated,
 			ConnectionEventType.ContactRemoved,
@@ -317,9 +392,6 @@ Main.init = function() {
 			if (eventType == ConnectionEventType.ContactUpdated
 				|| eventType == ConnectionEventType.ContactStatusChanged) {
 				IM.updateContact(contact, false);
-				if (Preferences.preferencesItems["showContactPos"] == "true") {
-					Map.showContactPos();
-				}
 			} else if (eventType == ConnectionEventType.ContactRemoved) {
 				IM.updateContact(contact, true);
 			} else if (eventType == ConnectionEventType.ChatCreated) {
@@ -525,15 +597,26 @@ Main.updateMyPos = function() {
 			var connectionMgr = XmppConnectionMgr.getInstance();
 			var conn = connectionMgr.getAllConnections()[0];
 			if (conn) {
-				var currentP = conn.currentPresence;
 				var geoLocExtension = new GeoLocExtension();
 				geoLocExtension.setType(GeoLocType.LATLON);
 				geoLocExtension.setLat(lat);
 				geoLocExtension.setLon(lon);
 				
-				currentP.removePacketExtension(GeoLocExtension.ELEMENTNAME, GeoLocExtension.NAMESPACE);
-				currentP.addPacketExtension(geoLocExtension);
-				conn.changeStatus(currentP);
+				var iq = new Iq(IqType.SET);
+				
+				var pubSubExtension = new PubSubExtension(PubSubExtension.NAMESPACE);
+				
+				var pubSubPublish = new PubSubPublish(GeoLocExtension.NAMESPACE);
+				
+				var pubSubItem = new PubSubItem();
+				pubSubItem.setPayload(geoLocExtension);
+				
+				pubSubPublish.addItem(pubSubItem);
+				
+				pubSubExtension.addStanza(pubSubPublish);
+				
+				iq.addPacketExtension(pubSubExtension);
+				conn.sendStanza(iq);
 			}
 		}
 		
@@ -2756,22 +2839,23 @@ Map.showContactPos = function() {
 		
 		for (var i = 0; i < contacts.length; ++i) {
 			var contact = contacts[i];
-			var userResource = contact.getMaxPriorityResource();
-			if (userResource) {
-				var presence = userResource.currentPresence;
-				var geolocX = presence.getPacketExtension(GeoLocExtension.ELEMENTNAME, GeoLocExtension.NAMESPACE);
+			if (contact.isResourceAvailable()) {
+				var geolocX = contact.geoLoc;
 				if (geolocX && geolocX.getType() == GeoLocType.LATLON) {
 					var lat = geolocX.getLat();
 					var lon = geolocX.getLon();
 					
-					var position = {
-						message: contact.getShowName(),
-						lat: lat,
-						lon: lon
-					};
-					positions.push(position);
-				}		
-			}			
+					if (lat && lon) {
+						var position = {
+							message: contact.getShowName(),
+							lat: lat,
+							lon: lon
+						};
+						positions.push(position);
+					}
+				}
+			}
+					
 		}
 		
 		var mapItem = {
