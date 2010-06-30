@@ -421,7 +421,9 @@ public class PEPManager extends AbstractPropertied implements PubSubManager
 				String node = pubSubPublish.getNode();
 				
 				Message message = new Message();
-				message.setFrom(new JID(from.getNode(), from.getDomain(), null));
+				
+				JID fromBareJid = new JID(from.getNode(), from.getDomain(), null);
+				message.setFrom(fromBareJid);
 				message.setType(Message.Type.headline);
 				
 				PubSubEventExtension event = new PubSubEventExtension();
@@ -461,6 +463,13 @@ public class PEPManager extends AbstractPropertied implements PubSubManager
 							sendToRouter(routeMessage);
 						}
 					}
+					
+					// owner's all resources
+					message.setStanzaId(null);
+					message.setTo(fromBareJid);
+					routeMessage.setToUserNode(from.getNode());
+					
+					sendToRouter(routeMessage);
 					
 					iqResponse = PacketUtils.createResultIq(iq);					
 				}

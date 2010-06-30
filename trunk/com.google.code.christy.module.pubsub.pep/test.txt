@@ -38,3 +38,16 @@ And by opposing end them?
     </items>
   </event>
 </message>
+
+
+<iq id="M8hzC-6" type="set">
+	<pubsub xmlns="http://jabber.org/protocol/pubsub">
+		<publish node="christy:geo:loc">
+			<item>
+				<geoloc xmlns="christy:geo:loc">
+					<latlon lat="31.221891" lon="121.44529700000001"/>
+				</geoloc>
+			</item>
+		</publish>
+	</pubsub>
+</iq>
