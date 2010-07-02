@@ -3,7 +3,6 @@
  */
 package com.google.code.christy.dbhelper;
 
-import com.google.code.christy.xmpp.JID;
 
 /**
  * @author noah
@@ -31,7 +30,7 @@ public interface RosterItemDbHelper
 	 * @param rosterJID
 	 * @throws Exception
 	 */
-	public void removeRosterItem(String username, JID rosterJID) throws Exception;
+	public void removeRosterItem(String username, String rosterJID) throws Exception;
 	
 	/**
 	 * 
@@ -49,7 +48,7 @@ public interface RosterItemDbHelper
 	 * @return
 	 * @throws Exception
 	 */
-	public RosterItem getRosterItem(String username, JID rosterJID) throws Exception;
+	public RosterItem getRosterItem(String username, String rosterJID) throws Exception;
 	
 	/**
 	 * 
@@ -65,7 +64,7 @@ public interface RosterItemDbHelper
 	 * @param nickname
 	 * @throws Exception
 	 */
-	public void updateRosterItemNickname(String username, JID rosterJID, String nickname) throws Exception;
+	public void updateRosterItemNickname(String username, String rosterJID, String nickname) throws Exception;
 	
 	/**
 	 * 
@@ -74,7 +73,7 @@ public interface RosterItemDbHelper
 	 * @param subscription
 	 * @throws Exception
 	 */
-	public void updateRosterItemSubscription(String username, JID rosterJID, RosterItem.Subscription subscription) throws Exception;
+	public void updateRosterItemSubscription(String username, String rosterJID, RosterItem.Subscription subscription) throws Exception;
 	
 	/**
 	 * 
@@ -83,7 +82,7 @@ public interface RosterItemDbHelper
 	 * @param ask
 	 * @throws Exception
 	 */
-	public void updateRosterItemAsk(String username, JID rosterJID, RosterItem.Ask ask) throws Exception;
+	public void updateRosterItemAsk(String username, String rosterJID, RosterItem.Ask ask) throws Exception;
 	
 	/**
 	 * 
@@ -92,5 +91,5 @@ public interface RosterItemDbHelper
 	 * @param groups
 	 * @throws Exception
 	 */
-	public void updateRosterItemGroups(String username, JID rosterJID, String[] groups) throws Exception;
+	public void updateRosterItemGroups(String username, String rosterJID, String[] groups) throws Exception;
 }

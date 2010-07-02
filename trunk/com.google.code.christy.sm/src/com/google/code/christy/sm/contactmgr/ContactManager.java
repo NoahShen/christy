@@ -148,7 +148,8 @@ public class ContactManager
 			
 			RosterItem item = new RosterItem();
 			item.setUsername(username);
-			item.setRosterJID(to);
+			// TODO check case sentity
+			item.setRosterJID(to.toPrepedBareJID());
 			item.setNickname(iqRosterItem.getName());
 			item.setGroups(iqRosterItem.getGroupNames());
 			
@@ -210,7 +211,8 @@ public class ContactManager
 			
 			RosterItem item = new RosterItem();
 			item.setUsername(username);
-			item.setRosterJID(to);
+			// TODO check case sentity
+			item.setRosterJID(to.toPrepedBareJID());
 			item.setNickname(iqRosterItem.getName());
 			item.setGroups(iqRosterItem.getGroupNames());
 			
@@ -275,7 +277,8 @@ public class ContactManager
 			}
 			RosterItem item = new RosterItem();
 			item.setUsername(username);
-			item.setRosterJID(to);
+			// TODO check case sentity
+			item.setRosterJID(to.toPrepedBareJID());
 			item.setNickname(iqRosterItem.getName());
 			item.setGroups(iqRosterItem.getGroupNames());
 			
@@ -350,7 +353,8 @@ public class ContactManager
 			{
 				RosterItem item = new RosterItem();
 				item.setUsername(node);
-				item.setRosterJID(bareJID);
+				// TODO check case sentity
+				item.setRosterJID(bareJID.toPrepedBareJID());
 				item.setSubscription(RosterItem.Subscription.none);
 				updateRosterItem(item);
 				
@@ -372,7 +376,8 @@ public class ContactManager
 			{
 
 				RosterItemDbHelper rosterItemDbHelper = rosterItemDbHelperTracker.getRosterItemDbHelper();
-				rosterItemDbHelper.updateRosterItemAsk(node, bareJID, RosterItem.Ask.subscribe);
+				// TODO check case sentity
+				rosterItemDbHelper.updateRosterItemAsk(node, bareJID.toPrepedBareJID(), RosterItem.Ask.subscribe);
 				
 				lock.lock();
 				try
@@ -620,7 +625,8 @@ public class ContactManager
 				String username = onlineUser.getNode();
 				RosterItem newrosterItem = new RosterItem();
 				newrosterItem.setUsername(username);
-				newrosterItem.setRosterJID(item.getJid());
+				// TODO check case sentity
+				newrosterItem.setRosterJID(item.getJid().toPrepedBareJID());
 				newrosterItem.setNickname(item.getName());
 				newrosterItem.setGroups(item.getGroupNames());
 				if (item.getSubscription() != null)
@@ -637,7 +643,8 @@ public class ContactManager
 				{
 					updateRosterItem(newrosterItem);
 					
-					RosterItem rosterItem = rosterItemDbHelper.getRosterItem(username, item.getJid());
+					// TODO check case sentity
+					RosterItem rosterItem = rosterItemDbHelper.getRosterItem(username, item.getJid().toPrepedBareJID());
 					
 					IqRoster.Item newItem = new IqRoster.Item(item.getJid());
 					newItem.setName(rosterItem.getNickname());
@@ -724,7 +731,7 @@ public class ContactManager
 		{
 			for (RosterItem rosterItem : rosterItems)
 			{
-				IqRoster.Item item = new IqRoster.Item(rosterItem.getRosterJID());
+				IqRoster.Item item = new IqRoster.Item(new JID(rosterItem.getRosterJID()));
 				item.setName(rosterItem.getNickname());
 				if (rosterItem.getAsk() != null)
 				{
@@ -856,7 +863,8 @@ public class ContactManager
 				RosterItem rosterItem = new RosterItem();
 				rosterItem.setUsername(username);
 				rosterItem.setNickname(item.getName());
-				rosterItem.setRosterJID(item.getJid());
+				// TODO check case sentity
+				rosterItem.setRosterJID(item.getJid().toPrepedBareJID());
 				rosterItem.setAsk(null);
 				if (subs == IqRoster.Subscription.from)
 				{
@@ -911,7 +919,8 @@ public class ContactManager
 				RosterItem rosterItem = new RosterItem();
 				rosterItem.setUsername(username);
 				rosterItem.setNickname(item.getName());
-				rosterItem.setRosterJID(item.getJid());
+				// TODO check case sentity
+				rosterItem.setRosterJID(item.getJid().toPrepedBareJID());
 				rosterItem.setAsk(null);
 				if (subs == IqRoster.Subscription.to)
 				{
@@ -966,7 +975,8 @@ public class ContactManager
 				RosterItem rosterItem = new RosterItem();
 				rosterItem.setUsername(username);
 				rosterItem.setNickname(item.getName());
-				rosterItem.setRosterJID(item.getJid());
+				// TODO check case sentity
+				rosterItem.setRosterJID(item.getJid().toPrepedBareJID());
 				rosterItem.setAsk(null);
 				if (subs == IqRoster.Subscription.none)
 				{
@@ -1013,7 +1023,8 @@ public class ContactManager
 					OfflineSubscribeMsgDbHelper msghelper = offlineSubscribeMsgDbHelperTracker.getOfflineSubscribeMsgDbHelper();
 					OfflineSubscribeMsg msg = new OfflineSubscribeMsg();
 					msg.setUsername(username);
-					msg.setFrom(presence.getFrom());
+					// TODO check case sentity
+					msg.setFrom(presence.getFrom().toPrepedBareJID());
 					msg.setExtensions(presence.getExtensionsXML());
 					msghelper.addOfflineSubscribeMsg(msg);
 				}
@@ -1106,7 +1117,8 @@ public class ContactManager
 		RosterItemDbHelper rosterItemDbHelper = rosterItemDbHelperTracker.getRosterItemDbHelper();
 		try
 		{
-			rosterItemDbHelper.removeRosterItem(username, rosterJID);
+			// TODO check case sentity
+			rosterItemDbHelper.removeRosterItem(username, rosterJID.toPrepedBareJID());
 		}
 		catch (Exception e)
 		{

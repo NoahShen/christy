@@ -12,7 +12,6 @@ import com.google.code.christy.dbhelper.RosterItemDbHelper;
 import com.google.code.christy.dbhelper.RosterItem.Ask;
 import com.google.code.christy.dbhelper.RosterItem.Subscription;
 import com.google.code.christy.lib.ConnectionPool;
-import com.google.code.christy.xmpp.JID;
 
 public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 {
@@ -65,7 +64,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 			
 			PreparedStatement preStat = connection.prepareStatement(ADDROSTERITEM_SQL);
 			preStat.setString(1, rosterItem.getUsername());
-			preStat.setString(2, rosterItem.getRosterJID().toBareJID());
+			preStat.setString(2, rosterItem.getRosterJID());
 			preStat.setString(3, rosterItem.getNickname());
 			preStat.setString(4, rosterItem.getSubscription().name());
 			RosterItem.Ask ask = rosterItem.getAsk();
@@ -87,7 +86,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 				PreparedStatement preStatGroup = connection.prepareStatement(ADDROSTERITEMGROUP_SQL);
 				preStatGroup.setString(1, group);
 				preStatGroup.setString(2, rosterItem.getUsername());
-				preStatGroup.setString(3, rosterItem.getRosterJID().toBareJID());
+				preStatGroup.setString(3, rosterItem.getRosterJID());
 				preStatGroup.executeUpdate();
 			}		
 			
@@ -126,7 +125,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 				{
 					item = new RosterItem();
 					item.setUsername(username);
-					item.setRosterJID(new JID(rosterItems.getString(3)));
+					item.setRosterJID(rosterItems.getString(3));
 					item.setNickname(rosterItems.getString(4));
 					String ask = rosterItems.getString(5);
 					if (ask != null)
@@ -179,12 +178,12 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 				preStat.setString(3, ask.name());
 			}
 			preStat.setString(4, rosterItem.getUsername());
-			preStat.setString(5, rosterItem.getRosterJID().toBareJID());
+			preStat.setString(5, rosterItem.getRosterJID());
 			preStat.executeUpdate();
 			
 			PreparedStatement preStatDeleteGroup = connection.prepareStatement(DELETEGROUP_SQL);
 			preStatDeleteGroup.setString(1, rosterItem.getUsername());
-			preStatDeleteGroup.setString(2, rosterItem.getRosterJID().toBareJID());
+			preStatDeleteGroup.setString(2, rosterItem.getRosterJID());
 			preStatDeleteGroup.executeUpdate();
 			
 			String[] groups = rosterItem.getGroups();
@@ -194,7 +193,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 				PreparedStatement preStatGroup = connection.prepareStatement(ADDROSTERITEMGROUP_SQL);
 				preStatGroup.setString(1, group);
 				preStatGroup.setString(2, rosterItem.getUsername());
-				preStatGroup.setString(3, rosterItem.getRosterJID().toBareJID());
+				preStatGroup.setString(3, rosterItem.getRosterJID());
 				preStatGroup.executeUpdate();
 			}		
 			
@@ -211,7 +210,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 	}
 
 	@Override
-	public RosterItem getRosterItem(String username, JID rosterJID) throws Exception
+	public RosterItem getRosterItem(String username, String rosterJID) throws Exception
 	{
 		Connection connection = null;
 		try
@@ -219,7 +218,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 			connection = connectionPool.getConnection();
 			PreparedStatement preStat = connection.prepareStatement(GETONEROSTERITEM_SQL);
 			preStat.setString(1, username);
-			preStat.setString(2, rosterJID.toBareJID());
+			preStat.setString(2, rosterJID);
 
 			ResultSet rosterItems = preStat.executeQuery();
 			RosterItem item = null;
@@ -229,7 +228,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 				{
 					item = new RosterItem();
 					item.setUsername(username);
-					item.setRosterJID(new JID(rosterItems.getString(3)));
+					item.setRosterJID(rosterItems.getString(3));
 					item.setNickname(rosterItems.getString(4));
 					String ask = rosterItems.getString(5);
 					if (ask != null)
@@ -255,7 +254,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 	}
 
 	@Override
-	public void removeRosterItem(String username, JID rosterJID) throws Exception
+	public void removeRosterItem(String username, String rosterJID) throws Exception
 	{
 		Connection connection = null;
 		try
@@ -263,7 +262,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 			connection = connectionPool.getConnection();
 			PreparedStatement preStat = connection.prepareStatement(REMOVEROSTERITEM_SQL);
 			preStat.setString(1, username);
-			preStat.setString(2, rosterJID.toBareJID());
+			preStat.setString(2, rosterJID);
 			preStat.executeUpdate();
 		}
 		finally
@@ -276,7 +275,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 	}
 
 	@Override
-	public void updateRosterItemAsk(String username, JID rosterJID, Ask ask) throws Exception
+	public void updateRosterItemAsk(String username, String rosterJID, Ask ask) throws Exception
 	{
 		Connection connection = null;
 		try
@@ -285,7 +284,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 			PreparedStatement preStat = connection.prepareStatement(UPDATEASK_SQL);
 			preStat.setString(1, ask.name());
 			preStat.setString(2, username);
-			preStat.setString(3, rosterJID.toBareJID());
+			preStat.setString(3, rosterJID);
 			preStat.executeUpdate();
 		}
 		finally
@@ -298,7 +297,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 	}
 
 	@Override
-	public void updateRosterItemGroups(String username, JID rosterJID, String[] groups) throws Exception
+	public void updateRosterItemGroups(String username, String rosterJID, String[] groups) throws Exception
 	{
 		Connection connection = null;
 		try
@@ -307,7 +306,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 			connection.setAutoCommit(false);
 			PreparedStatement preStatDeleteGroup = connection.prepareStatement(DELETEGROUP_SQL);
 			preStatDeleteGroup.setString(1, username);
-			preStatDeleteGroup.setString(2, rosterJID.toBareJID());
+			preStatDeleteGroup.setString(2, rosterJID);
 			preStatDeleteGroup.executeUpdate();
 			
 			for (int i = 0; i < groups.length; ++i)
@@ -316,7 +315,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 				PreparedStatement preStatGroup = connection.prepareStatement(ADDROSTERITEMGROUP_SQL);
 				preStatGroup.setString(1, group);
 				preStatGroup.setString(2, username);
-				preStatGroup.setString(3, rosterJID.toBareJID());
+				preStatGroup.setString(3, rosterJID);
 				preStatGroup.executeUpdate();
 			}		
 			
@@ -333,7 +332,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 	}
 
 	@Override
-	public void updateRosterItemNickname(String username, JID rosterJID, String nickname) throws Exception
+	public void updateRosterItemNickname(String username, String rosterJID, String nickname) throws Exception
 	{
 		Connection connection = null;
 		try
@@ -342,7 +341,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 			PreparedStatement preStat = connection.prepareStatement(UPDATENAME_SQL);
 			preStat.setString(1, nickname);
 			preStat.setString(2, username);
-			preStat.setString(3, rosterJID.toBareJID());
+			preStat.setString(3, rosterJID);
 			preStat.executeUpdate();
 		}
 		finally
@@ -355,7 +354,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 	}
 
 	@Override
-	public void updateRosterItemSubscription(String username, JID rosterJID, Subscription subscription) throws Exception
+	public void updateRosterItemSubscription(String username, String rosterJID, Subscription subscription) throws Exception
 	{
 		
 		Connection connection = null;
@@ -365,7 +364,7 @@ public class RosterItemMysqlDbHelper implements RosterItemDbHelper
 			PreparedStatement preStat = connection.prepareStatement(UPDATESUBSCRIPTION_SQL);
 			preStat.setString(1, subscription.name());
 			preStat.setString(2, username);
-			preStat.setString(3, rosterJID.toBareJID());
+			preStat.setString(3, rosterJID);
 			preStat.executeUpdate();
 		}
 		finally

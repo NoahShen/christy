@@ -5,8 +5,6 @@ package com.google.code.christy.dbhelper;
 
 import java.io.Serializable;
 
-import com.google.code.christy.xmpp.JID;
-
 
 /**
  * @author Noah
@@ -22,7 +20,7 @@ public class OfflineSubscribeMsg implements Serializable
 	
 	private String username;
 	
-	private JID from;
+	private String from;
 	
 	private String extensions;
 
@@ -41,12 +39,12 @@ public class OfflineSubscribeMsg implements Serializable
 		this.username = username;
 	}
 
-	public JID getFrom()
+	public String getFrom()
 	{
 		return from;
 	}
 
-	public void setFrom(JID from)
+	public void setFrom(String from)
 	{
 		this.from = from;
 	}
