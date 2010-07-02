@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.code.christy.xmpp.JID;
-
 
 /**
  * @author noah
@@ -25,7 +23,7 @@ public class RosterItem implements Serializable
 	
 	private String username;
 	
-	private JID rosterJID;
+	private String rosterJID;
 	
 	private String nickname;
 	
@@ -53,7 +51,7 @@ public class RosterItem implements Serializable
 	/**
 	 * @return the rosterJID
 	 */
-	public JID getRosterJID()
+	public String getRosterJID()
 	{
 		return rosterJID;
 	}
@@ -101,7 +99,7 @@ public class RosterItem implements Serializable
 	/**
 	 * @param rosterJID the rosterJID to set
 	 */
-	public void setRosterJID(JID rosterJID)
+	public void setRosterJID(String rosterJID)
 	{
 		this.rosterJID = rosterJID;
 	}

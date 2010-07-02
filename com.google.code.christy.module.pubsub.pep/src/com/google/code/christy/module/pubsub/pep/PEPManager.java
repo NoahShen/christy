@@ -453,8 +453,8 @@ public class PEPManager extends AbstractPropertied implements PubSubManager
 							|| subs == RosterItem.Subscription.from)
 						{
 							message.setStanzaId(null);
-							JID rosterJID = item.getRosterJID();
-							message.setTo(item.getRosterJID());
+							JID rosterJID = new JID(item.getRosterJID());
+							message.setTo(rosterJID);
 							if (rosterJID.getDomain().equals(PEPManager.this.getDomain()))
 							{
 								routeMessage.setToUserNode(rosterJID.getNode());
