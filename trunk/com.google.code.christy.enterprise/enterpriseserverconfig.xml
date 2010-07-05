@@ -1,0 +1,5 @@
+<christy xmlns='christy:c2s:webc2s'>
+	<port>10007</port>
+	<resource-base>/page</resource-base>
+	<context-path>/</context-path>
+</christy>

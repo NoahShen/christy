@@ -1,0 +1,127 @@
+package com.google.code.christy.enterprise;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.webapp.WebAppContext;
+
+import com.google.code.christy.log.LoggerServiceTracker;
+
+public class EnterpriseServer
+{
+	private LoggerServiceTracker loggerServiceTracker;
+	
+	private Server server;
+	
+	private String contextPath  = "/webclient";
+	
+	private String resourceBase = "xmppWebClient/";
+	
+	private int port = 10007;
+	
+	public EnterpriseServer(LoggerServiceTracker loggerServiceTracker)
+	{
+		this.loggerServiceTracker = loggerServiceTracker;
+	}
+
+	public String getContextPath()
+	{
+		return contextPath;
+	}
+
+	public void setContextPath(String contextPath)
+	{
+		this.contextPath = contextPath;
+	}
+
+	public String getResourceBase()
+	{
+		return resourceBase;
+	}
+
+	public void setResourceBase(String resourceBase)
+	{
+		this.resourceBase = resourceBase;
+	}
+
+	public int getPort()
+	{
+		return port;
+	}
+
+	public void setPort(int port)
+	{
+		this.port = port;
+	}
+
+	public void start() throws Exception
+	{
+		server = new Server(getPort());
+		
+		ServletContextHandler servletContext = new ServletContextHandler(null, getContextPath(), ServletContextHandler.SESSIONS);
+		servletContext.addServlet(new ServletHolder(new EnterpriseServlet()), "/enterprise.do");
+		servletContext.addServlet(new ServletHolder(new LoginServlet()), "/login.do");
+		
+		ResourceHandler resource_handler = new ResourceHandler();
+		resource_handler.setWelcomeFiles(new String[] { "index.html" });
+		resource_handler.setResourceBase(getResourceBase());
+		// TODO
+//		System.out.println(getResourceBase());
+		
+		HandlerList handlers = new HandlerList();
+		handlers.setHandlers(new Handler[] { servletContext, resource_handler, new DefaultHandler() });
+		server.setHandler(handlers);
+		
+		server.start();
+		server.join();
+	}
+
+	public void stop() throws Exception
+	{
+		if (server != null && server.isStarted())
+		{
+			server.stop();
+			server = null;
+		}
+	}
+	
+	private class EnterpriseServlet extends HttpServlet
+	{
+
+		@Override
+		protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
+		{
+
+		}
+
+		@Override
+		protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
+		{
+		}
+
+		@Override
+		public void destroy()
+		{
+			super.destroy();
+		}
+
+		@Override
+		public void init() throws ServletException
+		{
+			super.init();
+		}
+	}
+
+}
