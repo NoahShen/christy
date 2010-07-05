@@ -3425,6 +3425,9 @@ Subscription.init = function() {
         }
     });
     Subscription.tabs.triggleTab(0);
+    
+    // TODO
+	subscriptionTabs.find(".clearfix").hide();
 };
 
 Subscription.checkEmailSubscription = function() {
