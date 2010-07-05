@@ -33,6 +33,7 @@ import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.FilterMapping;
@@ -312,7 +313,11 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 		loggerServiceTracker.info("starting http server");
 		
 		server = new Server(getWebclientPort());
-
+		SelectChannelConnector selectChannelConnector = new SelectChannelConnector();
+		selectChannelConnector.setPort(getWebclientPort());
+		selectChannelConnector.setUseDirectBuffers(false);
+		server.addConnector(selectChannelConnector);
+		
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
 		
 		ServletContextHandler resourceServletContext = new ServletContextHandler(contexts, "/", ServletContextHandler.SESSIONS);
