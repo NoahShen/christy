@@ -1,36 +1,21 @@
-<html>
-
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		
-		<title>Enterprise Client</title>
-		
-		<link rel="stylesheet" type="text/css" href="js/jqueryui/themes/default/easyui.css"> 
-		<link rel="stylesheet" type="text/css" href="js/jqueryui/themes/icon.css"> 
-		<script type="text/javascript" src="js/jquery/jquery-1.4.2.min.js"></script> 
-		<script type="text/javascript" src="js/jqueryui/jquery.easyui.min.js"></script> 
-		<script type="text/javascript" src="js/app.js"></script> 
-	</head>
-	<body>
-		<div style="text-align:center;">
-		    <form id="login" action="/enterprise.do" method="post">
-		        <table align="center" style="background:#E0ECFF;padding:10px;">
-		            <tr>
-		                <td>用户名:</td>
-		                <td><input id='username' name="username" type="text" /></td>
-		            </tr>
-		            <tr>
-		                <td>密码:</td>
-		                <td><input id='password' name="password" type="text" /></td>
-		            </tr>
-		            <tr>
-		                <td></td>
-		                <td><input type="submit" value="登陆" /></td>
-		            </tr>
-		        </table>
-		    </form>
-		</div>
-		
-	</body>
-
-</html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"> 
+<html> 
+<head> 
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
+    <title>Login</title> 
+    <link rel="stylesheet" type="text/css" href="js/extjs/resources/css/ext-all.css"/> 
+ 
+    <!-- GC --> 
+    <!-- LIBS --> 
+    <script type="text/javascript" src="js/extjs//adapter/ext/ext-base.js"></script> 
+    <!-- ENDLIBS --> 
+ 
+    <script type="text/javascript" src="js/extjs/ext-all.js"></script> 
+ 
+	<script type="text/javascript" src="js/login.js"></script>
+</head> 
+<body> 
+	<div id='login' style='margin:0 auto;' align="center">
+	</div>
+</body> 
+</html> 
