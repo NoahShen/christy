@@ -1,6 +1,8 @@
 package com.google.code.christy.enterprise;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -13,6 +15,9 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -74,14 +79,28 @@ public class EnterpriseServer
 		servletContext.addServlet(new ServletHolder(new EnterpriseServlet()), "/enterprise.do");
 		servletContext.addServlet(new ServletHolder(new LoginServlet()), "/login.do");
 		
-		ResourceHandler resource_handler = new ResourceHandler();
-		resource_handler.setWelcomeFiles(new String[] { "index.html" });
-		resource_handler.setResourceBase(getResourceBase());
-		// TODO
-//		System.out.println(getResourceBase());
+//		ResourceHandler resource_handler = new ResourceHandler();
+//		resource_handler.setWelcomeFiles(new String[] { "index.html" });
+//		resource_handler.setResourceBase(getResourceBase());
+
+		DefaultServlet ds = new DefaultServlet();
+		servletContext.addServlet(new ServletHolder(ds), "/");
+		
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("org.eclipse.jetty.servlet.Default.resourceBase", getResourceBase());
+		
+		servletContext.setInitParams(params);
+		
+		FilterHolder fHolder = new FilterHolder(org.eclipse.jetty.servlets.GzipFilter.class);
+		fHolder.setName("compress");
+		
+		servletContext.addFilter(fHolder, "*.js", FilterMapping.ALL);
+		servletContext.addFilter(fHolder, "*.css", FilterMapping.ALL);
+		servletContext.addFilter(fHolder, "*.html", FilterMapping.ALL);
+		
 		
 		HandlerList handlers = new HandlerList();
-		handlers.setHandlers(new Handler[] { servletContext, resource_handler, new DefaultHandler() });
+		handlers.setHandlers(new Handler[] { servletContext, new DefaultHandler() });
 		server.setHandler(handlers);
 		
 		server.start();
