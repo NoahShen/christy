@@ -14,3 +14,8 @@
 .menu-item:hover{
 	background-color: #add1ff;
 }
+
+.icon-delete { 
+	background-image: url(/resource/img/delete.gif) !important; 
+	background-repeat: no-repeat; 
+}
