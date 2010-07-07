@@ -113,6 +113,8 @@ function createCenterPanel() {
 		region: 'center',
         split: false,
         collapsible: false,
+        autoScroll: true,
+        titleCollapse:true,
         margins: '0 0 0 0',
         plain:true,
         frame: true,
@@ -221,14 +223,13 @@ function createShopDetailPanel() {
 		align:'center',
 		flex:1,
 		
-		frame: true,
+//		frame: true,
 		
 		border:false,
 		deferredRender: false,
 		plain: true,
         labelWidth: 40, // label settings here cascade unless overridden
         bodyStyle:'padding:5px',
-        width: 350,
         height: 180,
         defaultType: 'textfield',
         items: [{
@@ -270,6 +271,8 @@ function createShopDetailPanel() {
         layout:'table',
         layoutConfig: {columns:2},
         bodyStyle:'padding:5px',
+        width: 300,
+        height: 180,
         items:[{
         	xtype: 'textfield',
         	disabled: true
@@ -308,21 +311,70 @@ function createShopDetailPanel() {
         }]
     });
     
+    var imgForm = new Ext.FormPanel({
+    	align:'center',
+		flex:1,
+		
+        fileUpload: true,
+//        frame: true,
+        autoHeight: true,
+        bodyStyle:'padding:5px',
+        labelWidth: 40,
+        width: 300,
+        defaults: {
+            anchor: '95%',
+        },
+        items: [{
+            xtype: 'fileuploadfield',
+            id: 'form-file',
+            emptyText: '选择图片',
+            fieldLabel: '图片',
+            name: 'img-path',
+            buttonText: '',
+            buttonCfg: {
+                iconCls: 'upload-icon'
+            },
+            border: false
+        }],
+		buttons: [{
+			text: 'Save',
+		    handler: function(){
+		        if(imgForm.getForm().isValid()){
+//		            fp.getForm().submit({
+//		                url: 'file-upload.php',
+//		                waitMsg: 'Uploading your photo...',
+//		                success: function(fp, o){
+//		                    msg('Success', 'Processed file "'+o.result.file+'" on the server');
+//		                }
+//		            });
+		        }
+		    }
+		},{
+		    text: 'Reset',
+		    handler: function(){
+		        imgForm.getForm().reset();
+		    }
+		}]
+    });
+    
+    
     var shopDetail = new Ext.Panel({
     	id: "shopId",
     	
         closable:true,
         
+        autoScroll: true,
         title: '店铺',
-        layout: {
-            type:'vbox',
-            padding:'5',
-            align:'stretch'
+        layout:'table',
+        layoutConfig: {columns:1},
+        defaults: {
+        	margins:'0 0 5 0'
         },
-        defaults:{margins:'0 0 5 0'},
+        
         items: [
         	shopForm,
-        	shopDetail2Panel
+        	shopDetail2Panel,
+        	imgForm
         ]
     });
     
