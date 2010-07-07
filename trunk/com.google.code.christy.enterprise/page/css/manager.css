@@ -1,0 +1,16 @@
+.menu-item {
+	border-bottom: 1px solid #AACCF6;
+	cursor: pointer;
+	display: block;
+	line-height: 17px;
+	outline-style: none;
+	outline-width: 0;
+	padding: 3px;
+	text-align: center;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.menu-item:hover{
+	background-color: #add1ff;
+}
