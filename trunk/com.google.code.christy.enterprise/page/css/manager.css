@@ -1,21 +1,95 @@
-.menu-item {
-	border-bottom: 1px solid #AACCF6;
+#freedom {
+  float:left;
+  font:1.3em Cambria, Times New Roman, serif;
+  margin: 0px;
+  padding: 0px;
+  width:100%;
+}
+
+#freedom li {
+	width:100%;
+	list-style-type: none;
+}
+
+#freedom li a {
+	color: black;
+	width:100%;
+	margin:1px;
+	*margin:0px;
+	display:block;
+	font-weight:bold;
+	font-size:0.7em;
+	font-style:normal;
 	cursor: pointer;
-	display: block;
-	line-height: 17px;
-	outline-style: none;
-	outline-width: 0;
-	padding: 3px;
 	text-align: center;
 	text-decoration: none;
-	white-space: nowrap;
+	line-height: 27px;
 }
 
-.menu-item:hover{
-	background-color: #add1ff;
+#freedom li a:hover {
+	color: black;
+}
+#freedom li a:visited {
+	color: black;
 }
 
-.icon-delete { 
-	background-image: url(/resource/img/delete.gif) !important; 
-	background-repeat: no-repeat; 
+#freedom li a:link {
+	color: black;
 }
+
+#freedom li a.selected {
+  background:#FFF;
+  background-color: #470EFF;
+  color:#000;
+  cursor:default;
+}
+
+
+#shopManagerTabs {
+  font:1.3em Cambria, Times New Roman, serif;
+  margin: 0px;
+  padding: 0px;
+  width:100%;
+}
+
+#shopManagerTabs li {
+	width:100%;
+	list-style-type: none;
+	float:left;
+
+	text-align: center;
+	text-decoration: none;
+	width: 25%;
+	line-height: 27px;
+}
+
+#shopManagerTabs li a {
+	color: black;
+	display:block;
+	font-weight:bold;
+	font-size:0.7em;
+	font-style:normal;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	line-height: 27px;
+}
+
+#shopManagerTabs li a:hover {
+	color: black;
+}
+#shopManagerTabs li a:visited {
+	color: black;
+}
+
+#shopManagerTabs li a:link {
+	color: black;
+}
+
+#shopManagerTabs li a.selected {
+  background:#FFF;
+  background-color: #470EFF;
+  color:#000;
+  cursor:default;
+}
+			
