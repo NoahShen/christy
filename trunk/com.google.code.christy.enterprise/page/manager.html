@@ -6,11 +6,15 @@
 		<title>Enterprise Client</title>
 		
 	    <link rel="stylesheet" type="text/css" href="sexybuttons/sexybuttons.css"/> 
- 		<link rel="stylesheet" type="text/css" href="css/manager.css"/> 
+ 		<link rel="stylesheet" type="text/css" href="css/manager.css"/>
+ 		
+ 		<link rel="stylesheet" type="text/css" href="js/jquery/plugins/flexigridcss/flexigrid/flexigrid.css">
  		
     	<script type="text/javascript" src="js/jquery/jquery-1.4.2.min.js"></script> 
 		<script type="text/javascript" src="js/jquery/plugins/jquery.layout.min-1.2.0.js"></script> 
-		<script type="text/javascript" src="js/jquery/plugins/jquery.idTabs.min.js"></script> 
+		<script type="text/javascript" src="js/jquery/plugins/ui.tab.js"></script> 
+		
+		<script type="text/javascript" src="js/jquery/plugins/flexigrid.js"></script>
 		
 		<script type="text/javascript" src="js/manager.js"></script>
 		<style type="text/css"> 
@@ -24,34 +28,122 @@
 		</style>
 	</head>
 	<body>
-		<div id='centerPanel' class="ui-layout-center">
-			<div class="ui-layout-north">
-				north
+		<div class="ui-layout-center" style='overflow:auto;'>
+			
+			<div id='shopManager' class='main-ui-tab-content'>
+				<div id='shopManagerTabs' class='ui-tab-container'>
+					<div class='clearfix'>
+						<div id='manageShopsTab'>管理商铺</div>
+						<div id='addShopTab'>添加商铺</div>
+						<div id='commentsTab'>查看评论</div>
+					</div>
+				</div>
+				
+				<div id='manageShops' class='shopManage-ui-tab-content'>
+					<table id="flexme1"> 
+						<thead> 
+					    		<tr> 
+					            	<th width="100">Col 1</th> 
+					            	<th width="100">Col 2</th> 
+					            	<th width="100">Col 3 is a long header name</th> 
+					            	<th width="300">Col 4</th> 
+					            </tr> 
+					    </thead> 
+					    <tbody> 
+					    		<tr> 
+					            	<td>This is data 1 with overflowing content</td> 
+					            	<td>This is data 2</td> 
+					            	<td>This is data 3</td> 
+					            	<td>This is data 4</td> 
+					            </tr> 
+					    		<tr> 
+					            	<td>This is data 1</td> 
+					            	<td>This is data 2</td> 
+					            	<td>This is data 3</td> 
+					            	<td>This is data 4</td> 
+					            </tr> 
+					    		<tr> 
+					            	<td>This is data 1</td> 
+					            	<td>This is data 2</td> 
+					            	<td>This is data 3</td> 
+					            	<td>This is data 4</td> 
+					            </tr> 
+					    		<tr> 
+					            	<td>This is data 1</td> 
+					            	<td>This is data 2</td> 
+					            	<td>This is data 3</td> 
+					            	<td>This is data 4</td> 
+					            </tr> 
+					    		<tr> 
+					            	<td>This is data 1</td> 
+					            	<td>This is data 2</td> 
+					            	<td>This is data 3</td> 
+					            	<td>This is data 4</td> 
+					            </tr> 
+					    		<tr> 
+					            	<td>This is data 1</td> 
+					            	<td>This is data 2</td> 
+					            	<td>This is data 3</td> 
+					            	<td>This is data 4</td> 
+					            </tr> 
+					    		<tr> 
+					            	<td>This is data 1</td> 
+					            	<td>This is data 2</td> 
+					            	<td>This is data 3</td> 
+					            	<td>This is data 4</td> 
+					            </tr> 
+					    		<tr> 
+					            	<td>This is data 1</td> 
+					            	<td>This is data 2</td> 
+					            	<td>This is data 3</td> 
+					            	<td>This is data 4</td> 
+					            </tr> 
+					    		<tr> 
+					            	<td>This is data 1</td> 
+					            	<td>This is data 2</td> 
+					            	<td>This is data 3</td> 
+					            	<td>This is data 4</td> 
+					            </tr> 
+					    		<tr> 
+					            	<td>This is data 1</td> 
+					            	<td>This is data 2</td> 
+					            	<td>This is data 3</td> 
+					            	<td>This is data 4</td> 
+					            </tr> 
+					    		<tr> 
+					            	<td>This is data 1</td> 
+					            	<td>This is data 2</td> 
+					            	<td>This is data 3</td> 
+					            	<td>This is data 4</td> 
+					            </tr> 
+					    		<tr> 
+					            	<td>This is data 1</td> 
+					            	<td>This is data 2</td> 
+					            	<td>This is data 3</td> 
+					            	<td>This is data 4</td> 
+					            </tr> 
+					            
+					    </tbody> 
+					</table> 
+	 			</div>
+				<div id='addShop' class='shopManage-ui-tab-content'>
+					addShop
+				</div>
+				<div id='comments' class='shopManage-ui-tab-content'>
+					comments
+				</div>
 			</div>
-			<div id='shopManager' class="ui-layout-center">
-
-		            <ul id="shopManagerTabs" class="idTabs">
-		              <li><a href="#manageShops">管理商铺</a></li> 
-					  <li><a href="#addShop">添加商铺</a></li> 
-					  <li><a href="#comments">查看评论</a></li>
-		            </ul>
-		            
-		            <div id='manageShops'>
-						manageShops
-					</div>
-					
-					<div id='addShop'>
-						addShop
-					</div>
-					
-					<div id='comments'>
-						comments
-					</div>		
+			
+			<div id='activityManager' class='main-ui-tab-content'>
+				activityManager
+ 			</div>
+			<div id='static' class='main-ui-tab-content'>
+				static
 			</div>
 		</div>
 		
 <!--
-		<div class="ui-layout-north">
+		<div class='ui-layout-north'>
 			<table style='width:100%;'>
 				<tr>
 					<td>
@@ -77,16 +169,18 @@
 			</table>
 		</div>
 
-		<div class="ui-layout-south">South</div>
+		<div class='ui-layout-south'>South</div>
 		
-		<div class="ui-layout-east">East</div> 
+		<div class='ui-layout-east'>East</div> 
 -->
-		<div class="ui-layout-west" style='background-color:#94C1F8;'>
-			<ul id="freedom" class="idTabs"> 
-			  <li><a href="#shopManager" class="selected">商铺管理</a></li> 
-			  <li><a href="#activityManager">活动管理</a></li>
-			  <li><a href="#statics">查看统计</a></li> 
-			</ul>
+		<div class='ui-layout-west' style='background-color:#94C1F8;'>
+			<div id='mainTabs' class='main-ui-tab-container'>
+				<div class='clearfix'>
+					<u id='shopManagerTab'>商铺管理</u>
+					<u id='activityManagerTab'>活动管理</u>
+					<u id='staticTab'>查看统计 </u>
+				</div>
+			</div>
 		</div> 
 	</body>
 
