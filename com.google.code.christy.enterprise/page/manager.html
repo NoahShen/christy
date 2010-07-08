@@ -5,28 +5,53 @@
 		
 		<title>Enterprise Client</title>
 		
-	    <link rel="stylesheet" type="text/css" href="js/extjs/resources/css/ext-all.css"/> 
- 		
+	    <link rel="stylesheet" type="text/css" href="sexybuttons/sexybuttons.css"/> 
  		<link rel="stylesheet" type="text/css" href="css/manager.css"/> 
  		
- 		<link rel="stylesheet" type="text/css" href="js/extjs/fileuploadfield.css"/> 
- 		
-		<!-- GC --> 
-	    <!-- LIBS --> 
-	    <script type="text/javascript" src="js/extjs//adapter/ext/ext-base.js"></script> 
-	    <!-- ENDLIBS --> 
-	 
-	    <script type="text/javascript" src="js/extjs/ext-all.js"></script> 
-	 	<script type="text/javascript" src="js/extjs/FileUploadField.js"></script>
-	 	<script type="text/javascript" src="js/extjs/GMapPanel.js"></script>
-	 	
-	 	<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;" type="text/javascript"></script> 
-	 	
-		<script type="text/javascript" src="js/login.js"></script> 
-		<script type="text/javascript" src="js/manager.js"></script> 
+    	<script type="text/javascript" src="js/jquery/jquery-1.4.2.min.js"></script> 
+		<script type="text/javascript" src="js/jquery/plugins/jquery.layout.min-1.2.0.js"></script> 
+		<script type="text/javascript" src="js/jquery/plugins/jquery.idTabs.min.js"></script> 
+		
+		<script type="text/javascript" src="js/manager.js"></script>
+		<style type="text/css"> 
+			body {
+				font-family:	Arial, sans-serif;
+				font-size:		100%;
+				*font-size:		1em; /* IE 6/7 only */
+				background-image:url("/resource/img/bg.png");
+			}
+			
+		</style>
 	</head>
 	<body>
-		<div id='topPanel'>
+		<div id='centerPanel' class="ui-layout-center">
+			<div class="ui-layout-north">
+				north
+			</div>
+			<div id='shopManager' class="ui-layout-center">
+
+		            <ul id="shopManagerTabs" class="idTabs">
+		              <li><a href="#manageShops">管理商铺</a></li> 
+					  <li><a href="#addShop">添加商铺</a></li> 
+					  <li><a href="#comments">查看评论</a></li>
+		            </ul>
+		            
+		            <div id='manageShops'>
+						manageShops
+					</div>
+					
+					<div id='addShop'>
+						addShop
+					</div>
+					
+					<div id='comments'>
+						comments
+					</div>		
+			</div>
+		</div>
+		
+<!--
+		<div class="ui-layout-north">
 			<table style='width:100%;'>
 				<tr>
 					<td>
@@ -38,8 +63,8 @@
 								<td>
 									
 								</td>
-								<td align='right'>
-									<div style='text-align:right;'>
+								<td>
+									<div>
 										<span>Username</span>
 										<a href='javascript:void(0);'>设置</a>
 										<a href='javascript:void(0);'>退出</a>
@@ -51,6 +76,18 @@
 				</tr>
 			</table>
 		</div>
+
+		<div class="ui-layout-south">South</div>
+		
+		<div class="ui-layout-east">East</div> 
+-->
+		<div class="ui-layout-west" style='background-color:#94C1F8;'>
+			<ul id="freedom" class="idTabs"> 
+			  <li><a href="#shopManager" class="selected">商铺管理</a></li> 
+			  <li><a href="#activityManager">活动管理</a></li>
+			  <li><a href="#statics">查看统计</a></li> 
+			</ul>
+		</div> 
 	</body>
 
 </html>
