@@ -2,20 +2,99 @@
 <html> 
 <head> 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
-    <title>Login</title> 
-    <link rel="stylesheet" type="text/css" href="js/extjs/resources/css/ext-all.css"/> 
- 
-    <!-- GC --> 
-    <!-- LIBS --> 
-    <script type="text/javascript" src="js/extjs//adapter/ext/ext-base.js"></script> 
-    <!-- ENDLIBS --> 
- 
-    <script type="text/javascript" src="js/extjs/ext-all.js"></script> 
- 
-	<script type="text/javascript" src="js/login.js"></script>
+    <title>登陆</title> 
+
+ 	<link rel="stylesheet" type="text/css" href="sexybuttons/sexybuttons.css"/> 
+ 	
+    <script type="text/javascript" src="js/jquery/jquery-1.4.2.min.js"></script> 
+	<script type="text/javascript" src="js/jquery/plugins/jquery.form.js"></script>
+	
+	<style type="text/css"> 
+	body {
+		font-family:	Arial, sans-serif;
+		font-size:		100%;
+		*font-size:		1em; /* IE 6/7 only */
+	}
+	
+	#loginForm {
+		border:1px solid #CCC
+	}
+	</style>
+	
+	<script type="text/javascript">
+	$(document).ready(function() {
+	
+		var options = { 
+	        beforeSubmit: function(formData, jqForm, options) { // pre-submit callback 
+	        	alert(formData);
+	        },  
+	        success: function(responseText, statusText, xhr, $form) { // post-submit callback 
+	        	alert(statusText);
+	        },  
+	        
+	 		target: '#output',
+
+	        // other available options: 
+	        //url: 'login.do',         // override for form's 'action' attribute 
+	        //type: 'post',        // 'get' or 'post', override for form's 'method' attribute 
+	        dataType: 'json',        // 'xml', 'script', or 'json' (expected server response type) 
+	        //clearForm: true,        // clear all form fields after successful submit 
+	        //resetForm: true,        // reset the form after successful submit 
+	 
+			timeout: 30000
+	    }; 
+		
+		$('#loginForm').ajaxForm(options);		
+	});
+	</script>
 </head> 
-<body> 
-	<div id='login' style='margin:0 auto;' align="center">
+<body>
+	<div align="center">
+		<img src='resource/img/docs_logo_sm.gif' />
 	</div>
+	<form id='loginForm' style='margin:0 auto;width:320px;' align="center" action='login.do' method='post'>
+		<div id='title' style='display:block;padding:20px 10px 20px 10px;'>
+			<span style='float:left;'>登陆</span>
+			<span style='float:right;padding-right:10px;'>
+				<a href='#'>注册</a>
+			</span>
+		</div>
+		
+		<br/>
+		
+		<table style='width:100%;line-height:25px;'>
+			<tbody>
+				<tr>
+					<td style='width:260px;'>
+						<table style='margin:10px;'>
+							<tbody>
+								<tr>
+									<td align='right'>
+										用户名:
+									</td>
+									<td align='left'>
+										<input id='username' name='username' type='text' style='width:12em;'/>
+									</td>
+								</tr>
+								<tr>
+									<td align='right'>
+										密码:
+									</td>
+									<td align='left'>
+										<input id='password' name='password'  type='password' style='width:12em;'/>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						
+						<div id='output'></div>
+					</td>
+					<td>
+						<input type='submit' class="sexybutton sexysimple sexyteal" style='width:50px;height:50px;' value='登陆'/>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
 </body> 
 </html> 
