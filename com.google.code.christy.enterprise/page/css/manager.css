@@ -1,95 +1,64 @@
-#freedom {
-  float:left;
-  font:1.3em Cambria, Times New Roman, serif;
-  margin: 0px;
-  padding: 0px;
-  width:100%;
+/** 清浮动 **/
+.clearfix:after{
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
 }
 
-#freedom li {
-	width:100%;
-	list-style-type: none;
+/* Hides from IE-mac \*/
+* html .clearfix{
+    height: 1%;
 }
 
-#freedom li a {
-	color: black;
-	width:100%;
-	margin:1px;
-	*margin:0px;
-	display:block;
-	font-weight:bold;
-	font-size:0.7em;
-	font-style:normal;
+.clearfix{
+    display: block;
+}
+
+.main-ui-tab-container{
+	width: 100%;
+}
+
+
+.main-ui-tab-container > div u {
+	float: left;
 	cursor: pointer;
 	text-align: center;
 	text-decoration: none;
+	width: 100%;
 	line-height: 27px;
 }
 
-#freedom li a:hover {
-	color: black;
-}
-#freedom li a:visited {
-	color: black;
+.main-ui-tab-container > div u.ui-tab-active {
+	background-color: #470EFF;
 }
 
-#freedom li a:link {
-	color: black;
-}
-
-#freedom li a.selected {
-  background:#FFF;
-  background-color: #470EFF;
-  color:#000;
-  cursor:default;
+.main-ui-tab-container .ui-tab-content {
 }
 
 
-#shopManagerTabs {
-  font:1.3em Cambria, Times New Roman, serif;
-  margin: 0px;
-  padding: 0px;
-  width:100%;
+.ui-tab-container{
+	width: 100%;
 }
 
-#shopManagerTabs li {
-	width:100%;
-	list-style-type: none;
-	float:left;
-
-	text-align: center;
-	text-decoration: none;
-	width: 25%;
-	line-height: 27px;
+.ui-tab-container .clearfix {
+	background:url("/resource/img/subTab.gif") repeat-x scroll 0 0 transparent;
 }
 
-#shopManagerTabs li a {
-	color: black;
-	display:block;
-	font-weight:bold;
-	font-size:0.7em;
-	font-style:normal;
+.ui-tab-container > div div {
+	float: left;
 	cursor: pointer;
 	text-align: center;
 	text-decoration: none;
+	width: 200px;
 	line-height: 27px;
 }
 
-#shopManagerTabs li a:hover {
-	color: black;
-}
-#shopManagerTabs li a:visited {
-	color: black;
+.ui-tab-container > div div.ui-tab-active {
+	background-image:url("/resource/img/subTab_active.gif");
 }
 
-#shopManagerTabs li a:link {
-	color: black;
-}
-
-#shopManagerTabs li a.selected {
-  background:#FFF;
-  background-color: #470EFF;
-  color:#000;
-  cursor:default;
+.ui-tab-container .ui-tab-content {
 }
 			
