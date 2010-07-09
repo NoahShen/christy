@@ -2565,17 +2565,17 @@ Map.init = function() {
 	var mapTabs = $("<div id='mapTabs'>" +
 						"<div class='map-ui-tab-container'>" +
 							"<div class='clearfix'>" +
-								"<div class='map-ui-tab-parent-active'>" +
+								"<div class='map-ui-tab-parent map-ui-tab-parent-active'>" +
 									"<span id='mapCanvasContainer' class='map-tab map-ui-tab-active'>" + 
 										$.i18n.prop("map.tabs.map", "地图") + 
 									"</span>" +
 								"</div>" +
-								"<div>" +
+								"<div class='map-ui-tab-parent'>" +
 									"<span id='mapItems' class='map-tab'>" + 
 										$.i18n.prop("map.tabs.mapItems", "地图项") + 
 									"</span>" +
 								"</div>" +
-								"<div>" +
+								"<div class='map-ui-tab-parent'>" +
 									"<span id='mapRoute' class='map-tab' style='display:none;'>" + 
 										$.i18n.prop("map.tabs.route", "路线") +
 									"</span>" +
@@ -2903,13 +2903,13 @@ Profile.init = function() {
 	var profileTabs = $("<div id='profileTabs'>" +
 		 					"<div class='profile-ui-tab-container'>" +
 		 						"<div class='clearfix'>" +
-		 							"<div class='profile-ui-tab-parent-active'>" +
+		 							"<div class='profile-ui-tab-parent profile-ui-tab-parent-active'>" +
 		 								"<span class='profile-tab profile-ui-tab-active'>" + 
 		 									$.i18n.prop("profile.tabs.favorite", "收藏") + 
 		 								"</span>" +
 		 								"<div id='favoriteRefresh' class='icon' style='display:inline;'></div>" +
 		 							"</div>" +
-		 							"<div>" +
+		 							"<div class='profile-ui-tab-parent'>" +
 		 								"<span class='profile-tab'>" + 
 		 									$.i18n.prop("profile.tabs.comments", "评论") + 
 		 								"</span>" +
@@ -3389,12 +3389,12 @@ Subscription.init = function() {
 	var subscriptionTabs = $("<div id='subscriptionTabs'>" +
 			 					"<div class='subscription-ui-tab-container'>" +
 			 						"<div class='clearfix'>" +
-										"<div class='subscription-ui-tab-parent-active'>" +
+										"<div class='subscription-ui-tab-parent subscription-ui-tab-parent-active'>" +
 											"<span id='emailSubscription' class='subscription-tab subscription-ui-tab-active'>" + 
 												$.i18n.prop("subscription.tabs.emailSubscription", "Email订阅") + 
 											"</span>" +
 										"</div>" +
-										"<div>" +
+										"<div class='subscription-ui-tab-parent'>" +
 											"<span id='subscriptionItems' class='subscription-tab'>" + 
 												$.i18n.prop("subscription.tabs.shopsSubscription", "商户订阅") + 
 											"</span>" +

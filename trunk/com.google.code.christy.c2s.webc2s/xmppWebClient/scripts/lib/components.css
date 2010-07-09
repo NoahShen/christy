@@ -27,7 +27,7 @@
 }
 
 
-.ui-tab-container > div u {
+.ui-tab-container .clearfix u {
 	float: left;
 	cursor: pointer;
 	text-align: center;
@@ -36,14 +36,14 @@
 	line-height: 27px;
 }
 
-.ui-tab-container > div u.ui-tab-active {
+.ui-tab-container .clearfix u.ui-tab-active {
 	background-color: #470EFF;
 }
 
 .ui-tab-container .ui-tab-content {
 }
 
-.ui-tab-container > div u.ui-tab-disable {
+.ui-tab-container .clearfix u.ui-tab-disable {
 	background: #ff0000;
 }
 
@@ -55,7 +55,7 @@
 	background: url("/resource/subTab.gif") repeat-x scroll 0 0 transparent;
 }
 
-.profile-ui-tab-container .clearfix > div {
+.profile-ui-tab-container .clearfix .profile-ui-tab-parent {
 	float: left;
 	cursor: pointer;
 	text-align: center;
@@ -64,11 +64,11 @@
 	line-height: 30px;
 }
 
-.profile-ui-tab-container .clearfix > div .profile-tab {
+.profile-ui-tab-container .clearfix .profile-ui-tab-parent .profile-tab {
 	width: 100%;
 }
 
-.profile-ui-tab-container .clearfix > div .profile-ui-tab-active {
+.profile-ui-tab-container .clearfix .profile-ui-tab-parent .profile-ui-tab-active {
 }
 
 .profile-ui-tab-container .clearfix .profile-ui-tab-parent-active {
@@ -76,7 +76,7 @@
 }
 
 
-.profile-ui-tab-container .clearfix > div .profile-ui-tab-disable {
+.profile-ui-tab-container .clearfix .profile-ui-tab-parent .profile-ui-tab-disable {
 	background: #ff0000;
 
 }
@@ -90,7 +90,7 @@
 }
 
 
-.map-ui-tab-container .clearfix > div {
+.map-ui-tab-container .clearfix .map-ui-tab-parent {
 	float: left;
 	cursor: pointer;
 	text-align: center;
@@ -100,11 +100,11 @@
 }
 
 
-.map-ui-tab-container .clearfix > div .map-tab {
+.map-ui-tab-container .clearfix .map-ui-tab-parent .map-tab {
 	width: 100%;
 }
 
-.map-ui-tab-container .clearfix > div .map-ui-tab-active {
+.map-ui-tab-container .clearfix .map-ui-tab-parent .map-ui-tab-active {
 }
 
 .map-ui-tab-container .clearfix .map-ui-tab-parent-active {
@@ -112,7 +112,7 @@
 }
 
 
-.map-ui-tab-container .clearfix > div .map-ui-tab-disable {
+.map-ui-tab-container .clearfix .map-ui-tab-parent .map-ui-tab-disable {
 	background: #ff0000;
 }
 
@@ -125,7 +125,7 @@
 }
 
 
-.subscription-ui-tab-container .clearfix > div {
+.subscription-ui-tab-container .clearfix .subscription-ui-tab-parent {
 	float: left;
 	cursor: pointer;
 	text-align: center;
@@ -135,11 +135,11 @@
 }
 
 
-.subscription-ui-tab-container .clearfix > div .subscription-tab {
+.subscription-ui-tab-container .clearfix .subscription-ui-tab-parent .subscription-tab {
 	width: 100%;
 }
 
-.subscription-ui-tab-container .clearfix > div .subscription-ui-tab-active {
+.subscription-ui-tab-container .clearfix .subscription-ui-tab-parent .subscription-ui-tab-active {
 }
 
 .subscription-ui-tab-container .clearfix .subscription-ui-tab-parent-active {
@@ -147,7 +147,7 @@
 }
 
 
-.subscription-ui-tab-container .clearfix > div .subscription-ui-tab-disable {
+.subscription-ui-tab-container .clearfix .subscription-ui-tab-parent .subscription-ui-tab-disable {
 	background: #ff0000;
 }
 /** =========end of Tab **/
