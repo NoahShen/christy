@@ -9,12 +9,16 @@
  		<link rel="stylesheet" type="text/css" href="css/manager.css"/>
  		
  		<link rel="stylesheet" type="text/css" href="js/jquery/plugins/flexigridcss/flexigrid/flexigrid.css">
+<!--	
+ 		<script src="http://ditu.google.cn/maps?file=api&amp;v=2&amp;&sensor=false" type="text/javascript"></script>
+-->
  		
     	<script type="text/javascript" src="js/jquery/jquery-1.4.2.min.js"></script> 
+    	
 		<script type="text/javascript" src="js/jquery/plugins/jquery.layout.min-1.2.0.js"></script> 
 		<script type="text/javascript" src="js/jquery/plugins/ui.tab.js"></script> 
-		
 		<script type="text/javascript" src="js/jquery/plugins/flexigrid.js"></script>
+		<script type="text/javascript" src="js/jquery/plugins/jquery.blockUI.js"></script> 
 		
 		<script type="text/javascript" src="js/manager.js"></script>
 		<style type="text/css"> 
@@ -28,18 +32,18 @@
 		</style>
 	</head>
 	<body>
-		<div class="ui-layout-center" style='overflow:auto;'>
+		<div class="ui-layout-center" style="overflow:auto;">
 			
-			<div id='shopManager' class='main-ui-tab-content'>
-				<div id='shopManagerTabs' class='ui-tab-container'>
-					<div class='clearfix'>
-						<div id='manageShopsTab'>管理商铺</div>
-						<div id='addShopTab'>添加商铺</div>
-						<div id='commentsTab'>查看评论</div>
+			<div id="shopManager" class="main-ui-tab-content">
+				<div id="shopManagerTabs" class="ui-tab-container">
+					<div class="clearfix">
+						<div id="manageShopsTab">管理商铺</div>
+						<div id="addShopTab">添加商铺</div>
+						<div id="commentsTab">查看评论</div>
 					</div>
 				</div>
 				
-				<div id='manageShops' class='shopManage-ui-tab-content'>
+				<div id="manageShops" class="shopManage-ui-tab-content">
 					<table id="flexme1"> 
 						<thead> 
 					    		<tr> 
@@ -126,59 +130,107 @@
 					    </tbody> 
 					</table> 
 	 			</div>
-				<div id='addShop' class='shopManage-ui-tab-content'>
-					addShop
+				<div id="addShop" class="shopManage-ui-tab-content">
+					<div>
+						<form id="saveShopForm" action="enterprise.do" method="post">
+							<table style="margin:10px;">
+								<tbody>
+									<tr>
+										<td class="label">
+											名称:
+										</td>
+										<td align="left">
+											<input id="shopTitle" name="shopTitle" type="text" style="width:12em;"/>
+										</td>
+									</tr>
+									<tr>
+										<td class="label">
+											类型:
+										</td>
+										<td align="left">
+											<input id="shopType" name="shopType" type="text" style="width:12em;"/>
+										</td>
+									</tr>
+									<tr>
+										<td class="label">
+											区县:
+										</td>
+										<td align="left">
+											<input id="shopDistrict" name="shopDistrict" type="text" style="width:12em;"/>
+										</td>
+									</tr>
+									<tr>
+										<td class="label">
+											地址:
+										</td>
+										<td align="left">
+											<input id="shopStreet" name="shopStreet" type="text" style="width:12em;"/>
+										</td>
+									</tr>
+									<tr>
+										<td class="label">
+											电话:
+										</td>
+										<td align="left">
+											<input id="shopTel" name="shopTel" type="text" style="width:12em;"/>
+										</td>
+									</tr>
+									<tr>
+										<td class="label">
+											简介:
+										</td>
+										<td>
+											<textarea id="shopContent" name="shopContent" cols="50" rows="5"></textarea>
+										</td>
+									</tr>
+									<tr>
+										<td class="label">
+											位置:
+										</td>
+										<td>
+											<input id="shopLoc" name="shopLoc" type="text" style="width:12em;" readonly="true"/>
+											
+											<button id="chooseShopLoc" type="button" class="sexybutton sexysimple sexyteal">选择位置
+											</button>
+										</td>
+									</tr>
+									
+								</tbody>
+							</table>
+						</form>
+					</div>
+					<div id="mapDiv" style="display:none;width:700px;height:400px;">
+						<iframe id="mapFrame" name="mapFrame" style="width:100%;height:100%;" scrolling="no" frameborder="0" >
+						</iframe>
+					</div>
 				</div>
-				<div id='comments' class='shopManage-ui-tab-content'>
+				<div id="comments" class="shopManage-ui-tab-content">
 					comments
 				</div>
 			</div>
 			
-			<div id='activityManager' class='main-ui-tab-content'>
+			<div id="activityManager" class="main-ui-tab-content">
 				activityManager
  			</div>
-			<div id='static' class='main-ui-tab-content'>
+			<div id="static" class="main-ui-tab-content">
 				static
 			</div>
 		</div>
 		
 <!--
-		<div class='ui-layout-north'>
-			<table style='width:100%;'>
-				<tr>
-					<td>
-						<img src='resource/img/docs_logo_sm.gif' />
-					</td>
-					<td align='right'>
-						<table>
-							<tr>
-								<td>
-									
-								</td>
-								<td>
-									<div>
-										<span>Username</span>
-										<a href='javascript:void(0);'>设置</a>
-										<a href='javascript:void(0);'>退出</a>
-									</div>
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-			</table>
+		<div class="ui-layout-north">
 		</div>
 
-		<div class='ui-layout-south'>South</div>
+		<div class="ui-layout-south">South</div>
 		
-		<div class='ui-layout-east'>East</div> 
+		<div class="ui-layout-east">East</div> 
 -->
-		<div class='ui-layout-west' style='background-color:#94C1F8;'>
-			<div id='mainTabs' class='main-ui-tab-container'>
-				<div class='clearfix'>
-					<u id='shopManagerTab'>商铺管理</u>
-					<u id='activityManagerTab'>活动管理</u>
-					<u id='staticTab'>查看统计 </u>
+		<div class="ui-layout-west" style="background-color:#94C1F8;">
+			<div id="mainTabs" class="main-ui-tab-container">
+				<div class="clearfix">
+					<u id="shopManagerTab">商铺管理</u>
+					<u id="activityManagerTab">活动管理</u>
+					<u id="staticTab">查看统计 </u>
 				</div>
 			</div>
 		</div> 
