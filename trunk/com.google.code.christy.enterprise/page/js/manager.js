@@ -1,18 +1,12 @@
 $(document).ready(function() {
 	
-	try {
-		
-	    $('body').layout({
-			resizable: false,
-			closable: false,
-			spacing_open: 0
-		});
-	} catch (e) {
-		if (window.console) {
-			window.console.log(e);
-		}
-	}
 	
+	$('body').layout({
+		resizable: false,
+		closable: false,
+		spacing_open: 0
+	});
+		
 	var mainTabs = new $.fn.tab({
         tabList:'#mainTabs .clearfix u',
         contentList:'.main-ui-tab-content',
@@ -35,6 +29,18 @@ $(document).ready(function() {
         callBackHideEvent:function(index) {
         },
         callBackShowEvent:function(index) {
+        	if (index == 1) {
+        		var shopMapCanvas = $('#shopMapCanvas');
+        		if (!shopMapCanvas.attr('inited')) {
+        			if (GBrowserIsCompatible()) {
+	        			var map = new GMap2(shopMapCanvas[0]);
+	        			map.setUIToDefault();
+		        		map.setCenter(new GLatLng(31.230708, 121.472916), 13);
+		        		shopMapCanvas.attr('inited', '1');
+	        		}
+        		}
+        		
+        	}
         }
     });
     shopManagerTabs.triggleTab(1);
@@ -43,22 +49,21 @@ $(document).ready(function() {
     	height: 'auto'
     });
     
-    $('#chooseShopLoc').click(function(){
-    	var mapFrame = $('#mapFrame');
-    	if (!mapFrame.attr("src")) {
-    		mapFrame.attr('src', 'http://www.google.com');
-    	}
-    	
-    	$.blockUI({ 
-            message: $('#mapDiv'),
-            
-            css: {
-            	width: '700px',
-            	height: '400px',
-            	top: '',
-				left: '',
-                padding: '5px'
-            } 
-        });
+		
+    $('#checkShopBigMap').click(function(){
+		var shopBigMap = $('<div id="shopBigMap" style="width:700px;height:300px;"></div>');
+		new Boxy(shopBigMap, {
+    			title: 'title',
+    			closeText: "[关闭]",
+    			modal: true,
+    			afterShow: function() {
+    				if (GBrowserIsCompatible()) {
+						var map = new GMap2(shopBigMap[0]);
+						map.setUIToDefault();
+			    		map.setCenter(new GLatLng(31.230708, 121.472916), 13);
+						
+					}
+    			}
+    		});
     });
 });

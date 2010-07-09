@@ -9,29 +9,39 @@
  		<link rel="stylesheet" type="text/css" href="css/manager.css"/>
  		
  		<link rel="stylesheet" type="text/css" href="js/jquery/plugins/flexigridcss/flexigrid/flexigrid.css">
-<!--	
+ 		<link rel="stylesheet" type="text/css" href="js/jquery/plugins/boxy/stylesheets/boxy.css">
+ 		
+
  		<script src="http://ditu.google.cn/maps?file=api&amp;v=2&amp;&sensor=false" type="text/javascript"></script>
--->
  		
     	<script type="text/javascript" src="js/jquery/jquery-1.4.2.min.js"></script> 
     	
-		<script type="text/javascript" src="js/jquery/plugins/jquery.layout.min-1.2.0.js"></script> 
+		<script type="text/javascript" src="js/jquery/plugins/jquery.layout-1.2.0.js"></script> 
 		<script type="text/javascript" src="js/jquery/plugins/ui.tab.js"></script> 
 		<script type="text/javascript" src="js/jquery/plugins/flexigrid.js"></script>
-		<script type="text/javascript" src="js/jquery/plugins/jquery.blockUI.js"></script> 
+		<script type="text/javascript" src="js/jquery/plugins/boxy/jquery.boxy.js"></script> 
 		
 		<script type="text/javascript" src="js/manager.js"></script>
-		<style type="text/css"> 
+		<style type="text/css">
+			html, a {
+				font-family: Arial, sans-serif;
+				font-size: 100%;
+				*font-size: 1em; /* IE 6/7 only */
+			}
+			
 			body {
-				font-family:	Arial, sans-serif;
-				font-size:		100%;
-				*font-size:		1em; /* IE 6/7 only */
+				font-family: Arial, sans-serif;
+				font-size: 100%;
+				*font-size: 1em; /* IE 6/7 only */
 				background-image:url("/resource/img/bg.png");
 			}
 			
+			a:hover, a:visited {
+				font-size: 100%;
+			}  
 		</style>
 	</head>
-	<body>
+	<body onunload="GUnload()">
 		<div class="ui-layout-center" style="overflow:auto;">
 			
 			<div id="shopManager" class="main-ui-tab-content">
@@ -131,7 +141,7 @@
 					</table> 
 	 			</div>
 				<div id="addShop" class="shopManage-ui-tab-content">
-					<div>
+					<div id='saveShopDiv'>
 						<form id="saveShopForm" action="enterprise.do" method="post">
 							<table style="margin:10px;">
 								<tbody>
@@ -180,30 +190,33 @@
 											简介:
 										</td>
 										<td>
-											<textarea id="shopContent" name="shopContent" cols="50" rows="5"></textarea>
-										</td>
-									</tr>
-									<tr>
-										<td class="label">
-											位置:
-										</td>
-										<td>
-											<input id="shopLoc" name="shopLoc" type="text" style="width:12em;" readonly="true"/>
-											
-											<button id="chooseShopLoc" type="button" class="sexybutton sexysimple sexyteal">选择位置
-											</button>
+											<textarea id="shopContent" name="shopContent" cols="30" rows="5"></textarea>
 										</td>
 									</tr>
 									
 								</tbody>
 							</table>
-						</form>
+							<input id="shopLat" name="shopLat" type="hidden"/>
+							<input id="shopLon" name="shopLon" type="hidden"/>
+						</form>						
 					</div>
-					<div id="mapDiv" style="display:none;width:700px;height:400px;">
-						<iframe id="mapFrame" name="mapFrame" style="width:100%;height:100%;" scrolling="no" frameborder="0" >
-						</iframe>
+					<div id="shopMap">
+						<button id='markShop' class="sexybutton sexysimple sexyteal">
+							在地图上标记
+						</button>
+						<div id="shopMapCanvas" style="width:240px;height:240px;">
+						</div>
+						<div style="text-align:center;">
+							<a id="checkShopBigMap" href="javascript:void(0);">查看大图</a>
+							<span>|</span>
+							<a id="modityShopLoc" href="javascript:void(0);">修改位置</a>
+						</div>
+						
 					</div>
+					
 				</div>
+				
+				
 				<div id="comments" class="shopManage-ui-tab-content">
 					comments
 				</div>

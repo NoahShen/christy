@@ -66,12 +66,22 @@
 .label {
 	text-align: right;
 	vertical-align: top;
-	width: 10%;
+	width: 50px;
+}
+
+#saveShopDiv {
+	float: left;
+	width: 360px;
 }
 
 #saveShopForm td {
-	height: 35px;
-	line-height: 27px;
+	height: 45px;
+	line-height: 37px;
 	padding-bottom: 5px;
+}
+
+#shopMap {
+	float: left;
+	width: 240px;
 }
 			
