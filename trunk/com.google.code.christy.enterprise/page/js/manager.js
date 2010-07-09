@@ -14,9 +14,9 @@ $(document).ready(function() {
 	}
 	
 	var mainTabs = new $.fn.tab({
-        tabList:"#mainTabs .clearfix u",
-        contentList:".main-ui-tab-content",
-//        showType:"fade",
+        tabList:'#mainTabs .clearfix u',
+        contentList:'.main-ui-tab-content',
+//        showType:'fade',
         callBackStartEvent:function(index) {
         },
         callBackHideEvent:function(index) {
@@ -27,9 +27,9 @@ $(document).ready(function() {
     mainTabs.triggleTab(0);
     
     var shopManagerTabs = new $.fn.tab({
-        tabList:"#shopManagerTabs .clearfix div",
-        contentList:".shopManage-ui-tab-content",
-//        showType:"fade",
+        tabList:'#shopManagerTabs .clearfix div',
+        contentList:'.shopManage-ui-tab-content',
+//        showType:'fade',
         callBackStartEvent:function(index) {
         },
         callBackHideEvent:function(index) {
@@ -37,9 +37,28 @@ $(document).ready(function() {
         callBackShowEvent:function(index) {
         }
     });
-    shopManagerTabs.triggleTab(0);
+    shopManagerTabs.triggleTab(1);
     
     $('#flexme1').flexigrid({
     	height: 'auto'
+    });
+    
+    $('#chooseShopLoc').click(function(){
+    	var mapFrame = $('#mapFrame');
+    	if (!mapFrame.attr("src")) {
+    		mapFrame.attr('src', 'http://www.google.com');
+    	}
+    	
+    	$.blockUI({ 
+            message: $('#mapDiv'),
+            
+            css: {
+            	width: '700px',
+            	height: '400px',
+            	top: '',
+				left: '',
+                padding: '5px'
+            } 
+        });
     });
 });

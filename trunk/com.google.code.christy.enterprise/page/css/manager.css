@@ -16,12 +16,12 @@
     display: block;
 }
 
-.main-ui-tab-container{
+.main-ui-tab-container {
 	width: 100%;
 }
 
 
-.main-ui-tab-container > div u {
+.main-ui-tab-container .clearfix u {
 	float: left;
 	cursor: pointer;
 	text-align: center;
@@ -30,7 +30,7 @@
 	line-height: 27px;
 }
 
-.main-ui-tab-container > div u.ui-tab-active {
+.main-ui-tab-container .clearfix u.ui-tab-active {
 	background-color: #470EFF;
 }
 
@@ -46,7 +46,7 @@
 	background:url("/resource/img/subTab.gif") repeat-x scroll 0 0 transparent;
 }
 
-.ui-tab-container > div div {
+.ui-tab-container .clearfix div {
 	float: left;
 	cursor: pointer;
 	text-align: center;
@@ -55,10 +55,23 @@
 	line-height: 27px;
 }
 
-.ui-tab-container > div div.ui-tab-active {
+.ui-tab-container .clearfix div.ui-tab-active {
 	background-image:url("/resource/img/subTab_active.gif");
 }
 
 .ui-tab-container .ui-tab-content {
+}
+
+
+.label {
+	text-align: right;
+	vertical-align: top;
+	width: 10%;
+}
+
+#saveShopForm td {
+	height: 35px;
+	line-height: 27px;
+	padding-bottom: 5px;
 }
 			
