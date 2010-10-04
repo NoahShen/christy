@@ -312,7 +312,7 @@ public class WebC2SManager extends AbstractPropertied implements C2SManager
 	{
 		loggerServiceTracker.info("starting http server");
 		
-		server = new Server(getWebclientPort());
+		server = new Server();
 		SelectChannelConnector selectChannelConnector = new SelectChannelConnector();
 		selectChannelConnector.setPort(getWebclientPort());
 		selectChannelConnector.setUseDirectBuffers(false);
