@@ -1,0 +1,1 @@
+a xmpp server based on OSGi Framework Equinox, support multi plugins and the deployment of modular, cluster 一个基于OSGi框架Equinox开发的XMPP服务器，支持模块化的部署、集群
